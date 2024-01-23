@@ -490,7 +490,7 @@ const SortAndAddModal = ({ headerText, data, title, dataName, databaseInit, text
     const handleSave = useCallback(async () => {
         setModalSaveLoading(true);
 
-        const response = await axios.get('http://worldtimeapi.org/api/timezone/Asia/Tokyo');
+        const response = await axios.get('https://worldtimeapi.org/api/timezone/Asia/Tokyo');
         const { datetime } = response.data;
         const formattedTime = moment(datetime).format('YYYY/MM/DD [at] HH:mm:ss');
         const year = moment(datetime).format('YYYY');
@@ -606,7 +606,7 @@ const SortAndAddModal = ({ headerText, data, title, dataName, databaseInit, text
         const data = textAreaAdd.current?.value;
         const dataArray = data.split('\n').map((item) => item.trim());
 
-        const response = await axios.get('http://worldtimeapi.org/api/timezone/Asia/Tokyo');
+        const response = await axios.get('https://worldtimeapi.org/api/timezone/Asia/Tokyo');
         const { datetime } = response.data;
         const formattedTime = moment(datetime).format('YYYY/MM/DD [at] HH:mm:ss');
         const year = moment(datetime).format('YYYY');
@@ -905,7 +905,7 @@ const SelectMethod = ({ defaultValue, portCode, page, searchQuery }) => {
         // Specify the document reference
         const documentRef = doc(projectExtensionFirestore, 'CustomerCountryPort', 'PortsDoc');
         dispatch(setLoadingModalVisible(true));
-        const response = await axios.get('http://worldtimeapi.org/api/timezone/Asia/Tokyo');
+        const response = await axios.get('https://worldtimeapi.org/api/timezone/Asia/Tokyo');
         const { datetime } = response.data;
         const formattedTime = moment(datetime).format('YYYY/MM/DD [at] HH:mm:ss');
         const year = moment(datetime).format('YYYY');
@@ -1069,7 +1069,7 @@ const SelectInspectionIsRequired = ({ width, defaultValue, countryCode, page, se
         // Specify the document reference
         const documentRef = doc(projectExtensionFirestore, 'CustomerCountryPort', 'CountriesDoc');
         dispatch(setLoadingModalVisible(true));
-        const response = await axios.get('http://worldtimeapi.org/api/timezone/Asia/Tokyo');
+        const response = await axios.get('https://worldtimeapi.org/api/timezone/Asia/Tokyo');
         const { datetime } = response.data;
         const formattedTime = moment(datetime).format('YYYY/MM/DD [at] HH:mm:ss');
         const year = moment(datetime).format('YYYY');
@@ -1230,7 +1230,7 @@ const SelectInspectionName = ({ width, defaultValue, countryCode, page, searchQu
         // Specify the document reference
         const documentRef = doc(projectExtensionFirestore, 'CustomerCountryPort', 'CountriesDoc');
         dispatch(setLoadingModalVisible(true));
-        const response = await axios.get('http://worldtimeapi.org/api/timezone/Asia/Tokyo');
+        const response = await axios.get('https://worldtimeapi.org/api/timezone/Asia/Tokyo');
         const { datetime } = response.data;
         const formattedTime = moment(datetime).format('YYYY/MM/DD [at] HH:mm:ss');
         const year = moment(datetime).format('YYYY');
@@ -1693,7 +1693,7 @@ const AddCountryModal = ({ handleAddCountryModalClose }) => {
         setAddButtonLoading(true);
         const countryCode = inputCountryText.current?.value;
         const formattedCountryCode = countryCode.replace(/\./g, '_');
-        const response = await axios.get('http://worldtimeapi.org/api/timezone/Asia/Tokyo');
+        const response = await axios.get('https://worldtimeapi.org/api/timezone/Asia/Tokyo');
         const { datetime } = response.data;
         const formattedTime = moment(datetime).format('YYYY/MM/DD [at] HH:mm:ss');
         const year = moment(datetime).format('YYYY');
@@ -1910,7 +1910,7 @@ const AddPortsForCountriesModal = ({ handleAddPortsForCountriesModalClose, handl
         // Specify the document reference
         const documentRef = doc(projectExtensionFirestore, 'CustomerCountryPort', 'CountriesDoc');
         setModalSaveLoading(true);
-        const response = await axios.get('http://worldtimeapi.org/api/timezone/Asia/Tokyo');
+        const response = await axios.get('https://worldtimeapi.org/api/timezone/Asia/Tokyo');
         const { datetime } = response.data;
         const formattedTime = moment(datetime).format('YYYY/MM/DD [at] HH:mm:ss');
         const year = moment(datetime).format('YYYY');
@@ -2004,7 +2004,7 @@ const AddPortsForCountriesModal = ({ handleAddPortsForCountriesModalClose, handl
         // Specify the document reference
         const documentRef = doc(projectExtensionFirestore, 'CustomerCountryPort', 'CountriesDoc');
         setModalSaveLoading(true);
-        const response = await axios.get('http://worldtimeapi.org/api/timezone/Asia/Tokyo');
+        const response = await axios.get('https://worldtimeapi.org/api/timezone/Asia/Tokyo');
         const { datetime } = response.data;
         const formattedTime = moment(datetime).format('YYYY/MM/DD [at] HH:mm:ss');
         const year = moment(datetime).format('YYYY');
@@ -2174,7 +2174,7 @@ const DeleteCountryModal = ({ handleDeleteCountryModalClose }) => {
         const documentRef = doc(projectExtensionFirestore, 'CustomerCountryPort', 'CountriesDoc');
         const formattedFieldCode = selectedCountry.replace(/\./g, '_');
 
-        const response = await axios.get('http://worldtimeapi.org/api/timezone/Asia/Tokyo');
+        const response = await axios.get('https://worldtimeapi.org/api/timezone/Asia/Tokyo');
         const { datetime } = response.data;
         const formattedTime = moment(datetime).format('YYYY/MM/DD [at] HH:mm:ss');
         const year = moment(datetime).format('YYYY');
@@ -2426,7 +2426,7 @@ const CountriesTable = () => {
 
     const updateCountrySortOrder = async (countryCode, newValue, inputRef) => {
         // Specify the document reference
-        const response = await axios.get('http://worldtimeapi.org/api/timezone/Asia/Tokyo');
+        const response = await axios.get('https://worldtimeapi.org/api/timezone/Asia/Tokyo');
         const { datetime } = response.data;
         const formattedTime = moment(datetime).format('YYYY/MM/DD [at] HH:mm:ss');
         const year = moment(datetime).format('YYYY');
@@ -2532,7 +2532,7 @@ const CountriesTable = () => {
         // Specify the document reference
         const documentRef = doc(projectExtensionFirestore, 'CustomerCountryPort', 'CountriesDoc');
         dispatch(setLoadingModalVisible(true));
-        const response = await axios.get('http://worldtimeapi.org/api/timezone/Asia/Tokyo');
+        const response = await axios.get('https://worldtimeapi.org/api/timezone/Asia/Tokyo');
         const { datetime } = response.data;
         const formattedTime = moment(datetime).format('YYYY/MM/DD [at] HH:mm:ss');
         const year = moment(datetime).format('YYYY');
@@ -3470,7 +3470,7 @@ const AddPortModal = ({ handleAddPortModalClose }) => {
             const countryCode = inputCountryText.current?.value;
             const portCode = inputPortText.current?.value;
             const formattedPortCode = portCode.replace(/\./g, '_');
-            const response = await axios.get('http://worldtimeapi.org/api/timezone/Asia/Tokyo');
+            const response = await axios.get('https://worldtimeapi.org/api/timezone/Asia/Tokyo');
             const { datetime } = response.data;
             const formattedTime = moment(datetime).format('YYYY/MM/DD [at] HH:mm:ss');
             const year = moment(datetime).format('YYYY');
@@ -3618,7 +3618,7 @@ const DeletePortModal = ({ handleDeletePortModalClose }) => {
         const documentRef = doc(projectExtensionFirestore, 'CustomerCountryPort', 'PortsDoc');
         const formattedFieldCode = selectedPort.replace(/\./g, '_');
 
-        const response = await axios.get('http://worldtimeapi.org/api/timezone/Asia/Tokyo');
+        const response = await axios.get('https://worldtimeapi.org/api/timezone/Asia/Tokyo');
         const { datetime } = response.data;
         const formattedTime = moment(datetime).format('YYYY/MM/DD [at] HH:mm:ss');
         const year = moment(datetime).format('YYYY');
@@ -3749,7 +3749,7 @@ const PortsTable = () => {
 
     const updatePortsField = async (portCode, newValue, inputRef, title, fieldName) => {
         // Specify the document reference
-        const response = await axios.get('http://worldtimeapi.org/api/timezone/Asia/Tokyo');
+        const response = await axios.get('https://worldtimeapi.org/api/timezone/Asia/Tokyo');
         const { datetime } = response.data;
         const formattedTime = moment(datetime).format('YYYY/MM/DD [at] HH:mm:ss');
         const year = moment(datetime).format('YYYY');

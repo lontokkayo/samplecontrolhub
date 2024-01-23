@@ -172,7 +172,7 @@ const SelectStockStatus = ({ selectedValue, id, item }) => {
 
     dispatch(setLoadingModalVisible(true));
 
-    const response = await axios.get('http://worldtimeapi.org/api/timezone/Asia/Tokyo');
+    const response = await axios.get('https://worldtimeapi.org/api/timezone/Asia/Tokyo');
     const { datetime } = response.data;
     const formattedTime = moment(datetime).format('YYYY/MM/DD [at] HH:mm:ss');
     const year = moment(datetime).format('YYYY');
@@ -1263,7 +1263,7 @@ const UploadImagesModal = ({ fetchImageCounts }) => {
           };
         })
       );
-      const response = await axios.get('http://worldtimeapi.org/api/timezone/Asia/Tokyo');
+      const response = await axios.get('https://worldtimeapi.org/api/timezone/Asia/Tokyo');
       const { datetime } = response.data;
       const formattedTime = moment(datetime).format('YYYY/MM/DD [at] HH:mm:ss');
       const year = moment(datetime).format('YYYY');
@@ -2177,7 +2177,7 @@ const SupplyChainsCostsSortAndAddModal = ({ headerText, data, title, dataName, d
   const handleSave = useCallback(async () => {
     setModalSaveLoading(true);
 
-    const response = await axios.get('http://worldtimeapi.org/api/timezone/Asia/Tokyo');
+    const response = await axios.get('https://worldtimeapi.org/api/timezone/Asia/Tokyo');
     const { datetime } = response.data;
     const formattedTime = moment(datetime).format('YYYY/MM/DD [at] HH:mm:ss');
 
@@ -2269,7 +2269,7 @@ const SupplyChainsCostsSortAndAddModal = ({ headerText, data, title, dataName, d
     const data = textAreaAdd.current?.value;
     const dataArray = data.split('\n').map((item) => item.trim());
 
-    const response = await axios.get('http://worldtimeapi.org/api/timezone/Asia/Tokyo');
+    const response = await axios.get('https://worldtimeapi.org/api/timezone/Asia/Tokyo');
     const { datetime } = response.data;
     const formattedTime = moment(datetime).format('YYYY/MM/DD [at] HH:mm:ss');
 
@@ -3132,7 +3132,7 @@ const FobPriceInput = ({ item, index, }) => {
   const handleSaveFob = async (item, index,) => {
     dispatch(setLoadingModalVisible(true));
 
-    const response = await axios.get('http://worldtimeapi.org/api/timezone/Asia/Tokyo');
+    const response = await axios.get('https://worldtimeapi.org/api/timezone/Asia/Tokyo');
     const { datetime } = response.data;
     const formattedTime = moment(datetime).format('YYYY/MM/DD [at] HH:mm:ss');
     const year = moment(datetime).format('YYYY');
@@ -3761,7 +3761,7 @@ const VehicleListTable = () => {
   const handleSaveFob = async (item, index,) => {
     dispatch(setLoadingModalVisible(true));
 
-    const response = await axios.get('http://worldtimeapi.org/api/timezone/Asia/Tokyo');
+    const response = await axios.get('https://worldtimeapi.org/api/timezone/Asia/Tokyo');
     const { datetime } = response.data;
     const formattedTime = moment(datetime).format('YYYY/MM/DD [at] HH:mm:ss');
     const year = moment(datetime).format('YYYY');

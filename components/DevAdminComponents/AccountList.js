@@ -1109,7 +1109,7 @@ export default function AccountList() {
                 active: true,
             };
 
-            const response = await axios.get('http://worldtimeapi.org/api/timezone/Asia/Tokyo');
+            const response = await axios.get('https://worldtimeapi.org/api/timezone/Asia/Tokyo');
             const { datetime } = response.data;
             const formattedTime = moment(datetime).format('YYYY/MM/DD [at] HH:mm:ss');
             const year = moment(datetime).format('YYYY');
@@ -1195,7 +1195,7 @@ export default function AccountList() {
             const userCredential = await signInWithEmailAndPassword(auth, selectedItem.email, selectedItem.pass);
             const user = userCredential.user;
 
-            const response = await axios.get('http://worldtimeapi.org/api/timezone/Asia/Tokyo');
+            const response = await axios.get('https://worldtimeapi.org/api/timezone/Asia/Tokyo');
             const { datetime } = response.data;
             const formattedTime = moment(datetime).format('YYYY/MM/DD [at] HH:mm:ss');
             const year = moment(datetime).format('YYYY');
@@ -1285,7 +1285,7 @@ export default function AccountList() {
             const filteredData = applySearchFilter(updatedData, searchInput.current?.value); // Apply search filter to updated data
             setFilteredData(filteredData);
             // console.log('Field updated successfully.');
-            const response = await axios.get('http://worldtimeapi.org/api/timezone/Asia/Tokyo');
+            const response = await axios.get('https://worldtimeapi.org/api/timezone/Asia/Tokyo');
             const { datetime } = response.data;
             const formattedTime = moment(datetime).format('YYYY/MM/DD [at] HH:mm:ss');
             const year = moment(datetime).format('YYYY');
@@ -1366,7 +1366,7 @@ export default function AccountList() {
 
                 const documentRef = doc(db, 'accounts', selectedItem.id);
 
-                const response = await axios.get('http://worldtimeapi.org/api/timezone/Asia/Tokyo');
+                const response = await axios.get('https://worldtimeapi.org/api/timezone/Asia/Tokyo');
                 const { datetime } = response.data;
                 const formattedTime = moment(datetime).format('YYYY/MM/DD [at] HH:mm:ss');
                 setTime(formattedTime);
@@ -1387,7 +1387,7 @@ export default function AccountList() {
                     setIsSaveLoading(false);
 
 
-                    const response = await axios.get('http://worldtimeapi.org/api/timezone/Asia/Tokyo');
+                    const response = await axios.get('https://worldtimeapi.org/api/timezone/Asia/Tokyo');
                     const { datetime } = response.data;
                     const formattedTime = moment(datetime).format('YYYY/MM/DD [at] HH:mm:ss');
                     const year = moment(datetime).format('YYYY');
@@ -1450,7 +1450,7 @@ export default function AccountList() {
                 const userCredential = await signInWithEmailAndPassword(auth, selectedItem.email, selectedItem.pass);
                 const user = userCredential.user;
 
-                const response = await axios.get('http://worldtimeapi.org/api/timezone/Asia/Tokyo');
+                const response = await axios.get('https://worldtimeapi.org/api/timezone/Asia/Tokyo');
                 const { datetime } = response.data;
                 const formattedTime = moment(datetime).format('YYYY/MM/DD [at] HH:mm:ss');
                 setTime();
@@ -1458,7 +1458,7 @@ export default function AccountList() {
                 try {
                     await updatePassword(user, inputPassword);
 
-                    const response = await axios.get('http://worldtimeapi.org/api/timezone/Asia/Tokyo');
+                    const response = await axios.get('https://worldtimeapi.org/api/timezone/Asia/Tokyo');
                     const { datetime } = response.data;
                     const formattedTime = moment(datetime).format('YYYY/MM/DD [at] HH:mm:ss');
                     const year = moment(datetime).format('YYYY');
@@ -1573,7 +1573,7 @@ export default function AccountList() {
                 const oldDocumentRef = doc(db, 'accounts', selectedItem.email);
                 const newDocumentRef = doc(db, 'accounts', inputEmail);
 
-                const response = await axios.get('http://worldtimeapi.org/api/timezone/Asia/Tokyo');
+                const response = await axios.get('https://worldtimeapi.org/api/timezone/Asia/Tokyo');
                 const { datetime } = response.data;
                 const formattedTime = moment(datetime).format('YYYY/MM/DD [at] HH:mm:ss');
                 setTime(formattedTime);
@@ -1612,7 +1612,7 @@ export default function AccountList() {
                             setIsDisabled(false);
                             setIsSaveLoading(false);
 
-                            const response = await axios.get('http://worldtimeapi.org/api/timezone/Asia/Tokyo');
+                            const response = await axios.get('https://worldtimeapi.org/api/timezone/Asia/Tokyo');
                             const { datetime } = response.data;
                             const formattedTime = moment(datetime).format('YYYY/MM/DD [at] HH:mm:ss');
                             const year = moment(datetime).format('YYYY');
@@ -1664,7 +1664,7 @@ export default function AccountList() {
                                 const signedInUser = signInCredential.user;
                                 signedInUser
 
-                                const response = await axios.get('http://worldtimeapi.org/api/timezone/Asia/Tokyo');
+                                const response = await axios.get('https://worldtimeapi.org/api/timezone/Asia/Tokyo');
                                 const { datetime } = response.data;
                                 const formattedTime = moment(datetime).format('YYYY/MM/DD [at] HH:mm:ss');
                                 setTime(formattedTime);

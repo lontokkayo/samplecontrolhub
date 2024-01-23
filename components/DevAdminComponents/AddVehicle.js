@@ -2370,7 +2370,7 @@ const SupplyChainsCostsSortAndAddModal = ({ headerText, data, title, dataName, d
   const handleSave = useCallback(async () => {
     setModalSaveLoading(true);
 
-    const response = await axios.get('http://worldtimeapi.org/api/timezone/Asia/Tokyo');
+    const response = await axios.get('https://worldtimeapi.org/api/timezone/Asia/Tokyo');
     const { datetime } = response.data;
     const formattedTime = moment(datetime).format('YYYY/MM/DD [at] HH:mm:ss');
     const year = moment(datetime).format('YYYY');
@@ -2485,7 +2485,7 @@ const SupplyChainsCostsSortAndAddModal = ({ headerText, data, title, dataName, d
     const data = textAreaAdd.current?.value;
     const dataArray = data.split('\n').map((item) => item.trim());
 
-    const response = await axios.get('http://worldtimeapi.org/api/timezone/Asia/Tokyo');
+    const response = await axios.get('https://worldtimeapi.org/api/timezone/Asia/Tokyo');
     const { datetime } = response.data;
     const formattedTime = moment(datetime).format('YYYY/MM/DD [at] HH:mm:ss');
     const year = moment(datetime).format('YYYY');
@@ -2761,7 +2761,7 @@ const SortAndAddModal = ({ headerText, data, title, dataName, databaseInit, text
   const handleSave = useCallback(async () => {
     setModalSaveLoading(true);
 
-    const response = await axios.get('http://worldtimeapi.org/api/timezone/Asia/Tokyo');
+    const response = await axios.get('https://worldtimeapi.org/api/timezone/Asia/Tokyo');
     const { datetime } = response.data;
     const formattedTime = moment(datetime).format('YYYY/MM/DD [at] HH:mm:ss');
     const year = moment(datetime).format('YYYY');
@@ -2872,7 +2872,7 @@ const SortAndAddModal = ({ headerText, data, title, dataName, databaseInit, text
     const data = textAreaAdd.current?.value;
     const dataArray = data.split('\n').map((item) => item.trim());
 
-    const response = await axios.get('http://worldtimeapi.org/api/timezone/Asia/Tokyo');
+    const response = await axios.get('https://worldtimeapi.org/api/timezone/Asia/Tokyo');
     const { datetime } = response.data;
     const formattedTime = moment(datetime).format('YYYY/MM/DD [at] HH:mm:ss');
     const year = moment(datetime).format('YYYY');
@@ -3148,7 +3148,7 @@ const PSBSortAndAddModal = ({ headerText, data, title, dataName, databaseInit, t
   const handleSave = useCallback(async () => {
     setModalSaveLoading(true);
 
-    const response = await axios.get('http://worldtimeapi.org/api/timezone/Asia/Tokyo');
+    const response = await axios.get('https://worldtimeapi.org/api/timezone/Asia/Tokyo');
     const { datetime } = response.data;
     const formattedTime = moment(datetime).format('YYYY/MM/DD [at] HH:mm:ss');
     const year = moment(datetime).format('YYYY');
@@ -3263,7 +3263,7 @@ const PSBSortAndAddModal = ({ headerText, data, title, dataName, databaseInit, t
     const dataArray = data.split('\n').map((item) => item.trim());
     const dataCodeArray = dataCode.split('\n').map((item) => item.trim());
 
-    const response = await axios.get('http://worldtimeapi.org/api/timezone/Asia/Tokyo');
+    const response = await axios.get('https://worldtimeapi.org/api/timezone/Asia/Tokyo');
     const { datetime } = response.data;
     const formattedTime = moment(datetime).format('YYYY/MM/DD [at] HH:mm:ss');
     const year = moment(datetime).format('YYYY');
@@ -3608,7 +3608,7 @@ const ModelSortAndAddModal = ({ selectMakeForAddModelRef, selectMakeForModelRef,
         await updateDoc(doc(collection(projectExtensionFirestore, 'Model'), selectMakeForModelRef.current?.value), { model: modelSortData });
         setModalSaveModelLoading(false);
 
-        const response = await axios.get('http://worldtimeapi.org/api/timezone/Asia/Tokyo');
+        const response = await axios.get('https://worldtimeapi.org/api/timezone/Asia/Tokyo');
         const { datetime } = response.data;
         const formattedTime = moment(datetime).format('YYYY/MM/DD [at] HH:mm:ss');
         const year = moment(datetime).format('YYYY');
@@ -3753,7 +3753,7 @@ const ModelSortAndAddModal = ({ selectMakeForAddModelRef, selectMakeForModelRef,
     const data = textAreaAddModel.current?.value;
     const dataArray = data.split('\n').map((item) => item.trim());
 
-    const response = await axios.get('http://worldtimeapi.org/api/timezone/Asia/Tokyo');
+    const response = await axios.get('https://worldtimeapi.org/api/timezone/Asia/Tokyo');
     const { datetime } = response.data;
     const formattedTime = moment(datetime).format('YYYY/MM/DD [at] HH:mm:ss');
     const year = moment(datetime).format('YYYY');
@@ -4884,7 +4884,7 @@ export default function AddVehicle() {
 
       dispatch(setLoadingModalVisible(true));
       globalReferenceNumber = inputRefNum.current?.value;
-      const response = await axios.get('http://worldtimeapi.org/api/timezone/Asia/Tokyo');
+      const response = await axios.get('https://worldtimeapi.org/api/timezone/Asia/Tokyo');
       const { datetime } = response.data;
       const timestampForID = moment(datetime).format('YYYYMMDDHHmmss');
       const formattedTime = moment(datetime).format('YYYY/MM/DD [at] HH:mm:ss');
