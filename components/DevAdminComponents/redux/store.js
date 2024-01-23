@@ -1222,7 +1222,7 @@ export const fetchExteriorColorData = () => {
 export const fetchYear = () => {
   return async (dispatch) => {
     try {
-      const response = await axios.get('http://worldtimeapi.org/api/timezone/Asia/Tokyo');
+      const response = await axios.get('https://worldtimeapi.org/api/timezone/Asia/Tokyo');
       const { datetime } = response.data;
       const formattedTime = moment(datetime).format('YYYY');
       dispatch(setCurrentYear(formattedTime));
@@ -1236,7 +1236,7 @@ export const fetchCurrentDate = () => {
 
   return async (dispatch) => {
     try {
-      const response = await axios.get('http://worldtimeapi.org/api/timezone/Asia/Tokyo');
+      const response = await axios.get('https://worldtimeapi.org/api/timezone/Asia/Tokyo');
       const { datetime } = response.data;
       const formattedTime = moment(datetime).format('YYYY-MM-DD');
       dispatch(setCurrentDate(formattedTime));
