@@ -4090,8 +4090,7 @@ Real Motor Japan`,
     const confirmPayment = async () => {
         setIsConfirmLoading(true);
 
-        const amountNeeded = invoiceData.paymentDetails.totalAmount.replace(/[^0-9.]/g, '').replace(/(\..*)\./g, '$1') - totalValue;
-
+        const amountNeeded = invoiceData.paymentDetails.totalAmount ? invoiceData.paymentDetails.totalAmount.replace(/[^0-9.]/g, '').replace(/(\..*)\./g, '$1') - totalValue : '';
         const docRef = doc(projectExtensionFirestore, 'chats', selectedChatData.id);
         const docRefCustomer = doc(projectExtensionFirestore, 'accounts', selectedChatData.participants.customer);
         const response = await axios.get('https://worldtimeapi.org/api/timezone/Asia/Tokyo');
@@ -6491,7 +6490,7 @@ const ChatMessageHeader = () => {
                 </View>
             </View>
 
-            <View style={{ paddingLeft: 20, }}>
+            <View style={{ paddingLeft: 20, paddingRight: 10, paddingTop: 2, }}>
                 {(selectedChatData.stepIndicator.value == 1 || selectedChatData.stepIndicator.value == 2) &&
                     <>
                         <TransactionButton
@@ -6519,7 +6518,7 @@ const ChatMessageHeader = () => {
 
                 {(selectedChatData.stepIndicator.value == 3) &&
 
-                    <View style={{ flexDirection: 'row', }}>
+                    <View style={{ flexDirection: 'row', paddingRight: 10, paddingTop: 2, }}>
 
                         <View style={{ paddingLeft: 20, }}>
 
@@ -6847,6 +6846,79 @@ const ChatMessageBox = ({ activeButtonValue, userEmail }) => {
     };
 
     const isUrl = (text) => {
+        // Simple URL check
+        const urlPattern = new RegExp('^(https?:\\/\\/)?' + // protocol
+            '((([a-z\\d]([a-z\\d-]*[a-z\\d])*)\\.)+[a-z]{2,}|' + // domain name
+            '((\\d{1,3}\\.){3}\\d{1,3}))' + // OR ip (v4) address
+            '(\\:\\d+)?(\\/[-a-z\\d%_.~+]*)*' + // port and path
+            '(\\?[;&a-z\\d%_.~+=-]*)?' + // query string
+            '(\\#[-a-z\\d_]*)?$', 'i'); // fragment locator
+        return !!urlPattern.test(text);
+    };
+
+    const handleLinkPress = (url) => {
+        Linking.canOpenURL(url).then(supported => {
+            if (supported) {
+                Linking.openURL(url);
+            } else {
+                console.log("Don't know how to open URI: " + url);
+            }
+        });
+    };
+
+    const cleanUrl = (url) => {
+        // Removing Zero Width Space and other potential invisible characters
+        return url.replace(/[\u200B-\u200D\uFEFF]/g, '');
+    };
+
+
+    const renderItemText = (isGlobalCustomerSender, text) => {
+        const urlPattern = new RegExp('(https?:\\/\\/[^\\s]+)', 'g');
+        let segments = text.split(urlPattern);
+
+        return segments.map((segment, index) => {
+            if (isUrlForText(segment)) {
+                const sanitizedUrl = cleanUrl(segment); // Clean the URL before rendering
+                return (
+                    <Pressable key={index} onPress={() => handleLinkPress(sanitizedUrl)}>
+                        <Text
+                            selectable
+                            style={{
+                                fontWeight: '400',
+                                color: isGlobalCustomerSender ? 'black' : 'white',
+                                fontSize: 16,
+                                flexShrink: 1,
+                                textDecorationLine: 'underline',
+                                wordWrap: 'break-word',
+                                whiteSpace: 'pre-wrap',
+                            }}
+                        >
+                            {sanitizedUrl}
+                        </Text>
+                    </Pressable>
+                );
+            } else {
+                return (
+                    <Text
+                        selectable
+                        key={index}
+                        style={{
+                            fontWeight: '400',
+                            color: isGlobalCustomerSender ? 'black' : 'white',
+                            fontSize: 16,
+                            flexShrink: 1,
+                        }}
+                    >
+                        {segment}
+                    </Text>
+                );
+            }
+        });
+    };
+
+
+
+    const isUrlForText = (text) => {
         const urlPattern = new RegExp('^(http://www\\.|https://www\\.|http://|https://)[a-z0-9]+([\\-\\.]{1}[a-z0-9]+)*\\.[a-z]{2,5}(:[0-9]{1,5})?(/.*)?$');
         return urlPattern.test(text);
     }
@@ -7054,19 +7126,25 @@ const ChatMessageBox = ({ activeButtonValue, userEmail }) => {
                                     marginRight: isGlobalCustomerSender ? 0 : 10,
                                     flexShrink: 1,
                                 }}>
-                                    <Hyperlink linkDefault={true} linkStyle={{ textDecorationLine: 'underline' }}>
-                                        <Text
-                                            selectable
-                                            style={{
-                                                fontWeight: '400',
-                                                color: isGlobalCustomerSender ? 'black' : 'white',
-                                                fontSize: 16,
-                                                flexShrink: 1,
-                                            }}
-                                        >
-                                            {isUrl(item.text.trim()) ? breakUrl(item.text.trim()) : item.text.trim()}
-                                        </Text>
-                                    </Hyperlink>
+                                    {isUrl(item.text.trim()) ?
+                                        <Pressable onPress={() => isUrlForText(item.text.trim()) && handleLinkPress(item.text.trim())}>
+                                            <Text
+                                                selectable
+                                                style={{
+                                                    fontWeight: '400',
+                                                    color: isGlobalCustomerSender ? 'black' : 'white',
+                                                    fontSize: 16,
+                                                    flexShrink: 1,
+                                                    wordWrap: 'break-word',
+                                                    whiteSpace: 'pre-wrap',
+                                                }}
+                                                underline
+                                            >
+                                                {breakUrl(item.text.trim())}
+                                            </Text>
+                                        </Pressable>
+                                        :
+                                        renderItemText(isGlobalCustomerSender, item.text.trim())}
                                 </View>
                             </View>
 
@@ -7532,7 +7610,10 @@ export default function ChatMessages() {
                         borderBottomColor={'cyan.500'}
                     >
 
-                        <Box w={screenWidth <= 960 ? 0 : 850} h={[10, 10, 10, 10]} marginBottom={1.5} marginTop={1.5}>
+                        <SideDrawer
+                            selectedScreen={selectedScreen} />
+
+                        <Box w={screenWidth <= 960 ? 0 : 850} h={[10, 10, 10, 10]} marginBottom={1.5} marginTop={1.5} paddingLeft={5}>
 
                             <FastImage
                                 source={{
@@ -7565,8 +7646,8 @@ export default function ChatMessages() {
                     {/* Content */}
                     <View style={{ flex: 1, flexDirection: 'row' }} flex={[1]} flexDirection="row">
                         {/* Sidebar */}
-                        <SideDrawer
-                            selectedScreen={selectedScreen} />
+                        {/* <SideDrawer
+                            selectedScreen={selectedScreen} /> */}
 
                         {/* Main Content */}
                         {/* <Box flex={1} flexGrow={1} minHeight={0}> */}
@@ -7744,10 +7825,11 @@ export default function ChatMessages() {
                                         </View>) : (
                                         <View style={{ flex: 1, }}>
 
-                                            <View style={{ flex: 1, minHeight: 90, maxHeight: 90, borderBottomWidth: 1, borderColor: '#DADDE1', backgroundColor: 'white', }}>
+                                            <View style={{ flex: 1, minHeight: 90, maxHeight: screenWidth < 1110 ? 110 : 90, borderBottomWidth: 1, borderColor: '#DADDE1', backgroundColor: 'white', }}>
                                                 {/* Chat Message Header */}
-                                                {chatMessagesData.length < 1 ? null : (<ChatMessageHeader />)}
-
+                                                <ScrollView scrollEnabled horizontal>
+                                                    {chatMessagesData.length < 1 ? null : (<ChatMessageHeader />)}
+                                                </ScrollView>
                                             </View>
 
                                             <View style={{ flex: 1, borderColor: '#DADDE1', backgroundColor: 'white', borderBottomRightRadius: 5, }}>
