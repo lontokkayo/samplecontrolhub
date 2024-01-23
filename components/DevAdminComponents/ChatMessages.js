@@ -4639,6 +4639,9 @@ const PreviewInvoice = () => {
         const convertImageToBase64 = async (url) => {
             try {
                 const response = await fetch(url);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
                 const blob = await response.blob();
                 return new Promise((resolve, reject) => {
                     const reader = new FileReader();
@@ -4647,7 +4650,7 @@ const PreviewInvoice = () => {
                     reader.readAsDataURL(blob);
                 });
             } catch (error) {
-                console.error(error);
+                console.error('Fetch error:', error.message);
                 return null;
             }
         };
@@ -4686,6 +4689,9 @@ const PreviewInvoice = () => {
             const convertImageToBase64 = async (url) => {
                 try {
                     const response = await fetch(url);
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
                     const blob = await response.blob();
                     return new Promise((resolve, reject) => {
                         const reader = new FileReader();
@@ -4694,7 +4700,7 @@ const PreviewInvoice = () => {
                         reader.readAsDataURL(blob);
                     });
                 } catch (error) {
-                    console.error(error);
+                    console.error('Fetch error:', error.message);
                     return null;
                 }
             };
