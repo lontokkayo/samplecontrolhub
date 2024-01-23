@@ -1,5 +1,9 @@
 {
   "expo": {
+    "experiments": {
+      "baseUrl": "/expo-gh-pages"
+    },
+    "platforms": ["ios", "android", "web"],
     "name": "samplecontrolhub",
     "slug": "samplecontrolhub",
     "version": "1.0.0",

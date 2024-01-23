@@ -4105,6 +4105,7 @@ Real Motor Japan`,
         const newPaymentsAccount = [
             { value: inputAmountRef.current.value, date: formattedTime, vehicleRef: selectedChatData.carData.referenceNumber, vehicleName: selectedChatData.carData.carName, },
         ];
+
         const inputAmount = inputAmountRef.current.value;
         const numericInputAmount = Number(inputAmount);
         const formattedInputAmount = numericInputAmount.toLocaleString();
@@ -4388,7 +4389,7 @@ const IssueProformaInvoiceModalContent = () => {
         const collectionRef = collection(projectExtensionFirestore, "IssuedInvoice");
 
         try {
-            // Retrieve all documents for the current year
+            // Retrieve all documents for the current yearF
             const querySnapshot = await getDocs(collectionRef);
             let maxNumber = 0;
 

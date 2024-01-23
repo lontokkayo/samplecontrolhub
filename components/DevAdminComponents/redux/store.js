@@ -893,7 +893,7 @@ const store = configureStore({
   reducer: {
 
     // =============================== Chat Messages ========================================    
-    selectedCustomerData: selectedCustomerDataSlice.reducer, 
+    selectedCustomerData: selectedCustomerDataSlice.reducer,
     previewInvoiceVisible: previewInvoiceVisibleSlice.reducer,
     invoiceData: invoiceDataSlice.reducer,
     transactionModalVisible: transactionModalVisibleSlice.reducer,

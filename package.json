@@ -1,13 +1,16 @@
 {
+  "homepage": "https://lontokkayo.github.io/samplecontrolhub",
   "name": "samplecontrolhub",
   "version": "1.0.0",
   "main": "node_modules/expo/AppEntry.js",
   "scripts": {
+    "predeploy": "expo export -p web",
+    "deploy": "gh-pages -d web-build",
     "start": "expo start",
     "android": "expo start --android",
     "ios": "expo start --ios",
     "web": "expo start --web",
-    "build": "set \"GENERATE_SOURCEMAP=false\" && react-scripts build"
+    "build": "set \"GENERATE_SOURCEMAP=false\" && npx react-scripts build"
   },
   "bundler": "metro",
   "dependencies": {
@@ -155,6 +158,7 @@
   "devDependencies": {
     "@babel/core": "^7.20.0",
     "@babel/preset-react": "^7.18.6",
+    "gh-pages": "^6.1.1",
     "react-native-dotenv": "^3.4.9"
   },
   "private": true
