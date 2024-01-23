@@ -1,0 +1,8 @@
+[
+  {
+    "origin": ["http://localhost", "http://localhost:19006", "http://192.168.24.126:19006", "https://samplermj.web.app"],
+    "method": ["GET", "POST", "PUT", "DELETE", "HEAD"],
+    "responseHeader": ["Content-Type"],
+    "maxAgeSeconds": 3600
+  }
+]

@@ -1,0 +1,39 @@
+{
+  "expo": {
+    "name": "samplecontrolhub",
+    "slug": "samplecontrolhub",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "automatic",
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#ffffff"
+    },
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "ios": {
+      "supportsTablet": true
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#ffffff"
+      }
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+      
+    },
+    "build": { "babel": { "include": [ "@ui-kitten/components" ] } }
+    ,
+    "extra": {
+      "eas": {
+        "projectId": "fcdbf583-1433-47d3-884b-97c62a794bbb"
+      }
+    },
+    "owner": "lontokkayo"
+  }
+}
