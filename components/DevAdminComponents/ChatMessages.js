@@ -965,7 +965,7 @@ const ChatInputText = () => {
 
     const addMessage = async () => {
 
-        const response = await axios.get('http://worldtimeapi.org/api/timezone/Asia/Tokyo');
+        const response = await axios.get('https://worldtimeapi.org/api/timezone/Asia/Tokyo');
         const { datetime } = response.data;
         const formattedTime = moment(datetime).format('YYYY/MM/DD [at] HH:mm:ss.SSS');
         const year = moment(datetime).format('YYYY');
