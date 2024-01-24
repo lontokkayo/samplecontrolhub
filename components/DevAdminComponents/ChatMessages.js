@@ -1264,6 +1264,21 @@ const ChatListItem = ({ item, onPress, isActive, messageUnread, formattedDate, c
                         />
                     )}
 
+                    <Text numberOfLines={1} ellipsizeMode='tail' style={{
+                        position: 'absolute',
+                        right: 0,
+                        top: 10,
+                        padding: 10,
+                        alignSelf: 'center',
+                        fontSize: 12,
+                        overflow: 'hidden',
+                        flex: 1,
+                        fontWeight: messageUnread ? 700 : 400,
+                        color: messageUnread ? '#FF0000' : '#90949c',
+                    }}>
+                        {item.invoiceNumber && item.stepIndicator.value > 2 ? item.invoiceNumber : ''}
+                    </Text>
+
                     {isHovered && item.read && (
                         <Tooltip label="Mark as unread" placement='right' openDelay={200} bgColor={'#FAFAFA'} _text={{ color: '#1C2B33', }}>
                             <Pressable
@@ -1295,7 +1310,7 @@ const ChatListItem = ({ item, onPress, isActive, messageUnread, formattedDate, c
 
 };
 
-const ChatsList = ({ unreadButtonValue, activeButtonValue, }) => {
+const ChatList = ({ unreadButtonValue, activeButtonValue, }) => {
 
     const chatListData = useSelector((state) => state.chatListData);
     const chatListLastVisible = useSelector((state) => state.chatListLastVisible);
@@ -6350,10 +6365,12 @@ const ChatMessageHeader = () => {
 
 
     const totalPriceCondition = selectedChatData.fobPrice && selectedChatData.jpyToUsd && selectedChatData.m3 && selectedChatData.freightPrice;
+
     const freightCalculation = ((selectedChatData.m3 ? selectedChatData.m3 :
         (selectedChatData.carData && selectedChatData.carData.dimensionCubicMeters ?
             selectedChatData.carData.dimensionCubicMeters : 0)) *
         Number(selectedChatData.freightPrice));
+
     const totalPriceCalculation = (selectedChatData.fobPrice ? selectedChatData.fobPrice :
         (selectedChatData.carData && selectedChatData.carData.fobPrice ?
             selectedChatData.carData.fobPrice : 0) *
@@ -6366,7 +6383,12 @@ const ChatMessageHeader = () => {
             selectedChatData.carData.fobPrice : 0) *
         (selectedChatData.jpyToUsd ? selectedChatData.jpyToUsd :
             (selectedChatData.currency && selectedChatData.currency.jpyToUsd ?
-                selectedChatData.currency.jpyToUsd : 0))); const carName = selectedChatData.carData && selectedChatData.carData.carName ? selectedChatData.carData.carName : (selectedChatData.vehicle && selectedChatData.vehicle.carName ? selectedChatData.vehicle.carName : '');
+                selectedChatData.currency.jpyToUsd : 0)));
+
+    const carName = selectedChatData.carData && selectedChatData.carData.carName ? selectedChatData.carData.carName : (selectedChatData.vehicle && selectedChatData.vehicle.carName ? selectedChatData.vehicle.carName : '');
+
+
+    const freightPriceYen = freightCalculation / selectedChatData.currency.jpyToUsd;
 
     return (
         <View style={{
@@ -6479,6 +6501,16 @@ const ChatMessageHeader = () => {
                 </View>
 
                 <View style={{ flexDirection: 'row', }}>
+                    <Text style={{ fontWeight: 700, }}>Freight Price: </Text>
+                    <Text selectable style={{ fontWeight: 700, color: "#8D7777", textAlign: 'right', }}>
+                        {`${Number(freightCalculation).toLocaleString('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 0, maximumFractionDigits: 0 })}`}
+                    </Text>
+                    <Text selectable style={{ fontWeight: 400, fontSize: 12, color: "#8D7777", paddingTop: 2, marginLeft: 2, }}>
+                        ({`${(selectedChatData.freightPrice ? freightPriceYen : Number(selectedChatData.carData && selectedChatData.carData.freightPrice ? freightPriceYen : 0)).toLocaleString('en-US', { style: 'currency', currency: 'JPY', minimumFractionDigits: 0, maximumFractionDigits: 0 })}`})
+                    </Text>
+                </View>
+
+                <View style={{ flexDirection: 'row', }}>
                     <Text selectable style={{ fontWeight: 700, textAlign: 'right', }}>
                         {`${selectedChatData.country && selectedChatData.port ? `${selectedChatData.country} / ${selectedChatData.port}` : 'N/A'}`}
                     </Text>
@@ -6490,7 +6522,7 @@ const ChatMessageHeader = () => {
                 </View>
             </View>
 
-            <View style={{ paddingLeft: 20, paddingRight: 10, paddingTop: 2, }}>
+            <View style={{ paddingLeft: 10, paddingRight: 10, paddingTop: 2, }}>
                 {(selectedChatData.stepIndicator.value == 1 || selectedChatData.stepIndicator.value == 2) &&
                     <>
                         <TransactionButton
@@ -6520,7 +6552,7 @@ const ChatMessageHeader = () => {
 
                     <View style={{ flexDirection: 'row', paddingRight: 10, paddingTop: 2, }}>
 
-                        <View style={{ paddingLeft: 20, }}>
+                        <View style={{ paddingLeft: 10, }}>
 
                             <TransactionButton
                                 key={'Input Payment'}
@@ -6545,7 +6577,7 @@ const ChatMessageHeader = () => {
                             </View>
                         </View>
 
-                        <View style={{ paddingLeft: 20, }}>
+                        <View style={{ paddingLeft: 10, }}>
 
                             <TransactionButton
                                 key={'Issue Proforma Invoice'}
@@ -7228,7 +7260,7 @@ const ChatMessageBox = ({ activeButtonValue, userEmail }) => {
                     keyExtractor={item => item.id}
                     initialNumToRender={10} // Adjust based on your average message size and performance
                     maxToRenderPerBatch={10}
-                    windowSize={200}
+                    windowSize={500}
                     onEndReachedThreshold={0.05}
                     ListFooterComponent={renderFooter}
                     onEndReached={handleLoadMoreMessages}
@@ -7810,7 +7842,7 @@ export default function ChatMessages() {
 
                                         <View style={{ flex: 1, maxWidth: 380, minWidth: 380, borderRightWidth: 1, borderColor: '#DADDE1', backgroundColor: 'white', borderBottomLeftRadius: 5, }}>
                                             {/* Chat List */}
-                                            <ChatsList unreadButtonValue={unreadButtonValue} activeButtonValue={activeButtonValue} />
+                                            <ChatList unreadButtonValue={unreadButtonValue} activeButtonValue={activeButtonValue} />
                                         </View>
 
                                     </View>
@@ -7825,7 +7857,7 @@ export default function ChatMessages() {
                                         </View>) : (
                                         <View style={{ flex: 1, }}>
 
-                                            <View style={{ flex: 1, minHeight: 90, maxHeight: screenWidth < 1110 ? 110 : 90, borderBottomWidth: 1, borderColor: '#DADDE1', backgroundColor: 'white', }}>
+                                            <View style={{ flex: 1, minHeight: 90, maxHeight: screenWidth < 1281 ? 130 : 125, borderBottomWidth: 1, borderColor: '#DADDE1', backgroundColor: 'white', justifyContent: 'center', }}>
                                                 {/* Chat Message Header */}
                                                 <ScrollView scrollEnabled horizontal>
                                                     {chatMessagesData.length < 1 ? null : (<ChatMessageHeader />)}
