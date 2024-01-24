@@ -4569,6 +4569,186 @@ const IssueProformaInvoiceModalContent = () => {
     );
 }
 
+
+const ProfitCalculator = () => {
+    const selectedChatData = useSelector((state) => state.selectedChatData);
+    const [modalVisible, setModalVisible] = useState(false);
+    const [isHovered, setIsHovered] = useState(false);
+    const hoverIn = () => setIsHovered(true);
+    const hoverOut = () => setIsHovered(false);
+
+    const handleModalOpen = () => {
+        setModalVisible(true);
+    };
+
+    const handleModalClose = () => {
+        setModalVisible(false);
+    }
+
+
+
+
+    return (
+
+        <>
+            <Pressable
+                onPress={handleModalOpen}
+                focusable={false}
+                variant='ghost'
+                onHoverIn={hoverIn}
+                onHoverOut={hoverOut}
+                style={{
+                    marginTop: 3,
+                    paddingVertical: 3,
+                    paddingHorizontal: 5,
+                    flexDirection: 'row', // Align items in a row
+                    alignItems: 'center', // Center items vertically
+                    justifyContent: 'center',
+                    borderRadius: 5,
+                    backgroundColor: isHovered ? '#4c555c' : '#6e7a83',
+                }}>
+                <Ionicons size={15} color={'white'} name='calculator' />
+                <Text style={{ textAlign: 'center', color: 'white', fontWeight: 'bold', }} >Profit Calculator</Text>
+            </Pressable>
+
+            <Modal
+                isOpen={modalVisible}
+                onClose={() => {
+                    handleModalClose()
+                }}
+                size={'lg'}
+            >
+                <Modal.Content>
+                    <Modal.CloseButton />
+                    <Modal.Header>Profit Calculator</Modal.Header>
+                    <Modal.Body style={{ flexDirection: 'row', backgroundColor: '#fafafa', }}>
+
+                        <View style={{ flex: 1, borderRightWidth: 1, borderRightColor: '#DADDE1', }}>
+
+                            <View style={{ marginBottom: 10, borderWidth: 1, borderColor: '#DADDE1', borderRadius: 5, marginRight: 3, padding: 3, backgroundColor: 'white', }}>
+                                <Text style={{ fontWeight: 'bold', marginVertical: 5, fontSize: 16, lineHeight: 14, }}>Purchased Price:</Text>
+                                <Text selectable style={{ fontWeight: '400', fontSize: 14, lineHeight: 14, }}>
+                                    {`${Number(selectedChatData.carData && selectedChatData.carData.purchasedPrice ? selectedChatData.carData.purchasedPrice : 0).toLocaleString('en-US', { style: 'currency', currency: 'JPY', minimumFractionDigits: 0, maximumFractionDigits: 0 })}`}
+                                </Text>
+                            </View>
+
+                            <View style={{ marginBottom: 10, borderWidth: 1, borderColor: '#DADDE1', borderRadius: 5, marginRight: 3, padding: 3, backgroundColor: 'white', }}>
+                                <Text style={{ fontWeight: 'bold', marginVertical: 5, fontSize: 16, lineHeight: 14, }}>Auction Fee:</Text>
+                                <Text selectable style={{ fontWeight: '400', fontSize: 14, lineHeight: 14, }}>
+                                    {`${Number(selectedChatData.carData && selectedChatData.carData.purchasedPrice ? selectedChatData.carData.purchasedPrice : 0).toLocaleString('en-US', { style: 'currency', currency: 'JPY', minimumFractionDigits: 0, maximumFractionDigits: 0 })}`}
+                                </Text>
+                            </View>
+
+                            <View style={{ marginBottom: 10, borderWidth: 1, borderColor: '#DADDE1', borderRadius: 5, marginRight: 3, padding: 3, backgroundColor: 'white', }}>
+                                <Text style={{ fontWeight: 'bold', marginVertical: 5, fontSize: 16, lineHeight: 14, }}>Shipping Agent Fee:</Text>
+                                <Text selectable style={{ fontWeight: '400', fontSize: 14, lineHeight: 14, }}>
+                                    {`${Number(selectedChatData.carData && selectedChatData.carData.purchasedPrice ? selectedChatData.carData.purchasedPrice : 0).toLocaleString('en-US', { style: 'currency', currency: 'JPY', minimumFractionDigits: 0, maximumFractionDigits: 0 })}`}
+                                </Text>
+                            </View>
+
+                            <View style={{ marginBottom: 10, borderWidth: 1, borderColor: '#DADDE1', borderRadius: 5, marginRight: 3, padding: 3, backgroundColor: 'white', }}>
+                                <Text style={{ fontWeight: 'bold', marginVertical: 5, fontSize: 16, lineHeight: 14, }}>Supply Chains Costs:</Text>
+                                <Text selectable style={{ fontWeight: '400', fontSize: 14, lineHeight: 14, }}>
+                                    {`${Number(selectedChatData.carData && selectedChatData.carData.purchasedPrice ? selectedChatData.carData.purchasedPrice : 0).toLocaleString('en-US', { style: 'currency', currency: 'JPY', minimumFractionDigits: 0, maximumFractionDigits: 0 })}`}
+                                </Text>
+                            </View>
+
+
+                            <View style={{ marginBottom: 10, borderWidth: 1, borderColor: '#DADDE1', borderRadius: 5, marginRight: 3, padding: 3, backgroundColor: 'white', }}>
+                                <Text style={{ fontWeight: 'bold', marginVertical: 5, fontSize: 16, lineHeight: 14, }}>Cubic Meter:</Text>
+                                <Text selectable style={{ fontWeight: '400', fontSize: 14, lineHeight: 14, }}>
+                                    {`${Number(selectedChatData.carData && selectedChatData.carData.dimensionCubicMeters ? selectedChatData.carData.dimensionCubicMeters : 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+                                </Text>
+                            </View>
+
+
+                            <View style={{ marginBottom: 10, borderWidth: 1, borderColor: '#DADDE1', borderRadius: 5, marginRight: 3, padding: 3, backgroundColor: 'white', }}>
+                                <Text style={{ fontWeight: 'bold', marginVertical: 5, fontSize: 16, lineHeight: 14, }}>Cost per Cubic Meter:</Text>
+                                <Text selectable style={{ fontWeight: '400', fontSize: 14, lineHeight: 14, }}>
+                                    {`${Number(selectedChatData.carData && selectedChatData.carData.purchasedPrice ? selectedChatData.carData.purchasedPrice : 0).toLocaleString('en-US', { style: 'currency', currency: 'JPY', minimumFractionDigits: 0, maximumFractionDigits: 0 })}`}
+                                </Text>
+                            </View>
+
+
+                            <View style={{ marginBottom: 10, borderWidth: 1, borderColor: '#DADDE1', borderRadius: 5, marginRight: 3, padding: 3, backgroundColor: 'white', }}>
+                                <Text style={{ fontWeight: 'bold', marginVertical: 5, fontSize: 20, lineHeight: 14, }}>Total:</Text>
+                                <Text selectable style={{ fontWeight: '700', fontSize: 18, color: '#8D7777', }}>
+                                    {`${Number(selectedChatData.carData && selectedChatData.carData.purchasedPrice ? selectedChatData.carData.purchasedPrice : 0).toLocaleString('en-US', { style: 'currency', currency: 'JPY', minimumFractionDigits: 0, maximumFractionDigits: 0 })}`}
+                                </Text>
+                                <Text selectable style={{ fontWeight: '700', fontSize: 18, color: '#16A34A', }}>
+                                    {`${Number(selectedChatData.carData && selectedChatData.carData.purchasedPrice ? selectedChatData.carData.purchasedPrice * selectedChatData.currency.jpyToUsd : 0).toLocaleString('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 0, maximumFractionDigits: 0 })}`}
+                                </Text>
+                            </View>
+                        </View>
+
+
+                        <View style={{ flex: 1, marginLeft: 3 }}>
+
+                            <View style={{ marginBottom: 10, borderWidth: 1, borderColor: '#DADDE1', borderRadius: 5, marginRight: 3, padding: 3, backgroundColor: 'white', }}>
+                                <Text style={{ fontWeight: 'bold', marginVertical: 5, fontSize: 16, lineHeight: 14, }}>Purchased Price:</Text>
+                                <Text selectable style={{ fontWeight: '400', fontSize: 14, lineHeight: 14, }}>
+                                    {`${Number(selectedChatData.carData && selectedChatData.carData.purchasedPrice ? selectedChatData.carData.purchasedPrice : 0).toLocaleString('en-US', { style: 'currency', currency: 'JPY', minimumFractionDigits: 0, maximumFractionDigits: 0 })}`}
+                                </Text>
+                            </View>
+
+                            <View style={{ marginBottom: 10, borderWidth: 1, borderColor: '#DADDE1', borderRadius: 5, marginRight: 3, padding: 3, backgroundColor: 'white', }}>
+                                <Text style={{ fontWeight: 'bold', marginVertical: 5, fontSize: 16, lineHeight: 14, }}>Auction Fee:</Text>
+                                <Text selectable style={{ fontWeight: '400', fontSize: 14, lineHeight: 14, }}>
+                                    {`${Number(selectedChatData.carData && selectedChatData.carData.purchasedPrice ? selectedChatData.carData.purchasedPrice : 0).toLocaleString('en-US', { style: 'currency', currency: 'JPY', minimumFractionDigits: 0, maximumFractionDigits: 0 })}`}
+                                </Text>
+                            </View>
+
+                            <View style={{ marginBottom: 10, borderWidth: 1, borderColor: '#DADDE1', borderRadius: 5, marginRight: 3, padding: 3, backgroundColor: 'white', }}>
+                                <Text style={{ fontWeight: 'bold', marginVertical: 5, fontSize: 16, lineHeight: 14, }}>Shipping Agent Fee:</Text>
+                                <Text selectable style={{ fontWeight: '400', fontSize: 14, lineHeight: 14, }}>
+                                    {`${Number(selectedChatData.carData && selectedChatData.carData.purchasedPrice ? selectedChatData.carData.purchasedPrice : 0).toLocaleString('en-US', { style: 'currency', currency: 'JPY', minimumFractionDigits: 0, maximumFractionDigits: 0 })}`}
+                                </Text>
+                            </View>
+
+                            <View style={{ marginBottom: 10, borderWidth: 1, borderColor: '#DADDE1', borderRadius: 5, marginRight: 3, padding: 3, backgroundColor: 'white', }}>
+                                <Text style={{ fontWeight: 'bold', marginVertical: 5, fontSize: 16, lineHeight: 14, }}>Supply Chains Costs:</Text>
+                                <Text selectable style={{ fontWeight: '400', fontSize: 14, lineHeight: 14, }}>
+                                    {`${Number(selectedChatData.carData && selectedChatData.carData.purchasedPrice ? selectedChatData.carData.purchasedPrice : 0).toLocaleString('en-US', { style: 'currency', currency: 'JPY', minimumFractionDigits: 0, maximumFractionDigits: 0 })}`}
+                                </Text>
+                            </View>
+
+
+                            <View style={{ marginBottom: 10, borderWidth: 1, borderColor: '#DADDE1', borderRadius: 5, marginRight: 3, padding: 3, backgroundColor: 'white', }}>
+                                <Text style={{ fontWeight: 'bold', marginVertical: 5, fontSize: 16, lineHeight: 14, }}>Cubic Meter:</Text>
+                                <Text selectable style={{ fontWeight: '400', fontSize: 14, lineHeight: 14, }}>
+                                    {`${Number(selectedChatData.carData && selectedChatData.carData.dimensionCubicMeters ? selectedChatData.carData.dimensionCubicMeters : 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+                                </Text>
+                            </View>
+
+
+                            <View style={{ marginBottom: 10, borderWidth: 1, borderColor: '#DADDE1', borderRadius: 5, marginRight: 3, padding: 3, backgroundColor: 'white', }}>
+                                <Text style={{ fontWeight: 'bold', marginVertical: 5, fontSize: 16, lineHeight: 14, }}>Cost per Cubic Meter:</Text>
+                                <Text selectable style={{ fontWeight: '400', fontSize: 14, lineHeight: 14, }}>
+                                    {`${Number(selectedChatData.carData && selectedChatData.carData.purchasedPrice ? selectedChatData.carData.purchasedPrice : 0).toLocaleString('en-US', { style: 'currency', currency: 'JPY', minimumFractionDigits: 0, maximumFractionDigits: 0 })}`}
+                                </Text>
+                            </View>
+
+
+                            <View style={{ marginBottom: 10, borderWidth: 1, borderColor: '#DADDE1', borderRadius: 5, marginRight: 3, padding: 3, backgroundColor: 'white', }}>
+                                <Text style={{ fontWeight: 'bold', marginVertical: 5, fontSize: 20, lineHeight: 14, }}>Total:</Text>
+                                <Text selectable style={{ fontWeight: '700', fontSize: 18, color: '#8D7777', }}>
+                                    {`${Number(selectedChatData.carData && selectedChatData.carData.purchasedPrice ? selectedChatData.carData.purchasedPrice : 0).toLocaleString('en-US', { style: 'currency', currency: 'JPY', minimumFractionDigits: 0, maximumFractionDigits: 0 })}`}
+                                </Text>
+                                <Text selectable style={{ fontWeight: '700', fontSize: 18, color: '#16A34A', }}>
+                                    {`${Number(selectedChatData.carData && selectedChatData.carData.purchasedPrice ? selectedChatData.carData.purchasedPrice * selectedChatData.currency.jpyToUsd : 0).toLocaleString('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 0, maximumFractionDigits: 0 })}`}
+                                </Text>
+                            </View>
+                        </View>
+
+
+                    </Modal.Body>
+                </Modal.Content>
+            </Modal>
+        </>
+
+    );
+}
+
 const PreviewInvoice = () => {
 
     // npm install html2canvas jspdf
@@ -6525,6 +6705,8 @@ const ChatMessageHeader = () => {
             <View style={{ paddingLeft: 10, paddingRight: 10, paddingTop: 2, }}>
                 {(selectedChatData.stepIndicator.value == 1 || selectedChatData.stepIndicator.value == 2) &&
                     <>
+                        <ProfitCalculator />
+
                         <TransactionButton
                             key={'Issue Proforma Invoice'}
                             title={selectedChatData.stepIndicator.value == 1 ? 'Issue Proforma Invoice' : selectedChatData.stepIndicator.value == 2 ? 'Update Invoice' : ''}
@@ -6553,6 +6735,7 @@ const ChatMessageHeader = () => {
                     <View style={{ flexDirection: 'row', paddingRight: 10, paddingTop: 2, }}>
 
                         <View style={{ paddingLeft: 10, }}>
+                            <ProfitCalculator />
 
                             <TransactionButton
                                 key={'Input Payment'}
@@ -6908,11 +7091,23 @@ const ChatMessageBox = ({ activeButtonValue, userEmail }) => {
         const urlPattern = new RegExp('(https?:\\/\\/[^\\s]+)', 'g');
         let segments = text.split(urlPattern);
 
+        const insertBreaks = (str, n) => {
+            // Inserts a zero-width space every 'n' characters in 'str'
+            let result = '';
+            while (str.length > 0) {
+                result += str.substring(0, n) + '\u200B';
+                str = str.substring(n);
+            }
+            return result;
+        };
+
         return segments.map((segment, index) => {
+            const segmentWithBreaks = segment.length > 30 && !segment.includes(' ') ? insertBreaks(segment, 30) : segment;
+
             if (isUrlForText(segment)) {
-                const sanitizedUrl = cleanUrl(segment); // Clean the URL before rendering
+                // Apply breaks for long URLs
                 return (
-                    <Pressable key={index} onPress={() => handleLinkPress(sanitizedUrl)}>
+                    <Pressable key={index} onPress={() => handleLinkPress(segment)}>
                         <Text
                             selectable
                             style={{
@@ -6921,11 +7116,10 @@ const ChatMessageBox = ({ activeButtonValue, userEmail }) => {
                                 fontSize: 16,
                                 flexShrink: 1,
                                 textDecorationLine: 'underline',
-                                wordWrap: 'break-word',
-                                whiteSpace: 'pre-wrap',
+                                flexWrap: 'wrap',
                             }}
                         >
-                            {sanitizedUrl}
+                            {segmentWithBreaks}
                         </Text>
                     </Pressable>
                 );
@@ -6939,14 +7133,17 @@ const ChatMessageBox = ({ activeButtonValue, userEmail }) => {
                             color: isGlobalCustomerSender ? 'black' : 'white',
                             fontSize: 16,
                             flexShrink: 1,
+                            flexWrap: 'wrap',
                         }}
                     >
-                        {segment}
+                        {segmentWithBreaks}
                     </Text>
                 );
             }
         });
     };
+
+
 
 
 
@@ -7158,25 +7355,7 @@ const ChatMessageBox = ({ activeButtonValue, userEmail }) => {
                                     marginRight: isGlobalCustomerSender ? 0 : 10,
                                     flexShrink: 1,
                                 }}>
-                                    {isUrl(item.text.trim()) ?
-                                        <Pressable onPress={() => isUrlForText(item.text.trim()) && handleLinkPress(item.text.trim())}>
-                                            <Text
-                                                selectable
-                                                style={{
-                                                    fontWeight: '400',
-                                                    color: isGlobalCustomerSender ? 'black' : 'white',
-                                                    fontSize: 16,
-                                                    flexShrink: 1,
-                                                    wordWrap: 'break-word',
-                                                    whiteSpace: 'pre-wrap',
-                                                }}
-                                                underline
-                                            >
-                                                {breakUrl(item.text.trim())}
-                                            </Text>
-                                        </Pressable>
-                                        :
-                                        renderItemText(isGlobalCustomerSender, item.text.trim())}
+                                    {renderItemText(isGlobalCustomerSender, item.text.trim())}
                                 </View>
                             </View>
 

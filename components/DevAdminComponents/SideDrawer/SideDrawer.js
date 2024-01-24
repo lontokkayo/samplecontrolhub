@@ -193,7 +193,7 @@ const SideDrawer = ({ selectedScreen }) => {
                                                 _hover={{ bgColor: selectedScreen == 'LOGS' ? '#0642F4' : '#5a7bc9', }}
                                                 marginTop={0}
                                                 w={'full'}
-                                                onPress={() => handleToggleLogs(navigation)}
+                                                onPress={() => selectedScreen == 'LOGS' ? null : handleToggleLogs(navigation)}
                                                 colorScheme={undefined}
                                                 bgColor={selectedScreen == 'LOGS' ? '#0642F4' : '#7b9cff'}
                                                 leftIcon={<MaterialCommunityIcons name="history" size={20} color="white" />}
@@ -211,7 +211,7 @@ const SideDrawer = ({ selectedScreen }) => {
                                                 borderColor={'white'}
                                                 _hover={{ bgColor: selectedScreen == 'ADD C-HUB ACCOUNT' ? '#0642F4' : '#5a7bc9', }}
                                                 marginTop={0} w={'full'}
-                                                onPress={() => handleToggleAddAccount(navigation)}
+                                                onPress={() => selectedScreen == 'ADD C-HUB ACCOUNT' ? null : handleToggleAddAccount(navigation)}
                                                 colorScheme={undefined}
                                                 bgColor={selectedScreen == 'ADD C-HUB ACCOUNT' ? '#0642F4' : '#7b9cff'}
                                                 leftIcon={<MaterialIcons name="person-add" size={20} color="white" />}
@@ -226,7 +226,7 @@ const SideDrawer = ({ selectedScreen }) => {
                                                 borderColor={'white'}
                                                 _hover={{ bgColor: selectedScreen == 'ACCOUNT LIST' ? '#0642F4' : '#5a7bc9', }}
                                                 marginTop={0}
-                                                onPress={() => handleToggleAccountList(navigation)}
+                                                onPress={() => selectedScreen == 'ACCOUNT LIST' ? null : handleToggleAccountList(navigation)}
                                                 colorScheme={undefined}
                                                 bgColor={selectedScreen == 'ACCOUNT LIST' ? '#0642F4' : '#7b9cff'}
                                                 leftIcon={
@@ -244,7 +244,7 @@ const SideDrawer = ({ selectedScreen }) => {
                                                 borderColor={'white'}
                                                 _hover={{ bgColor: selectedScreen == 'ADD NEW VEHICLE' ? '#0642F4' : '#5a7bc9', }}
                                                 marginTop={0} w={'full'}
-                                                onPress={() => handleToggleAddVehicle(navigation)}
+                                                onPress={() =>  selectedScreen == 'ADD NEW VEHICLE' ? null : handleToggleAddVehicle(navigation)}
                                                 colorScheme={undefined}
                                                 bgColor={selectedScreen == 'ADD NEW VEHICLE' ? '#0642F4' : '#7b9cff'}
                                                 leftIcon={
@@ -277,7 +277,7 @@ const SideDrawer = ({ selectedScreen }) => {
                                                 borderColor={'white'}
                                                 _hover={{ bgColor: selectedScreen == 'VEHICLE LIST' ? '#0642F4' : '#5a7bc9', }}
                                                 marginTop={0}
-                                                onPress={() => handleVehicleList(navigation)}
+                                                onPress={() => selectedScreen == 'VEHICLE LIST' ? null : handleVehicleList(navigation)}
                                                 colorScheme={undefined}
                                                 bgColor={selectedScreen == 'VEHICLE LIST' ? '#0642F4' : '#7b9cff'}
                                                 leftIcon={
@@ -313,7 +313,7 @@ const SideDrawer = ({ selectedScreen }) => {
                                                 borderColor={'white'}
                                                 _hover={{ bgColor: selectedScreen == 'FREIGHT' ? '#0642F4' : '#5a7bc9', }}
                                                 marginTop={0}
-                                                onPress={() => handleFreight(navigation)}
+                                                onPress={() => selectedScreen == 'FREIGHT' ? null : handleFreight(navigation)}
                                                 colorScheme={undefined}
                                                 bgColor={selectedScreen == 'FREIGHT' ? '#0642F4' : '#7b9cff'}
                                                 leftIcon={
@@ -349,7 +349,7 @@ const SideDrawer = ({ selectedScreen }) => {
                                                 borderColor={'white'}
                                                 _hover={{ bgColor: selectedScreen == 'CHAT MESSAGES' ? '#0642F4' : '#5a7bc9', }}
                                                 marginTop={0}
-                                                onPress={() => handleChatMessages(navigation)}
+                                                onPress={() => { selectedScreen == 'CHAT MESSAGES' ? null : handleChatMessages(navigation) }}
                                                 colorScheme={undefined}
                                                 bgColor={selectedScreen == 'CHAT MESSAGES' ? '#0642F4' : '#7b9cff'}
                                                 leftIcon={
