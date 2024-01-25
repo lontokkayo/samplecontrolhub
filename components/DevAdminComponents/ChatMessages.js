@@ -2705,30 +2705,6 @@ const SelectPortOfDischarge = () => {
             }
         };
 
-
-        // const fetchCountries = async () => {
-        //     const docRef = doc(projectExtensionFirestore, 'CustomerCountryPort', 'CountriesDoc');
-
-        //     try {
-        //         const docSnap = await getDoc(docRef);
-
-        //         if (docSnap.exists()) {
-        //             const data = docSnap.data();
-        //             const sortedCountries = Object.keys(data)
-        //                 .map(countryName => ({
-        //                     name: countryName.replace(/_/g, '.'), // Replace '_' with '.'
-        //                     ...data[countryName]
-        //                 }))
-        //                 .sort((a, b) => a.sortOrder - b.sortOrder);
-        //             setCountriesDischarge(sortedCountries);
-        //         } else {
-        //             console.log('No such document!');
-        //         }
-        //     } catch (error) {
-        //         console.error('Error fetching document:', error);
-        //     }
-        // };
-
         fetchPorts();
         fetchPortsData();
         // fetchCountries();
@@ -2753,6 +2729,7 @@ const SelectPortOfDischarge = () => {
         const portData = portsData[selectedPort];
         if (portData && portData.country) {
             setSelectedPortCountry(portData.country);
+            console.log('Nagoya Price ', portData.nagoyaPrice);
             globalInvoiceVariable.discharge.country = portData.country;
         } else {
             setSelectedPortCountry(''); // Reset selected country if port not found or has no country
@@ -4571,7 +4548,12 @@ const IssueProformaInvoiceModalContent = () => {
 
 
 const ProfitCalculator = () => {
+
     const selectedChatData = useSelector((state) => state.selectedChatData);
+    const invoiceData = useSelector((state) => state.invoiceData);
+
+    const [totalSCCAmount, setTotalSCCAmount] = useState(0);
+    const [formattedTotalSCCAmount, setFormattedTotalSCCAmount] = useState(0);
     const [modalVisible, setModalVisible] = useState(false);
     const [isHovered, setIsHovered] = useState(false);
     const hoverIn = () => setIsHovered(true);
@@ -4586,6 +4568,77 @@ const ProfitCalculator = () => {
     }
 
 
+    const fee = {
+        auction: 10000,
+        transport: 10000,
+        shippingAgent: 15000,
+    };
+
+    const purchasedPrice = Number(selectedChatData.carData && selectedChatData.carData.purchasedPrice ? selectedChatData.carData.purchasedPrice : 0);
+    const formattedPurchasedPrice = Number(purchasedPrice).toLocaleString('en-US', { style: 'currency', currency: 'JPY', minimumFractionDigits: 0, maximumFractionDigits: 0 });
+
+    const auctionFee = Number(fee.auction);
+    const formattedAuctionFee = Number(auctionFee).toLocaleString('en-US', { style: 'currency', currency: 'JPY', minimumFractionDigits: 0, maximumFractionDigits: 0 });
+
+    const transportFee = Number(fee.transport);
+    const formattedTransportFee = Number(transportFee).toLocaleString('en-US', { style: 'currency', currency: 'JPY', minimumFractionDigits: 0, maximumFractionDigits: 0 });
+
+    const shippingAgentFee = Number(fee.shippingAgent);
+    const formattedShippingAgentFee = Number(shippingAgentFee).toLocaleString('en-US', { style: 'currency', currency: 'JPY', minimumFractionDigits: 0, maximumFractionDigits: 0 });
+
+    const cubicMeter = Number(selectedChatData.carData && selectedChatData.carData.dimensionCubicMeters ? selectedChatData.carData.dimensionCubicMeters : 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+    const costPerCubicMeter = Number(selectedChatData && selectedChatData.freightOrigPrice ? selectedChatData.freightOrigPrice : 0);
+    const formattedCostPerCubicMeter = Number(costPerCubicMeter).toLocaleString('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 0, maximumFractionDigits: 0 });
+
+    const totalCubicMeterCostDollars = Number(costPerCubicMeter * cubicMeter);
+    const formattedTotalCubicMeterCostDollars = Number(costPerCubicMeter * cubicMeter).toLocaleString('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 0, maximumFractionDigits: 0 });
+
+    const totalCubicMeterCostYen = Number(totalCubicMeterCostDollars * selectedChatData.currency.usdToJpy);
+    const formattedTotalCubicMeterCostYen = Number(totalCubicMeterCostYen).toLocaleString('en-US', { style: 'currency', currency: 'JPY', minimumFractionDigits: 0, maximumFractionDigits: 0 });
+
+    const realTotalPriceYen = (purchasedPrice + auctionFee + transportFee + shippingAgentFee + totalSCCAmount + totalCubicMeterCostYen)
+    const formattedRealTotalPriceYen = Number(realTotalPriceYen).toLocaleString('en-US', { style: 'currency', currency: 'JPY', minimumFractionDigits: 0, maximumFractionDigits: 0 });
+
+    const realTotalPriceDollars = realTotalPriceYen * selectedChatData.currency.jpyToUsd;
+    const formattedRealTotalPriceDollars = realTotalPriceDollars.toLocaleString('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 0, maximumFractionDigits: 0 });
+
+
+    const freightCalculation = ((selectedChatData.m3 ? selectedChatData.m3 :
+        (selectedChatData.carData && selectedChatData.carData.dimensionCubicMeters ?
+            selectedChatData.carData.dimensionCubicMeters : 0)) *
+        Number(selectedChatData.freightPrice));
+
+
+    const totalPriceCalculation = (selectedChatData.fobPrice ? selectedChatData.fobPrice :
+        (selectedChatData.carData && selectedChatData.carData.fobPrice ?
+            selectedChatData.carData.fobPrice : 0) *
+        (selectedChatData.jpyToUsd ? selectedChatData.jpyToUsd :
+            (selectedChatData.currency && selectedChatData.currency.jpyToUsd ?
+                selectedChatData.currency.jpyToUsd : 0))) + freightCalculation;
+
+    const defaultInputPrice = Math.round(
+        invoiceData && invoiceData.paymentDetails && invoiceData.paymentDetails.totalAmount
+            ? Number(invoiceData.paymentDetails.totalAmount.replace(/,/g, ''))
+            : totalPriceCalculation
+    );
+
+    useEffect(() => {
+        if (selectedChatData.carData && selectedChatData.carData.supplyChainsCostsData) {
+            const amounts = selectedChatData.carData.supplyChainsCostsData.map((item) => {
+                const expenseName = Object.keys(item)[0];
+                const expenseData = item[expenseName];
+                return parseFloat(expenseData.amount.replace(',', '')) || 0;
+            });
+
+            // Use reduce to add up all the amounts
+            const totalAmount = amounts.reduce((accumulator, currentValue) => accumulator + currentValue, 0);
+            const formattedTotalAmount = totalAmount.toLocaleString('en-US', { style: 'currency', currency: 'JPY', minimumFractionDigits: 0, maximumFractionDigits: 0 });
+            setTotalSCCAmount(totalAmount);
+            setFormattedTotalSCCAmount(formattedTotalAmount);
+        }
+
+    }, []);
 
 
     return (
@@ -4626,52 +4679,7 @@ const ProfitCalculator = () => {
                         <View style={{ flex: 1, borderRightWidth: 1, borderRightColor: '#DADDE1', }}>
 
                             <View style={{ marginBottom: 10, borderWidth: 1, borderColor: '#DADDE1', borderRadius: 5, marginRight: 3, padding: 3, backgroundColor: 'white', }}>
-                                <Text style={{ fontWeight: 'bold', marginVertical: 5, fontSize: 16, lineHeight: 14, }}>Purchased Price:</Text>
-                                <Text selectable style={{ fontWeight: '400', fontSize: 14, lineHeight: 14, }}>
-                                    {`${Number(selectedChatData.carData && selectedChatData.carData.purchasedPrice ? selectedChatData.carData.purchasedPrice : 0).toLocaleString('en-US', { style: 'currency', currency: 'JPY', minimumFractionDigits: 0, maximumFractionDigits: 0 })}`}
-                                </Text>
-                            </View>
-
-                            <View style={{ marginBottom: 10, borderWidth: 1, borderColor: '#DADDE1', borderRadius: 5, marginRight: 3, padding: 3, backgroundColor: 'white', }}>
-                                <Text style={{ fontWeight: 'bold', marginVertical: 5, fontSize: 16, lineHeight: 14, }}>Auction Fee:</Text>
-                                <Text selectable style={{ fontWeight: '400', fontSize: 14, lineHeight: 14, }}>
-                                    {`${Number(selectedChatData.carData && selectedChatData.carData.purchasedPrice ? selectedChatData.carData.purchasedPrice : 0).toLocaleString('en-US', { style: 'currency', currency: 'JPY', minimumFractionDigits: 0, maximumFractionDigits: 0 })}`}
-                                </Text>
-                            </View>
-
-                            <View style={{ marginBottom: 10, borderWidth: 1, borderColor: '#DADDE1', borderRadius: 5, marginRight: 3, padding: 3, backgroundColor: 'white', }}>
-                                <Text style={{ fontWeight: 'bold', marginVertical: 5, fontSize: 16, lineHeight: 14, }}>Shipping Agent Fee:</Text>
-                                <Text selectable style={{ fontWeight: '400', fontSize: 14, lineHeight: 14, }}>
-                                    {`${Number(selectedChatData.carData && selectedChatData.carData.purchasedPrice ? selectedChatData.carData.purchasedPrice : 0).toLocaleString('en-US', { style: 'currency', currency: 'JPY', minimumFractionDigits: 0, maximumFractionDigits: 0 })}`}
-                                </Text>
-                            </View>
-
-                            <View style={{ marginBottom: 10, borderWidth: 1, borderColor: '#DADDE1', borderRadius: 5, marginRight: 3, padding: 3, backgroundColor: 'white', }}>
-                                <Text style={{ fontWeight: 'bold', marginVertical: 5, fontSize: 16, lineHeight: 14, }}>Supply Chains Costs:</Text>
-                                <Text selectable style={{ fontWeight: '400', fontSize: 14, lineHeight: 14, }}>
-                                    {`${Number(selectedChatData.carData && selectedChatData.carData.purchasedPrice ? selectedChatData.carData.purchasedPrice : 0).toLocaleString('en-US', { style: 'currency', currency: 'JPY', minimumFractionDigits: 0, maximumFractionDigits: 0 })}`}
-                                </Text>
-                            </View>
-
-
-                            <View style={{ marginBottom: 10, borderWidth: 1, borderColor: '#DADDE1', borderRadius: 5, marginRight: 3, padding: 3, backgroundColor: 'white', }}>
-                                <Text style={{ fontWeight: 'bold', marginVertical: 5, fontSize: 16, lineHeight: 14, }}>Cubic Meter:</Text>
-                                <Text selectable style={{ fontWeight: '400', fontSize: 14, lineHeight: 14, }}>
-                                    {`${Number(selectedChatData.carData && selectedChatData.carData.dimensionCubicMeters ? selectedChatData.carData.dimensionCubicMeters : 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
-                                </Text>
-                            </View>
-
-
-                            <View style={{ marginBottom: 10, borderWidth: 1, borderColor: '#DADDE1', borderRadius: 5, marginRight: 3, padding: 3, backgroundColor: 'white', }}>
-                                <Text style={{ fontWeight: 'bold', marginVertical: 5, fontSize: 16, lineHeight: 14, }}>Cost per Cubic Meter:</Text>
-                                <Text selectable style={{ fontWeight: '400', fontSize: 14, lineHeight: 14, }}>
-                                    {`${Number(selectedChatData.carData && selectedChatData.carData.purchasedPrice ? selectedChatData.carData.purchasedPrice : 0).toLocaleString('en-US', { style: 'currency', currency: 'JPY', minimumFractionDigits: 0, maximumFractionDigits: 0 })}`}
-                                </Text>
-                            </View>
-
-
-                            <View style={{ marginBottom: 10, borderWidth: 1, borderColor: '#DADDE1', borderRadius: 5, marginRight: 3, padding: 3, backgroundColor: 'white', }}>
-                                <Text style={{ fontWeight: 'bold', marginVertical: 5, fontSize: 20, lineHeight: 14, }}>Total:</Text>
+                                <Text style={{ fontWeight: 'bold', marginVertical: 5, fontSize: 20, lineHeight: 14, }}>Total Profit:</Text>
                                 <Text selectable style={{ fontWeight: '700', fontSize: 18, color: '#8D7777', }}>
                                     {`${Number(selectedChatData.carData && selectedChatData.carData.purchasedPrice ? selectedChatData.carData.purchasedPrice : 0).toLocaleString('en-US', { style: 'currency', currency: 'JPY', minimumFractionDigits: 0, maximumFractionDigits: 0 })}`}
                                 </Text>
@@ -4679,6 +4687,17 @@ const ProfitCalculator = () => {
                                     {`${Number(selectedChatData.carData && selectedChatData.carData.purchasedPrice ? selectedChatData.carData.purchasedPrice * selectedChatData.currency.jpyToUsd : 0).toLocaleString('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 0, maximumFractionDigits: 0 })}`}
                                 </Text>
                             </View>
+
+                            <View style={{ marginBottom: 10, borderWidth: 1, borderColor: '#DADDE1', borderRadius: 5, marginRight: 3, padding: 3, backgroundColor: 'white', }}>
+                                <Text style={{ fontWeight: 'bold', marginVertical: 5, fontSize: 16, lineHeight: 14, }}>Price to calculate:</Text>
+                                <TextInput
+                                    defaultValue={defaultInputPrice}
+                                    // ref={placeOfDeliveryInputRef} 
+                                    placeholderTextColor='#9B9E9F' placeholder='Input Price'
+                                    style={{ height: 25, margin: 2, padding: 1, borderRadius: 2, borderWidth: 1, borderColor: '#D9D9D9', outlineStyle: 'none', }}
+                                />
+                            </View>
+
                         </View>
 
 
@@ -4687,58 +4706,70 @@ const ProfitCalculator = () => {
                             <View style={{ marginBottom: 10, borderWidth: 1, borderColor: '#DADDE1', borderRadius: 5, marginRight: 3, padding: 3, backgroundColor: 'white', }}>
                                 <Text style={{ fontWeight: 'bold', marginVertical: 5, fontSize: 16, lineHeight: 14, }}>Purchased Price:</Text>
                                 <Text selectable style={{ fontWeight: '400', fontSize: 14, lineHeight: 14, }}>
-                                    {`${Number(selectedChatData.carData && selectedChatData.carData.purchasedPrice ? selectedChatData.carData.purchasedPrice : 0).toLocaleString('en-US', { style: 'currency', currency: 'JPY', minimumFractionDigits: 0, maximumFractionDigits: 0 })}`}
+                                    {`${formattedPurchasedPrice}`}
                                 </Text>
                             </View>
 
                             <View style={{ marginBottom: 10, borderWidth: 1, borderColor: '#DADDE1', borderRadius: 5, marginRight: 3, padding: 3, backgroundColor: 'white', }}>
                                 <Text style={{ fontWeight: 'bold', marginVertical: 5, fontSize: 16, lineHeight: 14, }}>Auction Fee:</Text>
                                 <Text selectable style={{ fontWeight: '400', fontSize: 14, lineHeight: 14, }}>
-                                    {`${Number(selectedChatData.carData && selectedChatData.carData.purchasedPrice ? selectedChatData.carData.purchasedPrice : 0).toLocaleString('en-US', { style: 'currency', currency: 'JPY', minimumFractionDigits: 0, maximumFractionDigits: 0 })}`}
+                                    {`${formattedAuctionFee}`}
+                                </Text>
+                            </View>
+
+                            <View style={{ marginBottom: 10, borderWidth: 1, borderColor: '#DADDE1', borderRadius: 5, marginRight: 3, padding: 3, backgroundColor: 'white', }}>
+                                <Text style={{ fontWeight: 'bold', marginVertical: 5, fontSize: 16, lineHeight: 14, }}>Transport Fee:</Text>
+                                <Text selectable style={{ fontWeight: '400', fontSize: 14, lineHeight: 14, }}>
+                                    {`${formattedTransportFee}`}
                                 </Text>
                             </View>
 
                             <View style={{ marginBottom: 10, borderWidth: 1, borderColor: '#DADDE1', borderRadius: 5, marginRight: 3, padding: 3, backgroundColor: 'white', }}>
                                 <Text style={{ fontWeight: 'bold', marginVertical: 5, fontSize: 16, lineHeight: 14, }}>Shipping Agent Fee:</Text>
                                 <Text selectable style={{ fontWeight: '400', fontSize: 14, lineHeight: 14, }}>
-                                    {`${Number(selectedChatData.carData && selectedChatData.carData.purchasedPrice ? selectedChatData.carData.purchasedPrice : 0).toLocaleString('en-US', { style: 'currency', currency: 'JPY', minimumFractionDigits: 0, maximumFractionDigits: 0 })}`}
+                                    {`${formattedShippingAgentFee}`}
                                 </Text>
                             </View>
 
                             <View style={{ marginBottom: 10, borderWidth: 1, borderColor: '#DADDE1', borderRadius: 5, marginRight: 3, padding: 3, backgroundColor: 'white', }}>
                                 <Text style={{ fontWeight: 'bold', marginVertical: 5, fontSize: 16, lineHeight: 14, }}>Supply Chains Costs:</Text>
                                 <Text selectable style={{ fontWeight: '400', fontSize: 14, lineHeight: 14, }}>
-                                    {`${Number(selectedChatData.carData && selectedChatData.carData.purchasedPrice ? selectedChatData.carData.purchasedPrice : 0).toLocaleString('en-US', { style: 'currency', currency: 'JPY', minimumFractionDigits: 0, maximumFractionDigits: 0 })}`}
+                                    {`${formattedTotalSCCAmount}`}
                                 </Text>
                             </View>
-
 
                             <View style={{ marginBottom: 10, borderWidth: 1, borderColor: '#DADDE1', borderRadius: 5, marginRight: 3, padding: 3, backgroundColor: 'white', }}>
                                 <Text style={{ fontWeight: 'bold', marginVertical: 5, fontSize: 16, lineHeight: 14, }}>Cubic Meter:</Text>
                                 <Text selectable style={{ fontWeight: '400', fontSize: 14, lineHeight: 14, }}>
-                                    {`${Number(selectedChatData.carData && selectedChatData.carData.dimensionCubicMeters ? selectedChatData.carData.dimensionCubicMeters : 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+                                    {`${cubicMeter}`}
                                 </Text>
                             </View>
-
 
                             <View style={{ marginBottom: 10, borderWidth: 1, borderColor: '#DADDE1', borderRadius: 5, marginRight: 3, padding: 3, backgroundColor: 'white', }}>
                                 <Text style={{ fontWeight: 'bold', marginVertical: 5, fontSize: 16, lineHeight: 14, }}>Cost per Cubic Meter:</Text>
                                 <Text selectable style={{ fontWeight: '400', fontSize: 14, lineHeight: 14, }}>
-                                    {`${Number(selectedChatData.carData && selectedChatData.carData.purchasedPrice ? selectedChatData.carData.purchasedPrice : 0).toLocaleString('en-US', { style: 'currency', currency: 'JPY', minimumFractionDigits: 0, maximumFractionDigits: 0 })}`}
+                                    {`${formattedCostPerCubicMeter} x ${cubicMeter}`}
+                                </Text>
+                                <Text selectable style={{ fontWeight: '700', fontSize: 14, lineHeight: 14, color: '#16A34A', }}>
+                                    {`${formattedTotalCubicMeterCostDollars}`}
+                                </Text>
+                                <Text selectable style={{ fontWeight: '700', fontSize: 14, lineHeight: 14, color: '#8D7777', }}>
+                                    {`${formattedTotalCubicMeterCostYen}`}
                                 </Text>
                             </View>
-
 
                             <View style={{ marginBottom: 10, borderWidth: 1, borderColor: '#DADDE1', borderRadius: 5, marginRight: 3, padding: 3, backgroundColor: 'white', }}>
                                 <Text style={{ fontWeight: 'bold', marginVertical: 5, fontSize: 20, lineHeight: 14, }}>Total:</Text>
                                 <Text selectable style={{ fontWeight: '700', fontSize: 18, color: '#8D7777', }}>
-                                    {`${Number(selectedChatData.carData && selectedChatData.carData.purchasedPrice ? selectedChatData.carData.purchasedPrice : 0).toLocaleString('en-US', { style: 'currency', currency: 'JPY', minimumFractionDigits: 0, maximumFractionDigits: 0 })}`}
+                                    {`${formattedRealTotalPriceYen}`}
                                 </Text>
                                 <Text selectable style={{ fontWeight: '700', fontSize: 18, color: '#16A34A', }}>
-                                    {`${Number(selectedChatData.carData && selectedChatData.carData.purchasedPrice ? selectedChatData.carData.purchasedPrice * selectedChatData.currency.jpyToUsd : 0).toLocaleString('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 0, maximumFractionDigits: 0 })}`}
+                                    {`${formattedRealTotalPriceDollars}`}
                                 </Text>
                             </View>
+
                         </View>
+
 
 
                     </Modal.Body>
@@ -6544,6 +6575,7 @@ const ChatMessageHeader = () => {
     const invoiceData = useSelector((state) => state.invoiceData);
 
 
+
     const totalPriceCondition = selectedChatData.fobPrice && selectedChatData.jpyToUsd && selectedChatData.m3 && selectedChatData.freightPrice;
 
     const freightCalculation = ((selectedChatData.m3 ? selectedChatData.m3 :
@@ -6569,6 +6601,8 @@ const ChatMessageHeader = () => {
 
 
     const freightPriceYen = freightCalculation / selectedChatData.currency.jpyToUsd;
+
+
 
     return (
         <View style={{
