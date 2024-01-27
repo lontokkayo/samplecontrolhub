@@ -5330,92 +5330,110 @@ const PreviewInvoice = () => {
                                         </View>
                                     }
 
-                                    <View style={{ position: 'absolute', left: 40 * widthScaleFactor, top: 134 * heightScaleFactor, maxWidth: 220 * widthScaleFactor, }}>
+                                    <View style={{
+                                        position: 'absolute',
+                                        left: 40 * widthScaleFactor,
+                                        top: 134 * heightScaleFactor,
+                                        maxWidth: 300 * widthScaleFactor,
+                                    }}>
                                         {/* Shipper */}
                                         <Text style={{
                                             fontWeight: 750,
-                                            fontSize: 14 * widthScaleFactor,
+                                            fontSize: 16 * widthScaleFactor,
                                             borderBottomWidth: 3, // Adjust the thickness of the underline
                                             width: 'fit-content', // Make the underline cover the text width
                                             marginBottom: 5, // Add some space between text and underline
                                         }}>
                                             {`Shipper`}
                                         </Text>
-                                        <Text style={{ fontWeight: 750, fontSize: 12 * widthScaleFactor, lineHeight: 14 * widthScaleFactor }}>{`Real Motor Japan`}</Text>
-                                        <Text style={{ fontWeight: 750, fontSize: 12 * widthScaleFactor, lineHeight: 14 * widthScaleFactor }}>{`(YANAGISAWA HD CO.,LTD)`}</Text>
-                                        <Text style={{ fontWeight: 400, fontSize: 12 * widthScaleFactor, marginTop: 20, lineHeight: 14 * widthScaleFactor }}>{`26-2 Takara Tsutsumi-cho Toyota City, Aichi Prefecture, Japan, 473-0932`}</Text>
-                                        <Text style={{ fontWeight: 400, fontSize: 12 * widthScaleFactor, marginTop: 20, lineHeight: 14 * widthScaleFactor }}>{`FAX: +81565850606`}</Text>
+                                        <Text style={{ fontWeight: 750, fontSize: 14 * widthScaleFactor, lineHeight: 14 * widthScaleFactor }}>{`Real Motor Japan (YANAGISAWA HD CO.,LTD)`}</Text>
+                                        <Text style={{ fontWeight: 400, fontSize: 14 * widthScaleFactor, marginTop: 20, lineHeight: 14 * widthScaleFactor }}>{`26-2 Takara Tsutsumi-cho Toyota City, Aichi Prefecture, Japan, 473-0932`}</Text>
+                                        <Text style={{ fontWeight: 400, fontSize: 14 * widthScaleFactor, marginTop: 20, lineHeight: 14 * widthScaleFactor }}>{`FAX: +81565850606`}</Text>
 
-                                        <Text style={{ fontWeight: 700, fontSize: 12 * widthScaleFactor, marginTop: 20, lineHeight: 14 * widthScaleFactor }}>{`Shipped From:`}</Text>
-                                        <Text style={{ fontWeight: 400, fontSize: 12 * widthScaleFactor, lineHeight: 14 * widthScaleFactor }}>{`${invoiceData.departurePort}, ${invoiceData.departureCountry}`}</Text>
+                                        <Text style={{ fontWeight: 700, fontSize: 14 * widthScaleFactor, marginTop: 20, lineHeight: 14 * widthScaleFactor }}>{`Shipped From:`}</Text>
+                                        <Text style={{ fontWeight: 400, fontSize: 14 * widthScaleFactor, lineHeight: 14 * widthScaleFactor }}>{`${invoiceData.departurePort}, ${invoiceData.departureCountry}`}</Text>
 
-                                        <Text style={{ fontWeight: 700, fontSize: 12 * widthScaleFactor, marginTop: 20, lineHeight: 14 * widthScaleFactor }}>{`Shipped To:`}</Text>
-                                        <Text style={{ fontWeight: 400, fontSize: 12 * widthScaleFactor, lineHeight: 14 * widthScaleFactor }}>{`${invoiceData.discharge.port}, ${invoiceData.discharge.country}`}</Text>
+                                        <Text style={{ fontWeight: 700, fontSize: 14 * widthScaleFactor, marginTop: 20, lineHeight: 14 * widthScaleFactor }}>{`Shipped To:`}</Text>
+                                        <Text style={{ fontWeight: 400, fontSize: 14 * widthScaleFactor, lineHeight: 14 * widthScaleFactor }}>{`${invoiceData.discharge.port}, ${invoiceData.discharge.country}`}</Text>
                                         {invoiceData.placeOfDelivery && invoiceData.placeOfDelivery !== '' ?
                                             <>
-                                                <Text style={{ fontWeight: 700, fontSize: 12 * widthScaleFactor, marginTop: 20, lineHeight: 14 * widthScaleFactor }}>{`Place of Delivery:`}</Text>
-                                                <Text style={{ fontWeight: 400, fontSize: 12 * widthScaleFactor, lineHeight: 14 * widthScaleFactor }}>{`${invoiceData.placeOfDelivery}`}</Text>
+                                                <Text style={{ fontWeight: 700, fontSize: 14 * widthScaleFactor, marginTop: 20, lineHeight: 14 * widthScaleFactor }}>{`Place of Delivery:`}</Text>
+                                                <Text style={{ fontWeight: 400, fontSize: 14 * widthScaleFactor, lineHeight: 14 * widthScaleFactor }}>{`${invoiceData.placeOfDelivery}`}</Text>
                                             </>
                                             : null}
                                         {invoiceData.cfs && invoiceData.cfs !== '' ?
                                             <>
-                                                <Text style={{ fontWeight: 700, fontSize: 12 * widthScaleFactor, marginTop: 20, lineHeight: 14 * widthScaleFactor }}>{`CFS:`}</Text>
-                                                <Text style={{ fontWeight: 400, fontSize: 12 * widthScaleFactor, lineHeight: 14 * widthScaleFactor }}>{`${invoiceData.cfs}`}</Text>
+                                                <Text style={{ fontWeight: 700, fontSize: 14 * widthScaleFactor, marginTop: 20, lineHeight: 14 * widthScaleFactor }}>{`CFS:`}</Text>
+                                                <Text style={{ fontWeight: 400, fontSize: 14 * widthScaleFactor, lineHeight: 14 * widthScaleFactor }}>{`${invoiceData.cfs}`}</Text>
                                             </>
                                             : null}
 
-                                        {/* Buyer Information */}
-                                        <Text style={{
-                                            fontWeight: 750,
-                                            fontSize: 14 * widthScaleFactor,
-                                            borderBottomWidth: 3, // Adjust the thickness of the underline
-                                            borderBottomColor: '#0A78BE',
-                                            width: 'fit-content', // Make the underline cover the text width
-                                            marginBottom: 5, // Add some space between text and underline
-                                            color: '#0A78BE',
-                                            marginTop: 20,
-                                        }}>
-                                            {`Buyer Information`}
-                                        </Text>
-                                        <Text style={{ fontWeight: 750, fontSize: 12 * widthScaleFactor, lineHeight: 14 * widthScaleFactor }}>{`${invoiceData.consignee.name}`}</Text>
-                                        <Text style={{ fontWeight: 400, fontSize: 12 * widthScaleFactor, marginTop: 20, lineHeight: 14 * widthScaleFactor }}>{`${invoiceData.consignee.address}`}</Text>
-                                        <Text style={{ fontWeight: 400, fontSize: 12 * widthScaleFactor, marginTop: 20, lineHeight: 14 * widthScaleFactor }}>{`${invoiceData.consignee.email}`}</Text>
-                                        <Text style={{ fontWeight: 400, fontSize: 12 * widthScaleFactor, marginTop: 20, lineHeight: 14 * widthScaleFactor }}>{`${invoiceData.consignee.contactNumber}`}</Text>
-                                        <Text style={{ fontWeight: 400, fontSize: 12 * widthScaleFactor, marginTop: 20, lineHeight: 14 * widthScaleFactor }}>{`FAX: ${invoiceData.consignee.fax == '' ? 'N/A' : invoiceData.consignee.fax}`}</Text>
+                                        <View style={{ flex: 1, flexDirection: 'row', width: 715 * widthScaleFactor, }}>
 
-                                        {/* Notify Party */}
-                                        <Text style={{
-                                            fontWeight: 750,
-                                            fontSize: 14 * widthScaleFactor,
-                                            borderBottomWidth: 3, // Adjust the thickness of the underline
-                                            borderBottomColor: '#FF0000',
-                                            width: 'fit-content', // Make the underline cover the text width
-                                            marginBottom: 5, // Add some space between text and underline
-                                            color: '#FF0000',
-                                            marginTop: 20,
-                                        }}>
-                                            {`Notify Party`}
-                                        </Text>
-                                        {invoiceData.notifyParty.sameAsConsignee == true ? (
-                                            <Text style={{ fontWeight: 400, fontSize: 12 * widthScaleFactor, }}>{`Same as consignee / buyer`}</Text>) :
-                                            (<>
-                                                <Text style={{ fontWeight: 750, fontSize: 12 * widthScaleFactor, lineHeight: 14 * widthScaleFactor }}>{`${invoiceData.notifyParty.name}`}</Text>
-                                                <Text style={{ fontWeight: 400, fontSize: 12 * widthScaleFactor, marginTop: 20, lineHeight: 14 * widthScaleFactor }}>{`${invoiceData.notifyParty.address}`}</Text>
-                                                <Text style={{ fontWeight: 400, fontSize: 12 * widthScaleFactor, marginTop: 20, lineHeight: 14 * widthScaleFactor }}>{`${invoiceData.notifyParty.email}`}</Text>
-                                                <Text style={{ fontWeight: 400, fontSize: 12 * widthScaleFactor, marginTop: 20, lineHeight: 14 * widthScaleFactor }}>{`${invoiceData.notifyParty.contactNumber}`}</Text>
-                                                <Text style={{ fontWeight: 400, fontSize: 12 * widthScaleFactor, marginTop: 20, lineHeight: 14 * widthScaleFactor }}>{`FAX: ${invoiceData.notifyParty.fax == '' ? 'N/A' : invoiceData.notifyParty.fax}`}</Text>
-                                            </>)}
+                                            <View style={{
+                                                flex: 1, width: 280 * widthScaleFactor,
+                                            }}>
+                                                {/* Buyer Information */}
+                                                <Text style={{
+                                                    fontWeight: 750,
+                                                    fontSize: 16 * widthScaleFactor,
+                                                    borderBottomWidth: 3, // Adjust the thickness of the underline
+                                                    borderBottomColor: '#0A78BE',
+                                                    width: 'fit-content', // Make the underline cover the text width
+                                                    marginBottom: 5, // Add some space between text and underline
+                                                    color: '#0A78BE',
+                                                    marginTop: 20 * heightScaleFactor,
+
+                                                }}>
+                                                    {`Buyer Information`}
+                                                </Text>
+                                                <Text style={{ fontWeight: 750, fontSize: 14 * widthScaleFactor, lineHeight: 14 * widthScaleFactor }}>{`${invoiceData.consignee.name}`}</Text>
+                                                <Text style={{ fontWeight: 400, fontSize: 14 * widthScaleFactor, marginTop: 20, lineHeight: 14 * widthScaleFactor }}>{`${invoiceData.consignee.address}`}</Text>
+                                                <Text style={{ fontWeight: 400, fontSize: 14 * widthScaleFactor, marginTop: 20, lineHeight: 14 * widthScaleFactor }}>{`${invoiceData.consignee.email}`}</Text>
+                                                <Text style={{ fontWeight: 400, fontSize: 14 * widthScaleFactor, marginTop: 20, lineHeight: 14 * widthScaleFactor }}>{`${invoiceData.consignee.contactNumber}`}</Text>
+                                                <Text style={{ fontWeight: 400, fontSize: 14 * widthScaleFactor, marginTop: 20, lineHeight: 14 * widthScaleFactor }}>{`FAX: ${invoiceData.consignee.fax == '' ? 'N/A' : invoiceData.consignee.fax}`}</Text>
+
+                                            </View>
+
+                                            <View style={{ flex: 1, paddingLeft: 20 * widthScaleFactor, width: 280 * widthScaleFactor, }}>
+                                                {/* Notify Party */}
+                                                <Text style={{
+                                                    fontWeight: 750,
+                                                    fontSize: 16 * widthScaleFactor,
+                                                    borderBottomWidth: 3, // Adjust the thickness of the underline
+                                                    borderBottomColor: '#FF0000',
+                                                    width: 'fit-content', // Make the underline cover the text width
+                                                    marginBottom: 5, // Add some space between text and underline
+                                                    color: '#FF0000',
+                                                    marginTop: 20 * heightScaleFactor,
+                                                }}>
+                                                    {`Notify Party`}
+                                                </Text>
+                                                {invoiceData.notifyParty.sameAsConsignee == true ? (
+                                                    <Text style={{ fontWeight: 400, fontSize: 14 * widthScaleFactor, }}>{`Same as consignee / buyer`}</Text>) :
+                                                    (<>
+                                                        <Text style={{ fontWeight: 750, fontSize: 14 * widthScaleFactor, lineHeight: 14 * widthScaleFactor }}>{`${invoiceData.notifyParty.name}`}</Text>
+                                                        <Text style={{ fontWeight: 400, fontSize: 14 * widthScaleFactor, marginTop: 20, lineHeight: 14 * widthScaleFactor }}>{`${invoiceData.notifyParty.address}`}</Text>
+                                                        <Text style={{ fontWeight: 400, fontSize: 14 * widthScaleFactor, marginTop: 20, lineHeight: 14 * widthScaleFactor }}>{`${invoiceData.notifyParty.email}`}</Text>
+                                                        <Text style={{ fontWeight: 400, fontSize: 14 * widthScaleFactor, marginTop: 20, lineHeight: 14 * widthScaleFactor }}>{`${invoiceData.notifyParty.contactNumber}`}</Text>
+                                                        <Text style={{ fontWeight: 400, fontSize: 14 * widthScaleFactor, marginTop: 20, lineHeight: 14 * widthScaleFactor }}>{`FAX: ${invoiceData.notifyParty.fax == '' ? 'N/A' : invoiceData.notifyParty.fax}`}</Text>
+                                                    </>)}
+                                            </View>
+
+                                        </View>
+
+
                                     </View>
                                     {selectedChatData.stepIndicator.value < 3 ?
 
-                                        <View style={{ position: 'absolute', left: 260 * widthScaleFactor, top: 130 * heightScaleFactor, borderWidth: 3, width: 495 * widthScaleFactor, borderColor: '#FF5C00', height: 194 * heightScaleFactor, }}>
+                                        <View style={{ position: 'absolute', right: 38 * widthScaleFactor, top: 130 * heightScaleFactor, borderWidth: 3, width: 430 * widthScaleFactor, borderColor: '#FF5C00', height: 194 * heightScaleFactor, }}>
                                             <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', flexDirection: 'row', }}>
                                                 <Entypo size={50 * widthScaleFactor} name='warning' color={'#FF0000'} />
                                                 <Text style={{ fontWeight: 750, fontSize: 12 * widthScaleFactor, color: '#FF0000', marginLeft: 20 * widthScaleFactor, }}>{`Bank Information will be provided after placing an order.`}</Text>
                                             </View>
                                         </View>
                                         :
-                                        <View style={{ position: 'absolute', left: 260 * widthScaleFactor, top: 130 * heightScaleFactor, borderWidth: 3, width: 495 * widthScaleFactor, borderColor: '#1ABA3D', }}>
+                                        <View style={{ position: 'absolute', right: 38 * widthScaleFactor, top: 130 * heightScaleFactor, borderWidth: 3, width: 430 * widthScaleFactor, borderColor: '#1ABA3D', }}>
 
                                             <View style={{ flex: 1, alignItems: 'center', }}>
                                                 <Text style={{ fontWeight: 750, fontSize: 14 * widthScaleFactor, color: '#114B33', }}>{`Bank Information`}</Text>
@@ -5502,7 +5520,7 @@ const PreviewInvoice = () => {
 
 
 
-                                    <View style={{ position: 'absolute', left: 260 * widthScaleFactor, top: 335 * heightScaleFactor }}>
+                                    {/* <View style={{ position: 'absolute', left: 260 * widthScaleFactor, top: 335 * heightScaleFactor }}>
 
                                         <View style={{ flexDirection: 'row' }}>
                                             {vehicleImageUri ? (
@@ -5648,12 +5666,12 @@ const PreviewInvoice = () => {
 
                                         <InvoiceFeatures widthScaleFactor={widthScaleFactor} heightScaleFactor={heightScaleFactor} />
 
-                                    </View>
+                                    </View> */}
 
                                     <View style={{
                                         position: 'absolute',
                                         left: 38 * widthScaleFactor,
-                                        top: featuresTrueCount < 36 ? 657 * heightScaleFactor : 689 * heightScaleFactor,
+                                        top: 577 * heightScaleFactor,
                                         width: 718 * widthScaleFactor,
                                         borderWidth: 1 * widthScaleFactor,
                                         borderColor: '#C2E2F4',
@@ -5986,6 +6004,7 @@ const PreviewInvoice = () => {
                                                 borderColor: '#C2E2F4',
                                                 flex: 2,
                                                 flexDirection: 'row',
+                                                paddingVertical: 2 * heightScaleFactor,
 
                                             }}>
                                                 {invoiceData.carData && invoiceData.carData.carName ? (
@@ -6005,9 +6024,64 @@ const PreviewInvoice = () => {
                                                             marginBottom: 3 * heightScaleFactor,
                                                             alignSelf: 'center',
                                                         }}>
-                                                            {invoiceData.carData.carName}
+                                                            {`${invoiceData.carData.carName}\n`}
+                                                        </Text>
+                                                        <Text style={{
+                                                            fontWeight: 400,
+                                                            fontSize: 12 * widthScaleFactor,
+                                                            lineHeight: 14 * widthScaleFactor,
+                                                            marginBottom: 3 * heightScaleFactor,
+                                                            alignSelf: 'center',
+                                                        }}>
+                                                            {`${invoiceData.carData.chassisNumber}\n`}
+                                                        </Text>
+                                                        <Text style={{
+                                                            fontWeight: 400,
+                                                            fontSize: 12 * widthScaleFactor,
+                                                            lineHeight: 14 * widthScaleFactor,
+                                                            marginBottom: 3 * heightScaleFactor,
+                                                            alignSelf: 'center',
+                                                        }}>
+                                                            {`${invoiceData.carData.exteriorColor}\n`}
+                                                        </Text>
+                                                        <Text style={{
+                                                            fontWeight: 400,
+                                                            fontSize: 12 * widthScaleFactor,
+                                                            lineHeight: 14 * widthScaleFactor,
+                                                            marginBottom: 3 * heightScaleFactor,
+                                                            alignSelf: 'center',
+                                                        }}>
+                                                            {`${Number(invoiceData.carData.engineDisplacement).toLocaleString('en-US')} cc\n`}
+                                                        </Text>
+                                                        <Text style={{
+                                                            fontWeight: 400,
+                                                            fontSize: 12 * widthScaleFactor,
+                                                            lineHeight: 14 * widthScaleFactor,
+                                                            marginBottom: 3 * heightScaleFactor,
+                                                            alignSelf: 'center',
+                                                        }}>
+                                                            {`${Number(invoiceData.carData.mileage).toLocaleString('en-US')} km\n`}
+                                                        </Text>
+                                                        <Text style={{
+                                                            fontWeight: 400,
+                                                            fontSize: 12 * widthScaleFactor,
+                                                            lineHeight: 14 * widthScaleFactor,
+                                                            marginBottom: 3 * heightScaleFactor,
+                                                            alignSelf: 'center',
+                                                        }}>
+                                                            {`${invoiceData.carData.fuel}\n`}
+                                                        </Text>
+                                                        <Text style={{
+                                                            fontWeight: 400,
+                                                            fontSize: 12 * widthScaleFactor,
+                                                            lineHeight: 14 * widthScaleFactor,
+                                                            marginBottom: 3 * heightScaleFactor,
+                                                            alignSelf: 'center',
+                                                        }}>
+                                                            {`${invoiceData.carData.transmission}\n`}
                                                         </Text>
                                                     </Text>
+
                                                 ) : (
                                                     <Text>{' '}</Text>
                                                 )}
@@ -6077,7 +6151,7 @@ const PreviewInvoice = () => {
                                                             marginBottom: 3 * heightScaleFactor,
                                                             color: '#008AC6',
                                                             marginRight: 10 * widthScaleFactor,
-                                                            top: 7 * heightScaleFactor,
+                                                            top: 51 * heightScaleFactor,
                                                             left: 50 * widthScaleFactor,
                                                             position: 'absolute',
                                                         }}>{"Total"}
@@ -6102,24 +6176,24 @@ const PreviewInvoice = () => {
 
                                     </View>
 
-                                    <View style={{ position: 'absolute', left: 38 * widthScaleFactor, top: 835 * heightScaleFactor, width: 350 * widthScaleFactor, }}>
+                                    <View style={{ position: 'absolute', left: 38 * widthScaleFactor, top: 825 * heightScaleFactor, width: 350 * widthScaleFactor, }}>
                                         <Text style={{
                                             fontWeight: 700,
-                                            fontSize: 10 * widthScaleFactor,
+                                            fontSize: 12 * widthScaleFactor,
                                             lineHeight: 14 * heightScaleFactor,
                                         }}>
                                             {'Payment Information:'}
                                         </Text>
                                         <Text style={{
                                             fontWeight: 400,
-                                            fontSize: 10 * widthScaleFactor,
+                                            fontSize: 12 * widthScaleFactor,
                                             lineHeight: 14 * heightScaleFactor,
                                         }}>
                                             {'The customer is responsible for the bank charges incurred when the T/T (Telegraphic Transfer) is paid.'}
                                         </Text>
                                         <Text style={{
                                             fontWeight: 400,
-                                            fontSize: 10 * widthScaleFactor,
+                                            fontSize: 12 * widthScaleFactor,
                                             lineHeight: 14 * heightScaleFactor,
                                             marginBottom: 5 * heightScaleFactor,
                                         }}>
@@ -6128,21 +6202,21 @@ const PreviewInvoice = () => {
 
                                         <Text style={{
                                             fontWeight: 700,
-                                            fontSize: 10 * widthScaleFactor,
+                                            fontSize: 12 * widthScaleFactor,
                                             lineHeight: 14 * heightScaleFactor,
                                         }}>
                                             {'Conditions for order cancellation:'}
                                         </Text>
                                         <Text style={{
                                             fontWeight: 400,
-                                            fontSize: 10 * widthScaleFactor,
+                                            fontSize: 12 * widthScaleFactor,
                                             lineHeight: 14 * heightScaleFactor,
                                         }}>
                                             {'(1) Order Cancellation Penalty: If the order is canceled after payment, a penalty of USD 220 will apply.'}
                                         </Text>
                                         <Text style={{
                                             fontWeight: 400,
-                                            fontSize: 10 * widthScaleFactor,
+                                            fontSize: 12 * widthScaleFactor,
                                             lineHeight: 14 * heightScaleFactor,
                                             marginBottom: 5 * heightScaleFactor,
 
@@ -6152,21 +6226,21 @@ const PreviewInvoice = () => {
 
                                         <Text style={{
                                             fontWeight: 700,
-                                            fontSize: 10 * widthScaleFactor,
+                                            fontSize: 12 * widthScaleFactor,
                                             lineHeight: 14 * heightScaleFactor,
                                         }}>
                                             {'Intermediary Banking Information:'}
                                         </Text>
                                         <Text style={{
                                             fontWeight: 400,
-                                            fontSize: 10 * widthScaleFactor,
+                                            fontSize: 12 * widthScaleFactor,
                                             lineHeight: 14 * heightScaleFactor,
                                         }}>
                                             {'Bank Name: SUMITOMO MITSUI BANKING CORPORATION (NEW YORK BRANCH).'}
                                         </Text>
                                         <Text style={{
                                             fontWeight: 400,
-                                            fontSize: 10 * widthScaleFactor,
+                                            fontSize: 12 * widthScaleFactor,
                                             lineHeight: 14 * heightScaleFactor,
 
                                         }}>
@@ -6174,14 +6248,14 @@ const PreviewInvoice = () => {
                                         </Text>
                                         <Text style={{
                                             fontWeight: 400,
-                                            fontSize: 10 * widthScaleFactor,
+                                            fontSize: 12 * widthScaleFactor,
                                             lineHeight: 14 * heightScaleFactor,
                                         }}>
                                             {'Address: 277 Park Avenue'}
                                         </Text>
                                         <Text style={{
                                             fontWeight: 400,
-                                            fontSize: 10 * widthScaleFactor,
+                                            fontSize: 12 * widthScaleFactor,
                                             lineHeight: 14 * heightScaleFactor,
 
                                         }}>
@@ -6189,7 +6263,7 @@ const PreviewInvoice = () => {
                                         </Text>
                                         <Text style={{
                                             fontWeight: 400,
-                                            fontSize: 10 * widthScaleFactor,
+                                            fontSize: 12 * widthScaleFactor,
                                             lineHeight: 14 * heightScaleFactor,
 
                                         }}>
@@ -6197,7 +6271,7 @@ const PreviewInvoice = () => {
                                         </Text>
                                         <Text style={{
                                             fontWeight: 400,
-                                            fontSize: 10 * widthScaleFactor,
+                                            fontSize: 12 * widthScaleFactor,
                                             lineHeight: 14 * heightScaleFactor,
                                             marginBottom: 5 * heightScaleFactor,
 
