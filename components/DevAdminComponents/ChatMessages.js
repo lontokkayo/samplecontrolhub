@@ -957,11 +957,92 @@ const ChatInputText = () => {
     const selectedChatData = useSelector((state) => state.selectedChatData);
 
     const [isSendHovered, setIsSendHovered] = useState(false);
+    const [imageUri, setImageUri] = useState(null);
+    const [isSendImageHovered, setIsSendImageHovered] = useState(false);
 
 
     const textInputRef = useRef(null);
 
+    const selectImage = async () => {
+        if (Platform.OS === 'web') {
+            return new Promise((resolve, reject) => {
+                const input = document.createElement('input');
+                input.type = 'file';
+                input.accept = 'image/*';
+                input.onchange = () => {
+                    const file = input.files[0];
+                    if (file) {
+                        const reader = new FileReader();
+                        reader.readAsDataURL(file);
+                        reader.onload = () => resolve(reader.result);
+                        reader.onerror = error => reject(error);
+                    }
+                };
+                input.click();
+            });
+        } else {
+            return new Promise((resolve, reject) => {
+                launchImageLibrary({ mediaType: 'photo' }, (response) => {
+                    if (response.didCancel) {
+                        reject('User cancelled image picker');
+                    } else if (response.errorCode) {
+                        reject(response.errorMessage);
+                    } else {
+                        resolve(response.assets[0].uri);
+                    }
+                });
+            });
+        }
+    };
 
+    const addImageMessage = async () => {
+
+        const response = await axios.get('https://worldtimeapi.org/api/timezone/Asia/Tokyo');
+        const { datetime } = response.data;
+        const formattedTime = moment(datetime).format('YYYY/MM/DD [at] HH:mm:ss.SSS');
+        const year = moment(datetime).format('YYYY');
+        const month = moment(datetime).format('MM');
+        const monthWithDay = moment(datetime).format('MM/DD');
+        const date = moment(datetime).format('YYYY/MM/DD');
+        const day = moment(datetime).format('DD');
+        const time = moment(datetime).format('HH:mm');
+        const timeWithMinutesSeconds = moment(datetime).format('HH:mm:ss');
+
+        const inputValue = textInputRef.current?.value;
+
+        textInputRef.current.clear();
+        textInputRef.current.focus();
+
+        if (inputValue !== '') {
+            const email = projectControlAuth.currentUser ? projectControlAuth.currentUser.email : '';
+            try {
+
+                // Adding the message to the 'messages' subcollection
+                await addDoc(collection(projectExtensionFirestore, 'chats', selectedChatData.id, 'messages'), {
+                    text: inputValue.trim(),
+                    sender: email,
+                    timestamp: formattedTime, // Using the fetched timestamp
+                    ip: ip, // IP Address
+                    ipCountry: ipCountry // Country of the IP Address
+                });
+
+
+                // Updating the main chat document with the latest message details
+                await updateDoc(doc(projectExtensionFirestore, 'chats', selectedChatData.id), {
+                    lastMessageSender: email,
+                    lastMessage: inputValue,
+                    lastMessageDate: formattedTime,
+                    customerRead: false,
+                    read: true,
+                    readBy: [email],
+                });
+
+            } catch (e) {
+                console.error('Error adding document: ', e);
+            }
+        }
+
+    };
 
     const addMessage = async () => {
 
@@ -1070,6 +1151,24 @@ const ChatInputText = () => {
                 ]}
             >
                 <MaterialIcons name="send" size={24} color="#95BCF9" />
+            </Pressable>
+
+            <Pressable
+                onHoverIn={() => setIsSendImageHovered(true)}
+                onHoverOut={() => setIsSendImageHovered(false)}
+                style={({ pressed }) => [
+                    {
+                        padding: 10,
+                        bottom: -10,
+                        right: 125,
+                        position: 'absolute',
+                        borderRadius: 20,
+                        opacity: pressed ? 0.5 : 1 // Change opacity when pressed
+                    }
+                ]}
+                onPress={selectImage}
+            >
+                <Ionicons name="image-outline" size={24} color={isSendImageHovered ? "#0A78BE" : "#C1C1C1"} />
             </Pressable>
 
             <MessageTemplate textInputRef={textInputRef} />
@@ -2359,15 +2458,15 @@ const PaymentDetails = () => {
 
 
     const [totalAmountCalculated, setTotalAmountCalculated] = useState('0');
-    const [selectedIncoterms, setSelectedIncoterms] = useState(invoiceData && Object.keys(invoiceData).length > 0 ? invoiceData.paymentDetails.incoterms :
+    const [selectedIncoterms, setSelectedIncoterms] = useState(invoiceData && Object.keys(invoiceData).length > 0 && invoiceData.paymentDetails.incoterms ? invoiceData.paymentDetails.incoterms :
         selectedChatData.insurance ? 'CIF' : 'C&F');
 
-    const [inspectionIsChecked, setInspectionIsChecked] = useState(invoiceData && Object.keys(invoiceData).length > 0 ? invoiceData.paymentDetails.inspectionIsChecked : selectedChatData.inspection);
-    const [inspectionName, setInspectionName] = useState(invoiceData && Object.keys(invoiceData).length > 0 ? invoiceData.paymentDetails.inspectionName : selectedChatData.inspectionName);
+    const [inspectionIsChecked, setInspectionIsChecked] = useState(invoiceData && Object.keys(invoiceData).length > 0 && invoiceData.paymentDetails.inspectionIsChecked ? invoiceData.paymentDetails.inspectionIsChecked : selectedChatData.inspection);
+    const [inspectionName, setInspectionName] = useState(invoiceData && Object.keys(invoiceData).length > 0 && invoiceData.paymentDetails.inspectionName ? invoiceData.paymentDetails.inspectionName : selectedChatData.inspectionName);
 
-    const [warrantyIsChecked, setWarrantyIsChecked] = useState(invoiceData && Object.keys(invoiceData).length > 0 ? invoiceData.paymentDetails.warrantyIsCheck : selectedChatData.warranty);
+    const [warrantyIsChecked, setWarrantyIsChecked] = useState(invoiceData && Object.keys(invoiceData).length > 0 && invoiceData.paymentDetails.warrantyIsCheck ? invoiceData.paymentDetails.warrantyIsCheck : selectedChatData.warranty);
 
-    const warrantyPrice = invoiceData && Object.keys(invoiceData).length > 0 && invoiceData.paymentDetails.warrantyPrice ? invoiceData.paymentDetails.warrantyPrice : 150;
+    const warrantyPrice = invoiceData && Object.keys(invoiceData).length > 0 && invoiceData.paymentDetails.warrantyPrice && invoiceData.paymentDetails.warrantyPrice ? invoiceData.paymentDetails.warrantyPrice : 150;
     const insurancePrice = 50;
 
 
@@ -2559,7 +2658,10 @@ const PaymentDetails = () => {
                 <Text style={{ width: '15%', fontWeight: 700, margin: 3, }}>Inspection:</Text>
                 <Checkbox
                     isChecked={inspectionIsChecked}
-                    onChange={value => setInspectionIsChecked(value)}
+                    onChange={value => {
+                        setInspectionIsChecked(value)
+                        globalInvoiceVariable.paymentDetails.inspectionIsChecked = value;
+                    }}
                     style={{ margin: 2, borderColor: '#0A9FDC' }}
                     size="sm"
                     _text={{ fontWeight: 700 }}
@@ -2729,7 +2831,7 @@ const SelectPortOfDischarge = () => {
         const portData = portsData[selectedPort];
         if (portData && portData.country) {
             setSelectedPortCountry(portData.country);
-            console.log('Nagoya Price ', portData.nagoyaPrice);
+            // console.log('Nagoya Price ', portData.nagoyaPrice);
             globalInvoiceVariable.discharge.country = portData.country;
         } else {
             setSelectedPortCountry(''); // Reset selected country if port not found or has no country
@@ -2829,7 +2931,7 @@ const SelectPortOfDeparture = () => {
 
 
     useEffect(() => {
-        console.log(invoiceData && Object.keys(invoiceData).length > 0 ? invoiceData.departurePort : (selectedChatData.carData && selectedChatData.carData.port ? selectedChatData.carData.port : ''));
+        // console.log(invoiceData && Object.keys(invoiceData).length > 0 ? invoiceData.departurePort : (selectedChatData.carData && selectedChatData.carData.port ? selectedChatData.carData.port : ''));
 
         globalInvoiceVariable.departurePort = invoiceData && Object.keys(invoiceData).length > 0 && invoiceData.departurePort ? invoiceData.departurePort : (selectedChatData.carData && selectedChatData.carData.port ? selectedChatData.carData.port : '');
         globalInvoiceVariable.departureCountry = invoiceData && Object.keys(invoiceData).length > 0 && invoiceData.departureCountry ? invoiceData.departureCountry : 'Japan';
@@ -3837,7 +3939,7 @@ const ConfirmPaymentModalContent = () => {
     const handleHistoryModalOpen = () => {
         setHistoryModalVisible(true);
 
-        console.log(selectedChatData.payments);
+        // console.log(selectedChatData.payments);
     }
 
     const handleHistoryModalClose = () => {
@@ -4173,7 +4275,7 @@ Real Motor Japan`,
             return dateB - dateA; // Sorts in descending order
         });
 
-        console.log(sortedPayments);
+        // console.log(sortedPayments);
 
         return (
             <Modal isOpen={historyModalVisible} onClose={handleHistoryModalClose} useRNModal>
@@ -4405,10 +4507,10 @@ const IssueProformaInvoiceModalContent = () => {
             if (selectedChatData.invoiceNumber) {
                 const updateDocRef = doc(projectExtensionFirestore, "IssuedInvoice", selectedChatData.invoiceNumber);
 
-                await updateDoc(updateDocRef, {
+                await setDoc(updateDocRef, {
                     ...globalInvoiceVariable,
                     carData: selectedChatData.carData,
-                });
+                }, { merge: true });
 
                 if (selectedChatData.stepIndicator.value == 1) {
                     await updateDoc(docRefChatId, {
@@ -4562,16 +4664,112 @@ const ProfitCalculator = () => {
 
     const inputPriceRef = useRef(null);
 
+
+    const [portsData, setPortsData] = useState({});
+    const [origFreight, setOrigFreight] = useState(0);
+    const [lastFetchedPort, setLastFetchedPort] = useState('');
+
+
+    // Function to fetch ports data from Firestore
+    const fetchPortsData = async () => {
+        const currentPort = invoiceData.discharge.port;
+        const freightOrigPrice = selectedChatData.freightOrigPrice;
+
+        // Fetch data if the current port is different from the last fetched port
+        // and if freightOrigPrice is valid (exists, not an empty string, and not 0)
+        if (currentPort !== lastFetchedPort && !freightOrigPrice) {
+
+            const docRef = doc(projectExtensionFirestore, 'CustomerCountryPort', 'PortsDoc');
+            try {
+                const docSnap = await getDoc(docRef);
+
+                if (docSnap.exists()) {
+                    const data = docSnap.data();
+                    if (data[currentPort]?.kobePrice !== undefined) {
+
+                        if (invoiceData.departurePort == "Nagoya") {
+
+                            await updateDoc(doc(projectExtensionFirestore, 'chats', selectedChatData.id), {
+                                freightOrigPrice: data[currentPort].nagoyaPrice,
+                            });
+                            // console.log("Nagoya Price ", data[currentPort].nagoyaPrice);
+
+                        }
+                        else if (invoiceData.departurePort == "Yokohama") {
+                            await updateDoc(doc(projectExtensionFirestore, 'chats', selectedChatData.id), {
+                                freightOrigPrice: data[currentPort].yokohamaPrice,
+                            });
+                            // console.log("Yokohama Price ", data[currentPort].yokohamaPrice);
+
+                        }
+                        else if (invoiceData.departurePort == "Kyushu") {
+                            await updateDoc(doc(projectExtensionFirestore, 'chats', selectedChatData.id), {
+                                freightOrigPrice: data[currentPort].kyushuPrice,
+                            });
+                            // console.log("Kyushu Price ", data[currentPort].kyushuPrice);
+
+                        }
+                        else if (invoiceData.departurePort == "Kobe") {
+                            await updateDoc(doc(projectExtensionFirestore, 'chats', selectedChatData.id), {
+                                freightOrigPrice: data[currentPort].kobePrice,
+                            });
+                            // console.log("Kobe Price ", data[currentPort].kobePrice);
+
+                        }
+
+                        setLastFetchedPort(currentPort); // Update last fetched port
+                    } else {
+                        console.log('Port data not found for the given port');
+                    }
+                } else {
+                    console.log('No such document!');
+                }
+            } catch (error) {
+                console.error('Error fetching document:', error);
+            }
+        } else {
+            console.log('No need to fetch new data');
+        }
+    };
+
+
+    // useEffect for fetching ports data
+    // useEffect(() => {
+    //     // Fetch ports data
+    //     const fetchPortsData = async () => {
+    //         const docRef = doc(projectExtensionFirestore, 'CustomerCountryPort', 'PortsDoc');
+
+    //         try {
+    //             const docSnap = await getDoc(docRef);
+
+    //             if (docSnap.exists()) {
+    //                 const data = docSnap.data();
+    //                 setPortsData(data[invoiceData.discharge.port].kobePrice);
+    //                 console.log(data[invoiceData.discharge.port].kobePrice);
+    //             } else {
+    //                 console.log('No such document!');
+    //             }
+    //         } catch (error) {
+    //             console.error('Error fetching document:', error);
+    //         }
+    //     };
+
+    //     fetchPortsData();
+
+    // }, [invoiceData]);
+
+
     const handleModalOpen = () => {
         setModalVisible(true);
         inputPriceRef.current.value = defaultInputPrice;
         calculateTotalAmount();
+
     };
 
     const handleModalClose = () => {
         setModalVisible(false);
 
-    }
+    };
 
 
     const fee = {
@@ -4673,14 +4871,27 @@ const ProfitCalculator = () => {
             setFormattedTotalSCCAmount(formattedTotalAmount);
 
 
-            console.log(defaultInputPrice);
-            console.log(realTotalPriceDollars);
-            console.log(formattedRealTotalPriceDollars);
-            console.log(realTotalPriceYen);
+            // console.log(defaultInputPrice);
+            // console.log(realTotalPriceDollars);
+            // console.log(formattedRealTotalPriceDollars);
+            // console.log(realTotalPriceYen);
 
         }
 
+
+
+
     }, []);
+
+    useEffect(() => {
+        const freightOrigPrice = selectedChatData.freightOrigPrice;
+
+        if (modalVisible && !freightOrigPrice) {
+            fetchPortsData();
+        }
+
+
+    }, [modalVisible]);
 
     useEffect(() => {
 
@@ -5376,22 +5587,22 @@ const PreviewInvoice = () => {
                                                 {/* Buyer Information */}
                                                 <Text style={{
                                                     fontWeight: 750,
-                                                    fontSize: 16 * widthScaleFactor,
+                                                    fontSize: 18 * widthScaleFactor,
                                                     borderBottomWidth: 3, // Adjust the thickness of the underline
                                                     borderBottomColor: '#0A78BE',
                                                     width: 'fit-content', // Make the underline cover the text width
                                                     marginBottom: 5, // Add some space between text and underline
                                                     color: '#0A78BE',
-                                                    marginTop: 20 * heightScaleFactor,
+                                                    marginTop: 25 * heightScaleFactor,
 
                                                 }}>
                                                     {`Buyer Information`}
                                                 </Text>
-                                                <Text style={{ fontWeight: 750, fontSize: 14 * widthScaleFactor, lineHeight: 14 * widthScaleFactor }}>{`${invoiceData.consignee.name}`}</Text>
-                                                <Text style={{ fontWeight: 400, fontSize: 14 * widthScaleFactor, marginTop: 20, lineHeight: 14 * widthScaleFactor }}>{`${invoiceData.consignee.address}`}</Text>
-                                                <Text style={{ fontWeight: 400, fontSize: 14 * widthScaleFactor, marginTop: 20, lineHeight: 14 * widthScaleFactor }}>{`${invoiceData.consignee.email}`}</Text>
-                                                <Text style={{ fontWeight: 400, fontSize: 14 * widthScaleFactor, marginTop: 20, lineHeight: 14 * widthScaleFactor }}>{`${invoiceData.consignee.contactNumber}`}</Text>
-                                                <Text style={{ fontWeight: 400, fontSize: 14 * widthScaleFactor, marginTop: 20, lineHeight: 14 * widthScaleFactor }}>{`FAX: ${invoiceData.consignee.fax == '' ? 'N/A' : invoiceData.consignee.fax}`}</Text>
+                                                <Text style={{ fontWeight: 750, fontSize: 16 * widthScaleFactor, lineHeight: 14 * widthScaleFactor }}>{`${invoiceData.consignee.name}`}</Text>
+                                                <Text style={{ fontWeight: 400, fontSize: 16 * widthScaleFactor, marginTop: 20, lineHeight: 14 * widthScaleFactor }}>{`${invoiceData.consignee.address}`}</Text>
+                                                <Text style={{ fontWeight: 400, fontSize: 16 * widthScaleFactor, marginTop: 20, lineHeight: 14 * widthScaleFactor }}>{`${invoiceData.consignee.email}`}</Text>
+                                                <Text style={{ fontWeight: 400, fontSize: 16 * widthScaleFactor, marginTop: 20, lineHeight: 14 * widthScaleFactor }}>{`${invoiceData.consignee.contactNumber}`}</Text>
+                                                <Text style={{ fontWeight: 400, fontSize: 16 * widthScaleFactor, marginTop: 20, lineHeight: 14 * widthScaleFactor }}>{`FAX: ${invoiceData.consignee.fax == '' ? 'N/A' : invoiceData.consignee.fax}`}</Text>
 
                                             </View>
 
@@ -5399,24 +5610,24 @@ const PreviewInvoice = () => {
                                                 {/* Notify Party */}
                                                 <Text style={{
                                                     fontWeight: 750,
-                                                    fontSize: 16 * widthScaleFactor,
+                                                    fontSize: 18 * widthScaleFactor,
                                                     borderBottomWidth: 3, // Adjust the thickness of the underline
                                                     borderBottomColor: '#FF0000',
                                                     width: 'fit-content', // Make the underline cover the text width
                                                     marginBottom: 5, // Add some space between text and underline
                                                     color: '#FF0000',
-                                                    marginTop: 20 * heightScaleFactor,
+                                                    marginTop: 25 * heightScaleFactor,
                                                 }}>
                                                     {`Notify Party`}
                                                 </Text>
                                                 {invoiceData.notifyParty.sameAsConsignee == true ? (
-                                                    <Text style={{ fontWeight: 400, fontSize: 14 * widthScaleFactor, }}>{`Same as consignee / buyer`}</Text>) :
+                                                    <Text style={{ fontWeight: 400, fontSize: 16 * widthScaleFactor, }}>{`Same as consignee / buyer`}</Text>) :
                                                     (<>
-                                                        <Text style={{ fontWeight: 750, fontSize: 14 * widthScaleFactor, lineHeight: 14 * widthScaleFactor }}>{`${invoiceData.notifyParty.name}`}</Text>
-                                                        <Text style={{ fontWeight: 400, fontSize: 14 * widthScaleFactor, marginTop: 20, lineHeight: 14 * widthScaleFactor }}>{`${invoiceData.notifyParty.address}`}</Text>
-                                                        <Text style={{ fontWeight: 400, fontSize: 14 * widthScaleFactor, marginTop: 20, lineHeight: 14 * widthScaleFactor }}>{`${invoiceData.notifyParty.email}`}</Text>
-                                                        <Text style={{ fontWeight: 400, fontSize: 14 * widthScaleFactor, marginTop: 20, lineHeight: 14 * widthScaleFactor }}>{`${invoiceData.notifyParty.contactNumber}`}</Text>
-                                                        <Text style={{ fontWeight: 400, fontSize: 14 * widthScaleFactor, marginTop: 20, lineHeight: 14 * widthScaleFactor }}>{`FAX: ${invoiceData.notifyParty.fax == '' ? 'N/A' : invoiceData.notifyParty.fax}`}</Text>
+                                                        <Text style={{ fontWeight: 750, fontSize: 16 * widthScaleFactor, lineHeight: 14 * widthScaleFactor }}>{`${invoiceData.notifyParty.name}`}</Text>
+                                                        <Text style={{ fontWeight: 400, fontSize: 16 * widthScaleFactor, marginTop: 20, lineHeight: 14 * widthScaleFactor }}>{`${invoiceData.notifyParty.address}`}</Text>
+                                                        <Text style={{ fontWeight: 400, fontSize: 16 * widthScaleFactor, marginTop: 20, lineHeight: 14 * widthScaleFactor }}>{`${invoiceData.notifyParty.email}`}</Text>
+                                                        <Text style={{ fontWeight: 400, fontSize: 16 * widthScaleFactor, marginTop: 20, lineHeight: 14 * widthScaleFactor }}>{`${invoiceData.notifyParty.contactNumber}`}</Text>
+                                                        <Text style={{ fontWeight: 400, fontSize: 16 * widthScaleFactor, marginTop: 20, lineHeight: 14 * widthScaleFactor }}>{`FAX: ${invoiceData.notifyParty.fax == '' ? 'N/A' : invoiceData.notifyParty.fax}`}</Text>
                                                     </>)}
                                             </View>
 
@@ -5671,7 +5882,7 @@ const PreviewInvoice = () => {
                                     <View style={{
                                         position: 'absolute',
                                         left: 38 * widthScaleFactor,
-                                        top: 577 * heightScaleFactor,
+                                        top: (invoiceData.placeOfDelivery && invoiceData.cfs) || (invoiceData.placeOfDelivery !== '' && invoiceData.cfs !== '') ? 577 * heightScaleFactor : 537 * heightScaleFactor,
                                         width: 718 * widthScaleFactor,
                                         borderWidth: 1 * widthScaleFactor,
                                         borderColor: '#C2E2F4',
@@ -5683,7 +5894,7 @@ const PreviewInvoice = () => {
                                                 <Text
                                                     style={{
                                                         fontWeight: 'bold',
-                                                        fontSize: 10 * widthScaleFactor,
+                                                        fontSize: 12 * widthScaleFactor,
                                                         lineHeight: 14 * widthScaleFactor,
                                                         marginBottom: 3 * heightScaleFactor,
                                                         alignSelf: 'center',
@@ -5698,7 +5909,7 @@ const PreviewInvoice = () => {
                                                 <Text
                                                     style={{
                                                         fontWeight: 'bold',
-                                                        fontSize: 10 * widthScaleFactor,
+                                                        fontSize: 12 * widthScaleFactor,
                                                         lineHeight: 14 * widthScaleFactor,
                                                         marginBottom: 3 * heightScaleFactor,
                                                         alignSelf: 'center',
@@ -5712,7 +5923,7 @@ const PreviewInvoice = () => {
                                                 <Text
                                                     style={{
                                                         fontWeight: 'bold',
-                                                        fontSize: 10 * widthScaleFactor,
+                                                        fontSize: 12 * widthScaleFactor,
                                                         lineHeight: 14 * widthScaleFactor,
                                                         marginBottom: 3 * heightScaleFactor,
                                                         alignSelf: 'center',
@@ -5726,7 +5937,7 @@ const PreviewInvoice = () => {
                                                 <Text
                                                     style={{
                                                         fontWeight: 'bold',
-                                                        fontSize: 10 * widthScaleFactor,
+                                                        fontSize: 12 * widthScaleFactor,
                                                         lineHeight: 14 * widthScaleFactor,
                                                         marginBottom: 3 * heightScaleFactor,
                                                         alignSelf: 'center',
@@ -6154,18 +6365,21 @@ const PreviewInvoice = () => {
                                                             top: 51 * heightScaleFactor,
                                                             left: 50 * widthScaleFactor,
                                                             position: 'absolute',
-                                                        }}>{"Total"}
-                                                        </Text>
-                                                        <Text style={{
-                                                            fontWeight: 700,
-                                                            fontSize: 12 * widthScaleFactor,
-                                                            lineHeight: 14 * widthScaleFactor,
-                                                            marginBottom: 3 * heightScaleFactor,
-                                                            alignSelf: 'center',
-                                                            color: '#00720B',
                                                         }}>
-                                                            {`$${invoiceData.paymentDetails.totalAmount}`}
+                                                            {"Total"}
+                                                            <Text style={{
+                                                                fontWeight: 700,
+                                                                fontSize: 12 * widthScaleFactor,
+                                                                lineHeight: 14 * widthScaleFactor,
+                                                                marginBottom: 3 * heightScaleFactor,
+                                                                alignSelf: 'center',
+                                                                color: '#00720B',
+                                                                marginLeft: 5 * widthScaleFactor,
+                                                            }}>
+                                                                {`$${invoiceData.paymentDetails.totalAmount}`}
+                                                            </Text>
                                                         </Text>
+
                                                     </>
                                                 ) : (
                                                     <Text>{' '}</Text>
@@ -7041,6 +7255,28 @@ const ReadByListModal = ({ userEmail, handleReadByListModalClose }) => {
     );
 }
 
+const ImagePreviewModal = ({ isVisible, onClose, imageUrl }) => {
+    return (
+        <Modal isOpen={isVisible} onClose={onClose} size="full" useRNModal>
+            <Modal.Content
+                style={{
+                    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+                    width: '80%',
+                    height: '80%',
+                    alignSelf: 'center',
+                    justifyContent: 'center',
+                }}>
+                <Modal.CloseButton />
+                <FastImage
+                    source={{ uri: imageUrl, priority: FastImage.priority.normal }}
+                    style={{ width: '100%', height: '100%', borderRadius: 10 }}
+                    resizeMode={FastImage.resizeMode.contain}
+                />
+            </Modal.Content>
+        </Modal>
+    );
+};
+
 const ChatMessageBox = ({ activeButtonValue, userEmail }) => {
     const chatListData = useSelector((state) => state.chatListData);
     const chatMessagesData = useSelector((state) => state.chatMessagesData);
@@ -7050,6 +7286,29 @@ const ChatMessageBox = ({ activeButtonValue, userEmail }) => {
     const noMoreMessagesData = useSelector((state) => state.noMoreMessagesData);
     const [isEyeHovered, setIsEyeHovered] = useState(false);
     const flatListRef = useRef();
+    const [hoveredImageIndex, setHoveredImageIndex] = useState(null);
+
+    const [selectedImageIndex, setSelectedImageIndex] = useState(null);
+    const [isPreviewVisible, setIsPreviewVisible] = useState(false);
+
+    const openPreview = (index) => {
+        setSelectedImageIndex(index);
+        setIsPreviewVisible(true);
+    };
+
+    const closePreview = () => {
+        setIsPreviewVisible(false);
+        setSelectedImageIndex(null);
+    };
+
+
+    const handleImageMessageMouseEnter = (index) => {
+        setHoveredImageIndex(index);
+    };
+
+    const handleImageMessageMouseLeave = () => {
+        setHoveredImageIndex(null);
+    };
 
     const dispatch = useDispatch();
 
@@ -7347,6 +7606,7 @@ const ChatMessageBox = ({ activeButtonValue, userEmail }) => {
     const renderItem = ({ item, index }) => {
         const isGlobalCustomerSender = item.sender === globalCustomerId;
         const isLastMessage = index === 0; // Since the list is inverted, the first item is actually the last message
+        const isHovered = hoveredImageIndex === index;
 
 
         return (
@@ -7531,8 +7791,115 @@ const ChatMessageBox = ({ activeButtonValue, userEmail }) => {
                 }
 
 
+                {!item.messageType && item.file && item.file.type == 'image' &&
+                    <View style={{ flexDirection: 'column', alignItems: isGlobalCustomerSender ? 'flex-start' : 'flex-end', flex: 1 }}>
+                        <View style={{ flexDirection: isGlobalCustomerSender ? 'row' : 'row-reverse', flex: 1, }}>
+                            <View style={{
+                                flexDirection: isGlobalCustomerSender ? 'row' : 'row-reverse',
+                                flex: 1,
+                            }}>
+                                <View style={{
+                                    padding: 0,
+                                    borderRadius: 20,
+                                    backgroundColor: isGlobalCustomerSender ? '#EFEFEF' : '#0A7CFF',
+                                    marginLeft: isGlobalCustomerSender ? 10 : 0,
+                                    marginRight: isGlobalCustomerSender ? 0 : 10,
+                                    flexShrink: 1,
+                                }}>
+                                    <Pressable
+                                        onMouseEnter={() => handleImageMessageMouseEnter(index)}
+                                        onMouseLeave={handleImageMessageMouseLeave}
+                                        onPress={() => openPreview(index)}
+                                    >
+                                        <FastImage
+                                            source={{ uri: item.file.url, priority: FastImage.priority.normal }}
+                                            style={{
+                                                width: 350,
+                                                height: 350,
+                                                borderRadius: 20,
+                                                alignSelf: 'center',
 
-                {!item.messageType &&
+                                            }}
+                                            resizeMode={FastImage.resizeMode.contain}
+                                        />
+                                        {isHovered && (
+                                            <View style={{
+                                                ...StyleSheet.absoluteFillObject,
+                                                backgroundColor: 'rgba(0, 0, 0, 0.2)', // Semi-transparent black
+                                                borderRadius: 20,
+                                            }} />
+                                        )}
+                                    </Pressable>
+
+                                </View>
+                            </View>
+
+                            {/* Display read status text outside of the message bubble */}
+                            {isLastMessage && selectedChatData.customerRead && !isGlobalCustomerSender && (
+                                <Tooltip label="Already read by the customer" openDelay={200} bgColor={'#FAFAFA'} _text={{ color: '#1C2B33', }}>
+                                    <View style={{
+                                        alignSelf: 'flex-end',
+                                        marginLeft: isGlobalCustomerSender ? 8 : 0,
+                                        marginRight: isGlobalCustomerSender ? 0 : 8,
+                                        alignSelf: 'center',
+                                    }}>
+                                        <Ionicons name="mail-open" size={20} color={'#1B81C2'} />
+                                    </View>
+                                </Tooltip>
+                            )}
+
+                            {isLastMessage && !selectedChatData.customerRead && !isGlobalCustomerSender && (
+                                <Tooltip label="Message sent to the customer" openDelay={200} bgColor={'#FAFAFA'} _text={{ color: '#1C2B33', }}>
+                                    <View style={{
+                                        alignSelf: 'flex-end',
+                                        marginLeft: isGlobalCustomerSender ? 8 : 0,
+                                        marginRight: isGlobalCustomerSender ? 0 : 8,
+                                        alignSelf: 'center',
+                                    }}>
+                                        <Ionicons name="mail" size={20} color={'#1B81C2'} />
+                                    </View>
+                                </Tooltip>
+                            )}
+                            {isLastMessage && selectedChatData.readBy.length > 0 && (
+                                <View style={{
+                                    alignSelf: 'flex-end',
+                                    marginLeft: isGlobalCustomerSender ? 8 : 0,
+                                    marginRight: isGlobalCustomerSender ? 0 : 8,
+                                    alignSelf: 'center',
+                                }}>
+                                    <Pressable
+                                        focusable={false}
+                                        onHoverIn={() => setIsEyeHovered(true)}
+                                        onHoverOut={() => setIsEyeHovered(false)}
+                                        onPress={handleReadByListModalOpen}
+
+                                    >
+                                        <Entypo name="eye" size={20} color={isEyeHovered ? '#c5d1ce' : '#75A99C'} />
+                                    </Pressable>
+                                </View>
+                            )}
+                        </View>
+
+                        {/* Additional message properties like timestamp and sender */}
+                        <Text style={{
+                            fontWeight: '300',
+                            color: 'gray',
+                            fontSize: 11,
+                            marginTop: 4,
+                            marginBottom: 4,
+                            marginLeft: isGlobalCustomerSender ? 15 : 0,
+                            marginRight: isGlobalCustomerSender ? 0 : 15,
+                        }}
+                            selectable>
+                            {!isGlobalCustomerSender ?
+                                (`${formatDate(item.timestamp)} - ${extractUsernameFromEmail(item.sender)}${item.ip ? ` - ${item.ip}` : ''}${item.ipCountry ? ` - ${item.ipCountry}` : ''}`)
+                                : (`${formatDate(item.timestamp)}${item.ip ? ` - ${item.ip}${item.ipCountry ? ` - ${item.ipCountry}` : ''}` : ''}`)
+                            }
+                        </Text>
+
+                    </View>}
+
+                {!item.messageType && !item.file &&
                     <View style={{ flexDirection: 'column', alignItems: isGlobalCustomerSender ? 'flex-start' : 'flex-end', flex: 1 }}>
                         <View style={{ flexDirection: isGlobalCustomerSender ? 'row' : 'row-reverse', flex: 1, }}>
                             <View style={{
@@ -7637,6 +8004,13 @@ const ChatMessageBox = ({ activeButtonValue, userEmail }) => {
                     onEndReached={handleLoadMoreMessages}
                     inverted
                 />
+                {selectedImageIndex !== null && (
+                    <ImagePreviewModal
+                        isVisible={isPreviewVisible}
+                        onClose={closePreview}
+                        imageUrl={chatMessagesData[selectedImageIndex].file.url}
+                    />
+                )}
                 <ReadByListModal userEmail={userEmail} handleReadByListModalClose={handleReadByListModalClose} />
             </>
         ) : null
