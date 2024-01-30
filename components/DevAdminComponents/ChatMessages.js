@@ -953,18 +953,167 @@ const MessageTemplate = ({ textInputRef }) => {
     );
 };
 
+
+const FileDisplay = ({ file, onRemove }) => {
+    const iconSize = 24;
+    if (!file) return null;  // Define the icon size
+
+
+
+
+    const getFileIcon = (type) => {
+        if (type.includes('pdf')) {
+            return <MaterialIcons name={'picture-as-pdf'} size={iconSize} color="#FF0000" />; // Red for PDF
+        }
+        if (type.includes('msword') || type.includes('wordprocessingml')) {
+            return <MaterialCommunityIcons name={'microsoft-word'} size={iconSize} color="#2B579A" />; // Blue for Word
+        }
+        if (type.includes('vnd.ms-excel') || type.includes('spreadsheetml')) {
+            return <MaterialCommunityIcons name={'microsoft-excel'} size={iconSize} color="#217346" />; // Green for Excel
+        }
+        if (type.includes('rar') || type.includes('x-rar-compressed') || type.includes('x-compressed')) {
+            return <FastImage
+                source={{ uri: require('../../assets/rar_icon.png'), priority: FastImage.priority.high }}
+                style={{
+                    width: 24,
+                    height: 24,
+                }}
+                resizeMode={FastImage.resizeMode.cover}
+            />; // Color of your choice for RAR files
+        }
+
+        return <MaterialIcons name="insert-drive-file" size={iconSize} color="black" />; // Default color for others
+    };
+
+    return (
+        <View style={{ flexDirection: 'row', alignItems: 'center', margin: 5 }}>
+            {getFileIcon(file.type)}
+            <Text style={{ marginLeft: 10 }}>{file.name}</Text>
+            <Pressable onPress={onRemove}>
+                <MaterialIcons name="close" size={20} color="black" />
+            </Pressable>
+        </View>
+    );
+};
+
 const ChatInputText = () => {
     const selectedChatData = useSelector((state) => state.selectedChatData);
+    const activeChatId = useSelector((state) => state.activeChatId);
 
     const [isSendHovered, setIsSendHovered] = useState(false);
+    const [selectedFile, setSelectedFile] = useState(null);
+    const [selectedFilePreview, setSelectedFilePreview] = useState(null);
+    const [selectedImage, setSelectedImage] = useState(null);
     const [imageUri, setImageUri] = useState(null);
+    const [fileUri, setFileUri] = useState(null);
+    const [fileName, setFileName] = useState('');
     const [isSendImageHovered, setIsSendImageHovered] = useState(false);
-
-
+    const [isSendAttachmentHovered, setIsSendAttachmentHovered] = useState(false);
+    const [sendIsLoading, setSendIsLoading] = useState(false);
     const textInputRef = useRef(null);
 
-    const selectImage = async () => {
+    const removeImage = () => {
+        setImageUri(null);
+        setSelectedImage(null);
+        setFileName(null);
+
+    };
+
+    const removeFile = () => {
+        setSelectedFile(null);
+        setSelectedFilePreview(null);
+        setFileUri(null);
+        setFileName(null);
+
+
+    };
+
+    const selectFile = async () => {
+        const maxFileSize = 10 * 1024 * 1024; // 5MB in bytes
+
         if (Platform.OS === 'web') {
+            return new Promise((resolve, reject) => {
+                const input = document.createElement('input');
+                input.type = 'file';
+                input.accept = '.pdf, .doc, .docx, .xls, .xlsx, .rar'; // Acceptable file types
+                input.onchange = () => {
+                    const file = input.files[0];
+
+                    if (file) {
+                        if (![
+                            'application/pdf',
+                            'application/msword',
+                            'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+                            'application/vnd.ms-excel',
+                            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                            'application/x-rar-compressed',
+                            'application/x-compressed'
+                        ].includes(file.type)) {
+                            alert('File type not allowed');
+                            reject('File type not allowed');
+                            return;
+                        }
+
+                        if (file.size > maxFileSize) {
+                            alert('File size should be less than 10MB');
+                            reject('File size should be less than 10MB');
+                            return;
+                        }
+                        removeImage();
+                        // Read the file as a Data URL and set it in the state
+                        const reader = new FileReader();
+                        reader.onload = (e) => {
+                            setFileUri(e.target.result);
+                            resolve(file);
+                            setSelectedFile(file);
+                            setSelectedFilePreview({ name: file.name, type: file.type });
+                            setFileName(file.name);
+                            textInputRef.current.focus();
+                        };
+                        reader.onerror = (e) => {
+                            reject(e);
+                        };
+                        reader.readAsDataURL(file);
+                    }
+                };
+                input.click();
+            });
+        } else {
+            return new Promise((resolve, reject) => {
+                launchImageLibrary({ mediaType: 'photo' }, (response) => {
+                    if (response.didCancel) {
+                        reject('User cancelled image picker');
+                    } else if (response.errorCode) {
+                        reject(response.errorMessage);
+                    } else {
+                        const asset = response.assets[0];
+
+                        if (!asset.type.startsWith('image/')) {
+                            reject('Only image files are allowed');
+                            return;
+                        }
+
+                        if (asset.fileSize > maxFileSize) {
+                            reject('File size should be less than 10MB');
+                            return;
+                        }
+
+                        const selectedImageUri = asset.uri;
+                        const fileName = asset.fileName || 'Unknown name';
+                        resolve({ uri: selectedImageUri, name: fileName });
+                        setImageUri(selectedImageUri); // Set imageUri here
+                        console.log(`File name: ${fileName}`);
+                    }
+                });
+            });
+        }
+    };
+
+    const selectImage = async () => {
+        const maxFileSize = 10 * 1024 * 1024; // 5MB in bytes
+
+        if (Platform.OS === 'web') {
+
             return new Promise((resolve, reject) => {
                 const input = document.createElement('input');
                 input.type = 'file';
@@ -972,9 +1121,27 @@ const ChatInputText = () => {
                 input.onchange = () => {
                     const file = input.files[0];
                     if (file) {
+
+                        if (!file.type.startsWith('image/')) {
+                            reject('Only image files are allowed');
+                            return;
+                        }
+
+                        if (file.size > maxFileSize) {
+                            reject('File size should be less than 10MB');
+                            return;
+                        }
+
+                        removeFile();
                         const reader = new FileReader();
                         reader.readAsDataURL(file);
-                        reader.onload = () => resolve(reader.result);
+                        reader.onload = () => {
+                            resolve({ dataUrl: reader.result, name: file.name });
+                            setImageUri(reader.result); // Set imageUri here
+                            setFileName(file.name);
+                            console.log(`File name: ${file.name}`);
+                        };
+                        setSelectedImage(file);
                         reader.onerror = error => reject(error);
                     }
                 };
@@ -988,63 +1155,199 @@ const ChatInputText = () => {
                     } else if (response.errorCode) {
                         reject(response.errorMessage);
                     } else {
-                        resolve(response.assets[0].uri);
+                        const asset = response.assets[0];
+
+                        if (!asset.type.startsWith('image/')) {
+                            reject('Only image files are allowed');
+                            return;
+                        }
+
+                        if (asset.fileSize > maxFileSize) {
+                            reject('File size should be less than 10MB');
+                            return;
+                        }
+
+                        const selectedImageUri = asset.uri;
+                        const fileName = asset.fileName || 'Unknown name';
+                        resolve({ uri: selectedImageUri, name: fileName });
+                        setImageUri(selectedImageUri); // Set imageUri here
+                        console.log(`File name: ${fileName}`);
                     }
                 });
             });
         }
     };
 
-    const addImageMessage = async () => {
+    const resizeImage = (file) => {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.readAsDataURL(file);
+            reader.onload = (event) => {
+                const img = new Image();
+                img.src = event.target.result;
+                img.onload = () => {
+                    const canvas = document.createElement('canvas');
+                    const ctx = canvas.getContext('2d');
 
+                    // Set your desired image size here
+                    const maxWidth = 800; // Example value
+                    const maxHeight = 800; // Example value
+                    let width = img.width;
+                    let height = img.height;
+
+                    if (width > height) {
+                        if (width > maxWidth) {
+                            height *= maxWidth / width;
+                            width = maxWidth;
+                        }
+                    } else {
+                        if (height > maxHeight) {
+                            width *= maxHeight / height;
+                            height = maxHeight;
+                        }
+                    }
+
+                    canvas.width = width;
+                    canvas.height = height;
+                    ctx.drawImage(img, 0, 0, width, height);
+                    canvas.toBlob((blob) => {
+                        resolve(new File([blob], file.name, {
+                            type: 'image/jpeg',
+                            lastModified: Date.now()
+                        }));
+                    }, 'image/jpeg', 0.7); // Adjust the quality (0.7 is a good balance between quality and file size)
+                };
+                img.onerror = error => reject(error);
+            };
+            reader.onerror = error => reject(error);
+        });
+    };
+
+    const addFileMessage = async () => {
+        setSendIsLoading(true);
         const response = await axios.get('https://worldtimeapi.org/api/timezone/Asia/Tokyo');
         const { datetime } = response.data;
         const formattedTime = moment(datetime).format('YYYY/MM/DD [at] HH:mm:ss.SSS');
-        const year = moment(datetime).format('YYYY');
-        const month = moment(datetime).format('MM');
-        const monthWithDay = moment(datetime).format('MM/DD');
-        const date = moment(datetime).format('YYYY/MM/DD');
-        const day = moment(datetime).format('DD');
-        const time = moment(datetime).format('HH:mm');
-        const timeWithMinutesSeconds = moment(datetime).format('HH:mm:ss');
+        const formattedTimeForFile = moment(datetime).format('MMDDYYYYHHmmss.SSS');
 
+        const email = projectControlAuth.currentUser ? projectControlAuth.currentUser.email : '';
         const inputValue = textInputRef.current?.value;
 
         textInputRef.current.clear();
         textInputRef.current.focus();
 
-        if (inputValue !== '') {
-            const email = projectControlAuth.currentUser ? projectControlAuth.currentUser.email : '';
+        const storage = getStorage(projectExtensionFirebase);
+
+        if (fileUri) { // Assuming you have a fileUri state for the selected file
+
             try {
+
+                let fileUrl = null;
+                if (fileUri) {
+                    // Upload file and get URL
+                    const fileRef = ref(storage, `ChatFiles/${selectedChatData.id}/C-HUB_${formattedTimeForFile}/${fileName}`);
+                    const uploadResult = await uploadBytes(fileRef, selectedFile);
+                    fileUrl = await getDownloadURL(uploadResult.ref);
+                }
 
                 // Adding the message to the 'messages' subcollection
                 await addDoc(collection(projectExtensionFirestore, 'chats', selectedChatData.id, 'messages'), {
                     text: inputValue.trim(),
                     sender: email,
-                    timestamp: formattedTime, // Using the fetched timestamp
-                    ip: ip, // IP Address
-                    ipCountry: ipCountry // Country of the IP Address
+                    timestamp: formattedTime,
+                    ip: ip,
+                    ipCountry: ipCountry,
+                    file: {
+                        name: fileName,
+                        type: 'attachment', // Set the file type
+                        url: fileUrl,
+                    } // Include file URL if available
                 });
-
 
                 // Updating the main chat document with the latest message details
                 await updateDoc(doc(projectExtensionFirestore, 'chats', selectedChatData.id), {
                     lastMessageSender: email,
-                    lastMessage: inputValue,
+                    lastMessage: `Sent an attachment`,
                     lastMessageDate: formattedTime,
                     customerRead: false,
                     read: true,
                     readBy: [email],
                 });
+
+                setSendIsLoading(false);
+                removeFile();
 
             } catch (e) {
                 console.error('Error adding document: ', e);
             }
         }
-
     };
 
+
+    const addImageMessage = async () => {
+        setSendIsLoading(true);
+        const response = await axios.get('https://worldtimeapi.org/api/timezone/Asia/Tokyo');
+        const { datetime } = response.data;
+        const formattedTime = moment(datetime).format('YYYY/MM/DD [at] HH:mm:ss.SSS');
+        const formattedTimeForFile = moment(datetime).format('MMDDYYYYHHmmss.SSS');
+
+        const email = projectControlAuth.currentUser ? projectControlAuth.currentUser.email : '';
+        const inputValue = textInputRef.current?.value;
+
+        textInputRef.current.clear();
+        textInputRef.current.focus();
+
+        const storage = getStorage(projectExtensionFirebase);
+
+        if (imageUri) { // Assuming imageFile holds the file to be uploaded
+
+            try {
+                let imageUrl = null;
+                if (imageUri) {
+                    // Upload image and get URL
+                    const resizedImage = await resizeImage(selectedImage);
+                    const imageRef = ref(storage, `ChatFiles/${selectedChatData.id}/C-HUB_${formattedTimeForFile}/${fileName}`);
+                    const uploadResult = await uploadBytes(imageRef, resizedImage);
+                    imageUrl = await getDownloadURL(uploadResult.ref);
+                }
+
+                // Adding the message to the 'messages' subcollection
+                await addDoc(collection(projectExtensionFirestore, 'chats', selectedChatData.id, 'messages'), {
+                    text: inputValue.trim(),
+                    sender: email,
+                    timestamp: formattedTime,
+                    ip: ip,
+                    ipCountry: ipCountry,
+                    file: {
+                        name: fileName,
+                        type: 'image',
+                        url: imageUrl,
+                    } // Include image URL if available
+                });
+
+                // Updating the main chat document with the latest message details
+                await updateDoc(doc(projectExtensionFirestore, 'chats', selectedChatData.id), {
+                    lastMessageSender: email,
+                    lastMessage: 'Sent an image',
+                    lastMessageDate: formattedTime,
+                    customerRead: false,
+                    read: true,
+                    readBy: [email],
+                });
+
+                setSendIsLoading(false);
+                setImageUri(null);
+                setFileName(null);
+
+            } catch (e) {
+                console.error('Error adding document: ', e);
+            }
+        }
+    };
+
+
     const addMessage = async () => {
+        setSendIsLoading(true);
 
         const response = await axios.get('https://worldtimeapi.org/api/timezone/Asia/Tokyo');
         const { datetime } = response.data;
@@ -1085,10 +1388,14 @@ const ChatInputText = () => {
                     read: true,
                     readBy: [email],
                 });
+                setSendIsLoading(false);
 
             } catch (e) {
                 console.error('Error adding document: ', e);
             }
+        }
+        else {
+            setSendIsLoading(true);
         }
 
     };
@@ -1104,54 +1411,121 @@ const ChatInputText = () => {
             // Check if 'Enter' key is pressed
             if (e.nativeEvent.key === 'Enter' && !e.nativeEvent.shiftKey) {
                 e.preventDefault(); // Prevent the default behavior of adding a new line
-                addMessage();
+                handleSendMessage();
+
             }
         }
     };
 
+
+    const handleSendMessage = () => {
+
+        if (imageUri !== null) {
+            addImageMessage();
+        }
+        if (fileUri !== null) {
+            addFileMessage();
+        }
+        else {
+            addMessage();
+        }
+
+    }
+
     return (
 
         <View style={{ width: '98%', flexDirection: 'row', borderWidth: 1, borderColor: '#D9D9D9', borderRadius: 10, }}>
-            <View style={{ marginHorizontal: 5, marginTop: 5, }}>
-                <FastImage
-                    source={{ uri: 'https://firebasestorage.googleapis.com/v0/b/samplermj.appspot.com/o/C-HUB%20Logos%2FRMJ%20Round.jpg?alt=media&token=90d7f2fe-d9cd-4a6f-9a6b-bc39fe2b33b2', priority: FastImage.priority.high }}
-                    style={{
-                        width: 30,
-                        height: 30,
-                        borderRadius: 15,
-                    }}
-                    resizeMode={FastImage.resizeMode.cover}
-                />
+
+
+            <View style={{ flexDirection: 'column', flex: 1, }}>
+
+                {fileUri &&
+                    (
+                        <FileDisplay file={selectedFilePreview} onRemove={removeFile} />
+
+                    )}
+
+                {imageUri && (
+                    <View style={{
+                        position: 'relative', // Make sure the parent View is positioned relative
+                        width: 70,
+                        height: 70,
+                        borderRadius: 5,
+                        overflow: 'hidden', // This ensures that nothing spills out of the container
+                        borderWidth: 1,
+                        borderColor: '#DADDE1',
+                        margin: 2,
+                    }}>
+                        <FastImage
+                            source={{ uri: imageUri }}
+                            style={{ width: '100%', height: '100%', borderRadius: 10 }}
+                            resizeMode={FastImage.resizeMode.cover}
+                        />
+                        <Pressable
+                            onPress={removeImage}
+                            style={{
+                                position: 'absolute',
+                                top: 0,
+                                right: 0,
+                                backgroundColor: 'rgba(255, 255, 255, 0.6)', // Semi-transparent background for better visibility
+                                borderRadius: 12 // Circular shape
+                            }}
+                        >
+                            <MaterialIcons name="close" size={20} color="black" />
+                        </Pressable>
+                    </View>
+
+                )}
+                <View style={{ flexDirection: 'row', }}>
+                    <View style={{ marginHorizontal: 5, marginTop: 5, }}>
+                        <FastImage
+                            source={{ uri: 'https://firebasestorage.googleapis.com/v0/b/samplermj.appspot.com/o/C-HUB%20Logos%2FRMJ%20Round.jpg?alt=media&token=90d7f2fe-d9cd-4a6f-9a6b-bc39fe2b33b2', priority: FastImage.priority.high }}
+                            style={{
+                                width: 30,
+                                height: 30,
+                                borderRadius: 15,
+                            }}
+                            resizeMode={FastImage.resizeMode.cover}
+                        />
+                    </View>
+                    <TextInput
+                        ref={textInputRef}
+                        multiline
+                        placeholder='Send a message...'
+                        placeholderTextColor={'#9B9E9F'}
+                        onKeyPress={handleKeyPress}
+                        style={{ outlineStyle: 'none', width: '100%', height: 80, alignSelf: 'center', padding: 10 }}
+                    />
+                    <Pressable
+                        focusable={false}
+                        onPress={() => sendIsLoading ? null : handleSendMessage()}
+                        onHoverIn={() => setIsSendHovered(true)}
+                        onHoverOut={() => setIsSendHovered(false)}
+                        style={({ pressed }) => [
+                            {
+                                padding: 10,
+                                top: 20,
+                                right: 10,
+                                position: 'absolute',
+                                borderRadius: 20,
+                                backgroundColor: isSendHovered ? '#e8f4ff' : 'transparent', // Change color on hover
+                                opacity: pressed ? 0.5 : 1 // Change opacity when pressed
+                            }
+                        ]}
+                    >
+                        {sendIsLoading ? <Spinner
+                            animating
+                            size="sm"
+                            color={"#95BCF9"}
+                        /> :
+                            <MaterialIcons name="send" size={24} color="#95BCF9" />
+                        }
+                    </Pressable>
+
+                </View>
+
             </View>
 
-            <TextInput
-                ref={textInputRef}
-                multiline
-                placeholder='Send a message...'
-                placeholderTextColor={'#9B9E9F'}
-                onKeyPress={handleKeyPress}
-                style={{ outlineStyle: 'none', width: '100%', height: 80, alignSelf: 'center', padding: 10 }}
-            />
-
-            <Pressable
-                focusable={false}
-                onPress={addMessage}
-                onHoverIn={() => setIsSendHovered(true)}
-                onHoverOut={() => setIsSendHovered(false)}
-                style={({ pressed }) => [
-                    {
-                        padding: 10,
-                        top: 20,
-                        right: 10,
-                        position: 'absolute',
-                        borderRadius: 20,
-                        backgroundColor: isSendHovered ? '#e8f4ff' : 'transparent', // Change color on hover
-                        opacity: pressed ? 0.5 : 1 // Change opacity when pressed
-                    }
-                ]}
-            >
-                <MaterialIcons name="send" size={24} color="#95BCF9" />
-            </Pressable>
 
             <Pressable
                 onHoverIn={() => setIsSendImageHovered(true)}
@@ -1169,6 +1543,24 @@ const ChatInputText = () => {
                 onPress={selectImage}
             >
                 <Ionicons name="image-outline" size={24} color={isSendImageHovered ? "#0A78BE" : "#C1C1C1"} />
+            </Pressable>
+
+            <Pressable
+                onHoverIn={() => setIsSendAttachmentHovered(true)}
+                onHoverOut={() => setIsSendAttachmentHovered(false)}
+                style={({ pressed }) => [
+                    {
+                        padding: 10,
+                        bottom: -9,
+                        right: 155,
+                        position: 'absolute',
+                        borderRadius: 20,
+                        opacity: pressed ? 0.5 : 1 // Change opacity when pressed
+                    }
+                ]}
+                onPress={selectFile}
+            >
+                <MaterialIcons name="attach-file" size={24} color={isSendAttachmentHovered ? "#0A78BE" : "#C1C1C1"} />
             </Pressable>
 
             <MessageTemplate textInputRef={textInputRef} />
@@ -7596,7 +7988,35 @@ const ChatMessageBox = ({ activeButtonValue, userEmail }) => {
 
 
 
+    const getFileIcon = (fileName) => {
+        const iconSize = 24;
+        const lowerFileName = fileName.toLowerCase();
 
+        if (lowerFileName.endsWith('.pdf')) {
+            return <MaterialIcons name={'picture-as-pdf'} size={iconSize} color="white" />;
+        }
+        // Add more conditions for other file types as needed
+        // Example for .docx files
+        if (lowerFileName.endsWith('.docx') || lowerFileName.endsWith('.doc')) {
+            return <MaterialCommunityIcons name={'microsoft-word'} size={iconSize} color="white" />;
+        }
+        if (lowerFileName.endsWith('.xlsx') || lowerFileName.endsWith('.xls')) {
+            return <MaterialCommunityIcons name={'microsoft-excel'} size={iconSize} color="white" />;
+        }
+
+        if (lowerFileName.endsWith('.rar') || lowerFileName.endsWith('.zip')) {
+            return <FastImage
+                source={{ uri: require('../../assets/rar_icon.png'), priority: FastImage.priority.high }}
+                style={{
+                    width: iconSize,
+                    height: iconSize,
+                }}
+                resizeMode={FastImage.resizeMode.cover}
+            />;;
+        }
+        // Default icon if no specific type is matched
+        return <MaterialIcons name="insert-drive-file" size={iconSize} color="black" />;
+    };
 
     const isUrlForText = (text) => {
         const urlPattern = new RegExp('^(http://www\\.|https://www\\.|http://|https://)[a-z0-9]+([\\-\\.]{1}[a-z0-9]+)*\\.[a-z]{2,5}(:[0-9]{1,5})?(/.*)?$');
@@ -7791,15 +8211,30 @@ const ChatMessageBox = ({ activeButtonValue, userEmail }) => {
                 }
 
 
-                {!item.messageType && item.file && item.file.type == 'image' &&
+                {!item.messageType && item.file && item.file.type == 'attachment' &&
                     <View style={{ flexDirection: 'column', alignItems: isGlobalCustomerSender ? 'flex-start' : 'flex-end', flex: 1 }}>
-                        <View style={{ flexDirection: isGlobalCustomerSender ? 'row' : 'row-reverse', flex: 1, }}>
+                        {item.text && item.text !== '' &&
+                            <View style={{
+                                marginBottom: 5,
+                                padding: 10,
+                                borderRadius: 20,
+                                backgroundColor: isGlobalCustomerSender ? '#EFEFEF' : '#0A7CFF',
+                                marginLeft: isGlobalCustomerSender ? 10 : 0,
+                                marginRight: isGlobalCustomerSender ? 0 : 10,
+                                flexShrink: 1,
+                            }}>
+                                {renderItemText(isGlobalCustomerSender, item.text.trim())}
+                            </View>
+                        }<View style={{ flexDirection: isGlobalCustomerSender ? 'row' : 'row-reverse', flex: 1, }}>
+
                             <View style={{
                                 flexDirection: isGlobalCustomerSender ? 'row' : 'row-reverse',
                                 flex: 1,
                             }}>
+
                                 <View style={{
-                                    padding: 0,
+                                    marginBottom: 5,
+                                    padding: 10,
                                     borderRadius: 20,
                                     backgroundColor: isGlobalCustomerSender ? '#EFEFEF' : '#0A7CFF',
                                     marginLeft: isGlobalCustomerSender ? 10 : 0,
@@ -7807,32 +8242,157 @@ const ChatMessageBox = ({ activeButtonValue, userEmail }) => {
                                     flexShrink: 1,
                                 }}>
                                     <Pressable
+                                        onPress={() => {
+                                            Linking.openURL(item.file.url).catch((err) => console.error("Couldn't load page", err));
+                                        }}
+                                        style={{ flexDirection: 'row', }}
+                                    >
+                                        <View style={{ marginRight: 5, }}>
+                                            {getFileIcon(item.file.name)}
+                                        </View>
+
+                                        <Text underline selectable style={{
+                                            fontWeight: 400,
+                                            color: isGlobalCustomerSender ? 'black' : 'white',
+                                            fontSize: 16,
+                                        }}>
+                                            {item.file.name.trim()}
+                                        </Text>
+                                    </Pressable>
+                                </View>
+                            </View>
+
+
+                            {/* Display read status text outside of the message bubble */}
+                            {isLastMessage && selectedChatData.customerRead && !isGlobalCustomerSender && (
+                                <Tooltip label="Already read by the customer" openDelay={200} bgColor={'#FAFAFA'} _text={{ color: '#1C2B33', }}>
+                                    <View style={{
+                                        alignSelf: 'flex-end',
+                                        marginLeft: isGlobalCustomerSender ? 8 : 0,
+                                        marginRight: isGlobalCustomerSender ? 0 : 8,
+                                        alignSelf: 'center',
+                                    }}>
+                                        <Ionicons name="mail-open" size={20} color={'#1B81C2'} />
+                                    </View>
+                                </Tooltip>
+                            )}
+
+                            {isLastMessage && !selectedChatData.customerRead && !isGlobalCustomerSender && (
+                                <Tooltip label="Message sent to the customer" openDelay={200} bgColor={'#FAFAFA'} _text={{ color: '#1C2B33', }}>
+                                    <View style={{
+                                        alignSelf: 'flex-end',
+                                        marginLeft: isGlobalCustomerSender ? 8 : 0,
+                                        marginRight: isGlobalCustomerSender ? 0 : 8,
+                                        alignSelf: 'center',
+                                    }}>
+                                        <Ionicons name="mail" size={20} color={'#1B81C2'} />
+                                    </View>
+                                </Tooltip>
+                            )}
+                            {isLastMessage && selectedChatData.readBy.length > 0 && (
+                                <View style={{
+                                    alignSelf: 'flex-end',
+                                    marginLeft: isGlobalCustomerSender ? 8 : 0,
+                                    marginRight: isGlobalCustomerSender ? 0 : 8,
+                                    alignSelf: 'center',
+                                }}>
+                                    <Pressable
+                                        focusable={false}
+                                        onHoverIn={() => setIsEyeHovered(true)}
+                                        onHoverOut={() => setIsEyeHovered(false)}
+                                        onPress={handleReadByListModalOpen}
+
+                                    >
+                                        <Entypo name="eye" size={20} color={isEyeHovered ? '#c5d1ce' : '#75A99C'} />
+                                    </Pressable>
+                                </View>
+                            )}
+                        </View>
+
+                        {/* Additional message properties like timestamp and sender */}
+                        <Text style={{
+                            fontWeight: '300',
+                            color: 'gray',
+                            fontSize: 11,
+                            marginTop: 4,
+                            marginBottom: 4,
+                            marginLeft: isGlobalCustomerSender ? 15 : 0,
+                            marginRight: isGlobalCustomerSender ? 0 : 15,
+                        }}
+                            selectable>
+                            {!isGlobalCustomerSender ?
+                                (`${formatDate(item.timestamp)} - ${extractUsernameFromEmail(item.sender)}${item.ip ? ` - ${item.ip}` : ''}${item.ipCountry ? ` - ${item.ipCountry}` : ''}`)
+                                : (`${formatDate(item.timestamp)}${item.ip ? ` - ${item.ip}${item.ipCountry ? ` - ${item.ipCountry}` : ''}` : ''}`)
+                            }
+                        </Text>
+
+                    </View>}
+
+
+
+
+                {!item.messageType && item.file && item.file.type == 'image' &&
+                    <View style={{ flexDirection: 'column', alignItems: isGlobalCustomerSender ? 'flex-start' : 'flex-end', flex: 1 }}>
+                        {item.text && item.text !== '' &&
+                            <View style={{
+                                marginBottom: 5,
+                                padding: 10,
+                                borderRadius: 20,
+                                backgroundColor: isGlobalCustomerSender ? '#EFEFEF' : '#0A7CFF',
+                                marginLeft: isGlobalCustomerSender ? 10 : 0,
+                                marginRight: isGlobalCustomerSender ? 0 : 10,
+                                flexShrink: 1,
+                            }}>
+                                {renderItemText(isGlobalCustomerSender, item.text.trim())}
+                            </View>
+                        }<View style={{ flexDirection: isGlobalCustomerSender ? 'row' : 'row-reverse', flex: 1, }}>
+
+                            <View style={{
+                                flexDirection: isGlobalCustomerSender ? 'row' : 'row-reverse',
+                                flex: 1,
+                            }}>
+
+                                <View style={{
+                                    padding: 0,
+                                    borderRadius: 10,
+                                    marginLeft: isGlobalCustomerSender ? 10 : 0,
+                                    marginRight: isGlobalCustomerSender ? 0 : 10,
+                                    flexShrink: 1,
+                                }}>
+
+                                    <Pressable
                                         onMouseEnter={() => handleImageMessageMouseEnter(index)}
                                         onMouseLeave={handleImageMessageMouseLeave}
                                         onPress={() => openPreview(index)}
+                                        style={{
+                                            position: 'relative', // Ensure relative positioning for the overlay
+                                            width: 350,
+                                            height: 350,
+                                            alignSelf: 'center',
+                                        }}
                                     >
                                         <FastImage
                                             source={{ uri: item.file.url, priority: FastImage.priority.normal }}
                                             style={{
-                                                width: 350,
-                                                height: 350,
-                                                borderRadius: 20,
-                                                alignSelf: 'center',
-
+                                                width: '100%',
+                                                height: '100%',
+                                                borderRadius: 10,
+                                                borderWidth: 1,
+                                                borderColor: '#DADDE1',
                                             }}
                                             resizeMode={FastImage.resizeMode.contain}
                                         />
                                         {isHovered && (
                                             <View style={{
-                                                ...StyleSheet.absoluteFillObject,
-                                                backgroundColor: 'rgba(0, 0, 0, 0.2)', // Semi-transparent black
-                                                borderRadius: 20,
+                                                ...StyleSheet.absoluteFillObject, // Make overlay cover the entire image
+                                                backgroundColor: 'rgba(0, 0, 0, 0.1)', // Semi-transparent black
+                                                borderRadius: 10, // Match the border radius of the image
                                             }} />
                                         )}
                                     </Pressable>
-
                                 </View>
                             </View>
+
 
                             {/* Display read status text outside of the message bubble */}
                             {isLastMessage && selectedChatData.customerRead && !isGlobalCustomerSender && (
@@ -8401,8 +8961,8 @@ export default function ChatMessages() {
                                 style={styles.image} />
                         </Box>
 
-                        {screenWidth <= 960 && <MobileViewDrawer
-                            selectedScreen={selectedScreen} />}
+                        {/* {screenWidth <= 960 && <MobileViewDrawer
+                            selectedScreen={selectedScreen} />} */}
 
 
                         <Box w={screenWidth <= 960 ? 120 : 0} h={screenWidth <= 960 ? 6 : 10} marginBottom={1.5} marginTop={1.5} marginLeft={[3, 3, 3, 10]}>
@@ -8609,15 +9169,14 @@ export default function ChatMessages() {
                                                 </ScrollView>
                                             </View>
 
-                                            <View style={{ flex: 1, borderColor: '#DADDE1', backgroundColor: 'white', borderBottomRightRadius: 5, }}>
-
+                                            <View style={{ flex: 1, borderColor: '#DADDE1', backgroundColor: 'white', borderBottomRightRadius: 5, paddingBottom: 5, }}>
 
                                                 <View style={{ flex: 1 }}>
                                                     {/* Chat Message Box */}
                                                     <ChatMessageBox activeButtonValue={activeButtonValue} userEmail={email} />
                                                 </View>
 
-                                                <View style={{ flex: 1, minHeight: 110, maxHeight: 110, justifyContent: 'center', alignItems: 'center' }}>
+                                                <View style={{ maxHeight: 180, justifyContent: 'flex-end', alignItems: 'center' }}>
                                                     {/* Chat Input Text */}
                                                     {chatMessagesData.length < 1 ? null : (<ChatInputText />)}
                                                 </View>
