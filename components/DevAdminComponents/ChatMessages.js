@@ -31,7 +31,8 @@ import {
     Checkbox,
     useToast,
     Tooltip,
-    Progress
+    Progress,
+    Alert
 } from 'native-base';
 import React, { useEffect, useRef, useState, useMemo, useCallback, useReducer } from 'react';
 import {
@@ -53,6 +54,7 @@ import {
     Linking,
     Modal as RNModal,
     Platform,
+    SafeAreaView,
 } from 'react-native';
 import 'react-native-gesture-handler';
 import {
@@ -120,6 +122,7 @@ import {
     setTransactionModalVisible,
     setPreviewInvoiceVisible,
     setSelectedCustomerData,
+    setPdfViewerModalVisible,
 } from './redux/store';
 // import { TextInput } from 'react-native-gesture-handler';
 import { nanoid } from 'nanoid';
@@ -224,6 +227,8 @@ let globalInvoiceVariable = {
     },
 
 }
+
+let globalSelectedPDFUrl = '';
 
 const firestore = getFirestore();
 
@@ -1090,11 +1095,14 @@ const ChatInputText = () => {
 
                         if (!asset.type.startsWith('image/')) {
                             reject('Only image files are allowed');
+                            alert('Only image files are allowed');
+
                             return;
                         }
 
                         if (asset.fileSize > maxFileSize) {
                             reject('File size should be less than 10MB');
+                            alert('File size should be less than 10MB');
                             return;
                         }
 
@@ -1124,11 +1132,15 @@ const ChatInputText = () => {
 
                         if (!file.type.startsWith('image/')) {
                             reject('Only image files are allowed');
+                            alert('Only image files are allowed');
+
                             return;
                         }
 
                         if (file.size > maxFileSize) {
                             reject('File size should be less than 10MB');
+                            alert('File size should be less than 10MB');
+
                             return;
                         }
 
@@ -1159,11 +1171,13 @@ const ChatInputText = () => {
 
                         if (!asset.type.startsWith('image/')) {
                             reject('Only image files are allowed');
+                            alert('Only image files are allowed');
                             return;
                         }
 
                         if (asset.fileSize > maxFileSize) {
                             reject('File size should be less than 10MB');
+                            alert('Only image files are allowed');
                             return;
                         }
 
@@ -1235,6 +1249,7 @@ const ChatInputText = () => {
 
         textInputRef.current.clear();
         textInputRef.current.focus();
+        removeFile();
 
         const storage = getStorage(projectExtensionFirebase);
 
@@ -1275,11 +1290,13 @@ const ChatInputText = () => {
                 });
 
                 setSendIsLoading(false);
-                removeFile();
 
             } catch (e) {
                 console.error('Error adding document: ', e);
             }
+        }
+        else {
+            setSendIsLoading(false);
         }
     };
 
@@ -1294,12 +1311,15 @@ const ChatInputText = () => {
         const email = projectControlAuth.currentUser ? projectControlAuth.currentUser.email : '';
         const inputValue = textInputRef.current?.value;
 
-        textInputRef.current.clear();
-        textInputRef.current.focus();
+
 
         const storage = getStorage(projectExtensionFirebase);
 
         if (imageUri) { // Assuming imageFile holds the file to be uploaded
+
+            textInputRef.current.clear();
+            textInputRef.current.focus();
+            removeImage();
 
             try {
                 let imageUrl = null;
@@ -1336,12 +1356,13 @@ const ChatInputText = () => {
                 });
 
                 setSendIsLoading(false);
-                setImageUri(null);
-                setFileName(null);
 
             } catch (e) {
                 console.error('Error adding document: ', e);
             }
+        }
+        else {
+            setSendIsLoading(false);
         }
     };
 
@@ -1395,7 +1416,7 @@ const ChatInputText = () => {
             }
         }
         else {
-            setSendIsLoading(true);
+            setSendIsLoading(false);
         }
 
     };
@@ -1436,13 +1457,11 @@ const ChatInputText = () => {
 
         <View style={{ width: '98%', flexDirection: 'row', borderWidth: 1, borderColor: '#D9D9D9', borderRadius: 10, }}>
 
-
             <View style={{ flexDirection: 'column', flex: 1, }}>
 
                 {fileUri &&
                     (
                         <FileDisplay file={selectedFilePreview} onRemove={removeFile} />
-
                     )}
 
                 {imageUri && (
@@ -1521,11 +1540,8 @@ const ChatInputText = () => {
                             <MaterialIcons name="send" size={24} color="#95BCF9" />
                         }
                     </Pressable>
-
                 </View>
-
             </View>
-
 
             <Pressable
                 onHoverIn={() => setIsSendImageHovered(true)}
@@ -1564,6 +1580,7 @@ const ChatInputText = () => {
             </Pressable>
 
             <MessageTemplate textInputRef={textInputRef} />
+
         </View>
 
     );
@@ -7669,6 +7686,24 @@ const ImagePreviewModal = ({ isVisible, onClose, imageUrl }) => {
     );
 };
 
+const PDFModal = () => {
+    const dispatch = useDispatch();
+    const pdfViewerModalVisible = useSelector((state) => state.pdfViewerModalVisible);
+    const url = 'https://firebasestorage.googleapis.com/v0/b/samplermj.appspot.com/o/ChatFiles%2Fchat_2023090239_marcvan14%40gmail.com%2FC-HUB_01312024153002.887%2FDAILY%20REPORT%202024-01-29.pdf?alt=media&token=88b7be9b-17ef-48d3-b5b3-6f7f0d317b7c'
+
+    return (
+        <Modal isOpen={pdfViewerModalVisible} onClose={() => dispatch(setPdfViewerModalVisible(false))} size="xl">
+            <Modal.Content>
+                <iframe
+                    // src={globalSelectedPDFUrl} 
+                    src={`https://docs.google.com/gview?url=${url}&embedded=true`}
+                    style={{ width: '100%', height: '600px' }} title="PDF Viewer"></iframe>
+            </Modal.Content>
+        </Modal>
+    );
+
+};
+
 const ChatMessageBox = ({ activeButtonValue, userEmail }) => {
     const chatListData = useSelector((state) => state.chatListData);
     const chatMessagesData = useSelector((state) => state.chatMessagesData);
@@ -8012,7 +8047,7 @@ const ChatMessageBox = ({ activeButtonValue, userEmail }) => {
                     height: iconSize,
                 }}
                 resizeMode={FastImage.resizeMode.cover}
-            />;;
+            />;
         }
         // Default icon if no specific type is matched
         return <MaterialIcons name="insert-drive-file" size={iconSize} color="black" />;
@@ -8225,13 +8260,13 @@ const ChatMessageBox = ({ activeButtonValue, userEmail }) => {
                             }}>
                                 {renderItemText(isGlobalCustomerSender, item.text.trim())}
                             </View>
-                        }<View style={{ flexDirection: isGlobalCustomerSender ? 'row' : 'row-reverse', flex: 1, }}>
+                        }
+                        <View style={{ flexDirection: isGlobalCustomerSender ? 'row' : 'row-reverse', flex: 1, }}>
 
                             <View style={{
                                 flexDirection: isGlobalCustomerSender ? 'row' : 'row-reverse',
                                 flex: 1,
                             }}>
-
                                 <View style={{
                                     marginBottom: 5,
                                     padding: 10,
@@ -8243,7 +8278,15 @@ const ChatMessageBox = ({ activeButtonValue, userEmail }) => {
                                 }}>
                                     <Pressable
                                         onPress={() => {
-                                            Linking.openURL(item.file.url).catch((err) => console.error("Couldn't load page", err));
+                                            if (item.file.name.endsWith('.pdf')) {
+                                                globalSelectedPDFUrl = item.file.url
+                                                dispatch(setPdfViewerModalVisible(true));
+                                            }
+                                            else {
+                                                Linking.openURL(item.file.url).catch((err) => console.error("Couldn't load page", err));
+
+                                            }
+
                                         }}
                                         style={{ flexDirection: 'row', }}
                                     >
@@ -8261,7 +8304,6 @@ const ChatMessageBox = ({ activeButtonValue, userEmail }) => {
                                     </Pressable>
                                 </View>
                             </View>
-
 
                             {/* Display read status text outside of the message bubble */}
                             {isLastMessage && selectedChatData.customerRead && !isGlobalCustomerSender && (
@@ -8329,8 +8371,6 @@ const ChatMessageBox = ({ activeButtonValue, userEmail }) => {
                     </View>}
 
 
-
-
                 {!item.messageType && item.file && item.file.type == 'image' &&
                     <View style={{ flexDirection: 'column', alignItems: isGlobalCustomerSender ? 'flex-start' : 'flex-end', flex: 1 }}>
                         {item.text && item.text !== '' &&
@@ -8345,13 +8385,12 @@ const ChatMessageBox = ({ activeButtonValue, userEmail }) => {
                             }}>
                                 {renderItemText(isGlobalCustomerSender, item.text.trim())}
                             </View>
-                        }<View style={{ flexDirection: isGlobalCustomerSender ? 'row' : 'row-reverse', flex: 1, }}>
-
+                        }
+                        <View style={{ flexDirection: isGlobalCustomerSender ? 'row' : 'row-reverse', flex: 1, }}>
                             <View style={{
                                 flexDirection: isGlobalCustomerSender ? 'row' : 'row-reverse',
                                 flex: 1,
                             }}>
-
                                 <View style={{
                                     padding: 0,
                                     borderRadius: 10,
@@ -8359,15 +8398,14 @@ const ChatMessageBox = ({ activeButtonValue, userEmail }) => {
                                     marginRight: isGlobalCustomerSender ? 0 : 10,
                                     flexShrink: 1,
                                 }}>
-
                                     <Pressable
                                         onMouseEnter={() => handleImageMessageMouseEnter(index)}
                                         onMouseLeave={handleImageMessageMouseLeave}
                                         onPress={() => openPreview(index)}
                                         style={{
                                             position: 'relative', // Ensure relative positioning for the overlay
-                                            width: 350,
-                                            height: 350,
+                                            width: 250,
+                                            height: 250,
                                             alignSelf: 'center',
                                         }}
                                     >
@@ -8392,7 +8430,6 @@ const ChatMessageBox = ({ activeButtonValue, userEmail }) => {
                                     </Pressable>
                                 </View>
                             </View>
-
 
                             {/* Display read status text outside of the message bubble */}
                             {isLastMessage && selectedChatData.customerRead && !isGlobalCustomerSender && (
@@ -8432,7 +8469,6 @@ const ChatMessageBox = ({ activeButtonValue, userEmail }) => {
                                         onHoverIn={() => setIsEyeHovered(true)}
                                         onHoverOut={() => setIsEyeHovered(false)}
                                         onPress={handleReadByListModalOpen}
-
                                     >
                                         <Entypo name="eye" size={20} color={isEyeHovered ? '#c5d1ce' : '#75A99C'} />
                                     </Pressable>
@@ -8516,7 +8552,6 @@ const ChatMessageBox = ({ activeButtonValue, userEmail }) => {
                                         onHoverIn={() => setIsEyeHovered(true)}
                                         onHoverOut={() => setIsEyeHovered(false)}
                                         onPress={handleReadByListModalOpen}
-
                                     >
                                         <Entypo name="eye" size={20} color={isEyeHovered ? '#c5d1ce' : '#75A99C'} />
                                     </Pressable>
@@ -9174,6 +9209,7 @@ export default function ChatMessages() {
                                                 <View style={{ flex: 1 }}>
                                                     {/* Chat Message Box */}
                                                     <ChatMessageBox activeButtonValue={activeButtonValue} userEmail={email} />
+                                                    <PDFModal />
                                                 </View>
 
                                                 <View style={{ maxHeight: 180, justifyContent: 'flex-end', alignItems: 'center' }}>
