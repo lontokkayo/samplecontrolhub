@@ -7687,16 +7687,21 @@ const ImagePreviewModal = ({ isVisible, onClose, imageUrl }) => {
 };
 
 const PDFModal = () => {
+
     const dispatch = useDispatch();
     const pdfViewerModalVisible = useSelector((state) => state.pdfViewerModalVisible);
     const url = 'https://firebasestorage.googleapis.com/v0/b/samplermj.appspot.com/o/ChatFiles%2Fchat_2023090239_marcvan14%40gmail.com%2FC-HUB_01312024153002.887%2FDAILY%20REPORT%202024-01-29.pdf?alt=media&token=88b7be9b-17ef-48d3-b5b3-6f7f0d317b7c'
 
     return (
-        <Modal isOpen={pdfViewerModalVisible} onClose={() => dispatch(setPdfViewerModalVisible(false))} size="xl">
+        <Modal isOpen={pdfViewerModalVisible}
+            onClose={() => {
+                dispatch(setPdfViewerModalVisible(false))
+            }
+            } size="xl">
             <Modal.Content>
                 <iframe
-                    src={globalSelectedPDFUrl} 
-                    // src={`https://docs.google.com/gview?url=${globalSelectedPDFUrl}&embedded=true`}
+                    src={globalSelectedPDFUrl}
+                    // src={`https://docs.google.com/viewer?url=${url}&embedded=true`}
                     style={{ width: '100%', height: '600px' }} title="PDF Viewer"></iframe>
             </Modal.Content>
         </Modal>
@@ -8278,14 +8283,16 @@ const ChatMessageBox = ({ activeButtonValue, userEmail }) => {
                                 }}>
                                     <Pressable
                                         onPress={() => {
-                                            if (item.file.name.endsWith('.pdf')) {
-                                                globalSelectedPDFUrl = item.file.url
-                                                dispatch(setPdfViewerModalVisible(true));
-                                            }
-                                            else {
-                                                Linking.openURL(item.file.url).catch((err) => console.error("Couldn't load page", err));
+                                            // if (item.file.name.endsWith('.pdf')) {
+                                            //     globalSelectedPDFUrl = item.file.url
+                                            //     dispatch(setPdfViewerModalVisible(true));
+                                            // }
+                                            // else {
+                                            //     Linking.openURL(item.file.url).catch((err) => console.error("Couldn't load page", err));
 
-                                            }
+                                            // }
+                                            globalSelectedPDFUrl = item.file.url
+                                            dispatch(setPdfViewerModalVisible(true));
 
                                         }}
                                         style={{ flexDirection: 'row', }}
