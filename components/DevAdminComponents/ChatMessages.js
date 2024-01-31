@@ -7695,8 +7695,8 @@ const PDFModal = () => {
         <Modal isOpen={pdfViewerModalVisible} onClose={() => dispatch(setPdfViewerModalVisible(false))} size="xl">
             <Modal.Content>
                 <iframe
-                    // src={globalSelectedPDFUrl} 
-                    src={`https://docs.google.com/gview?url=${url}&embedded=true`}
+                    src={globalSelectedPDFUrl} 
+                    // src={`https://docs.google.com/gview?url=${globalSelectedPDFUrl}&embedded=true`}
                     style={{ width: '100%', height: '600px' }} title="PDF Viewer"></iframe>
             </Modal.Content>
         </Modal>
