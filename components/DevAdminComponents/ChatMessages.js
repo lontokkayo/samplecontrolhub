@@ -124,6 +124,7 @@ import {
     setSelectedCustomerData,
     setPdfViewerModalVisible,
     setSelectedFileUrl,
+    setIsLoading,
 } from './redux/store';
 // import { TextInput } from 'react-native-gesture-handler';
 import { nanoid } from 'nanoid';
@@ -7794,23 +7795,25 @@ const DocumentPreviewModal = () => {
 
     useEffect(() => {
         const timeout = setTimeout(() => {
+
             if (isLoading) {
-                // Handle the timeout scenario (e.g., show a message or retry loading)
-                console.log("Iframe is taking too long to load.");
-                console.log(selectedFileUrl);
-                console.log(globalSelectedPDFUrl);
-
-                dispatch(setSelectedFileUrl(globalSelectedPDFUrl))
-
+                console.log("Iframe is taking too long to load. Attempting to reload.");
+                console.log("Current URL:", selectedFileUrl);
+                console.log("Current Global URL:", globalSelectedPDFUrl);
+                
+                setIsLoading(false);
                 setIframeKey(prevKey => prevKey + 1);
-                setLoading(false);
+                dispatch(setSelectedFileUrl(globalSelectedPDFUrl));
+
+
 
             }
-        }, 5000); // 10 seconds timeout
+
+        }, 5000); // Timeout set to 5 seconds
 
         return () => clearTimeout(timeout);
+    }, [isLoading,]);
 
-    }, [isLoading]);
 
 
     return (
@@ -7841,7 +7844,6 @@ const DocumentPreviewModal = () => {
                                 />
                             </View>
                         )}
-
                         {selectedFileUrl !== '' &&
                             <>
                                 {!isLoading &&
@@ -7854,11 +7856,10 @@ const DocumentPreviewModal = () => {
                                     key={iframeKey}
                                     src={`https://docs.google.com/viewer?url=${encodeURIComponent(selectedFileUrl)}&embedded=true`}
                                     id='documentIframe'
-                                    style={{ width: '100%', height: isLoading ? '700px' : '643px' }}
+                                    style={{ width: '100%', height: '700px' }}
                                     title="Document Viewer"
-                                    onLoad={handleIframeLoad}
-                                    onError={(e) => {
-                                        console.error('Iframe failed to load', e);
+                                    onLoad={() => {
+                                        handleIframeLoad();
                                     }}
                                 />
                             </>
