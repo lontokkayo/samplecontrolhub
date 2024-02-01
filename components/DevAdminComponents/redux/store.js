@@ -12,6 +12,16 @@ let email = '';
 
 // =============================== Chat Messages ========================================
 
+const selectedFileUrlSlice = createSlice({
+  name: 'selectedFileUrl',
+  initialState: '',
+  reducers: {
+    setSelectedFileUrl: (state, action) => {
+      return action.payload
+    },
+  },
+})
+
 const pdfViewerModalVisibleSlice = createSlice({
   name: 'pdfViewerModalVisible',
   initialState: false,
@@ -806,6 +816,7 @@ const deleteImageVisibleSlice = createSlice({
 });
 
 // =============================== Chat Messages ========================================
+export const { setSelectedFileUrl } = selectedFileUrlSlice.actions
 export const { setPdfViewerModalVisible } = pdfViewerModalVisibleSlice.actions
 export const { setSelectedCustomerData } = selectedCustomerDataSlice.actions
 export const { setPreviewInvoiceVisible } = previewInvoiceVisibleSlice.actions
@@ -904,7 +915,8 @@ export const { setModelData } = modelDataSlice.actions
 const store = configureStore({
   reducer: {
 
-    // =============================== Chat Messages ========================================     
+    // =============================== Chat Messages ========================================    
+    selectedFileUrl: selectedFileUrlSlice.reducer,
     pdfViewerModalVisible: pdfViewerModalVisibleSlice.reducer,
     selectedCustomerData: selectedCustomerDataSlice.reducer,
     previewInvoiceVisible: previewInvoiceVisibleSlice.reducer,

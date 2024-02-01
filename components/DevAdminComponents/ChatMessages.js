@@ -123,6 +123,7 @@ import {
     setPreviewInvoiceVisible,
     setSelectedCustomerData,
     setPdfViewerModalVisible,
+    setSelectedFileUrl,
 } from './redux/store';
 // import { TextInput } from 'react-native-gesture-handler';
 import { nanoid } from 'nanoid';
@@ -229,6 +230,8 @@ let globalInvoiceVariable = {
 }
 
 let globalSelectedPDFUrl = '';
+let globalSelectedFileType = '';
+
 
 const firestore = getFirestore();
 
@@ -973,8 +976,8 @@ const FileDisplay = ({ file, onRemove }) => {
         if (type.includes('msword') || type.includes('wordprocessingml')) {
             return <MaterialCommunityIcons name={'microsoft-word'} size={iconSize} color="#2B579A" />; // Blue for Word
         }
-        if (type.includes('vnd.ms-excel') || type.includes('spreadsheetml')) {
-            return <MaterialCommunityIcons name={'microsoft-excel'} size={iconSize} color="#217346" />; // Green for Excel
+        if (type.includes('vnd.ms-excel') || type.includes('spreadsheetml') || type === 'text/csv') {
+            return <MaterialCommunityIcons name={'microsoft-excel'} size={iconSize} color="#217346" />; // Green for Excel and CSV
         }
         if (type.includes('rar') || type.includes('x-rar-compressed') || type.includes('x-compressed')) {
             return <FastImage
@@ -1052,7 +1055,8 @@ const ChatInputText = () => {
                             'application/vnd.ms-excel',
                             'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
                             'application/x-rar-compressed',
-                            'application/x-compressed'
+                            'application/x-compressed',
+                            'text/csv'
                         ].includes(file.type)) {
                             alert('File type not allowed');
                             reject('File type not allowed');
@@ -7352,10 +7356,9 @@ const TransactionButton = ({ title, buttonValue, transactionValue, colorHoverIn,
 };
 
 const ChatMessageHeader = () => {
+
     const selectedChatData = useSelector((state) => state.selectedChatData);
     const invoiceData = useSelector((state) => state.invoiceData);
-
-
 
     const totalPriceCondition = selectedChatData.fobPrice && selectedChatData.jpyToUsd && selectedChatData.m3 && selectedChatData.freightPrice;
 
@@ -7380,12 +7383,10 @@ const ChatMessageHeader = () => {
 
     const carName = selectedChatData.carData && selectedChatData.carData.carName ? selectedChatData.carData.carName : (selectedChatData.vehicle && selectedChatData.vehicle.carName ? selectedChatData.vehicle.carName : '');
 
-
     const freightPriceYen = freightCalculation / selectedChatData.currency.jpyToUsd;
 
-
-
     return (
+
         <View style={{
             flex: 1,
             alignSelf: 'flex-start',
@@ -7614,6 +7615,7 @@ const ChatMessageHeader = () => {
             </View>
             <TransactionModal />
         </View>
+
     );
 };
 
@@ -7627,6 +7629,7 @@ const ReadByListModal = ({ userEmail, handleReadByListModalClose }) => {
     const email = projectControlAuth.currentUser ? projectControlAuth.currentUser.email : '';
 
     return (
+
         <Modal
             isOpen={readByListModalVisible}
             onClose={() => handleReadByListModalClose()}
@@ -7635,6 +7638,7 @@ const ReadByListModal = ({ userEmail, handleReadByListModalClose }) => {
         >
             <Modal.Content borderRadius={0} style={{ padding: 15, backgroundColor: '#f8f8f8', shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.25, shadowRadius: 3.84, elevation: 5 }}>
                 <Modal.CloseButton />
+
                 <Modal.Header style={{ fontSize: 22, fontWeight: '600', textAlign: 'center', color: '#333', }}>Read List</Modal.Header>
 
                 <Modal.Body>
@@ -7686,23 +7690,181 @@ const ImagePreviewModal = ({ isVisible, onClose, imageUrl }) => {
     );
 };
 
-const PDFModal = () => {
+
+const HoverablePressable = ({ url, printComponent }) => {
+    const [isHoveredDownload, setIsHoveredDownload] = useState(false);
+    const [isHoveredPrint, setIsHoveredPrint] = useState(false);
+    const baseStyle = {
+        marginRight: 10,
+        borderRadius: 16,
+        borderWidth: 1,
+        borderColor: 'white',
+        width: 26,
+        height: 26,
+        justifyContent: 'center',
+        alignItems: 'center',
+    };
+
+    const hoverStyle = {
+        backgroundColor: '#ddd', // Example hover style
+    };
+
+    return (
+        <>
+            <Tooltip label="Download" openDelay={200} bgColor={'white'} _text={{ color: '#1C2B33', }}>
+                <Pressable
+                    style={{
+                        marginRight: 8,
+                        borderRadius: 16,
+                        width: 32,
+                        height: 32,
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                        backgroundColor: isHoveredDownload ? '#424649' : 'transparent',
+                    }}
+                    onPress={async () => {
+                        await Linking.openURL(url);
+                    }}
+                    onMouseEnter={() => setIsHoveredDownload(true)}
+                    onMouseLeave={() => setIsHoveredDownload(false)}
+                >
+                    <MaterialCommunityIcons name="download" size={20} color={'#F1F1F1'} />
+                </Pressable>
+            </Tooltip>
+
+            {/* <Tooltip label="Print" openDelay={200} bgColor={'white'} _text={{ color: '#1C2B33', }}>
+                <Pressable
+                    style={{
+                        marginRight: 8,
+                        borderRadius: 16,
+                        width: 32,
+                        height: 32,
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                        backgroundColor: isHoveredPrint ? '#424649' : 'transparent',
+                    }}
+                    onMouseEnter={() => setIsHoveredPrint(true)}
+                    onMouseLeave={() => setIsHoveredPrint(false)}
+                    onPress={printComponent}
+                >
+                    <MaterialCommunityIcons name="printer" size={20} color={'#F1F1F1'} />
+                </Pressable>
+            </Tooltip> */}
+        </>
+    );
+};
+
+const DocumentPreviewModal = () => {
 
     const dispatch = useDispatch();
+    const selectedFileUrl = useSelector((state) => state.selectedFileUrl);
     const pdfViewerModalVisible = useSelector((state) => state.pdfViewerModalVisible);
+
     const url = 'https://firebasestorage.googleapis.com/v0/b/samplermj.appspot.com/o/ChatFiles%2Fchat_2023090239_marcvan14%40gmail.com%2FC-HUB_01312024153002.887%2FDAILY%20REPORT%202024-01-29.pdf?alt=media&token=88b7be9b-17ef-48d3-b5b3-6f7f0d317b7c'
+    const urlDocx = 'https://firebasestorage.googleapis.com/v0/b/samplermj.appspot.com/o/ChatFiles%2Fchat_2023090239_marcvan14%40gmail.com%2FC-HUB_01312024170117.701%2FDAILY%20REPORT%202024-01-29.docx?alt=media&token=9bf45632-e192-45bf-8b40-9fd5cdb9368e';
+    const [isLoading, setLoading] = useState(true); // Loading state
+
+    const handleIframeLoad = () => {
+        setLoading(false); // Set loading to false when iframe content is loaded
+    };
+
+    const handleModalClose = () => {
+
+        dispatch(setPdfViewerModalVisible(false))
+        dispatch(setSelectedFileUrl(''))
+        setLoading(true);
+        globalSelectedFileType = '';
+    }
+
+    const printIframe = () => {
+        // const iframe = document.getElementById('documentIframe');
+        // iframe.contentWindow.print();
+        const printWindow = window.open(`https://docs.google.com/viewer?url=${encodeURIComponent(selectedFileUrl)}&embedded=true`, '_blank');
+        printWindow.focus();
+        printWindow.print();
+
+    };
 
     return (
         <Modal isOpen={pdfViewerModalVisible}
             onClose={() => {
-                dispatch(setPdfViewerModalVisible(false))
+                handleModalClose();
             }
             } size="xl">
             <Modal.Content>
-                <iframe
-                    src={globalSelectedPDFUrl}
-                    // src={`https://docs.google.com/viewer?url=${url}&embedded=true`}
-                    style={{ width: '100%', height: '600px' }} title="PDF Viewer"></iframe>
+                {globalSelectedFileType !== 'pdf' ?
+
+                    (<>
+                        {isLoading && (
+                            <View style={{
+                                top: 0,
+                                bottom: 0,
+                                left: 0,
+                                right: 0,
+                                position: 'absolute',
+                                justifyContent: 'center',
+                                alignItems: 'center',
+                                height: '700px'  // Same height as the iframe for consistent layout
+                            }}>
+                                <Spinner
+                                    animating
+                                    size="lg"
+                                    color={'#7B9CFF'}
+                                />
+                            </View>
+                        )}
+                        {selectedFileUrl !== '' &&
+                            <>
+                                {!isLoading &&
+                                    <View style={{ flexDirection: 'row', width: '100%', height: 57, borderRadius: 0, backgroundColor: '#323639', justifyContent: 'flex-end', alignItems: 'center', }}>
+
+                                        <HoverablePressable url={selectedFileUrl} printComponent={printIframe} />
+
+                                    </View>}
+
+                                <iframe
+                                    src={`https://docs.google.com/viewer?url=${encodeURIComponent(selectedFileUrl)}&embedded=true`}
+                                    id='documentIframe'
+                                    style={{ width: '100%', height: isLoading ? '700px' : '643px' }}
+                                    title="Document Viewer"
+                                    onLoad={handleIframeLoad} // Event when iframe has loaded
+                                />
+                            </>}
+                    </>
+                    )
+
+                    : (
+                        <>
+                            {isLoading && (
+                                <View style={{
+                                    top: 0,
+                                    bottom: 0,
+                                    left: 0,
+                                    right: 0,
+                                    position: 'absolute',
+                                    justifyContent: 'center',
+                                    alignItems: 'center',
+                                    height: '700px'  // Same height as the iframe for consistent layout
+                                }}>
+                                    <Spinner
+                                        animating
+                                        size="lg"
+                                        color={'#7B9CFF'}
+                                    />
+                                </View>
+                            )}
+                            {selectedFileUrl !== '' && <iframe
+                                src={selectedFileUrl}
+                                style={{ width: '100%', height: '700px' }}
+                                title="PDF Viewer"
+                                onLoad={handleIframeLoad} // Event when iframe has loaded
+                            />}
+                        </>
+                    )
+
+
+                }
+
             </Modal.Content>
         </Modal>
     );
@@ -8040,7 +8202,7 @@ const ChatMessageBox = ({ activeButtonValue, userEmail }) => {
         if (lowerFileName.endsWith('.docx') || lowerFileName.endsWith('.doc')) {
             return <MaterialCommunityIcons name={'microsoft-word'} size={iconSize} color="white" />;
         }
-        if (lowerFileName.endsWith('.xlsx') || lowerFileName.endsWith('.xls')) {
+        if (lowerFileName.endsWith('.xlsx') || lowerFileName.endsWith('.xls') || lowerFileName.endsWith('.csv')) {
             return <MaterialCommunityIcons name={'microsoft-excel'} size={iconSize} color="white" />;
         }
 
@@ -8283,16 +8445,22 @@ const ChatMessageBox = ({ activeButtonValue, userEmail }) => {
                                 }}>
                                     <Pressable
                                         onPress={() => {
-                                            // if (item.file.name.endsWith('.pdf')) {
-                                            //     globalSelectedPDFUrl = item.file.url
-                                            //     dispatch(setPdfViewerModalVisible(true));
-                                            // }
-                                            // else {
-                                            //     Linking.openURL(item.file.url).catch((err) => console.error("Couldn't load page", err));
+                                            if (item.file.name.endsWith('.pdf')) {
+                                                globalSelectedFileType = 'pdf'
+                                                dispatch(setPdfViewerModalVisible(true));
+                                                dispatch(setSelectedFileUrl(item.file.url));
 
-                                            // }
-                                            globalSelectedPDFUrl = item.file.url
-                                            dispatch(setPdfViewerModalVisible(true));
+                                            }
+                                            else {
+                                                globalSelectedFileType = 'not-pdf'
+                                                dispatch(setPdfViewerModalVisible(true));
+                                                dispatch(setSelectedFileUrl(item.file.url));
+
+
+                                            }
+                                            // dispatch(setSelectedFileUrl(item.file.url));
+                                            // // globalSelectedPDFUrl = item.file.url
+                                            // dispatch(setPdfViewerModalVisible(true));
 
                                         }}
                                         style={{ flexDirection: 'row', }}
@@ -9216,7 +9384,7 @@ export default function ChatMessages() {
                                                 <View style={{ flex: 1 }}>
                                                     {/* Chat Message Box */}
                                                     <ChatMessageBox activeButtonValue={activeButtonValue} userEmail={email} />
-                                                    <PDFModal />
+                                                    <DocumentPreviewModal />
                                                 </View>
 
                                                 <View style={{ maxHeight: 180, justifyContent: 'flex-end', alignItems: 'center' }}>
