@@ -7760,9 +7760,15 @@ const DocumentPreviewModal = () => {
     const selectedFileUrl = useSelector((state) => state.selectedFileUrl);
     const pdfViewerModalVisible = useSelector((state) => state.pdfViewerModalVisible);
 
+    const [iframeKey, setIframeKey] = useState(0);
+
+
     const url = 'https://firebasestorage.googleapis.com/v0/b/samplermj.appspot.com/o/ChatFiles%2Fchat_2023090239_marcvan14%40gmail.com%2FC-HUB_01312024153002.887%2FDAILY%20REPORT%202024-01-29.pdf?alt=media&token=88b7be9b-17ef-48d3-b5b3-6f7f0d317b7c'
     const urlDocx = 'https://firebasestorage.googleapis.com/v0/b/samplermj.appspot.com/o/ChatFiles%2Fchat_2023090239_marcvan14%40gmail.com%2FC-HUB_01312024170117.701%2FDAILY%20REPORT%202024-01-29.docx?alt=media&token=9bf45632-e192-45bf-8b40-9fd5cdb9368e';
     const [isLoading, setLoading] = useState(true); // Loading state
+
+    // console.log(`https://docs.google.com/viewer?url=${encodeURIComponent(urlDocx)}&embedded=true`);
+
 
     const handleIframeLoad = () => {
         setLoading(false); // Set loading to false when iframe content is loaded
@@ -7774,6 +7780,7 @@ const DocumentPreviewModal = () => {
         dispatch(setSelectedFileUrl(''))
         setLoading(true);
         globalSelectedFileType = '';
+        globalSelectedPDFUrl = '';
     }
 
     const printIframe = () => {
@@ -7784,6 +7791,27 @@ const DocumentPreviewModal = () => {
         printWindow.print();
 
     };
+
+    useEffect(() => {
+        const timeout = setTimeout(() => {
+            if (isLoading) {
+                // Handle the timeout scenario (e.g., show a message or retry loading)
+                console.log("Iframe is taking too long to load.");
+                console.log(selectedFileUrl);
+                console.log(globalSelectedPDFUrl);
+
+                dispatch(setSelectedFileUrl(globalSelectedPDFUrl))
+
+                setIframeKey(prevKey => prevKey + 1);
+                setLoading(false);
+
+            }
+        }, 5000); // 10 seconds timeout
+
+        return () => clearTimeout(timeout);
+
+    }, [isLoading]);
+
 
     return (
         <Modal isOpen={pdfViewerModalVisible}
@@ -7813,23 +7841,28 @@ const DocumentPreviewModal = () => {
                                 />
                             </View>
                         )}
+
                         {selectedFileUrl !== '' &&
                             <>
                                 {!isLoading &&
                                     <View style={{ flexDirection: 'row', width: '100%', height: 57, borderRadius: 0, backgroundColor: '#323639', justifyContent: 'flex-end', alignItems: 'center', }}>
-
-                                        <HoverablePressable url={selectedFileUrl} printComponent={printIframe} />
-
-                                    </View>}
+                                        <HoverablePressable url={globalSelectedPDFUrl} printComponent={printIframe} />
+                                    </View>
+                                }
 
                                 <iframe
+                                    key={iframeKey}
                                     src={`https://docs.google.com/viewer?url=${encodeURIComponent(selectedFileUrl)}&embedded=true`}
                                     id='documentIframe'
                                     style={{ width: '100%', height: isLoading ? '700px' : '643px' }}
                                     title="Document Viewer"
-                                    onLoad={handleIframeLoad} // Event when iframe has loaded
+                                    onLoad={handleIframeLoad}
+                                    onError={(e) => {
+                                        console.error('Iframe failed to load', e);
+                                    }}
                                 />
-                            </>}
+                            </>
+                        }
                     </>
                     )
 
@@ -8449,12 +8482,15 @@ const ChatMessageBox = ({ activeButtonValue, userEmail }) => {
                                                 globalSelectedFileType = 'pdf'
                                                 dispatch(setPdfViewerModalVisible(true));
                                                 dispatch(setSelectedFileUrl(item.file.url));
+                                                globalSelectedPDFUrl = item.file.url;
 
                                             }
                                             else {
                                                 globalSelectedFileType = 'not-pdf'
                                                 dispatch(setPdfViewerModalVisible(true));
                                                 dispatch(setSelectedFileUrl(item.file.url));
+                                                globalSelectedPDFUrl = item.file.url;
+
 
 
                                             }
