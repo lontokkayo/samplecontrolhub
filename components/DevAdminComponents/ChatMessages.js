@@ -1600,6 +1600,7 @@ const ChatListItem = ({ item, onPress, isActive, messageUnread, formattedDate, c
     const [isUnreadHovered, setIsUnreadHovered] = useState(false);
     const [isUnreadVisible, setIsUnreadVisible] = useState(false);
     const [isHovered, setIsHovered] = useState(false);
+    const [customerData, setCustomerData] = useState({});
 
     const carName = item.carData && item.carData.carName ? item.carData.carName : (item.vehicle && item.vehicle.carName ? item.vehicle.carName : '');
     const updateChatToUnread = async () => {
@@ -1665,7 +1666,7 @@ const ChatListItem = ({ item, onPress, isActive, messageUnread, formattedDate, c
         const unsubscribe = onSnapshot(docRef, (doc) => {
             if (doc.exists()) {
                 const data = doc.data();
-                dispatch(setSelectedCustomerData(data));
+                setCustomerData(data ? data : {});
                 setTextFirst(data.textFirst ? data.textFirst : '');
                 setTextLast(data.textLast ? data.textLast : '');
 
@@ -1689,6 +1690,7 @@ const ChatListItem = ({ item, onPress, isActive, messageUnread, formattedDate, c
     const handlePress = () => {
         onPress()
 
+        dispatch(setSelectedCustomerData(customerData));
         globalCustomerFirstName = textFirst ? textFirst : '';
         globalCustomerLastName = textLast ? textLast : '';
         globalImageUrl = imageUrl ? imageUrl : '';
@@ -7347,19 +7349,179 @@ const TransactionButton = ({ title, buttonValue, transactionValue, colorHoverIn,
                 <Text color={'white'} style={{ fontWeight: 700, marginLeft: 5, }}>{title}</Text>
             </Pressable>
 
-
-
-
-
         </>
 
     );
 };
 
+const CustomerProfileModal = () => {
+    const [customerModalVisible, setCustomerModalVisible] = useState(false);
+    const selectedCustomerData = useSelector((state) => state.selectedCustomerData);
+
+    const handleModalOpen = () => {
+        setCustomerModalVisible(true);
+    }
+
+    const handleModalClose = () => {
+        setCustomerModalVisible(false);
+    }
+
+
+
+    return (
+        <>
+            <Pressable
+                onPress={handleModalOpen}
+                style={{ width: 'fit-content', }}
+            >
+                <Text style={{ fontWeight: 700, }} underline>{`${globalCustomerFirstName} ${globalCustomerLastName}`}</Text>
+            </Pressable>
+
+            <Modal
+                isOpen={customerModalVisible}
+                onClose={handleModalClose}
+                size={'lg'}
+
+            >
+                <Modal.Content background={'white'}>
+
+                    <Modal.Body>
+
+                        <View
+                            style={{
+                                flex: 1,
+                                alignItems: 'center',
+                            }}>
+
+                            <View style={{
+                                borderRadius: 10,
+                                backgroundColor: '#F8F9FF',
+                                width: 440,
+                                alignItems: 'center',
+                                paddingBottom: 15,
+
+                            }}>
+
+                                <Text style={{ fontWeight: 'bold', fontSize: 26, color: '#0A78BE', }} selectable>
+                                    {`${globalCustomerFirstName} ${globalCustomerLastName}`}
+                                </Text>
+
+                                <Text style={{ fontSize: 14, color: '#6F6F6F', width: '45%', textAlign: 'center', }} selectable>
+                                    {`${selectedCustomerData.textZip}, ${selectedCustomerData.textStreet}, ${selectedCustomerData.city}, ${selectedCustomerData.country}`}
+                                </Text>
+
+                                <View
+                                    style={{
+                                        flex: 1,
+                                        flexDirection: 'row',
+                                        paddingTop: 20,
+                                        justifyContent: 'center',
+                                    }}
+                                >
+
+                                    <Text style={{ fontSize: 14, color: '#6F6F6F', textAlign: 'center' }} selectable>
+                                        {`${selectedCustomerData.textPhoneNumber}`}
+                                    </Text>
+
+                                    {/* Separator */}
+
+                                    <View style={{
+                                        height: '100%', // Full height of the parent View
+                                        width: 2, // Width of the line
+                                        backgroundColor: '#DCDCDC', // Line color
+                                        marginHorizontal: 10, // Space on the sides of the line
+                                    }} />
+
+                                    <Hyperlink
+                                        linkDefault={true}
+                                        linkStyle={{ color: '#8A64F6', fontSize: 14 }}
+
+                                    >
+                                        <Text style={{ textAlign: 'center' }} selectable>
+                                            {selectedCustomerData.textEmail}
+                                        </Text>
+                                    </Hyperlink>
+
+                                </View>
+
+
+                            </View>
+
+                        </View>
+
+                        <View
+                            style={{
+                                width: 440,
+                                justifyContent: 'center',
+                                alignItems: 'center',
+                                marginTop: 50,
+                                flexDirection: 'row',
+                                alignSelf: 'center',
+                            }}>
+
+                            <View style={{ flex: 1, alignItems: 'center', }}>
+
+                                <Text style={{ fontWeight: 'bold', fontSize: 24, color: '#990000', textAlign: 'center', }}>
+                                    {`$${selectedCustomerData.overBalance ? Number(selectedCustomerData.overBalance).toLocaleString('en-US') : 0}`}
+                                </Text>
+
+                                <Text style={{ fontWeight: 'bold', fontSize: 16, color: '#5E4343', textAlign: 'center', }}>
+                                    {`Overbalance`}
+                                </Text>
+
+                                <Text style={{ fontSize: 14, color: '#0A78BE', textAlign: 'center', }} underline>
+                                    {`View Payments History`}
+                                </Text>
+
+                            </View>
+
+                            <View style={{ flex: 1, alignItems: 'center', }}>
+                                <Text style={{ fontWeight: 'bold', fontSize: 24, color: '#009922', textAlign: 'center', }}>
+                                    {`$155`}
+                                </Text>
+                                <Text style={{ fontWeight: 'bold', fontSize: 16, color: '#5E4343', textAlign: 'center', }}>
+                                    {`Credits`}
+                                </Text>
+
+                                <Text style={{ fontSize: 14, color: 'transparent', textAlign: 'center', }} underline>
+                                    {`-------`}
+                                </Text>
+
+
+                            </View>
+
+                            <View style={{ flex: 1, alignItems: 'center', }}>
+                                <Text style={{ fontWeight: 'bold', fontSize: 24, color: '#0029A3', textAlign: 'center', }}>
+                                    {`11`}
+                                </Text>
+                                <Text style={{ fontWeight: 'bold', fontSize: 16, color: '#5E4343', textAlign: 'center', }}>
+                                    {`Transactions`}
+                                </Text>
+
+                                <Text style={{ fontSize: 14, color: '#0A78BE', textAlign: 'center', }} underline>
+                                    {`View Transactions`}
+                                </Text>
+
+                            </View>
+
+                        </View>
+
+                    </Modal.Body>
+
+
+                </Modal.Content>
+            </Modal>
+        </>
+
+    )
+}
+
 const ChatMessageHeader = () => {
 
     const selectedChatData = useSelector((state) => state.selectedChatData);
     const invoiceData = useSelector((state) => state.invoiceData);
+
+
 
     const totalPriceCondition = selectedChatData.fobPrice && selectedChatData.jpyToUsd && selectedChatData.m3 && selectedChatData.freightPrice;
 
@@ -7420,7 +7582,9 @@ const ChatMessageHeader = () => {
 
             <View style={{ alignSelf: 'center', paddingRight: 10, }}>
                 <Text style={{ fontWeight: 700, color: '#0A78BE', }}>{carName}</Text>
-                <Text style={{ fontWeight: 700, }}>{`${globalCustomerFirstName} ${globalCustomerLastName}`}</Text>
+
+                <CustomerProfileModal />
+
                 <View style={{ flexDirection: 'row', }}>
                     <Text selectable style={{ fontWeight: 700, fontSize: 12, paddingTop: 0, marginLeft: 1, color: '#8D7777', }}>
                         {selectedChatData.carData && selectedChatData.carData.referenceNumber ? selectedChatData.carData.referenceNumber : 'Chassis N/A'}
@@ -7794,24 +7958,24 @@ const DocumentPreviewModal = () => {
     };
 
     useEffect(() => {
+
         const timeout = setTimeout(() => {
 
             if (isLoading) {
                 console.log("Iframe is taking too long to load. Attempting to reload.");
                 console.log("Current URL:", selectedFileUrl);
                 console.log("Current Global URL:", globalSelectedPDFUrl);
-                
+
                 setIsLoading(false);
                 setIframeKey(prevKey => prevKey + 1);
                 dispatch(setSelectedFileUrl(globalSelectedPDFUrl));
-
-
 
             }
 
         }, 5000); // Timeout set to 5 seconds
 
         return () => clearTimeout(timeout);
+
     }, [isLoading,]);
 
 
@@ -8855,7 +9019,7 @@ export default function ChatMessages() {
     useEffect(() => {
         const fetchIpAndCountry = async () => {
             try {
-                dispatch(setChatMessageBoxLoading(true));
+                // dispatch(setChatMessageBoxLoading(true));
                 // Fetch IP Address
                 const ipResponse = await axios.get('https://api.ipify.org?format=json');
                 const fetchedIp = ipResponse.data.ip;
@@ -8866,7 +9030,7 @@ export default function ChatMessages() {
                     const countryResponse = await axios.get(`https://ipapi.co/${fetchedIp}/json/`);
                     const fetchedIpCountry = countryResponse.data.country_name;
                     ipCountry = fetchedIpCountry;
-                    dispatch(setChatMessageBoxLoading(false));
+                    // dispatch(setChatMessageBoxLoading(false));
                 }
 
             } catch (error) {
@@ -9431,7 +9595,8 @@ export default function ChatMessages() {
 
                                             </View>
 
-                                        </View>)}
+                                        </View>
+                                    )}
 
 
 
