@@ -1,12 +1,12 @@
 {
   "files": {
     "main.css": "/samplecontrolhub/static/css/main.280a37d8.css",
-    "main.js": "/samplecontrolhub/static/js/main.27f36e1e.js",
-    "static/js/73.8bb2d8cf.chunk.js": "/samplecontrolhub/static/js/73.8bb2d8cf.chunk.js",
-    "static/js/160.cc4b1f1c.chunk.js": "/samplecontrolhub/static/js/160.cc4b1f1c.chunk.js",
+    "main.js": "/samplecontrolhub/static/js/main.9c85c82a.js",
+    "static/js/73.6a3e1cb8.chunk.js": "/samplecontrolhub/static/js/73.6a3e1cb8.chunk.js",
+    "static/js/160.2db21d5f.chunk.js": "/samplecontrolhub/static/js/160.2db21d5f.chunk.js",
     "static/js/245.704124dc.chunk.js": "/samplecontrolhub/static/js/245.704124dc.chunk.js",
     "static/js/162.da88e0a0.chunk.js": "/samplecontrolhub/static/js/162.da88e0a0.chunk.js",
-    "static/js/239.144305c4.js": "/samplecontrolhub/static/js/239.144305c4.js",
+    "static/js/446.58bf57ae.js": "/samplecontrolhub/static/js/446.58bf57ae.js",
     "static/js/379.c10ffe6d.chunk.js": "/samplecontrolhub/static/js/379.c10ffe6d.chunk.js",
     "static/media/MaterialCommunityIcons.ttf": "/samplecontrolhub/static/media/MaterialCommunityIcons.5d42b4e60858731e7b65.ttf",
     "static/media/RMJ logo for invoice.png": "/samplecontrolhub/static/media/RMJ logo for invoice.260660476b8ac2af1cf6.png",
@@ -43,17 +43,17 @@
     "manifest.json": "/samplecontrolhub/manifest.json",
     "serve.json": "/samplecontrolhub/serve.json",
     "main.280a37d8.css.map": "/samplecontrolhub/static/css/main.280a37d8.css.map",
-    "main.27f36e1e.js.map": "/samplecontrolhub/static/js/main.27f36e1e.js.map",
-    "73.8bb2d8cf.chunk.js.map": "/samplecontrolhub/static/js/73.8bb2d8cf.chunk.js.map",
-    "160.cc4b1f1c.chunk.js.map": "/samplecontrolhub/static/js/160.cc4b1f1c.chunk.js.map",
+    "main.9c85c82a.js.map": "/samplecontrolhub/static/js/main.9c85c82a.js.map",
+    "73.6a3e1cb8.chunk.js.map": "/samplecontrolhub/static/js/73.6a3e1cb8.chunk.js.map",
+    "160.2db21d5f.chunk.js.map": "/samplecontrolhub/static/js/160.2db21d5f.chunk.js.map",
     "245.704124dc.chunk.js.map": "/samplecontrolhub/static/js/245.704124dc.chunk.js.map",
     "162.da88e0a0.chunk.js.map": "/samplecontrolhub/static/js/162.da88e0a0.chunk.js.map",
-    "239.144305c4.js.map": "/samplecontrolhub/static/js/239.144305c4.js.map",
+    "446.58bf57ae.js.map": "/samplecontrolhub/static/js/446.58bf57ae.js.map",
     "379.c10ffe6d.chunk.js.map": "/samplecontrolhub/static/js/379.c10ffe6d.chunk.js.map"
   },
   "entrypoints": [
-    "static/js/239.144305c4.js",
+    "static/js/446.58bf57ae.js",
     "static/css/main.280a37d8.css",
-    "static/js/main.27f36e1e.js"
+    "static/js/main.9c85c82a.js"
   ]
 }
