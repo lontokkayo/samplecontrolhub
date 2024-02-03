@@ -35,6 +35,8 @@ import ResetPasswordSuccess from './components/ResetPasswordSuccess';
 import './style.css';
 import { Provider } from 'react-redux';
 import store from './components/DevAdminComponents/redux/store';
+import { BrowserRouter as Router } from 'react-router-dom';
+
 const StackNavigator = createNativeStackNavigator();
 
 const { width, height } = Dimensions.get('window');
@@ -45,30 +47,62 @@ const windowWidth = Dimensions.get('window').width;
 export default function App() {
   const [initializing, setInitializing] = useState(true);
   const [user, setUser] = useState(null);
+
   function onAuthStateChanged(user) {
     setUser(user);
     if (initializing) setInitializing(false);
   }
+
+
   useEffect(() => {
     const subscriber = auth.onAuthStateChanged(onAuthStateChanged)
 
     return subscriber;
   }, [])
 
+
   if (initializing) {
     return null; // or a loading screen if needed
   }
 
-  return (
 
-    <Provider store={store}>
+  const config = {
+    screens: {
+      Login: 'login',
+      Checkpoint: 'checkpoint',
+      devadmin: {
+        path: 'devadmin',
+        screens: {
+          'CHAT MESSAGES': 'ChatMessages',
+          'CHAT MESSAGES': 'ChatMessages/:chatId',
+          'FREIGHT': 'Freight',
+          'ADD NEW VEHICLE': 'AddNewVehicle',
+          'LOGS': 'Logs',
+          'VEHICLE LIST': 'VehicleList',
+          'ACCOUNT LIST': 'AccountList',
+          'ADD C-HUB ACCOUNT': 'AddCHubAccount',
+        },
+      },
+
+    },
+  };
+
+  const linking = {
+    prefixes: ['http://localhost:19006/'],
+    config,
+  };
+
+
+  return (
+    <Router>
+      <Provider store={store}>
         <NativeBaseProvider>
           {/* <LoginPage/> */}
-          <NavigationContainer>
+          <NavigationContainer linking={linking}>
             <StackNavigator.Navigator options={{ headerShown: false }}>
-              <StackNavigator.Screen options={{ headerShown: false }} name="Login" component={LoginPage} />
-              <StackNavigator.Screen options={{ headerShown: false }} name="Checkpoint" component={Checkpoint} />
-              <StackNavigator.Screen options={{ headerShown: false, unmountOnBlur: true }} name="devadmin" component={DevAdmin}/>
+              <StackNavigator.Screen options={{ headerShown: false, }} name="Login" component={LoginPage} />
+              <StackNavigator.Screen options={{ headerShown: false, }} name="Checkpoint" component={Checkpoint} />
+              <StackNavigator.Screen options={{ headerShown: false, unmountOnBlur: true }} name="devadmin" component={DevAdmin} />
               <StackNavigator.Screen options={{ headerShown: false }} name="admin" component={Admin} />
               <StackNavigator.Screen options={{ headerShown: false }} name="ResetPassword" component={ResetPassword} />
               <StackNavigator.Screen options={{ headerShown: false }} name="ResetPasswordSuccess" component={ResetPasswordSuccess} />
@@ -80,8 +114,8 @@ export default function App() {
             </StackNavigator.Navigator>
           </NavigationContainer>
         </NativeBaseProvider>
-    </Provider>
-
+      </Provider>
+    </Router>
   );
 }
 

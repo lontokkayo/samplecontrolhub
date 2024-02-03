@@ -124,7 +124,11 @@ export default function Checkpoint() {
     };
   }, []);
 
-
+  const getRandomDelay = () => {
+    const minDelay = 100; // Minimum delay in milliseconds
+    const maxDelay = 200; // Maximum delay in milliseconds
+    return Math.floor(Math.random() * (maxDelay - minDelay + 1) + minDelay);
+  };
 
   useEffect(() => {
     const currentUserEmail = getEmailOfCurrentUser();
@@ -134,38 +138,33 @@ export default function Checkpoint() {
     }
   }, []);
 
-  const getRandomDelay = () => {
-    const minDelay = 100; // Minimum delay in milliseconds
-    const maxDelay = 200; // Maximum delay in milliseconds
-    return Math.floor(Math.random() * (maxDelay - minDelay + 1) + minDelay);
-  };
 
   const getFieldValueByEmail = async (email) => {
     try {
       const accountDocRef = doc(firestore, 'accounts', email);
-      
+
       onSnapshot(accountDocRef, (docSnapshot) => {
         if (docSnapshot.exists()) {
           const data = docSnapshot.data();
           const fieldType = data.type;
           const fieldName = data.name;
-          
-          if(data.active === true){
+
+          if (data.active === true) {
             setType(fieldType);
             dispatch(setLoginName(fieldName));
             const delay = getRandomDelay();
             // setTimeout(() => {
-              navigation.replace(fieldType);
+            navigation.replace(fieldType);
             // }, delay);
           }
-          else{
+          else {
             signOut(auth)
-            .then(() => {
-              navigation.navigate('Login');
-            })
-            .catch((error) => {
-              console.error('Error signing out:', error);
-            });
+              .then(() => {
+                navigation.navigate('Login');
+              })
+              .catch((error) => {
+                console.error('Error signing out:', error);
+              });
           }
         } else {
           // Handle the case where the document does not exist
@@ -174,7 +173,7 @@ export default function Checkpoint() {
     } catch (error) {
       console.error('Error fetching field value:', error);
     }
-    
+
   };
 
   // const getFieldValueByEmail = (email, navigation) => {

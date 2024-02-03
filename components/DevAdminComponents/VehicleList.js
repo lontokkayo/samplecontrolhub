@@ -97,7 +97,8 @@ import {
   setAddVehicleListData,
   setEditVehicleModalVisible,
   setFobPriceHistoryModalVisible,
-  setFobHistoryData
+  setFobHistoryData,
+  setLoginName
 } from './redux/store';
 // import { TextInput } from 'react-native-gesture-handler';
 import { nanoid } from 'nanoid';
@@ -4390,7 +4391,7 @@ export default function VehicleList() {
 
   const [widthState, setWidthState] = useState(Dimensions.get('window').width);
 
-
+  const dispatch = useDispatch();
 
 
   const screenWidth = Dimensions.get('window').width;
@@ -4511,9 +4512,13 @@ export default function VehicleList() {
       const accountDocSnapshot = await getDoc(accountDocRef);
 
       if (accountDocSnapshot.exists()) {
+        const data = accountDocSnapshot.data();
+        const fieldType = data.type;
+        const fieldName = data.name;
+        dispatch(setLoginName(data.name));
 
       } else {
-        // console.log('Document does not exist');
+        console.log('Document does not exist');
       }
     } catch (error) {
       console.error('Error fetching field value:', error);

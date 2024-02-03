@@ -612,6 +612,7 @@ export default function AddAccount() {
         const data = accountDocSnapshot.data();
         const fieldType = data.type;
         const fieldName = data.name;
+        dispatch(setLoginName(data.name));
 
       } else {
         console.log('Document does not exist');

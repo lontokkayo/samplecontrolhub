@@ -125,6 +125,7 @@ import {
     setPdfViewerModalVisible,
     setSelectedFileUrl,
     setIsLoading,
+    setLoginName,
 } from './redux/store';
 // import { TextInput } from 'react-native-gesture-handler';
 import { nanoid } from 'nanoid';
@@ -138,6 +139,8 @@ import { captureRef } from 'react-native-view-shot';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
 import QRCode from 'react-native-qrcode-svg';
+import { useRoute } from '@react-navigation/native';
+import { useNavigate } from 'react-router-dom';
 
 // import { CollectionGroup } from 'firebase-admin/firestore';
 const { width } = Dimensions.get('window');
@@ -1827,6 +1830,7 @@ const ChatListItem = ({ item, onPress, isActive, messageUnread, formattedDate, c
 
 const ChatList = ({ unreadButtonValue, activeButtonValue, }) => {
 
+    const selectedChatData = useSelector((state) => state.selectedChatData);
     const chatListData = useSelector((state) => state.chatListData);
     const chatListLastVisible = useSelector((state) => state.chatListLastVisible);
     const activeChatId = useSelector((state) => state.activeChatId);
@@ -1834,6 +1838,10 @@ const ChatList = ({ unreadButtonValue, activeButtonValue, }) => {
     const noMoreData = useSelector((state) => state.noMoreData);
     const renderFooterRef = useRef(null);
     const dispatch = useDispatch();
+
+    const route = useRoute();
+    const chatId = route.params?.chatId;
+    const navigate = useNavigate();
 
     const updateChatToRead = async () => {
         const docRef = doc(projectExtensionFirestore, "chats", activeChatId);
@@ -1853,6 +1861,8 @@ const ChatList = ({ unreadButtonValue, activeButtonValue, }) => {
         }
 
     };
+
+
 
     const fetchChatMessages = () => {
         if (!activeChatId) {
@@ -2153,6 +2163,16 @@ const ChatList = ({ unreadButtonValue, activeButtonValue, }) => {
 
         const unsubscribe = fetchChatMessages();
 
+
+        if (activeChatId && activeChatId !== '' && activeChatId !== 'undefined') {
+            const chatData = chatListData.find(chatItem => chatItem.id === chatId);
+
+            navigate(`/devadmin/ChatMessages/${activeChatId}`);
+            // globalCustomerId = chatData.participants.customer; 
+            globalCustomerId = 'marcvan14@gmail.com';
+            globalChatId = activeChatId;
+        }
+
         return () => {
             if (unsubscribe) {
                 unsubscribe(); // Unsubscribe when the component unmounts
@@ -2162,11 +2182,32 @@ const ChatList = ({ unreadButtonValue, activeButtonValue, }) => {
     }, [activeChatId]);
 
     const handleChatPress = async (customerId, chatId) => {
+
         dispatch(setActiveChatId(chatId));
+
         globalCustomerId = customerId;
         globalChatId = chatId;
 
     };
+
+
+
+    useEffect(() => {
+        // Navigate to the ChatMessages route
+        navigate(`/devadmin/ChatMessages`);
+
+        if (chatId && chatId !== 'undefined') {
+
+            // Set a timeout before dispatching
+            const timeoutId = setTimeout(() => {
+                dispatch(setActiveChatId(chatId));
+
+            }, 1000); // 1000 milliseconds = 1 second
+
+            // Clear the timeout if the component unmounts
+            return () => clearTimeout(timeoutId);
+        }
+    }, [chatId]);
 
     useEffect(() => {
         dispatch(setActiveChatId(''));
@@ -4657,21 +4698,26 @@ Real Motor Japan`,
                         'stepIndicator.value': 4,
                         'stepIndicator.status': 'Payment Confirmed',
                     });
+
                 } else {
                     // Handle the case where the payment is less than the amount needed
                     console.log('Partial payment received');
                 }
 
                 // Update payments and payments history
+
                 await updateDoc(docRef, {
                     payments: arrayUnion(...newPayments)
                 });
+
                 await updateDoc(docRefCustomer, {
                     paymentsHistory: arrayUnion(...newPaymentsAccount)
                 });
+
             } else {
                 console.error('Negative value entered');
             }
+
         } catch (error) {
             console.error('Error processing payment: ', error);
         } finally {
@@ -4681,6 +4727,32 @@ Real Motor Japan`,
 
 
 
+    }
+
+    function formatDate(dateString) {
+        // Remove ' at ' from the date string
+        const cleanedDateString = dateString.replace(' at ', ' ');
+        const date = new Date(cleanedDateString);
+
+        if (isNaN(date.getTime())) {
+            // Date is not valid
+            console.error("Invalid Date:", dateString);
+            return "Invalid Date";
+        }
+
+        const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+        const year = date.getFullYear();
+        const month = months[date.getMonth()];
+        const day = date.getDate().toString().padStart(2, '0');
+
+        let hours = date.getHours();
+        const minutes = date.getMinutes().toString().padStart(2, '0');
+        const ampm = hours >= 12 ? 'pm' : 'am';
+
+        hours = hours % 12;
+        hours = hours ? hours : 12; // the hour '0' should be '12'
+
+        return `${year} ${month} ${day} at ${hours}:${minutes}${ampm}`;
     }
 
     const PaymentHistoryModal = ({ historyModalVisible, handleHistoryModalClose, payments }) => {
@@ -4705,19 +4777,34 @@ Real Motor Japan`,
                             {
                                 sortedPayments.length > 0 ?
                                     sortedPayments.map((payment, index) => (
-                                        <View key={index} style={{ marginBottom: 15, borderBottomWidth: 1, borderBottomColor: '#eee', paddingBottom: 10 }}>
-                                            <Text style={{ fontSize: 14, fontWeight: 'bold', color: 'black' }}>
-                                                <Text style={{ fontWeight: 'bold' }}>Date: </Text>
-                                                {/* Use the reversed index for displaying the date */}
-                                                <Text style={{ color: '#FF0000' }}>{sortedPayments[sortedPayments.length - 1 - index].date}</Text>
+                                        <View key={index} style={{
+                                            marginBottom: 15,
+                                            backgroundColor: '#F8F9FF', // Card background color
+                                            borderRadius: 10, // Rounded corners for the card
+                                            shadowColor: '#000', // Shadow color
+                                            shadowOffset: { width: 0, height: 2 },
+                                            shadowOpacity: 0.1,
+                                            shadowRadius: 2,
+                                            elevation: 3, // Elevation for Android
+                                            padding: 15, // Padding inside the card
+                                            borderBottomWidth: 1,
+                                            borderBottomColor: '#eee',
+                                        }}>
+
+                                            <Text style={{ fontSize: 14, fontWeight: 'bold', color: 'black', marginBottom: 5 }}>
+                                                <Text style={{ fontWeight: 'bold', color: '#0A78BE', }}>Date: </Text>
+                                                <Text style={{ color: '#333' }}>
+                                                    {formatDate(sortedPayments[sortedPayments.length - 1 - index].date)}
+                                                </Text>
                                             </Text>
-                                            <Text style={{ fontSize: 14, fontWeight: 'bold', color: 'black' }}>
-                                                <Text style={{ fontWeight: 'bold' }}>Value: </Text>
-                                                {/* Use the reversed index for displaying the value */}
+
+                                            <Text style={{ fontSize: 14, fontWeight: 'bold', color: 'black', marginBottom: 5 }}>
+                                                <Text style={{ fontWeight: 'bold', color: '#0A78BE', }}>Value: </Text>
                                                 <Text style={{ color: Number(sortedPayments[sortedPayments.length - 1 - index].value).toLocaleString().startsWith('-') ? '#FF0000' : '#16A34A' }}>
                                                     ${Number(sortedPayments[sortedPayments.length - 1 - index].value).toLocaleString()}
                                                 </Text>
                                             </Text>
+
                                         </View>
                                     )) :
                                     <Text style={{ fontWeight: 'bold', alignSelf: 'center', }} italic>No history to show</Text>
@@ -7354,9 +7441,174 @@ const TransactionButton = ({ title, buttonValue, transactionValue, colorHoverIn,
     );
 };
 
+
+const PaymentHistoryModal = () => {
+
+    const [paymentHistoryVisible, setPaymentHistoryVisible] = useState(false);
+    const selectedCustomerData = useSelector((state) => state.selectedCustomerData);
+
+    const sortedPayments = selectedCustomerData.paymentsHistory
+        ? [...selectedCustomerData.paymentsHistory].sort((a, b) => {
+            const dateA = new Date(a.date);
+            const dateB = new Date(b.date);
+            return dateB - dateA; // Sorts in descending order
+        })
+        : [];
+
+    const [displayedPayments, setDisplayedPayments] = useState(sortedPayments.slice(0, 5));
+    const [loadingMore, setLoadingMore] = useState(false);
+
+    const loadMorePayments = () => {
+        if (loadingMore) return; // Prevent multiple loads
+
+        setLoadingMore(true);
+        const nextItems = sortedPayments.slice(
+            displayedPayments.length,
+            displayedPayments.length + 5
+        );
+
+        setTimeout(() => { // Simulate network request
+            setDisplayedPayments([...displayedPayments, ...nextItems]);
+            setLoadingMore(false);
+        }, 500); // Adjust the timeout as needed
+    };
+
+    const handlePaymentHistoryModalOpen = () => {
+        setDisplayedPayments(sortedPayments.slice(0, 5));
+        setPaymentHistoryVisible(true);
+
+    };
+
+    const handlePaymentHistoryModalClose = () => {
+        setPaymentHistoryVisible(false);
+    };
+
+
+
+
+
+
+    function formatDate(dateString) {
+        // Remove ' at ' from the date string
+        const cleanedDateString = dateString.replace(' at ', ' ');
+        const date = new Date(cleanedDateString);
+
+        if (isNaN(date.getTime())) {
+            // Date is not valid
+            console.error("Invalid Date:", dateString);
+            return "Invalid Date";
+        }
+
+        const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+        const year = date.getFullYear();
+        const month = months[date.getMonth()];
+        const day = date.getDate().toString().padStart(2, '0');
+
+        let hours = date.getHours();
+        const minutes = date.getMinutes().toString().padStart(2, '0');
+        const ampm = hours >= 12 ? 'pm' : 'am';
+
+        hours = hours % 12;
+        hours = hours ? hours : 12; // the hour '0' should be '12'
+
+        return `${year} ${month} ${day} at ${hours}:${minutes}${ampm}`;
+    }
+
+    const isCloseToBottom = ({ layoutMeasurement, contentOffset, contentSize }) => {
+        return layoutMeasurement.height + contentOffset.y >= contentSize.height - 20;
+    };
+
+    return (
+
+        <>
+            <Pressable onPress={handlePaymentHistoryModalOpen}>
+                <Text style={{ fontSize: 14, color: '#0A78BE', textAlign: 'center', }} underline>
+                    {`View Payments History`}
+                </Text>
+            </Pressable>
+
+            <Modal isOpen={paymentHistoryVisible} onClose={handlePaymentHistoryModalClose} useRNModal>
+                <Modal.Content style={{ backgroundColor: 'white', borderRadius: 10 }}>
+                    <Modal.CloseButton />
+                    <Modal.Header style={{ backgroundColor: 'white', textAlign: 'center', fontSize: 18, fontWeight: 'bold', color: '#333' }}>
+                        Payment History
+                    </Modal.Header>
+                    <Modal.Body>
+                        <ScrollView
+                            style={{ flex: 1, paddingHorizontal: 15, maxHeight: 500 }}
+                            onScroll={({ nativeEvent }) => {
+                                if (isCloseToBottom(nativeEvent)) {
+                                    loadMorePayments();
+                                }
+                            }}
+                            scrollEventThrottle={400} // Adjust as needed
+                        >
+                            {
+                                Array.isArray(sortedPayments) && sortedPayments.length > 0 ?
+                                    displayedPayments.map((payment, index) => (
+                                        <View key={index} style={{
+                                            marginBottom: 15,
+                                            backgroundColor: '#F8F9FF', // Card background color
+                                            borderRadius: 10, // Rounded corners for the card
+                                            shadowColor: '#000', // Shadow color
+                                            shadowOffset: { width: 0, height: 2 },
+                                            shadowOpacity: 0.1,
+                                            shadowRadius: 2,
+                                            elevation: 3, // Elevation for Android
+                                            padding: 15, // Padding inside the card
+                                            borderBottomWidth: 1,
+                                            borderBottomColor: '#eee',
+                                        }}>
+
+                                            <Text style={{ fontSize: 14, fontWeight: 'bold', color: 'black', marginBottom: 5 }}>
+                                                <Text style={{ fontWeight: 'bold', color: '#0A78BE', }}>Date: </Text>
+                                                <Text style={{ color: '#333' }}>
+                                                    {formatDate(sortedPayments[sortedPayments.length - 1 - index].date)}
+                                                </Text>
+                                            </Text>
+
+                                            <Text style={{ fontSize: 14, fontWeight: 'bold', color: 'black', marginBottom: 5 }}>
+                                                <Text style={{ fontWeight: 'bold', color: '#0A78BE', }}>Value: </Text>
+                                                <Text style={{ color: Number(sortedPayments[sortedPayments.length - 1 - index].value).toLocaleString().startsWith('-') ? '#FF0000' : '#16A34A' }}>
+                                                    ${Number(sortedPayments[sortedPayments.length - 1 - index].value).toLocaleString()}
+                                                </Text>
+                                            </Text>
+
+                                            <Text style={{ fontSize: 14, fontWeight: 'bold', color: 'black', marginBottom: 5 }}>
+                                                <Text style={{ fontWeight: 'bold', color: '#0A78BE', }}>Vehicle Name: </Text>
+                                                <Text style={{ color: '#333' }}>{sortedPayments[sortedPayments.length - 1 - index].vehicleName}</Text>
+                                            </Text>
+
+                                            <Text style={{ fontSize: 14, fontWeight: 'bold', color: 'black', marginBottom: 5 }}>
+                                                <Text style={{ fontWeight: 'bold', color: '#0A78BE', }}>Reference Number: </Text>
+                                                <Text style={{ color: '#333' }}>{sortedPayments[sortedPayments.length - 1 - index].vehicleRef}</Text>
+                                            </Text>
+
+                                        </View>
+
+                                    )) :
+                                    <Text style={{ fontWeight: 'bold', alignSelf: 'center', }} italic>No history to show</Text>
+                            }
+                            <View style={{ height: 20, }}>
+                                {loadingMore && <Spinner size='sm' color="#7B9CFF" />}
+                            </View>
+
+                        </ScrollView>
+
+
+
+                    </Modal.Body>
+                </Modal.Content>
+            </Modal>
+        </>
+
+    )
+}
+
 const CustomerProfileModal = () => {
     const [customerModalVisible, setCustomerModalVisible] = useState(false);
     const selectedCustomerData = useSelector((state) => state.selectedCustomerData);
+
 
     const handleModalOpen = () => {
         setCustomerModalVisible(true);
@@ -7366,6 +7618,12 @@ const CustomerProfileModal = () => {
         setCustomerModalVisible(false);
     }
 
+    const totalPaymentValue = selectedCustomerData.paymentsHistory
+        ? selectedCustomerData.paymentsHistory.reduce((sum, payment) => {
+            const value = Number(payment.value);
+            return sum + (isNaN(value) ? 0 : value);
+        }, 0)
+        : 0;
 
 
     return (
@@ -7461,46 +7719,47 @@ const CustomerProfileModal = () => {
 
                             <View style={{ flex: 1, alignItems: 'center', }}>
 
-                                <Text style={{ fontWeight: 'bold', fontSize: 24, color: '#990000', textAlign: 'center', }}>
-                                    {`$${selectedCustomerData.overBalance ? Number(selectedCustomerData.overBalance).toLocaleString('en-US') : 0}`}
+                                <Text style={{ fontWeight: 'bold', fontSize: 24, color: '#009922', textAlign: 'center', }} selectable>
+                                    {`$${(totalPaymentValue).toLocaleString('en-US')}`}
                                 </Text>
 
+                                <Text style={{ fontWeight: 'bold', fontSize: 16, color: '#5E4343', textAlign: 'center', }}>
+                                    {`Total Payment`}
+                                </Text>
+
+                                <PaymentHistoryModal />
+
+
+                            </View>
+
+                            <View style={{ flex: 1, alignItems: 'center', }}>
+                                <Text style={{ fontWeight: 'bold', fontSize: 24, color: '#990000', textAlign: 'center', }} selectable>
+                                    {`$${selectedCustomerData.overBalance ? Number(selectedCustomerData.overBalance).toLocaleString('en-US') : 0}`}
+                                </Text>
                                 <Text style={{ fontWeight: 'bold', fontSize: 16, color: '#5E4343', textAlign: 'center', }}>
                                     {`Overbalance`}
                                 </Text>
 
-                                <Text style={{ fontSize: 14, color: '#0A78BE', textAlign: 'center', }} underline>
-                                    {`View Payments History`}
-                                </Text>
-
-                            </View>
-
-                            <View style={{ flex: 1, alignItems: 'center', }}>
-                                <Text style={{ fontWeight: 'bold', fontSize: 24, color: '#009922', textAlign: 'center', }}>
-                                    {`$155`}
-                                </Text>
-                                <Text style={{ fontWeight: 'bold', fontSize: 16, color: '#5E4343', textAlign: 'center', }}>
-                                    {`Credits`}
-                                </Text>
-
                                 <Text style={{ fontSize: 14, color: 'transparent', textAlign: 'center', }} underline>
-                                    {`-------`}
+                                    {`-----`}
                                 </Text>
 
 
                             </View>
 
                             <View style={{ flex: 1, alignItems: 'center', }}>
-                                <Text style={{ fontWeight: 'bold', fontSize: 24, color: '#0029A3', textAlign: 'center', }}>
+                                <Text style={{ fontWeight: 'bold', fontSize: 24, color: '#0029A3', textAlign: 'center', }} selectable>
                                     {`11`}
                                 </Text>
                                 <Text style={{ fontWeight: 'bold', fontSize: 16, color: '#5E4343', textAlign: 'center', }}>
                                     {`Transactions`}
                                 </Text>
 
-                                <Text style={{ fontSize: 14, color: '#0A78BE', textAlign: 'center', }} underline>
-                                    {`View Transactions`}
-                                </Text>
+                                <Pressable>
+                                    <Text style={{ fontSize: 14, color: '#0A78BE', textAlign: 'center', }} underline>
+                                        {`View Transactions`}
+                                    </Text>
+                                </Pressable>
 
                             </View>
 
@@ -7511,6 +7770,10 @@ const CustomerProfileModal = () => {
 
                 </Modal.Content>
             </Modal>
+
+
+
+
         </>
 
     )
@@ -7520,8 +7783,6 @@ const ChatMessageHeader = () => {
 
     const selectedChatData = useSelector((state) => state.selectedChatData);
     const invoiceData = useSelector((state) => state.invoiceData);
-
-
 
     const totalPriceCondition = selectedChatData.fobPrice && selectedChatData.jpyToUsd && selectedChatData.m3 && selectedChatData.freightPrice;
 
@@ -7593,6 +7854,7 @@ const ChatMessageHeader = () => {
 
                 {/* <Text style={{ fontWeight: 700, color: "#16A34A", }}>{`$${selectedChatData.offerPrice ? selectedChatData.offerPrice : 0}`}</Text> */}
                 <TimelineStatus data={statusData} />
+
             </View>
 
             {/* <HorizontalTimeline /> */}
@@ -7600,7 +7862,6 @@ const ChatMessageHeader = () => {
             <View style={{ alignSelf: 'center', justifyContent: 'center', paddingLeft: 10, }}>
 
                 <View style={{ flexDirection: 'row', }}>
-
                     <Text selectable style={{ fontWeight: 700, fontSize: 12, paddingTop: 0, marginLeft: 2, }}>
                         {selectedChatData.carData && selectedChatData.carData.chassisNumber ? selectedChatData.carData.chassisNumber : 'Chassis N/A'}
                     </Text>
@@ -9246,11 +9507,17 @@ export default function ChatMessages() {
             const accountDocRef = doc(firestore, 'accounts', email);
             const accountDocSnapshot = await getDoc(accountDocRef);
 
-            if (accountDocSnapshot.exists()) {
+            onSnapshot(accountDocRef, (docSnapshot) => {
+                if (docSnapshot.exists()) {
+                    const data = docSnapshot.data();
+                    const fieldType = data.type;
+                    const fieldName = data.name;
+                    dispatch(setLoginName(fieldName));
 
-            } else {
-                // console.log('Document does not exist');
-            }
+                } else {
+                    // Handle the case where the document does not exist
+                }
+            });
         } catch (error) {
             console.error('Error fetching field value:', error);
         }
@@ -9386,7 +9653,7 @@ export default function ChatMessages() {
                                 resizeMode={FastImage.resizeMode.stretch}
                                 style={styles.image} />
                         </Box>
-                        <NamePopover name={name} handleSignOut={handleSignOut} />
+                        <NamePopover name={loginName} handleSignOut={handleSignOut} />
 
 
                     </Box>

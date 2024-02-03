@@ -4163,6 +4163,7 @@ const CheckBoxButton = ({ label, onChange, variable }) => {
 };
 
 
+
 export default function AddVehicle() {
   const screenWidth = Dimensions.get('window').width;
 
@@ -4353,7 +4354,35 @@ export default function AddVehicle() {
     });
 
     console.log('Sample');
+
+    const currentUserEmail = getEmailOfCurrentUser();
+    if (currentUserEmail) {
+      getFieldValueByEmail(currentUserEmail);
+      setEmail(currentUserEmail)
+      const documentId = currentUserEmail;
+    }
   }, []);
+
+
+  const getFieldValueByEmail = async (email) => {
+    try {
+      const accountDocRef = doc(firestore, 'accounts', email);
+      const accountDocSnapshot = await getDoc(accountDocRef);
+
+      if (accountDocSnapshot.exists()) {
+        const data = accountDocSnapshot.data();
+        const fieldType = data.type;
+        const fieldName = data.name;
+        dispatch(setLoginName(data.name));
+
+      } else {
+        console.log('Document does not exist');
+      }
+    } catch (error) {
+      console.error('Error fetching field value:', error);
+    }
+  };
+
 
   const handleClearImages = useCallback(() => {
     dispatch(setSelectedImages([]));
@@ -8019,7 +8048,7 @@ export default function AddVehicle() {
 
       <UpdateSuccessModal onClose={handleUpdateSuccessModalClose} headerText={'Vehicle Updated!'} bodyText={'Vehicle was successfully updated!'} />
       <UploadSuccessModal onClose={handleSuccessModalClose} headerText={'Vehicle Added!'} bodyText={'Vehicle was successfully added! You can view it in the vehicle list.'} />
-    </NativeBaseProvider >
+    </NativeBaseProvider>
 
 
   );

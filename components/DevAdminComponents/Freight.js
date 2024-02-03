@@ -106,7 +106,8 @@ import {
     setDeletePortModalVisible,
     setAddPortsForCountriesModalVisible,
     setCountryPortsData,
-    setDeleteCountryModalVisible
+    setDeleteCountryModalVisible,
+    setLoginName
 } from './redux/store';
 import BouncyCheckbox from "react-native-bouncy-checkbox";
 // import { TextInput } from 'react-native-gesture-handler';
@@ -4755,9 +4756,13 @@ export default function Freight() {
             const accountDocSnapshot = await getDoc(accountDocRef);
 
             if (accountDocSnapshot.exists()) {
+                const data = accountDocSnapshot.data();
+                const fieldType = data.type;
+                const fieldName = data.name;
+                dispatch(setLoginName(data.name));
 
             } else {
-                // console.log('Document does not exist');
+                console.log('Document does not exist');
             }
         } catch (error) {
             console.error('Error fetching field value:', error);

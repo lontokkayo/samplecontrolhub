@@ -82,7 +82,8 @@ const getEmailOfCurrentUser = () => {
 // const Drawer = createDrawerNavigator();
 
 
-export default function DevAdmin() {
+export default function DevAdmin({ navigation }) {
+  const [drawerVisible, setDrawerVisible] = useState(false);
 
   const Drawer = createDrawerNavigator();
 
@@ -113,6 +114,21 @@ export default function DevAdmin() {
   const AddAccountComponent = () => (
     <LazyScreen importFunc={() => import('./DevAdminComponents/AddAccount')} />
   );
+
+  useEffect(() => {
+    const unsubscribe = navigation.addListener('state', () => {
+      // Close the drawer on navigation change
+      setDrawerVisible(false);
+    });
+
+    return unsubscribe;
+  }, [navigation]);
+
+  useEffect(() => {
+    // Initially hide the drawer
+    setDrawerVisible(false);
+  }, []);
+
   return (
 
 
@@ -183,54 +199,17 @@ export default function DevAdmin() {
     //   />
     // </Drawer.Navigator>
 
-    <Drawer.Navigator
-      screenOptions={{
-        headerShown: false,
-        drawerStyle: { backgroundColor: '#7B9CFF' },
-        drawerContentOptions: {
-          activeTintColor: '#7B9CFF',
-          inactiveTintColor: '#7B9CFF',
-          activeLabelStyle: { color: '#7B9CFF' },
-          inactiveLabelStyle: { color: '#7B9CFF' },
-        },
-      }}
-    >
-      <Drawer.Screen
-        name="CHAT MESSAGES"
-        children={ChatMessagesComponent}
-        options={{ unmountOnBlur: true }}
-      />
-      <Drawer.Screen
-        name="FREIGHT"
-        children={FreightComponent}
-        options={{ unmountOnBlur: true }}
-      />
-      <Drawer.Screen
-        name="ADD NEW VEHICLE"
-        children={AddVehicleComponent}
-        options={{ unmountOnBlur: true }}
-      />
-      <Drawer.Screen
-        name="LOGS"
-        children={LogsComponent}
-        options={{ unmountOnBlur: true }}
-      />
-      <Drawer.Screen
-        name="VEHICLE LIST"
-        children={VehicleListComponent}
-        options={{ unmountOnBlur: true }}
-      />
-      <Drawer.Screen
-        name="ACCOUNT LIST"
-        children={AccountListComponent}
-        options={{ unmountOnBlur: true }}
-      />
-      <Drawer.Screen
-        name="ADD C-HUB ACCOUNT"
-        children={AddAccountComponent}
-        options={{ unmountOnBlur: true }}
-      />
-    </Drawer.Navigator>
+    <StackNavigator.Navigator screenOptions={{ headerShown: false }}>
+
+      <StackNavigator.Screen name="CHAT MESSAGES" component={ChatMessagesComponent} />
+      <StackNavigator.Screen name="FREIGHT" component={FreightComponent} />
+      <StackNavigator.Screen name="ADD NEW VEHICLE" component={AddVehicleComponent} />
+      <StackNavigator.Screen name="LOGS" component={LogsComponent} />
+      <StackNavigator.Screen name="VEHICLE LIST" component={VehicleListComponent} />
+      <StackNavigator.Screen name="ACCOUNT LIST" component={AccountListComponent} />
+      <StackNavigator.Screen name="ADD C-HUB ACCOUNT" component={AddAccountComponent} />
+
+    </StackNavigator.Navigator>
 
     // <Drawer.Navigator useLegacyImplementation screenOptions={{
     //   headerShown: false,

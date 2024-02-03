@@ -63,10 +63,10 @@ import { setLoginName } from './redux/store';
 import MobileViewDrawer from './SideDrawer/MobileViewDrawer';
 import SideDrawer from './SideDrawer/SideDrawer';
 import { LineChart, BarChart } from 'react-native-chart-kit';
-import { VictoryBar, VictoryChart, VictoryAxis, VictoryTheme  } from 'victory';
+import { VictoryBar, VictoryChart, VictoryAxis, VictoryTheme } from 'victory';
 import {
     OPEN_EXCHANGE_API_KEY
-  } from '@env';
+} from '@env';
 const { width, height } = Dimensions.get('window');
 
 const firestore = getFirestore();
@@ -822,7 +822,7 @@ const MyBarChart = () => {
     ];
 
     return (
-        <ScrollView style={{flex: 1, margin: 5, borderRadius: 5,}}>
+        <ScrollView style={{ flex: 1, margin: 5, borderRadius: 5, }}>
             <VictoryChart
                 theme={VictoryTheme.material}
                 domainPadding={10}
@@ -897,6 +897,7 @@ export default function Logs() {
 
     const screenWidth = Dimensions.get('window').width;
 
+    const dispatch = useDispatch();
 
 
 
@@ -1074,9 +1075,13 @@ export default function Logs() {
             const accountDocSnapshot = await getDoc(accountDocRef);
 
             if (accountDocSnapshot.exists()) {
+                const data = accountDocSnapshot.data();
+                const fieldType = data.type;
+                const fieldName = data.name;
+                dispatch(setLoginName(data.name));
 
             } else {
-                // console.log('Document does not exist');
+                console.log('Document does not exist');
             }
         } catch (error) {
             console.error('Error fetching field value:', error);
