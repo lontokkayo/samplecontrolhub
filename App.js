@@ -88,7 +88,10 @@ export default function App() {
   };
 
   const linking = {
-    prefixes: ['http://localhost:19006/', 'https://lontokkayo.github.io/samplecontrolhub/'],
+    prefixes: [
+      // 'http://localhost:19006/',
+      'https://lontokkayo.github.io/samplecontrolhub/'
+    ],
     config,
   };
 
