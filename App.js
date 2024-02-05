@@ -35,7 +35,8 @@ import ResetPasswordSuccess from './components/ResetPasswordSuccess';
 import './style.css';
 import { Provider } from 'react-redux';
 import store from './components/DevAdminComponents/redux/store';
-import { BrowserRouter as Router } from 'react-router-dom';
+import { HashRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
+
 
 const StackNavigator = createNativeStackNavigator();
 
@@ -93,28 +94,41 @@ export default function App() {
 
 
   return (
-    <Router>
-      <Provider store={store}>
-        <NativeBaseProvider>
-          {/* <LoginPage/> */}
-          <NavigationContainer linking={linking}>
-            <StackNavigator.Navigator options={{ headerShown: false }}>
-              <StackNavigator.Screen options={{ headerShown: false, }} name="Login" component={LoginPage} />
-              <StackNavigator.Screen options={{ headerShown: false, }} name="Checkpoint" component={Checkpoint} />
-              <StackNavigator.Screen options={{ headerShown: false, unmountOnBlur: true }} name="devadmin" component={DevAdmin} />
-              <StackNavigator.Screen options={{ headerShown: false }} name="admin" component={Admin} />
-              <StackNavigator.Screen options={{ headerShown: false }} name="ResetPassword" component={ResetPassword} />
-              <StackNavigator.Screen options={{ headerShown: false }} name="ResetPasswordSuccess" component={ResetPasswordSuccess} />
-              {/* {user ? (<StackNavigator.Screen options={{ headerShown: false }} name="Checkpoint" component={Checkpoint} /> ) : user ?
-          (<StackNavigator.Screen options={{ headerShown: false }} name="superadmin" component={SuperAdmin} />) : user ?
-          (<StackNavigator.Screen options={{ headerShown: false }} name="admin" component={Admin} />) :  (
-          <StackNavigator.Screen  options={{ headerShown: false }} name="Login" component={LoginPage} />
-        )} */}
-            </StackNavigator.Navigator>
-          </NavigationContainer>
-        </NativeBaseProvider>
-      </Provider>
-    </Router>
+    <Provider store={store}>
+        <Router>
+          <Routes>
+            <Route path="/" element={<Navigate to="/login" replace />} />
+            <Route path="/Login" element={<LoginPage />} />
+            <Route path="/Checkpoint" element={<Checkpoint />} />
+            <Route path="/DevAdmin/*" element={<DevAdmin />} />
+            {/* Corrected path for Admin if needed */}
+            <Route path="/Admin" element={<Admin />} />
+            {/* Define other routes */}
+          </Routes>
+        </Router>
+    </Provider>
+    // <Router>
+    //   <Provider store={store}>
+    //     <NativeBaseProvider>
+    //       {/* <LoginPage/> */}
+    //       <NavigationContainer linking={linking}>
+    //         <StackNavigator.Navigator options={{ headerShown: false }}>
+    //           <StackNavigator.Screen options={{ headerShown: false, }} name="Login" component={LoginPage} />
+    //           <StackNavigator.Screen options={{ headerShown: false, }} name="Checkpoint" component={Checkpoint} />
+    //           <StackNavigator.Screen options={{ headerShown: false, unmountOnBlur: true }} name="devadmin" component={DevAdmin} />
+    //           <StackNavigator.Screen options={{ headerShown: false }} name="admin" component={Admin} />
+    //           <StackNavigator.Screen options={{ headerShown: false }} name="ResetPassword" component={ResetPassword} />
+    //           <StackNavigator.Screen options={{ headerShown: false }} name="ResetPasswordSuccess" component={ResetPasswordSuccess} />
+    //           {/* {user ? (<StackNavigator.Screen options={{ headerShown: false }} name="Checkpoint" component={Checkpoint} /> ) : user ?
+    //       (<StackNavigator.Screen options={{ headerShown: false }} name="superadmin" component={SuperAdmin} />) : user ?
+    //       (<StackNavigator.Screen options={{ headerShown: false }} name="admin" component={Admin} />) :  (
+    //       <StackNavigator.Screen  options={{ headerShown: false }} name="Login" component={LoginPage} />
+    //     )} */}
+    //         </StackNavigator.Navigator>
+    //       </NavigationContainer>
+    //     </NativeBaseProvider>
+    //   </Provider>
+    // </Router>
   );
 }
 

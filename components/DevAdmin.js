@@ -55,11 +55,15 @@ import { createDrawerNavigator } from '@react-navigation/drawer';
 
 import LazyScreen from './DevAdminComponents/Lazy Screen/LazyScreen';
 
+import { HashRouter as Router, Route, Routes, useNavigate, Navigate } from 'react-router-dom';
+
 import AddAccount from './DevAdminComponents/AddAccount';
 import Logs from './DevAdminComponents/Logs';
 import AccountList from './DevAdminComponents/AccountList';
 import AddVehicle from './DevAdminComponents/AddVehicle';
 import VehicleList from './DevAdminComponents/VehicleList';
+import Freight from './DevAdminComponents/Freight';
+import ChatMessages from './DevAdminComponents/ChatMessages';
 
 const StackNavigator = createNativeStackNavigator();
 
@@ -115,14 +119,14 @@ export default function DevAdmin({ navigation }) {
     <LazyScreen importFunc={() => import('./DevAdminComponents/AddAccount')} />
   );
 
-  useEffect(() => {
-    const unsubscribe = navigation.addListener('state', () => {
-      // Close the drawer on navigation change
-      setDrawerVisible(false);
-    });
+  // useEffect(() => {
+  //   const unsubscribe = navigation.addListener('state', () => {
+  //     // Close the drawer on navigation change
+  //     setDrawerVisible(false);
+  //   });
 
-    return unsubscribe;
-  }, [navigation]);
+  //   return unsubscribe;
+  // }, [navigation]);
 
   useEffect(() => {
     // Initially hide the drawer
@@ -199,17 +203,30 @@ export default function DevAdmin({ navigation }) {
     //   />
     // </Drawer.Navigator>
 
-    <StackNavigator.Navigator screenOptions={{ headerShown: false }}>
+    // <StackNavigator.Navigator screenOptions={{ headerShown: false }}>
 
-      <StackNavigator.Screen name="CHAT MESSAGES" component={ChatMessagesComponent} />
-      <StackNavigator.Screen name="FREIGHT" component={FreightComponent} />
-      <StackNavigator.Screen name="ADD NEW VEHICLE" component={AddVehicleComponent} />
-      <StackNavigator.Screen name="LOGS" component={LogsComponent} />
-      <StackNavigator.Screen name="VEHICLE LIST" component={VehicleListComponent} />
-      <StackNavigator.Screen name="ACCOUNT LIST" component={AccountListComponent} />
-      <StackNavigator.Screen name="ADD C-HUB ACCOUNT" component={AddAccountComponent} />
+    //   <StackNavigator.Screen name="CHAT MESSAGES" component={ChatMessagesComponent} />
+    //   <StackNavigator.Screen name="FREIGHT" component={FreightComponent} />
+    //   <StackNavigator.Screen name="ADD NEW VEHICLE" component={AddVehicleComponent} />
+    //   <StackNavigator.Screen name="LOGS" component={LogsComponent} />
+    //   <StackNavigator.Screen name="VEHICLE LIST" component={VehicleListComponent} />
+    //   <StackNavigator.Screen name="ACCOUNT LIST" component={AccountListComponent} />
+    //   <StackNavigator.Screen name="ADD C-HUB ACCOUNT" component={AddAccountComponent} />
 
-    </StackNavigator.Navigator>
+    // </StackNavigator.Navigator>
+
+    <Routes>
+      <Route path="*" element={<Navigate to="chat-messages" replace />} />
+      <Route path="chat-messages" element={<ChatMessages />} />
+      <Route path="chat-messages/:chatId" element={<ChatMessages />} /> {/* Add this line */}
+      <Route path="freight" element={<Freight />} />
+      <Route path="add-new-vehicle" element={<AddVehicle />} />
+      <Route path="logs" element={<Logs />} />
+      <Route path="vehicle-list" element={<VehicleList />} />
+      <Route path="account-list" element={<AccountList />} />
+      <Route path="add-c-hub-account" element={<AddAccount />} />
+      {/* Add additional nested routes as needed */}
+    </Routes>
 
     // <Drawer.Navigator useLegacyImplementation screenOptions={{
     //   headerShown: false,

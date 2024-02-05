@@ -22,6 +22,8 @@ import {
   PresenceTransition
 } from "native-base";
 import { useNavigation } from '@react-navigation/core'
+import { useNavigate } from 'react-router-dom';
+
 import { app, db, getFirestore, collection, addDoc, doc, setDoc, auth, getDoc, onSnapshot } from '../firebasecontrol'
 import { signOut, onAuthStateChanged, reload, getAuth } from 'firebase/auth';
 import { MaterialIcons } from "@expo/vector-icons";
@@ -66,7 +68,8 @@ export default function Checkpoint() {
   const [errorMessage, setErrorMessage] = React.useState('');
   const logo = require('../assets/RMJ C-Hub 制御ハブ.png');
 
-  const navigation = useNavigation()
+  // const navigation = useNavigation()
+  const navigate = useNavigate();
 
 
   // const handleDocumentChange = (snapshot) => {
@@ -90,7 +93,8 @@ export default function Checkpoint() {
       if (!isActive) {
         signOut(auth)
           .then(() => {
-            navigation.navigate('Login');
+            // navigation.navigate('Login');
+            navigate('/Login');
           })
           .catch((error) => {
             console.error('Error signing out:', error);
@@ -99,7 +103,8 @@ export default function Checkpoint() {
     } else {
       signOut(auth)
         .then(() => {
-          navigation.navigate('Login');
+          // navigation.navigate('Login');
+          navigate('/Login');
         })
         .catch((error) => {
           console.error('Error signing out:', error);
@@ -154,13 +159,15 @@ export default function Checkpoint() {
             dispatch(setLoginName(fieldName));
             const delay = getRandomDelay();
             // setTimeout(() => {
-            navigation.replace(fieldType);
+            // navigation.replace(fieldType);
+            navigate(`/${fieldType}`)
             // }, delay);
           }
           else {
             signOut(auth)
               .then(() => {
-                navigation.navigate('Login');
+                // navigation.navigate('Login');
+                navigate('/Login');
               })
               .catch((error) => {
                 console.error('Error signing out:', error);

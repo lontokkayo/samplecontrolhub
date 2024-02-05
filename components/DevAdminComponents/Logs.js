@@ -870,7 +870,7 @@ export default function Logs() {
     const [name, setName] = useState('');
     const loginName = useSelector((state) => state.loginName);
 
-    const navigation = useNavigation();
+    // const navigation = useNavigation();
 
     const [isSelectedLogs, setIsSelectedLogs] = useState(true);
     const [isSelectedAddAccount, setIsSelectedAddAccount] = useState(false);
@@ -987,7 +987,8 @@ export default function Logs() {
     useEffect(() => {
         const unsubscribe = auth.onAuthStateChanged(user => {
             if (!user) {
-                navigation.navigate("Login")
+                // navigation.navigate("Login")
+                navigate("/Login");
             }
 
         })
@@ -1014,7 +1015,9 @@ export default function Logs() {
             if (!isActive) {
                 signOut(auth)
                     .then(() => {
-                        navigation.navigate('Login');
+                        // navigation.navigate('Login');
+                        navigate("/Login");
+
                     })
                     .catch((error) => {
                         console.error('Error signing out:', error);
@@ -1023,7 +1026,9 @@ export default function Logs() {
         } else {
             signOut(auth)
                 .then(() => {
-                    navigation.navigate('Login');
+                    // navigation.navigate('Login');
+                    navigate("/Login");
+
                 })
                 .catch((error) => {
                     console.error('Error signing out:', error);
@@ -1095,7 +1100,8 @@ export default function Logs() {
     const handleSignOut = () => {
 
         signOut(auth).then(() => {
-            navigation.navigate('Login');
+            // navigation.navigate('Login');
+            navigate("/Login");
             setEmail('');
             setName('');
         }).catch(() => {

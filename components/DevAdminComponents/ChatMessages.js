@@ -14,7 +14,6 @@ import {
     Stack,
     Text,
     VStack,
-    useBreakpointValue,
     TextArea,
     InputRightAddon,
     InputGroup,
@@ -140,7 +139,7 @@ import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
 import QRCode from 'react-native-qrcode-svg';
 import { useRoute } from '@react-navigation/native';
-import { useNavigate } from 'react-router-dom';
+import { HashRouter as Router, Route, Routes, useNavigate, Navigate, useParams } from 'react-router-dom';
 
 // import { CollectionGroup } from 'firebase-admin/firestore';
 const { width } = Dimensions.get('window');
@@ -161,7 +160,7 @@ let globalAdditionalPriceArray = [];
 
 let globalMessageTemplateSelectedTitle = '';
 
-let userEmail = projectControlAuth.currentUser.email;
+// let userEmail = projectControlAuth.currentUser.email;
 
 let formattedIssuingDate = ''; // Initialize the variable outside the conditional rendering block
 let formattedDueDate = '';
@@ -1839,8 +1838,8 @@ const ChatList = ({ unreadButtonValue, activeButtonValue, }) => {
     const renderFooterRef = useRef(null);
     const dispatch = useDispatch();
 
-    const route = useRoute();
-    const chatId = route.params?.chatId;
+    const { chatId } = useParams();
+
     const navigate = useNavigate();
 
     const updateChatToRead = async () => {
@@ -2164,14 +2163,6 @@ const ChatList = ({ unreadButtonValue, activeButtonValue, }) => {
         const unsubscribe = fetchChatMessages();
 
 
-        if (activeChatId && activeChatId !== '' && activeChatId !== 'undefined') {
-            const chatData = chatListData.find(chatItem => chatItem.id === chatId);
-
-            navigate(`/devadmin/ChatMessages/${activeChatId}`);
-            // globalCustomerId = chatData.participants.customer; 
-            globalCustomerId = 'marcvan14@gmail.com';
-            globalChatId = activeChatId;
-        }
 
         return () => {
             if (unsubscribe) {
@@ -2179,42 +2170,29 @@ const ChatList = ({ unreadButtonValue, activeButtonValue, }) => {
             }
         };
 
+
     }, [activeChatId]);
+
+    useEffect(() => {
+        if (chatId) {
+            setTimeout(() => {
+                dispatch(setActiveChatId(chatId));
+            }, 1);
+
+        }
+    }, [chatId]);
 
     const handleChatPress = async (customerId, chatId) => {
 
         dispatch(setActiveChatId(chatId));
-
+        navigate(`/devadmin/chat-messages/${chatId}`);
         globalCustomerId = customerId;
         globalChatId = chatId;
 
     };
 
 
-    useEffect(() => {
-        const query = new URLSearchParams(window.location.search);
-        const path = query.get('');
-        if (path) {
-            navigate(path);
-        }
-    }, [navigate]);
 
-    useEffect(() => {
-        // Navigate to the ChatMessages route
-        navigate(`/devadmin/ChatMessages`);
-
-        if (chatId && chatId !== 'undefined') {
-
-            // Set a timeout before dispatching
-            const timeoutId = setTimeout(() => {
-                dispatch(setActiveChatId(chatId));
-
-            }, 1); // 1000 milliseconds = 1 second
-
-            // Clear the timeout if the component unmounts
-            return () => clearTimeout(timeoutId);
-        }
-    }, [chatId]);
 
     useEffect(() => {
         dispatch(setActiveChatId(''));
@@ -8351,6 +8329,9 @@ const ChatMessageBox = ({ activeButtonValue, userEmail }) => {
     const [selectedImageIndex, setSelectedImageIndex] = useState(null);
     const [isPreviewVisible, setIsPreviewVisible] = useState(false);
 
+    const screenWidth = Dimensions.get('window').width;
+    const screenHeight = Dimensions.get('window').height;
+
     const openPreview = (index) => {
         setSelectedImageIndex(index);
         setIsPreviewVisible(true);
@@ -9231,6 +9212,7 @@ const ChatMessageBox = ({ activeButtonValue, userEmail }) => {
         chatMessagesData.length > 0 ? (
             <>
                 <FlatList
+                    style={{ height: 100 }}
                     ref={flatListRef}
                     data={chatMessagesData}
                     renderItem={renderItem}
@@ -9259,9 +9241,9 @@ const ChatMessageBox = ({ activeButtonValue, userEmail }) => {
 
 
 export default function ChatMessages() {
+    const navigate = useNavigate();
 
     const [email, setEmail] = useState('');
-    const navigation = useNavigation();
     const chatListData = useSelector((state) => state.chatListData);
     const activeChatId = useSelector((state) => state.activeChatId);
     const chatMessageBoxLoading = useSelector((state) => state.chatMessageBoxLoading);
@@ -9440,7 +9422,7 @@ export default function ChatMessages() {
     useEffect(() => {
         const unsubscribe = projectControlAuth.onAuthStateChanged(user => {
             if (!user) {
-                navigation.navigate("Login")
+                navigate("/Login")
             }
 
         })
@@ -9457,7 +9439,7 @@ export default function ChatMessages() {
             if (!isActive) {
                 signOut(projectControlAuth)
                     .then(() => {
-                        navigation.navigate('Login');
+                        navigate("/Login")
                     })
                     .catch((error) => {
                         console.error('Error signing out:', error);
@@ -9466,7 +9448,7 @@ export default function ChatMessages() {
         } else {
             signOut(projectControlAuth)
                 .then(() => {
-                    navigation.navigate('Login');
+                    navigate("/Login")
                 })
                 .catch((error) => {
                     console.error('Error signing out:', error);
@@ -9535,7 +9517,7 @@ export default function ChatMessages() {
         // Check if currentUser exists before signing out
         if (projectControlAuth.currentUser) {
             signOut(projectControlAuth).then(() => {
-                navigation.navigate('Login');
+                navigate("/Login")
                 setEmail('');
                 setName('');
             }).catch(() => {
@@ -9545,7 +9527,7 @@ export default function ChatMessages() {
             // Handle the case where there is no user currently signed in
             console.log('No user signed in to sign out');
             // Optionally navigate to the login screen or show a message
-            navigation.navigate('Login');
+            navigate("/Login")
         }
     }
 
@@ -9566,8 +9548,6 @@ export default function ChatMessages() {
     //     Dimensions.removeEventListener('change', handleScreenResize);
     //   };
     // }, []);
-
-    const showDrawerIcon = useBreakpointValue([true, true, true, false]);
 
 
     const NamePopover = ({ name, handleSignOut }) => {

@@ -27,6 +27,7 @@ import { useNavigation } from '@react-navigation/core';
 import { app, db, getFirestore, collection, addDoc, doc, setDoc, getAuth, auth, updateDoc } from '../firebasecontrol';
 import { signInWithEmailAndPassword, signOut } from 'firebase/auth';
 import { MaterialIcons } from "@expo/vector-icons";
+import { useNavigate } from 'react-router-dom';
 
 const { width, height } = Dimensions.get('window');
 const windowWidth = Dimensions.get('window').width;
@@ -47,12 +48,16 @@ export default function LoginPage() {
   const logo = require('../assets/RMJ C-Hub 制御ハブ.png');
   const [isLoading, setIsLoading] = useState(false);
   const [isDisabled, setIsDisabled] = useState(false);
-  const navigation = useNavigation();
+  // const navigation = useNavigation();
+
+  const navigate = useNavigate();
 
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged(user => {
       if (user) {
-        navigation.replace("Checkpoint")
+        // navigation.replace("Checkpoint")
+        navigate('/Checkpoint');
+
       }
 
     })
@@ -131,7 +136,9 @@ export default function LoginPage() {
         const newValue = password;
 
         updateFieldData(documentId, fieldName, newValue);
-        navigation.navigate('Checkpoint');
+        // navigation.navigate('Checkpoint');
+        navigate('/Checkpoint');
+
 
       })
       .catch((error) => {
@@ -196,9 +203,9 @@ export default function LoginPage() {
   }, [password])
 
 
-  const handleReset = () => {
-    navigation.navigate('ResetPassword');
-  };
+  // const handleReset = () => {
+  //   navigation.navigate('ResetPassword');
+  // };
   return (
     <NativeBaseProvider>
 
