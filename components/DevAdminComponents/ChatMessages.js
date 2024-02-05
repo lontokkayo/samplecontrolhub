@@ -2191,6 +2191,13 @@ const ChatList = ({ unreadButtonValue, activeButtonValue, }) => {
     };
 
 
+    useEffect(() => {
+        const query = new URLSearchParams(window.location.search);
+        const path = query.get('');
+        if (path) {
+            navigate(path);
+        }
+    }, [navigate]);
 
     useEffect(() => {
         // Navigate to the ChatMessages route

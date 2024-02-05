@@ -73,7 +73,6 @@ export default function App() {
       devadmin: {
         path: 'devadmin',
         screens: {
-          'CHAT MESSAGES': 'ChatMessages',
           'CHAT MESSAGES': 'ChatMessages/:chatId',
           'FREIGHT': 'Freight',
           'ADD NEW VEHICLE': 'AddNewVehicle',
