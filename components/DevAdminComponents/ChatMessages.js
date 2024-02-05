@@ -2202,7 +2202,7 @@ const ChatList = ({ unreadButtonValue, activeButtonValue, }) => {
             const timeoutId = setTimeout(() => {
                 dispatch(setActiveChatId(chatId));
 
-            }, 1000); // 1000 milliseconds = 1 second
+            }, 1); // 1000 milliseconds = 1 second
 
             // Clear the timeout if the component unmounts
             return () => clearTimeout(timeoutId);
