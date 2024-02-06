@@ -143,6 +143,7 @@ import QRCode from 'react-native-qrcode-svg';
 import { useRoute } from '@react-navigation/native';
 import { HashRouter as Router, Route, Routes, useNavigate, Navigate, useParams } from 'react-router-dom';
 
+
 // import { CollectionGroup } from 'firebase-admin/firestore';
 const { width } = Dimensions.get('window');
 let selectedScreen = 'CHAT MESSAGES'
@@ -253,17 +254,31 @@ const getEmailOfCurrentUser = () => {
 };
 
 const encryptData = (data) => {
-    const secretKey = CRYPTO_KEY.toString();
+    try {
+        const secretKey = CRYPTO_KEY.toString();
+        return AES.encrypt(data, secretKey).toString();
+    } catch (error) {
+        console.error("Error encrypting data:", error);
+        // useNavigate(`/devadmin/chat-messages`);
 
-    return AES.encrypt(data, secretKey).toString();
+        // Handle the encryption error or return a fallback
+        return null; // or handle it in another appropriate way
+    }
 };
 
-// Function to decrypt data
 const decryptData = (ciphertext) => {
-    const secretKey = CRYPTO_KEY.toString();
+    try {
+        const secretKey = CRYPTO_KEY.toString();
 
-    const bytes = AES.decrypt(ciphertext, secretKey);
-    return bytes.toString(enc.Utf8);
+        const bytes = AES.decrypt(ciphertext, secretKey);
+        return bytes.toString(enc.Utf8);
+    } catch (error) {
+        console.error("Error decrypting data:", error);
+        // useNavigate(`/devadmin/chat-messages`);
+
+        // Handle the decryption error or return a fallback
+        return null; // or handle it in another appropriate way
+    }
 };
 
 
@@ -1132,7 +1147,7 @@ const ChatInputText = () => {
                         const fileName = asset.fileName || 'Unknown name';
                         resolve({ uri: selectedImageUri, name: fileName });
                         setImageUri(selectedImageUri); // Set imageUri here
-                        console.log(`File name: ${fileName}`);
+                        // console.log(`File name: ${fileName}`);
                     }
                 });
             });
@@ -1173,7 +1188,7 @@ const ChatInputText = () => {
                             resolve({ dataUrl: reader.result, name: file.name });
                             setImageUri(reader.result); // Set imageUri here
                             setFileName(file.name);
-                            console.log(`File name: ${file.name}`);
+                            // console.log(`File name: ${file.name}`);
                         };
                         setSelectedImage(file);
                         reader.onerror = error => reject(error);
@@ -1207,7 +1222,7 @@ const ChatInputText = () => {
                         const fileName = asset.fileName || 'Unknown name';
                         resolve({ uri: selectedImageUri, name: fileName });
                         setImageUri(selectedImageUri); // Set imageUri here
-                        console.log(`File name: ${fileName}`);
+                        // console.log(`File name: ${fileName}`);
                     }
                 });
             });
@@ -2186,16 +2201,24 @@ const ChatList = ({ unreadButtonValue, activeButtonValue, }) => {
         if (chatId) {
 
             setTimeout(() => {
-                const decryptedChatId = decryptData(chatId).toString();
+                const decodedChatId = decodeURIComponent(chatId);
+                const decryptedChatId = decryptData(decodedChatId).toString();
                 let parts = decryptedChatId.split('_');
                 let stockIdPart = parts[1];
                 let emailPart = parts[parts.length - 1];
 
+
+                // console.log(decryptedChatId);
+
+                if (!emailPart) {
+                    console.error("Invalid email part:", emailPart);
+                    return;
+                }
                 const folderName = selectedChatData.carData && selectedChatData.carData.stockID ? selectedChatData.carData.stockID : (selectedChatData.vehicle && selectedChatData.vehicle.carId ? selectedChatData.vehicle.carId : '');
                 const storage = getStorage(projectExtensionFirebase);
                 const imageRef = ref(storage, `${stockIdPart}/0`); // Ensure this path is correct
 
-                console.log('Folder Name: ', folderName)
+                // console.log('Folder Name: ', folderName)
                 getDownloadURL(imageRef)
                     .then((url) => {
                         setImageUrl(url);
@@ -2228,7 +2251,7 @@ const ChatList = ({ unreadButtonValue, activeButtonValue, }) => {
                             dispatch(setSelectedCustomerData(data ? data : {}));
                             globalCustomerFirstName = data.textFirst ? data.textFirst : '';
                             globalCustomerLastName = data.textLast ? data.textLast : '';
-                            console.log(`Name: ${data.textFirst} ${data.textLast}`)
+                            // console.log(`Name: ${data.textFirst} ${data.textLast}`)
 
 
                             // globalCustomerCarName = carName;
@@ -2272,7 +2295,7 @@ const ChatList = ({ unreadButtonValue, activeButtonValue, }) => {
             const decryptedChatId = decryptData(chatId).toString();
 
             setTimeout(() => {
-                console.log(decryptedChatId)
+                // console.log(decryptedChatId)
                 dispatch(setActiveChatId(decryptedChatId));
 
             }, 1);
