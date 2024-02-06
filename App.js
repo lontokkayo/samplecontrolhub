@@ -95,17 +95,18 @@ export default function App() {
 
   return (
     <Provider store={store}>
-        <Router>
-          <Routes>
-            <Route path="/" element={<Navigate to="/login" replace />} />
-            <Route path="/Login" element={<LoginPage />} />
-            <Route path="/Checkpoint" element={<Checkpoint />} />
-            <Route path="/DevAdmin/*" element={<DevAdmin />} />
-            {/* Corrected path for Admin if needed */}
-            <Route path="/Admin" element={<Admin />} />
-            {/* Define other routes */}
-          </Routes>
-        </Router>
+      <Router>
+        <Routes>
+          <Route path="/" element={<Navigate to="/login" replace />} />
+          <Route path="/Login" element={<LoginPage />} />
+          <Route path="/Login/*" element={<LoginPage />} />
+          <Route path="/Checkpoint" element={<Checkpoint />} />
+          <Route path="/DevAdmin/*" element={<DevAdmin />} />
+          {/* Corrected path for Admin if needed */}
+          <Route path="/Admin" element={<Admin />} />
+          {/* Define other routes */}
+        </Routes>
+      </Router>
     </Provider>
     // <Router>
     //   <Provider store={store}>

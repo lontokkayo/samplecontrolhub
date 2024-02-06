@@ -2167,18 +2167,7 @@ const ChatList = ({ unreadButtonValue, activeButtonValue, }) => {
     };
 
     useEffect(() => {
-
-        const unsubscribe = fetchChatMessages();
-
-        return () => {
-            if (unsubscribe) {
-                unsubscribe(); // Unsubscribe when the component unmounts
-            }
-        };
-
-    }, [activeChatId]);
-
-    useEffect(() => {
+        // dispatch(setCarImageUrl(''));
 
         if (chatId) {
 
@@ -2246,10 +2235,20 @@ const ChatList = ({ unreadButtonValue, activeButtonValue, }) => {
 
 
             }, 1);
-
-
         }
-    }, [selectedChatData]);
+
+        const unsubscribe = fetchChatMessages();
+
+
+        return () => {
+            if (unsubscribe) {
+
+                unsubscribe(); // Unsubscribe when the component unmounts
+            }
+        };
+
+    }, [activeChatId]);
+
 
 
 
@@ -7850,7 +7849,7 @@ const ChatMessageHeader = () => {
     const selectedChatData = useSelector((state) => state.selectedChatData);
     const invoiceData = useSelector((state) => state.invoiceData);
     const carImageUrl = useSelector((state) => state.carImageUrl);
-
+    const dispatch = useDispatch();
     const [reRenderKey, setReRenderKey] = useState(0);
     const totalPriceCondition = selectedChatData.fobPrice && selectedChatData.jpyToUsd && selectedChatData.m3 && selectedChatData.freightPrice;
 
@@ -7881,6 +7880,7 @@ const ChatMessageHeader = () => {
     useEffect(() => {
 
         setReRenderKey(reRenderKey + 1)
+        dispatch(setChatMessageBoxLoading(false));
 
     }, [activeChatId])
 
@@ -9514,7 +9514,7 @@ export default function ChatMessages() {
     useEffect(() => {
         const unsubscribe = projectControlAuth.onAuthStateChanged(user => {
             if (!user) {
-                navigate("/Login")
+                navigate("/login")
             }
 
         })
@@ -9531,7 +9531,7 @@ export default function ChatMessages() {
             if (!isActive) {
                 signOut(projectControlAuth)
                     .then(() => {
-                        navigate("/Login")
+                        navigate("/login")
                     })
                     .catch((error) => {
                         console.error('Error signing out:', error);
@@ -9540,7 +9540,7 @@ export default function ChatMessages() {
         } else {
             signOut(projectControlAuth)
                 .then(() => {
-                    navigate("/Login")
+                    navigate("/login")
                 })
                 .catch((error) => {
                     console.error('Error signing out:', error);
@@ -9554,6 +9554,11 @@ export default function ChatMessages() {
             const userRef = doc(firestore, 'accounts', userId);
             const unsubscribe = onSnapshot(userRef, handleDocumentChange);
             return unsubscribe;
+        } else {
+            // Return a no-op function if there's no user
+            return () => {
+                navigate("/login")
+            };
         }
     };
 
@@ -9561,6 +9566,7 @@ export default function ChatMessages() {
         const unsubscribe = subscribeToFieldChange();
 
         return () => {
+            // This will now always be a function
             unsubscribe();
         };
     }, []);
@@ -9610,7 +9616,7 @@ export default function ChatMessages() {
         // Check if currentUser exists before signing out
         if (projectControlAuth.currentUser) {
             signOut(projectControlAuth).then(() => {
-                navigate("/Login")
+                navigate("/login")
                 setEmail('');
                 setName('');
             }).catch(() => {
@@ -9620,7 +9626,7 @@ export default function ChatMessages() {
             // Handle the case where there is no user currently signed in
             console.log('No user signed in to sign out');
             // Optionally navigate to the login screen or show a message
-            navigate("/Login")
+            navigate("/login")
         }
     }
 
