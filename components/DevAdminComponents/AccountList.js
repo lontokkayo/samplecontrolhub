@@ -68,6 +68,7 @@ import MobileViewDrawer from './SideDrawer/MobileViewDrawer';
 import SideDrawer from './SideDrawer/SideDrawer';
 import { collectionGroup, endBefore, limitToLast, startAfter, where } from 'firebase/firestore';
 import { projectControlFirestore } from '../../crossFirebase';
+import { useNavigate } from 'react-router-dom';
 let selectedScreen = 'ACCOUNT LIST'
 
 
@@ -132,7 +133,8 @@ export default function AccountList() {
     const [show2, setShow2] = React.useState(false);
     const [isDisabled, setIsDisabled] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
-    const navigation = useNavigation();
+    // const navigation = useNavigation();
+    const navigate = useNavigate();
 
     const [isSelectedLogs, setIsSelectedLogs] = useState(false);
     const [isSelectedAddAccount, setIsSelectedAddAccount] = useState(false);
@@ -598,7 +600,8 @@ export default function AccountList() {
         const unsubscribe = auth.onAuthStateChanged(user => {
 
             if (!user) {
-                navigation.navigate("Login")
+                // navigation.navigate("Login")
+                navigate("/Login")
             }
 
         })
@@ -713,50 +716,50 @@ export default function AccountList() {
     }, []);
 
 
-    const handleToggleLogs = useCallback(() => {
-        // setIsSelectedLogs(true);
+    // const handleToggleLogs = useCallback(() => {
+    //     // setIsSelectedLogs(true);
 
-        // setIsSelectedAddAccount(false);
-        // setIsSelectedAccountList(false);
-        // setIsSelected3(false);
-        // setIsSelected4(false);
+    //     // setIsSelectedAddAccount(false);
+    //     // setIsSelectedAccountList(false);
+    //     // setIsSelected3(false);
+    //     // setIsSelected4(false);
 
-        navigation.navigate("LOGS");
-    }, []);
-    const handleToggleAddAccount = useCallback(() => {
-        // setIsSelectedAddAccount(true);
+    //     navigation.navigate("LOGS");
+    // }, []);
+    // const handleToggleAddAccount = useCallback(() => {
+    //     // setIsSelectedAddAccount(true);
 
-        // setIsSelectedLogs(false);
-        // setIsSelectedAccountList(false);
-        // setIsSelected3(false);
-        // setIsSelected4(false);
+    //     // setIsSelectedLogs(false);
+    //     // setIsSelectedAccountList(false);
+    //     // setIsSelected3(false);
+    //     // setIsSelected4(false);
 
-        navigation.navigate("ADD C-HUB ACCOUNT");
-    }, []);
+    //     navigation.navigate("ADD C-HUB ACCOUNT");
+    // }, []);
 
-    const handleToggleAccountList = useCallback(() => {
-        // setIsSelectedAccountList(true);
+    // const handleToggleAccountList = useCallback(() => {
+    //     // setIsSelectedAccountList(true);
 
-        // setIsSelectedAddAccount(false);
-        // setIsSelected3(false);
-        // setIsSelected4(false);
-        // setIsSelectedLogs(false);
-        navigation.navigate("ACCOUNT LIST");
-    }, []);
+    //     // setIsSelectedAddAccount(false);
+    //     // setIsSelected3(false);
+    //     // setIsSelected4(false);
+    //     // setIsSelectedLogs(false);
+    //     navigation.navigate("ACCOUNT LIST");
+    // }, []);
 
-    const handleToggleAddVehicle = useCallback(() => {
-        // setIsSelected3(true);
+    // const handleToggleAddVehicle = useCallback(() => {
+    //     // setIsSelected3(true);
 
-        // setIsSelectedAddAccount(false);
-        // setIsSelectedAccountList(false);
-        // setIsSelected4(false);
-        // setIsSelectedLogs(false);
-        navigation.navigate("ADD NEW VEHICLE");
-    }, []);
+    //     // setIsSelectedAddAccount(false);
+    //     // setIsSelectedAccountList(false);
+    //     // setIsSelected4(false);
+    //     // setIsSelectedLogs(false);
+    //     navigation.navigate("ADD NEW VEHICLE");
+    // }, []);
 
-    const handleVehicleList = useCallback(() => {
-        navigation.navigate("VEHICLE LIST");
-    }, []);
+    // const handleVehicleList = useCallback(() => {
+    //     navigation.navigate("VEHICLE LIST");
+    // }, []);
 
     const handleDocumentChange = (snapshot) => {
 
@@ -768,7 +771,9 @@ export default function AccountList() {
             if (!isActive) {
                 signOut(auth)
                     .then(() => {
-                        navigation.navigate('Login');
+                        // navigation.navigate('Login');
+                        navigate("/Login")
+
                     })
                     .catch((error) => {
                         console.error('Error signing out:', error);
@@ -777,7 +782,9 @@ export default function AccountList() {
         } else {
             signOut(auth)
                 .then(() => {
-                    navigation.navigate('Login');
+                    // navigation.navigate('Login');
+                    navigate("/Login")
+
                 })
                 .catch((error) => {
                     console.error('Error signing out:', error);
@@ -786,27 +793,27 @@ export default function AccountList() {
 
 
     };
-
     const subscribeToFieldChange = () => {
         const userId = auth.currentUser?.email;
         if (userId) {
             const userRef = doc(firestore, 'accounts', userId);
             const unsubscribe = onSnapshot(userRef, handleDocumentChange);
             return unsubscribe;
+        } else {
+            // Return a no-op function if there's no user
+            return () => {
+                navigate("/login")
+            };
         }
     };
 
     useEffect(() => {
-
         const unsubscribe = subscribeToFieldChange();
 
         return () => {
+            // This will now always be a function
             unsubscribe();
         };
-
-
-
-
     }, []);
 
     useEffect(() => {
@@ -900,7 +907,9 @@ export default function AccountList() {
     const handleSignOut = () => {
 
         signOut(auth).then(() => {
-            navigation.navigate('Login');
+            // navigation.navigate('Login');
+            navigate("/Login")
+
             setEmail('');
             setName('');
         }).catch((error) => {
@@ -930,7 +939,7 @@ export default function AccountList() {
 
 
 
-    const showDrawerIcon = useBreakpointValue([true, true, true, false]);
+    // const showDrawerIcon = useBreakpointValue([true, true, true, false]);
 
 
 
@@ -1246,7 +1255,7 @@ export default function AccountList() {
             // setData(updatedData);
             // const filteredData = applySearchFilter(updatedData, searchInput.current?.value); // Apply search filter to updated data
             setFilteredData(filteredData);
-            navigation.navigate('AccountList')
+            navigate('/account-list')
             // console.log('Field updated successfully.');
             setIsDisabled(false);
             setIsYesLoading(false);
@@ -1879,8 +1888,10 @@ export default function AccountList() {
                     borderBottomColor={'cyan.500'}
 
                 >
+                    <SideDrawer
+                        selectedScreen={selectedScreen} />
 
-                    <Box w={[0, 0, 0, 850]} h={[10, 10, 10, 10]} marginBottom={1.5} marginTop={1.5}>
+                    <Box w={[0, 0, 0, 850]} h={[10, 10, 10, 10]} marginBottom={1.5} marginTop={1.5} paddingLeft={5}>
                         <FastImage
                             source={{
                                 uri: logo,
@@ -1890,9 +1901,10 @@ export default function AccountList() {
                             style={styles.image}
                         />
                     </Box>
-                    {showDrawerIcon && <MobileViewDrawer
+                    {/* {showDrawerIcon && <MobileViewDrawer
                         selectedScreen={selectedScreen}
-                    />}
+                    />} */}
+
 
 
                     <Box w={[150, 200, 250, 0]} h={[6, 8, 10, 10]} marginBottom={1.5} marginTop={1.5} marginLeft={[3, 3, 3, 10]}>
@@ -1930,9 +1942,9 @@ export default function AccountList() {
                 {/* Content */}
                 <Box flex={[1]} flexDirection="row" >
                     {/* Sidebar */}
-                    <SideDrawer
+                    {/* <SideDrawer
                         selectedScreen={selectedScreen}
-                    />
+                    /> */}
 
                     {/* Main Content */}
                     <Box flex={1} flexGrow={1} minHeight={0}>

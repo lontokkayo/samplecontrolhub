@@ -105,6 +105,7 @@ import { nanoid } from 'nanoid';
 import { cloneDeep } from 'lodash';
 import StickyHeader from './Header/StickyHeader';
 import { UsePagination } from './VehicleListComponent/UsePagination';
+import { useNavigate } from 'react-router-dom';
 // import { CollectionGroup } from 'firebase-admin/firestore';
 const { width } = Dimensions.get('window');
 let selectedScreen = 'VEHICLE LIST'
@@ -4376,8 +4377,8 @@ export default function VehicleList() {
   const logo2 = require('../../assets/C-Hub Logo Only.png');
   const [isMobileView, setIsMobileView] = useState(false);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
-  const navigation = useNavigation();
-
+  // const navigation = useNavigation();
+  const navigate = useNavigate();
 
 
   const [typeOfAccount, setTypeOfAccount] = useState('');
@@ -4424,7 +4425,9 @@ export default function VehicleList() {
   useEffect(() => {
     const unsubscribe = projectControlAuth.onAuthStateChanged(user => {
       if (!user) {
-        navigation.navigate("Login")
+        // navigation.navigate("Login")
+        navigate("/Login");
+
       }
 
     })
@@ -4451,7 +4454,9 @@ export default function VehicleList() {
       if (!isActive) {
         signOut(projectControlAuth)
           .then(() => {
-            navigation.navigate('Login');
+            // navigation.navigate('Login');
+            navigate("/Login");
+
           })
           .catch((error) => {
             console.error('Error signing out:', error);
@@ -4460,7 +4465,9 @@ export default function VehicleList() {
     } else {
       signOut(projectControlAuth)
         .then(() => {
-          navigation.navigate('Login');
+          // navigation.navigate('Login');
+          navigate("/Login");
+
         })
         .catch((error) => {
           console.error('Error signing out:', error);
@@ -4474,6 +4481,11 @@ export default function VehicleList() {
       const userRef = doc(firestore, 'accounts', userId);
       const unsubscribe = onSnapshot(userRef, handleDocumentChange);
       return unsubscribe;
+    } else {
+      // Return a no-op function if there's no user
+      return () => {
+        navigate("/login")
+      };
     }
   };
 
@@ -4481,6 +4493,7 @@ export default function VehicleList() {
     const unsubscribe = subscribeToFieldChange();
 
     return () => {
+      // This will now always be a function
       unsubscribe();
     };
   }, []);
@@ -4540,7 +4553,9 @@ export default function VehicleList() {
   const handleSignOut = () => {
 
     signOut(projectControlAuth).then(() => {
-      navigation.navigate('Login');
+      // navigation.navigate('Login');
+      navigate("/Login");
+
       setEmail('');
       setName('');
     }).catch(() => {
@@ -4569,7 +4584,7 @@ export default function VehicleList() {
   // }, []);
 
 
-  const showDrawerIcon = useBreakpointValue([true, true, true, false]);
+  // const showDrawerIcon = useBreakpointValue([true, true, true, false]);
 
 
 
@@ -4680,97 +4695,98 @@ export default function VehicleList() {
 
   return (
 
-    // <NativeBaseProvider>
-    <>
+    <NativeBaseProvider>
+      <>
 
-      <View style={{ backgroundColor: "#A6BCFE", height: '100%', width: '100%', flexDirection: 'column', }} bgColor="#A6BCFE" h="100vh" w="full" flexDirection="column">
-        {/* Header */}
-        <Box
-          px="3"
-          bgColor='#7b9cff'
-          height={54}
-          position="sticky"
-          top={0}
-          zIndex={999}
-          flexDirection="row"
-          alignItems="center"
-          borderBottomWidth={2}
-          borderBottomColor={'cyan.500'}
-        >
+        <View style={{ backgroundColor: "#A6BCFE", height: '100%', width: '100%', flexDirection: 'column', }} bgColor="#A6BCFE" h="100vh" w="full" flexDirection="column">
+          {/* Header */}
+          <Box
+            px="3"
+            bgColor='#7b9cff'
+            height={54}
+            position="sticky"
+            top={0}
+            zIndex={999}
+            flexDirection="row"
+            alignItems="center"
+            borderBottomWidth={2}
+            borderBottomColor={'cyan.500'}
+          >
 
-          <Box w={screenWidth <= 960 ? 0 : 850} h={[10, 10, 10, 10]} marginBottom={1.5} marginTop={1.5}>
 
-            <FastImage
-              source={{
-                uri: 'https://firebasestorage.googleapis.com/v0/b/samplermj.appspot.com/o/C-HUB%20Logos%2FC-HUB%20LOGO%20FULL.png?alt=media&token=79ed34a5-f960-4154-b4e8-897b0f3248d4',
-                priority: FastImage.priority.high,
-              }}
-              resizeMode={FastImage.resizeMode.stretch}
-              style={styles.image} />
+            <SideDrawer
+              selectedScreen={selectedScreen} />
+
+            <Box w={screenWidth <= 960 ? 0 : 850} h={[10, 10, 10, 10]} marginBottom={1.5} marginTop={1.5} paddingLeft={5}>
+
+              <FastImage
+                source={{
+                  uri: 'https://firebasestorage.googleapis.com/v0/b/samplermj.appspot.com/o/C-HUB%20Logos%2FC-HUB%20LOGO%20FULL.png?alt=media&token=79ed34a5-f960-4154-b4e8-897b0f3248d4',
+                  priority: FastImage.priority.high,
+                }}
+                resizeMode={FastImage.resizeMode.stretch}
+                style={styles.image} />
+            </Box>
+
+            {screenWidth <= 960 && <MobileViewDrawer
+              selectedScreen={selectedScreen} />}
+
+            <Box w={screenWidth <= 960 ? 120 : 0} h={screenWidth <= 960 ? 6 : 10} marginBottom={1.5} marginTop={1.5} marginLeft={[3, 3, 3, 10]}>
+
+              <FastImage
+                source={{
+                  uri: 'https://firebasestorage.googleapis.com/v0/b/samplermj.appspot.com/o/C-HUB%20Logos%2FC-HUB%20LOGO%20HALF.png?alt=media&token=7ce6aef2-0527-40c7-b1ce-e47079e144df',
+                  priority: FastImage.priority.high,
+                }}
+                resizeMode={FastImage.resizeMode.stretch}
+                style={styles.image} />
+            </Box>
+            <NamePopover name={name} handleSignOut={handleSignOut} />
+
+
           </Box>
 
-          {screenWidth <= 960 && <MobileViewDrawer
-            selectedScreen={selectedScreen} />}
+          {/* Content */}
+          <View style={{ flex: 1, flexDirection: 'row' }} flex={[1]} flexDirection="row">
 
 
-          <Box w={screenWidth <= 960 ? 120 : 0} h={screenWidth <= 960 ? 6 : 10} marginBottom={1.5} marginTop={1.5} marginLeft={[3, 3, 3, 10]}>
-
-            <FastImage
-              source={{
-                uri: 'https://firebasestorage.googleapis.com/v0/b/samplermj.appspot.com/o/C-HUB%20Logos%2FC-HUB%20LOGO%20HALF.png?alt=media&token=7ce6aef2-0527-40c7-b1ce-e47079e144df',
-                priority: FastImage.priority.high,
-              }}
-              resizeMode={FastImage.resizeMode.stretch}
-              style={styles.image} />
-          </Box>
-          <NamePopover name={name} handleSignOut={handleSignOut} />
+            {/* Main Content */}
+            {/* <Box flex={1} flexGrow={1} minHeight={0}> */}
+            {/* Main Content Content */}
 
 
-        </Box>
-
-        {/* Content */}
-        <View style={{ flex: 1, flexDirection: 'row' }} flex={[1]} flexDirection="row">
-          {/* Sidebar */}
-          <SideDrawer
-            selectedScreen={selectedScreen} />
-
-          {/* Main Content */}
-          {/* <Box flex={1} flexGrow={1} minHeight={0}> */}
-          {/* Main Content Content */}
+            {/* <Box px="3" bgColor="#A6BCFE" height="full" > */}
+            <View style={{ flex: 1, backgroundColor: "#A6BCFE", height: '100%' }}>
+              <ScrollView style={{ flex: 1, }} keyboardShouldPersistTaps='always'>
+                <View style={{ flex: 1, }}>
+                  <VehicleListTable />
 
 
-          {/* <Box px="3" bgColor="#A6BCFE" height="full" > */}
-          <View style={{ flex: 1, backgroundColor: "#A6BCFE", height: '100%' }}>
-            <ScrollView style={{ flex: 1, }} keyboardShouldPersistTaps='always'>
-              <View style={{ flex: 1, }}>
-                <VehicleListTable />
+                </View>
+              </ScrollView>
+              <SCC_Modals />
+              <EditVehicleModal />
+              <FobPriceHistory />
+              {/* <SuccessModal /> */}
+
+            </View>
 
 
-              </View>
-            </ScrollView>
-            <SCC_Modals />
-            <EditVehicleModal />
-            <FobPriceHistory />
-            {/* <SuccessModal /> */}
+            {/* </Box> */}
 
+            {/* </Box> */}
           </View>
 
-
-          {/* </Box> */}
-
-          {/* </Box> */}
         </View>
+        <LoadingModal />
 
-      </View>
-      <LoadingModal />
-
-    </>
+      </>
 
 
 
 
 
-    // </NativeBaseProvider>
+    </NativeBaseProvider>
 
 
 

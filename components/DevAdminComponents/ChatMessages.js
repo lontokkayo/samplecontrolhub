@@ -1693,7 +1693,7 @@ const ChatListItem = ({ item, onPress, isActive, messageUnread, formattedDate, c
     const handlePress = () => {
         onPress()
 
-        dispatch(setSelectedCustomerData(customerData));
+        // dispatch(setSelectedCustomerData(customerData));
         globalCustomerFirstName = textFirst ? textFirst : '';
         globalCustomerLastName = textLast ? textLast : '';
         globalImageUrl = imageUrl ? imageUrl : '';
@@ -7882,7 +7882,7 @@ const ChatMessageHeader = () => {
         setReRenderKey(reRenderKey + 1)
         dispatch(setChatMessageBoxLoading(false));
 
-    }, [activeChatId])
+    }, [activeChatId]);
 
     return (
 
@@ -7910,8 +7910,9 @@ const ChatMessageHeader = () => {
                         width: 60,
                         height: 60,
                         borderRadius: 30,
+                        alignSelf: 'center',
                         backgroundColor: '#e0e0e0',
-                        marginRight: 12,
+                        marginRight: 10,
                     }}
                 />
             )}

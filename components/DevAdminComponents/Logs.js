@@ -87,6 +87,7 @@ import {
     setLogsData,
     setLoadingModalVisible,
 } from './redux/store';
+import { useNavigate } from 'react-router-dom';
 let selectedScreen = 'LOGS'
 
 
@@ -871,6 +872,7 @@ export default function Logs() {
     const loginName = useSelector((state) => state.loginName);
 
     // const navigation = useNavigation();
+    const navigate = useNavigate();
 
     const [isSelectedLogs, setIsSelectedLogs] = useState(true);
     const [isSelectedAddAccount, setIsSelectedAddAccount] = useState(false);
@@ -1042,6 +1044,11 @@ export default function Logs() {
             const userRef = doc(firestore, 'accounts', userId);
             const unsubscribe = onSnapshot(userRef, handleDocumentChange);
             return unsubscribe;
+        } else {
+            // Return a no-op function if there's no user
+            return () => {
+                navigate("/login")
+            };
         }
     };
 
@@ -1049,10 +1056,10 @@ export default function Logs() {
         const unsubscribe = subscribeToFieldChange();
 
         return () => {
+            // This will now always be a function
             unsubscribe();
         };
     }, []);
-
 
     useEffect(() => {
         const currentUserEmail = getEmailOfCurrentUser();
@@ -1183,7 +1190,10 @@ export default function Logs() {
                     borderBottomWidth={2}
                     borderBottomColor={'cyan.500'} >
 
-                    <Box w={[0, 0, 0, 850]} h={[10, 10, 10, 10]} marginBottom={1.5} marginTop={1.5}>
+                    <SideDrawer
+                        selectedScreen={selectedScreen} />
+
+                    <Box w={[0, 0, 0, 850]} h={[10, 10, 10, 10]} marginBottom={1.5} marginTop={1.5} paddingLeft={5}>
                         <FastImage
                             source={{
                                 uri: 'https://firebasestorage.googleapis.com/v0/b/samplermj.appspot.com/o/C-HUB%20Logos%2FC-HUB%20LOGO%20FULL.png?alt=media&token=79ed34a5-f960-4154-b4e8-897b0f3248d4',
@@ -1197,8 +1207,7 @@ export default function Logs() {
                     {showDrawerIcon && <MobileViewDrawer
                         selectedScreen={selectedScreen} />} */}
 
-
-                    <Box w={[150, 200, 250, 0]} h={[6, 8, 10, 10]} marginBottom={1.5} marginTop={1.5} marginLeft={[3, 3, 3, 10]}>
+                    <Box w={[150, 200, 250, 0]} h={[6, 8, 10, 10]} marginBottom={1.5} marginTop={1.5} marginLeft={[3, 3, 3, 10]} >
                         <FastImage
                             source={{
                                 uri: 'https://firebasestorage.googleapis.com/v0/b/samplermj.appspot.com/o/C-HUB%20Logos%2FC-HUB%20LOGO%20HALF.png?alt=media&token=7ce6aef2-0527-40c7-b1ce-e47079e144df',
@@ -1215,10 +1224,7 @@ export default function Logs() {
 
                 {/* Content */}
                 <Box flex={[1]} flexDirection="row" >
-                    {/* Sidebar */}
-                    <SideDrawer
-                        selectedScreen={selectedScreen}
-                    />
+
 
                     {/* Main Content */}
                     <Box flex={1} flexGrow={1} minHeight={0} flexDirection={screenWidth <= 960 ? 'column' : 'row'}>

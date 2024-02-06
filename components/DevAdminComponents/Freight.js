@@ -30,7 +30,7 @@ import {
     useDisclose,
     FormControl,
     Checkbox,
-    useToast
+    useToast,
 } from 'native-base';
 import { DataTable } from 'react-native-paper';
 
@@ -115,6 +115,7 @@ import { nanoid } from 'nanoid';
 import { cloneDeep, merge } from 'lodash';
 import StickyHeader from './Header/StickyHeader';
 import { UsePagination } from './VehicleListComponent/UsePagination';
+import { useNavigate } from 'react-router-dom';
 // import { CollectionGroup } from 'firebase-admin/firestore';
 const { width } = Dimensions.get('window');
 let selectedScreen = 'FREIGHT'
@@ -4640,7 +4641,9 @@ export default function Freight() {
     const logo2 = require('../../assets/C-Hub Logo Only.png');
     const [isMobileView, setIsMobileView] = useState(false);
     const [isDrawerOpen, setIsDrawerOpen] = useState(false);
-    const navigation = useNavigation();
+    // const navigation = useNavigation();
+    const navigate = useNavigate();
+
     const dispatch = useDispatch();
 
 
@@ -4670,7 +4673,8 @@ export default function Freight() {
     useEffect(() => {
         const unsubscribe = projectControlAuth.onAuthStateChanged(user => {
             if (!user) {
-                navigation.navigate("Login")
+                // navigation.navigate("Login")
+                navigate("/Login");
             }
         })
         return unsubscribe
@@ -4695,7 +4699,9 @@ export default function Freight() {
             if (!isActive) {
                 signOut(projectControlAuth)
                     .then(() => {
-                        navigation.navigate('Login');
+                        // navigation.navigate('Login');
+                        navigate("/Login");
+
                     })
                     .catch((error) => {
                         console.error('Error signing out:', error);
@@ -4704,7 +4710,9 @@ export default function Freight() {
         } else {
             signOut(projectControlAuth)
                 .then(() => {
-                    navigation.navigate('Login');
+                    // navigation.navigate('Login');
+                    navigate("/Login");
+
                 })
                 .catch((error) => {
                     console.error('Error signing out:', error);
@@ -4718,6 +4726,11 @@ export default function Freight() {
             const userRef = doc(firestore, 'accounts', userId);
             const unsubscribe = onSnapshot(userRef, handleDocumentChange);
             return unsubscribe;
+        } else {
+            // Return a no-op function if there's no user
+            return () => {
+                navigate("/login")
+            };
         }
     };
 
@@ -4725,6 +4738,7 @@ export default function Freight() {
         const unsubscribe = subscribeToFieldChange();
 
         return () => {
+            // This will now always be a function
             unsubscribe();
         };
     }, []);
@@ -4784,7 +4798,9 @@ export default function Freight() {
     const handleSignOut = () => {
 
         signOut(projectControlAuth).then(() => {
-            navigation.navigate('Login');
+            // navigation.navigate('Login');
+            navigate("/Login");
+
             setEmail('');
             setName('');
         }).catch(() => {
@@ -4796,7 +4812,7 @@ export default function Freight() {
 
 
 
-    const showDrawerIcon = useBreakpointValue([true, true, true, false]);
+    // const showDrawerIcon = useBreakpointValue([true, true, true, false]);
 
 
 
@@ -4855,7 +4871,7 @@ export default function Freight() {
     });
 
     return (
-        <>
+        <NativeBaseProvider>
             <View style={{ backgroundColor: "#A6BCFE", height: '100%', width: '100%', flexDirection: 'column', }} bgColor="#A6BCFE" h="100vh" w="full" flexDirection="column">
                 {/* Header */}
                 <Box
@@ -4871,7 +4887,10 @@ export default function Freight() {
                     borderBottomColor={'cyan.500'}
                 >
 
-                    <Box w={screenWidth <= 960 ? 0 : 850} h={[10, 10, 10, 10]} marginBottom={1.5} marginTop={1.5}>
+                    <SideDrawer
+                        selectedScreen={selectedScreen} />
+
+                    <Box w={screenWidth <= 960 ? 0 : 850} h={[10, 10, 10, 10]} marginBottom={1.5} marginTop={1.5} paddingLeft={5}>
 
                         <FastImage
                             source={{
@@ -4903,9 +4922,7 @@ export default function Freight() {
 
                 {/* Content */}
                 <View style={{ flex: 1, flexDirection: 'row' }} flex={[1]} flexDirection="row">
-                    {/* Sidebar */}
-                    <SideDrawer
-                        selectedScreen={selectedScreen} />
+
 
                     {/* Main Content */}
                     {/* <Box flex={1} flexGrow={1} minHeight={0}> */}
@@ -4936,6 +4953,6 @@ export default function Freight() {
             </View>
             <LoadingModal />
 
-        </>
+        </NativeBaseProvider>
     );
 }

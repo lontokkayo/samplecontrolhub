@@ -57,6 +57,7 @@ import FastImage from 'react-native-fast-image-web-support';
 import { setLoginName } from './redux/store';
 import MobileViewDrawer from './SideDrawer/MobileViewDrawer';
 import SideDrawer from './SideDrawer/SideDrawer';
+import { useNavigate } from 'react-router-dom';
 let selectedScreen = 'ADD C-HUB ACCOUNT'
 
 const { width, height } = Dimensions.get('window');
@@ -118,7 +119,8 @@ export default function AddAccount() {
   const [show2, setShow2] = React.useState(false);
   const [isDisabled, setIsDisabled] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const navigation = useNavigation();
+  // const navigation = useNavigation();
+  const navigate = useNavigate();
 
   const [isSelectedLogs, setIsSelectedLogs] = useState(false);
   const [isSelectedAddAccount, setIsSelectedAddAccount] = useState(true);
@@ -217,7 +219,8 @@ export default function AddAccount() {
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged(user => {
       if (!user) {
-        navigation.navigate("Login")
+        // navigation.navigate("Login")
+        navigate("/Login")
       }
 
     })
@@ -504,30 +507,30 @@ export default function AddAccount() {
     setTypeOfAccountDisplay('Booking');
   };
 
-  const handleToggleLogs = useCallback(() => {
+  // const handleToggleLogs = useCallback(() => {
 
 
-    navigation.navigate("LOGS");
-  }, []);
+  //   navigation.navigate("LOGS");
+  // }, []);
 
-  const handleToggleAddAccount = useCallback(() => {
+  // const handleToggleAddAccount = useCallback(() => {
 
-    navigation.navigate("ADD C-HUB ACCOUNT");
-  }, []);
+  //   navigation.navigate("ADD C-HUB ACCOUNT");
+  // }, []);
 
-  const handleToggleAccountList = useCallback(() => {
+  // const handleToggleAccountList = useCallback(() => {
 
-    navigation.navigate("ACCOUNT LIST");
-  }, []);
+  //   navigation.navigate("ACCOUNT LIST");
+  // }, []);
 
-  const handleToggleAddVehicle = useCallback(() => {
+  // const handleToggleAddVehicle = useCallback(() => {
 
-    navigation.navigate("ADD NEW VEHICLE");
-  }, []);
+  //   navigation.navigate("ADD NEW VEHICLE");
+  // }, []);
 
-  const handleVehicleList = useCallback(() => {
-    navigation.navigate("VEHICLE LIST");
-  }, []);
+  // const handleVehicleList = useCallback(() => {
+  //   navigation.navigate("VEHICLE LIST");
+  // }, []);
 
   const handleDocumentChange = (snapshot) => {
     if (snapshot.exists()) {
@@ -537,7 +540,8 @@ export default function AddAccount() {
       if (!isActive) {
         signOut(auth)
           .then(() => {
-            navigation.navigate('Login');
+            // navigation.navigate('Login');
+            navigate("/Login")
           })
           .catch((error) => {
             console.error('Error signing out:', error);
@@ -546,7 +550,8 @@ export default function AddAccount() {
     } else {
       signOut(auth)
         .then(() => {
-          navigation.navigate('Login');
+          // navigation.navigate('Login');
+          navigate("/Login")
         })
         .catch((error) => {
           console.error('Error signing out:', error);
@@ -560,6 +565,11 @@ export default function AddAccount() {
       const userRef = doc(firestore, 'accounts', userId);
       const unsubscribe = onSnapshot(userRef, handleDocumentChange);
       return unsubscribe;
+    } else {
+      // Return a no-op function if there's no user
+      return () => {
+        navigate("/login")
+      };
     }
   };
 
@@ -567,10 +577,10 @@ export default function AddAccount() {
     const unsubscribe = subscribeToFieldChange();
 
     return () => {
+      // This will now always be a function
       unsubscribe();
     };
   }, []);
-
 
   useEffect(() => {
     const currentUserEmail = getEmailOfCurrentUser();
@@ -722,7 +732,8 @@ export default function AddAccount() {
   const handleSignOut = () => {
 
     signOut(auth).then(() => {
-      navigation.navigate('Login');
+      // navigation.navigate('Login');
+      navigate("/Login")
       setEmail('');
       setName('');
     }).catch((error) => {
@@ -755,7 +766,7 @@ export default function AddAccount() {
     data: ["Add New Vehicle", "Vehicle List",]
   },];
 
-  const showDrawerIcon = useBreakpointValue([true, true, true, false]);
+  // const showDrawerIcon = useBreakpointValue([true, true, true, false]);
 
   const showPopover = () => {
     setShowNamePopover(true);
@@ -826,7 +837,10 @@ export default function AddAccount() {
 
         >
 
-          <Box w={[0, 0, 0, 850]} h={[10, 10, 10, 10]} marginBottom={1.5} marginTop={1.5}>
+          <SideDrawer
+            selectedScreen={selectedScreen} />
+
+          <Box w={[0, 0, 0, 850]} h={[10, 10, 10, 10]} marginBottom={1.5} marginTop={1.5} paddingLeft={5}>
             <FastImage
               source={{
                 uri: logo,
@@ -837,11 +851,9 @@ export default function AddAccount() {
             />
           </Box>
 
-          {showDrawerIcon && <MobileViewDrawer
+          {/* {showDrawerIcon && <MobileViewDrawer
             selectedScreen={selectedScreen}
-          />}
-
-
+          />} */}
           <Box w={[150, 200, 250, 0]} h={[6, 8, 10, 10]} marginBottom={1.5} marginTop={1.5} marginLeft={[3, 3, 3, 10]}>
 
             <FastImage
@@ -860,10 +872,7 @@ export default function AddAccount() {
 
         {/* Content */}
         <Box flex={[1]} flexDirection="row" >
-          {/* Sidebar */}
-          <SideDrawer
-            selectedScreen={selectedScreen}
-          />
+
 
           {/* Main Content */}
           <Box flex={1} flexGrow={1} minHeight={0}>

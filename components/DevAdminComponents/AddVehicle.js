@@ -92,6 +92,7 @@ import { Calendar, LocaleConfig } from 'react-native-calendars';
 
 import { AutocompleteDropdown, AutocompleteDropdownContextProvider } from 'react-native-autocomplete-dropdown';
 import { nanoid } from 'nanoid';
+import { useNavigate } from 'react-router-dom';
 
 const { width } = Dimensions.get('window');
 
@@ -4179,7 +4180,8 @@ export default function AddVehicle() {
   const logo2 = require('../../assets/C-Hub Logo Only.png');
 
   const [name, setName] = useState(loginName);
-  const navigation = useNavigation();
+  // const navigation = useNavigation();
+  const navigate = useNavigate();
 
   const [widthState, setWidthState] = useState(Dimensions.get('window').width);
 
@@ -5491,31 +5493,31 @@ export default function AddVehicle() {
 
 
 
-  const handleToggleLogs = useCallback(() => {
+  // const handleToggleLogs = useCallback(() => {
 
 
-    navigation.navigate("LOGS");
-  }, []);
-  const handleToggleAddAccount = useCallback(() => {
+  //   navigation.navigate("LOGS");
+  // }, []);
+  // const handleToggleAddAccount = useCallback(() => {
 
 
-    navigation.navigate("ADD C-HUB ACCOUNT");
-  }, []);
+  //   navigation.navigate("ADD C-HUB ACCOUNT");
+  // }, []);
 
-  const handleToggleAccountList = useCallback(() => {
+  // const handleToggleAccountList = useCallback(() => {
 
-    navigation.navigate("ACCOUNT LIST");
-  }, []);
+  //   navigation.navigate("ACCOUNT LIST");
+  // }, []);
 
-  const handleToggleAddVehicle = useCallback(() => {
+  // const handleToggleAddVehicle = useCallback(() => {
 
-    navigation.navigate("ADD NEW VEHICLE");
-  }, []);
+  //   navigation.navigate("ADD NEW VEHICLE");
+  // }, []);
 
 
-  const handleVehicleList = useCallback(() => {
-    navigation.navigate("VEHICLE LIST");
-  }, []);
+  // const handleVehicleList = useCallback(() => {
+  //   navigation.navigate("VEHICLE LIST");
+  // }, []);
 
   const handleDocumentChange = (snapshot) => {
     if (snapshot.exists()) {
@@ -5525,7 +5527,9 @@ export default function AddVehicle() {
       if (!isActive) {
         signOut(projectControlAuth)
           .then(() => {
-            navigation.navigate('Login');
+            // navigation.navigate('Login');
+            navigate("/Login");
+
           })
           .catch((error) => {
             console.error('Error signing out:', error);
@@ -5534,7 +5538,9 @@ export default function AddVehicle() {
     } else {
       signOut(projectControlAuth)
         .then(() => {
-          navigation.navigate('Login');
+          // navigation.navigate('Login');
+          navigate("/Login");
+
         })
         .catch((error) => {
           console.error('Error signing out:', error);
@@ -5548,8 +5554,14 @@ export default function AddVehicle() {
       const userRef = doc(firestore, 'accounts', userId);
       const unsubscribe = onSnapshot(userRef, handleDocumentChange);
       return unsubscribe;
+    } else {
+      // Return a no-op function if there's no user
+      return () => {
+        navigate("/login")
+      };
     }
   };
+
 
 
 
@@ -5558,7 +5570,8 @@ export default function AddVehicle() {
   const handleSignOut = () => {
 
     signOut(projectControlAuth).then(() => {
-      navigation.navigate('Login');
+      // navigation.navigate('Login');
+      navigate("/Login");
       setEmail('');
       setName('');
     }).catch(() => {
@@ -5571,7 +5584,7 @@ export default function AddVehicle() {
 
 
 
-  const showDrawerIcon = useBreakpointValue([true, true, true, false]);
+  // const showDrawerIcon = useBreakpointValue([true, true, true, false]);
 
 
 
@@ -6668,7 +6681,10 @@ export default function AddVehicle() {
           borderBottomWidth={2}
           borderBottomColor={'cyan.500'} >
 
-          <Box w={[0, 0, 0, 850]} h={[10, 10, 10, 10]} marginBottom={1.5} marginTop={1.5}>
+          <SideDrawer
+            selectedScreen={selectedScreen} />
+
+          <Box w={[0, 0, 0, 850]} h={[10, 10, 10, 10]} marginBottom={1.5} marginTop={1.5} paddingLeft={5}>
             <FastImage
               source={{
                 uri: logo,
@@ -6679,11 +6695,9 @@ export default function AddVehicle() {
             />
           </Box>
 
-          {showDrawerIcon && <MobileViewDrawer
+          {/* {showDrawerIcon && <MobileViewDrawer
             selectedScreen={selectedScreen}
-          />}
-
-
+          />} */}
           <Box w={[150, 200, 250, 0]} h={[6, 8, 10, 10]} marginBottom={1.5} marginTop={1.5} marginLeft={[3, 3, 3, 10]}>
             <FastImage
               source={{
@@ -6719,10 +6733,7 @@ export default function AddVehicle() {
 
         {/* Content */}
         <Box flex={[1]} flexDirection="row" >
-          {/* Sidebar */}
-          <SideDrawer
-            selectedScreen={selectedScreen}
-          />
+
 
           {/* Main Content */}
 

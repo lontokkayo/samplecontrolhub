@@ -157,13 +157,13 @@ export default function DevAdmin({ navigation }) {
     //     )}
     //     options={{ unmountOnBlur: true }}
     //   />
-    //   <Drawer.Screen
-    //     name="LOGS"
-    //     component={() => (
-    //       <LazyScreen importFunc={() => import('./DevAdminComponents/Logs')} />
-    //     )}
-    //     options={{ unmountOnBlur: true }}
-    //   />
+    // <Drawer.Screen
+    //   name="LOGS"
+    //   component={() => (
+    //     <LazyScreen importFunc={() => import('./DevAdminComponents/Logs')} />
+    //   )}
+    //   options={{ unmountOnBlur: true }}
+    // />
 
     //   <Drawer.Screen
     //     name="FREIGHT"
@@ -214,20 +214,20 @@ export default function DevAdmin({ navigation }) {
     //   <StackNavigator.Screen name="ADD C-HUB ACCOUNT" component={AddAccountComponent} />
 
     // </StackNavigator.Navigator>
-
-    <Routes>
-      <Route path="*" element={<Navigate to="chat-messages" replace />} />
-      <Route path="chat-messages" element={<ChatMessages />} />
-      <Route path="chat-messages/:chatId" element={<ChatMessages />} /> {/* Add this line */}
-      <Route path="freight" element={<Freight />} />
-      <Route path="add-new-vehicle" element={<AddVehicle />} />
-      <Route path="logs" element={<Logs />} />
-      <Route path="vehicle-list" element={<VehicleList />} />
-      <Route path="account-list" element={<AccountList />} />
-      <Route path="add-c-hub-account" element={<AddAccount />} />
-      {/* Add additional nested routes as needed */}
-    </Routes>
-
+    <NativeBaseProvider>
+      <Routes>
+        <Route path="*" element={<Navigate to="chat-messages" replace />} />
+        <Route path="chat-messages" element={<ChatMessagesComponent />} />
+        <Route path="chat-messages/:chatId" element={<ChatMessages />} />
+        <Route path="freight" element={<FreightComponent />} />
+        <Route path="add-new-vehicle" element={<AddVehicleComponent />} />
+        <Route path="logs" element={<LogsComponent />} />
+        <Route path="vehicle-list" element={<VehicleListComponent />} />
+        <Route path="account-list" element={<AccountListComponent />} />
+        <Route path="add-c-hub-account" element={<AddAccountComponent />} />
+        {/* Add additional nested routes as needed */}
+      </Routes>
+    </NativeBaseProvider>
     // <Drawer.Navigator useLegacyImplementation screenOptions={{
     //   headerShown: false,
     //   drawerStyle: { backgroundColor: '#D0DCFF' },
