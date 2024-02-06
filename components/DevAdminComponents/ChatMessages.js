@@ -1830,6 +1830,7 @@ const ChatListItem = ({ item, onPress, isActive, messageUnread, formattedDate, c
 const ChatList = ({ unreadButtonValue, activeButtonValue, }) => {
 
     const selectedChatData = useSelector((state) => state.selectedChatData);
+    const selectedCustomerData = useSelector((state) => state.selectedCustomerData);
     const chatListData = useSelector((state) => state.chatListData);
     const chatListLastVisible = useSelector((state) => state.chatListLastVisible);
     const activeChatId = useSelector((state) => state.activeChatId);
@@ -1837,6 +1838,8 @@ const ChatList = ({ unreadButtonValue, activeButtonValue, }) => {
     const noMoreData = useSelector((state) => state.noMoreData);
     const renderFooterRef = useRef(null);
     const dispatch = useDispatch();
+
+    const [imageUrl, setImageUrl] = useState('');
 
     const { chatId } = useParams();
 
@@ -2160,13 +2163,37 @@ const ChatList = ({ unreadButtonValue, activeButtonValue, }) => {
 
     useEffect(() => {
 
+
         const unsubscribe = fetchChatMessages();
+
 
 
 
         return () => {
             if (unsubscribe) {
                 unsubscribe(); // Unsubscribe when the component unmounts
+
+
+            }
+        };
+
+
+    }, [activeChatId]);
+
+
+    useEffect(() => {
+
+
+        const unsubscribe = fetchChatMessages();
+
+
+
+
+        return () => {
+            if (unsubscribe) {
+                unsubscribe(); // Unsubscribe when the component unmounts
+
+
             }
         };
 
@@ -2174,9 +2201,84 @@ const ChatList = ({ unreadButtonValue, activeButtonValue, }) => {
     }, [activeChatId]);
 
     useEffect(() => {
+
+        if (chatId) {
+            setTimeout(() => {
+
+                let parts = chatId.split('_');
+                let stockIdPart = parts[1];
+                let emailPart = parts[parts.length - 1];
+
+                const folderName = selectedChatData.carData && selectedChatData.carData.stockID ? selectedChatData.carData.stockID : (selectedChatData.vehicle && selectedChatData.vehicle.carId ? selectedChatData.vehicle.carId : '');
+                const storage = getStorage(projectExtensionFirebase);
+                const imageRef = ref(storage, `${stockIdPart}/0`); // Ensure this path is correct
+
+                console.log('Folder Name: ', folderName)
+                getDownloadURL(imageRef)
+                    .then((url) => {
+                        setImageUrl(url);
+                        globalImageUrl = url;
+
+                    })
+                    .catch((error) => {
+                        if (error.code === 'storage/object-not-found') {
+                            // Handle the 'object not found' error.
+                            setImageUrl('https://firebasestorage.googleapis.com/v0/b/samplermj.appspot.com/o/C-HUB%20Logos%2FNo%20Car%20Image%20Found.png?alt=media&token=de86488c-73a6-4c04-811c-bc508a11123a');
+                        } else {
+                            // Handle other errors differently
+
+                            setImageUrl('https://firebasestorage.googleapis.com/v0/b/samplermj.appspot.com/o/C-HUB%20Logos%2FNo%20Car%20Image%20Found.png?alt=media&token=de86488c-73a6-4c04-811c-bc508a11123a');
+
+                        }
+                    });
+
+
+
+                if (selectedChatData) {
+                    const collectionPath = 'accounts';
+                    const docId = selectedChatData.participants?.customer; // Ensure this is a valid document ID
+
+                    const docRef = doc(projectExtensionFirestore, collectionPath, emailPart);
+
+                    const unsubscribe = onSnapshot(docRef, (doc) => {
+                        if (doc.exists()) {
+                            const data = doc.data();
+                            dispatch(setSelectedCustomerData(data ? data : {}));
+                            globalCustomerFirstName = data.textFirst ? data.textFirst : '';
+                            globalCustomerLastName = data.textLast ? data.textLast : '';
+                            console.log(`Name: ${data.textFirst} ${data.textLast}`)
+                            // globalCustomerCarName = carName;
+                            // setTextFirst(data.textFirst ? data.textFirst : '');
+                            // setTextLast(data.textLast ? data.textLast : '');
+
+
+                        } else {
+                            console.log("Document not found");
+                        }
+                    }, (error) => {
+                        console.error("Error fetching document: ", error);
+                    });
+
+                    // Clean up function to unsubscribe from the listener when the component unmounts
+                    return () => unsubscribe();
+                }
+
+            }, 1);
+
+
+        }
+    }, [selectedChatData]);
+
+
+
+
+
+    useEffect(() => {
+
         if (chatId) {
             setTimeout(() => {
                 dispatch(setActiveChatId(chatId));
+
             }, 1);
 
         }
@@ -7768,7 +7870,7 @@ const ChatMessageHeader = () => {
 
     const selectedChatData = useSelector((state) => state.selectedChatData);
     const invoiceData = useSelector((state) => state.invoiceData);
-
+    const [reRenderKey, setReRenderKey] = useState(0);
     const totalPriceCondition = selectedChatData.fobPrice && selectedChatData.jpyToUsd && selectedChatData.m3 && selectedChatData.freightPrice;
 
     const freightCalculation = ((selectedChatData.m3 ? selectedChatData.m3 :
@@ -7793,6 +7895,12 @@ const ChatMessageHeader = () => {
     const carName = selectedChatData.carData && selectedChatData.carData.carName ? selectedChatData.carData.carName : (selectedChatData.vehicle && selectedChatData.vehicle.carName ? selectedChatData.vehicle.carName : '');
 
     const freightPriceYen = freightCalculation / selectedChatData.currency.jpyToUsd;
+
+
+    useEffect(() => {
+
+        setReRenderKey(reRenderKey + 1);
+    }, [selectedChatData])
 
     return (
 
@@ -9267,6 +9375,8 @@ export default function ChatMessages() {
 
 
     useEffect(() => {
+        // globalImageUrl = '';
+
         const fetchIpAndCountry = async () => {
             try {
                 // dispatch(setChatMessageBoxLoading(true));
@@ -9474,6 +9584,7 @@ export default function ChatMessages() {
     }, []);
 
     useEffect(() => {
+
         const currentUserEmail = getEmailOfCurrentUser();
         if (currentUserEmail) {
             getFieldValueByEmail(currentUserEmail);

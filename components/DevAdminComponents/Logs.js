@@ -1119,7 +1119,7 @@ export default function Logs() {
 
 
 
-    const showDrawerIcon = useBreakpointValue([true, true, true, false]);
+    // const showDrawerIcon = useBreakpointValue([true, true, true, false]);
 
 
     // Function to hide the Popover
@@ -1193,9 +1193,9 @@ export default function Logs() {
                             style={styles.image}
                         />
                     </Box>
-
+                    {/* 
                     {showDrawerIcon && <MobileViewDrawer
-                        selectedScreen={selectedScreen} />}
+                        selectedScreen={selectedScreen} />} */}
 
 
                     <Box w={[150, 200, 250, 0]} h={[6, 8, 10, 10]} marginBottom={1.5} marginTop={1.5} marginLeft={[3, 3, 3, 10]}>

@@ -12,6 +12,17 @@ let email = '';
 
 // =============================== Chat Messages ========================================
 
+const carImageUrlSlice = createSlice({
+  name: 'carImageUrl',
+  initialState: '',
+  reducers: {
+    setCarImageUrl: (state, action) => {
+      return action.payload
+    },
+  },
+})
+
+
 const selectedFileUrlSlice = createSlice({
   name: 'selectedFileUrl',
   initialState: '',
@@ -816,6 +827,7 @@ const deleteImageVisibleSlice = createSlice({
 });
 
 // =============================== Chat Messages ========================================
+export const { setCarImageUrl } = carImageUrlSlice.actions
 export const { setSelectedFileUrl } = selectedFileUrlSlice.actions
 export const { setPdfViewerModalVisible } = pdfViewerModalVisibleSlice.actions
 export const { setSelectedCustomerData } = selectedCustomerDataSlice.actions
@@ -915,7 +927,8 @@ export const { setModelData } = modelDataSlice.actions
 const store = configureStore({
   reducer: {
 
-    // =============================== Chat Messages ========================================    
+    // =============================== Chat Messages ========================================     
+    carImageUrl: carImageUrlSlice.reducer,
     selectedFileUrl: selectedFileUrlSlice.reducer,
     pdfViewerModalVisible: pdfViewerModalVisibleSlice.reducer,
     selectedCustomerData: selectedCustomerDataSlice.reducer,
