@@ -1858,6 +1858,8 @@ const ChatList = ({ unreadButtonValue, activeButtonValue, }) => {
                 });
             } catch (error) {
                 console.error("Error updating document: ", error);
+                navigate(`/devadmin/chat-messages`);
+
             }
 
         }
@@ -1954,6 +1956,7 @@ const ChatList = ({ unreadButtonValue, activeButtonValue, }) => {
                 };
             } catch (error) {
                 console.error("Error setting up real-time messages: ", error);
+
             }
         }
     };
@@ -2160,43 +2163,15 @@ const ChatList = ({ unreadButtonValue, activeButtonValue, }) => {
 
     };
 
-
     useEffect(() => {
 
-
         const unsubscribe = fetchChatMessages();
-
-
-
 
         return () => {
             if (unsubscribe) {
                 unsubscribe(); // Unsubscribe when the component unmounts
-
-
             }
         };
-
-
-    }, [activeChatId]);
-
-
-    useEffect(() => {
-
-
-        const unsubscribe = fetchChatMessages();
-
-
-
-
-        return () => {
-            if (unsubscribe) {
-                unsubscribe(); // Unsubscribe when the component unmounts
-
-
-            }
-        };
-
 
     }, [activeChatId]);
 
@@ -2218,7 +2193,6 @@ const ChatList = ({ unreadButtonValue, activeButtonValue, }) => {
                     .then((url) => {
                         setImageUrl(url);
                         globalImageUrl = url;
-
                     })
                     .catch((error) => {
                         if (error.code === 'storage/object-not-found') {
@@ -2231,7 +2205,6 @@ const ChatList = ({ unreadButtonValue, activeButtonValue, }) => {
 
                         }
                     });
-
 
 
                 if (selectedChatData) {
@@ -2247,6 +2220,8 @@ const ChatList = ({ unreadButtonValue, activeButtonValue, }) => {
                             globalCustomerFirstName = data.textFirst ? data.textFirst : '';
                             globalCustomerLastName = data.textLast ? data.textLast : '';
                             console.log(`Name: ${data.textFirst} ${data.textLast}`)
+
+
                             // globalCustomerCarName = carName;
                             // setTextFirst(data.textFirst ? data.textFirst : '');
                             // setTextLast(data.textLast ? data.textLast : '');
@@ -2263,13 +2238,12 @@ const ChatList = ({ unreadButtonValue, activeButtonValue, }) => {
                     return () => unsubscribe();
                 }
 
+
             }, 1);
 
 
         }
     }, [selectedChatData]);
-
-
 
 
 
@@ -2292,8 +2266,6 @@ const ChatList = ({ unreadButtonValue, activeButtonValue, }) => {
         globalChatId = chatId;
 
     };
-
-
 
 
     useEffect(() => {
@@ -7867,7 +7839,8 @@ const CustomerProfileModal = () => {
 }
 
 const ChatMessageHeader = () => {
-
+    
+    const activeChatId = useSelector((state) => state.activeChatId);
     const selectedChatData = useSelector((state) => state.selectedChatData);
     const invoiceData = useSelector((state) => state.invoiceData);
     const [reRenderKey, setReRenderKey] = useState(0);
@@ -7899,8 +7872,9 @@ const ChatMessageHeader = () => {
 
     useEffect(() => {
 
-        setReRenderKey(reRenderKey + 1);
-    }, [selectedChatData])
+        setReRenderKey(reRenderKey + 1)
+
+    }, [activeChatId])
 
     return (
 
