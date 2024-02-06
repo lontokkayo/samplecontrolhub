@@ -125,6 +125,7 @@ import {
     setSelectedFileUrl,
     setIsLoading,
     setLoginName,
+    setCarImageUrl,
 } from './redux/store';
 // import { TextInput } from 'react-native-gesture-handler';
 import { nanoid } from 'nanoid';
@@ -1696,6 +1697,8 @@ const ChatListItem = ({ item, onPress, isActive, messageUnread, formattedDate, c
         globalCustomerFirstName = textFirst ? textFirst : '';
         globalCustomerLastName = textLast ? textLast : '';
         globalImageUrl = imageUrl ? imageUrl : '';
+        dispatch(setCarImageUrl(imageUrl ? imageUrl : ''));
+
         globalCustomerCarName = carName;
         setIsHovered(false);
         setIsUnreadHovered(false)
@@ -2178,6 +2181,7 @@ const ChatList = ({ unreadButtonValue, activeButtonValue, }) => {
     useEffect(() => {
 
         if (chatId) {
+
             setTimeout(() => {
 
                 let parts = chatId.split('_');
@@ -2193,6 +2197,8 @@ const ChatList = ({ unreadButtonValue, activeButtonValue, }) => {
                     .then((url) => {
                         setImageUrl(url);
                         globalImageUrl = url;
+                        dispatch(setCarImageUrl(url));
+
                     })
                     .catch((error) => {
                         if (error.code === 'storage/object-not-found') {
@@ -7839,10 +7845,12 @@ const CustomerProfileModal = () => {
 }
 
 const ChatMessageHeader = () => {
-    
+
     const activeChatId = useSelector((state) => state.activeChatId);
     const selectedChatData = useSelector((state) => state.selectedChatData);
     const invoiceData = useSelector((state) => state.invoiceData);
+    const carImageUrl = useSelector((state) => state.carImageUrl);
+
     const [reRenderKey, setReRenderKey] = useState(0);
     const totalPriceCondition = selectedChatData.fobPrice && selectedChatData.jpyToUsd && selectedChatData.m3 && selectedChatData.freightPrice;
 
@@ -7884,9 +7892,9 @@ const ChatMessageHeader = () => {
             flexDirection: 'row',
         }}>
 
-            {globalImageUrl ? (
+            {carImageUrl ? (
                 <FastImage
-                    source={{ uri: globalImageUrl, priority: FastImage.priority.normal }}
+                    source={{ uri: carImageUrl, priority: FastImage.priority.normal }}
                     style={{
                         width: 60,
                         height: 60,
