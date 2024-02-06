@@ -134,6 +134,7 @@ import StickyHeader from './Header/StickyHeader';
 import { UsePagination } from './VehicleListComponent/UsePagination';
 import Hyperlink from 'react-native-hyperlink';
 import { HmacSHA256, enc } from 'crypto-js';
+import { AES } from 'crypto-js';
 import { CRYPTO_KEY } from '@env';
 import { captureRef } from 'react-native-view-shot';
 import jsPDF from 'jspdf';
@@ -251,6 +252,19 @@ const getEmailOfCurrentUser = () => {
     }
 };
 
+const encryptData = (data) => {
+    const secretKey = CRYPTO_KEY.toString();
+
+    return AES.encrypt(data, secretKey).toString();
+};
+
+// Function to decrypt data
+const decryptData = (ciphertext) => {
+    const secretKey = CRYPTO_KEY.toString();
+
+    const bytes = AES.decrypt(ciphertext, secretKey);
+    return bytes.toString(enc.Utf8);
+};
 
 
 const TimelineStatus = ({ data }) => {
@@ -2172,8 +2186,8 @@ const ChatList = ({ unreadButtonValue, activeButtonValue, }) => {
         if (chatId) {
 
             setTimeout(() => {
-
-                let parts = chatId.split('_');
+                const decryptedChatId = decryptData(chatId).toString();
+                let parts = decryptedChatId.split('_');
                 let stockIdPart = parts[1];
                 let emailPart = parts[parts.length - 1];
 
@@ -2255,23 +2269,31 @@ const ChatList = ({ unreadButtonValue, activeButtonValue, }) => {
     useEffect(() => {
 
         if (chatId) {
+            const decryptedChatId = decryptData(chatId).toString();
+
             setTimeout(() => {
-                dispatch(setActiveChatId(chatId));
+                console.log(decryptedChatId)
+                dispatch(setActiveChatId(decryptedChatId));
 
             }, 1);
+
 
         }
     }, [chatId]);
 
     const handleChatPress = async (customerId, chatId) => {
+        const encryptedChatId = encryptData(chatId);
+        const encodedChatId = encodeURIComponent(encryptedChatId); // URL-encode the encrypted data
+        navigate(`/devadmin/chat-messages/${encodedChatId}`);
+        // console.log(encodedChatId)
+        // console.log(decodeURIComponent(encodedChatId))
+        // console.log(decryptData(decodeURIComponent(encodedChatId)))
 
         dispatch(setActiveChatId(chatId));
-        navigate(`/devadmin/chat-messages/${chatId}`);
+
         globalCustomerId = customerId;
         globalChatId = chatId;
-
     };
-
 
     useEffect(() => {
         dispatch(setActiveChatId(''));
@@ -9331,6 +9353,7 @@ const ChatMessageBox = ({ activeButtonValue, userEmail }) => {
 
 
 
+
 export default function ChatMessages() {
     const navigate = useNavigate();
 
@@ -9359,6 +9382,7 @@ export default function ChatMessages() {
 
     useEffect(() => {
         // globalImageUrl = '';
+        // navigate(`/devadmin/chat-messages/#`);
 
         const fetchIpAndCountry = async () => {
             try {

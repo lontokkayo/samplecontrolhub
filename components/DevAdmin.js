@@ -217,7 +217,7 @@ export default function DevAdmin({ navigation }) {
     <NativeBaseProvider>
       <Routes>
         <Route path="*" element={<Navigate to="chat-messages" replace />} />
-        <Route path="chat-messages" element={<ChatMessagesComponent />} />
+        <Route path="chat-messages" element={<ChatMessages />} />
         <Route path="chat-messages/:chatId" element={<ChatMessages />} />
         <Route path="freight" element={<FreightComponent />} />
         <Route path="add-new-vehicle" element={<AddVehicleComponent />} />
