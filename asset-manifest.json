@@ -1,10 +1,10 @@
 {
   "files": {
     "main.css": "/samplecontrolhub/static/css/main.280a37d8.css",
-    "main.js": "/samplecontrolhub/static/js/main.2c535f97.js",
+    "main.js": "/samplecontrolhub/static/js/main.dad705c3.js",
     "static/js/245.704124dc.chunk.js": "/samplecontrolhub/static/js/245.704124dc.chunk.js",
     "static/js/162.da88e0a0.chunk.js": "/samplecontrolhub/static/js/162.da88e0a0.chunk.js",
-    "static/js/104.7e976009.js": "/samplecontrolhub/static/js/104.7e976009.js",
+    "static/js/104.bef493f4.js": "/samplecontrolhub/static/js/104.bef493f4.js",
     "static/media/MaterialCommunityIcons.ttf": "/samplecontrolhub/static/media/MaterialCommunityIcons.5d42b4e60858731e7b65.ttf",
     "static/media/RMJ logo for invoice.png": "/samplecontrolhub/static/media/RMJ logo for invoice.260660476b8ac2af1cf6.png",
     "static/media/Ionicons.ttf": "/samplecontrolhub/static/media/Ionicons.3517aeaa34b2f8cd8eef.ttf",
@@ -40,14 +40,14 @@
     "manifest.json": "/samplecontrolhub/manifest.json",
     "serve.json": "/samplecontrolhub/serve.json",
     "main.280a37d8.css.map": "/samplecontrolhub/static/css/main.280a37d8.css.map",
-    "main.2c535f97.js.map": "/samplecontrolhub/static/js/main.2c535f97.js.map",
+    "main.dad705c3.js.map": "/samplecontrolhub/static/js/main.dad705c3.js.map",
     "245.704124dc.chunk.js.map": "/samplecontrolhub/static/js/245.704124dc.chunk.js.map",
     "162.da88e0a0.chunk.js.map": "/samplecontrolhub/static/js/162.da88e0a0.chunk.js.map",
-    "104.7e976009.js.map": "/samplecontrolhub/static/js/104.7e976009.js.map"
+    "104.bef493f4.js.map": "/samplecontrolhub/static/js/104.bef493f4.js.map"
   },
   "entrypoints": [
-    "static/js/104.7e976009.js",
+    "static/js/104.bef493f4.js",
     "static/css/main.280a37d8.css",
-    "static/js/main.2c535f97.js"
+    "static/js/main.dad705c3.js"
   ]
 }
