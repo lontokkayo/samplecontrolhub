@@ -616,6 +616,17 @@ const loginEmailSlice = createSlice({
     },
   },
 })
+
+const loginAccountTypeSlice = createSlice({
+  name: 'loginAccountType',
+  initialState: '',
+  reducers: {
+    setLoginAccountType: (state, action) => {
+      return action.payload
+    },
+  },
+})
+
 const loginNameSlice = createSlice({
   name: 'loginName',
   initialState: false,
@@ -904,6 +915,7 @@ export const { setDeleteImageVisible } = deleteImageVisibleSlice.actions
 export const { setExpenseNameData } = expenseNameDataSlice.actions
 export const { setLoginEmail } = loginEmailSlice.actions
 export const { setLoginName } = loginNameSlice.actions
+export const { setLoginAccountType } = loginAccountTypeSlice.actions
 export const { setIsAddPhotoVisible } = isAddPhotoVisibleSlice.actions
 export const { setAddAnotherImages } = addAnotherImagesSlice.actions
 export const { setModalDeleteImagesVisible } = modalDeleteImagesVisibleSlice.actions
@@ -1020,6 +1032,7 @@ const store = configureStore({
     addAnotherImages: addAnotherImagesSlice.reducer,
     modalDeleteImagesVisible: modalDeleteImagesVisibleSlice.reducer,
     loginName: loginNameSlice.reducer,
+    loginAccountType: loginAccountTypeSlice.reducer,
     loginEmail: loginEmailSlice.reducer,
     deleteImageVisible: deleteImageVisibleSlice.reducer,
   },

@@ -128,11 +128,11 @@ export default function AddAccount() {
   const [isSelected3, setIsSelected3] = useState(false);
   const [isSelected4, setIsSelected4] = useState(false);
 
-  const [accountTypeSpAd, setAccountTypeSpAd] = useState(false);
-  const [accountTypeDevAd, setAccountTypeDevAd] = useState(false);
-  const [accountTypeAd, setAccountTypeAd] = useState(false);
-  const [accountType3, setAccountType3] = useState(false);
-  const [accountType4, setAccountType4] = useState(false);
+  const [accountTypeAdmin, setAccountTypeAdmin] = useState(false);
+  const [accountTypeBooking, setAccountTypeBooking] = useState(false);
+  const [accountTypeSales, setAccountTypeSales] = useState(false);
+  const [accountTypeHamanasu, setAccountTypeHamanasu] = useState(false);
+  const [accountTypeApi, setAccountTypeApi] = useState(false);
 
 
   const [nameVerify, setNameVerify] = useState(false);
@@ -203,17 +203,6 @@ export default function AddAccount() {
   useEffect(() => {
   }, [typeOfAccount]);
 
-  const handleToggleAccountTypeSpAd = () => {
-    const text = 'superadmin';
-    setAccountTypeSpAd(true);
-
-    setAccountTypeDevAd(false);
-    setAccountTypeAd(false);
-    setAccountType3(false);
-    setAccountType4(false);
-    setTypeOfAccount(text);
-    setTypeOfAccountDisplay('Super Admin');
-  };
 
 
   useEffect(() => {
@@ -305,7 +294,7 @@ export default function AddAccount() {
       passwordMatchLabel === false ||
       validateEmail() === false ||
       isNameEmpty === true ||
-      isAccountType() === false
+      typeOfAccount === ''
     ) {
       setTimeout(() => {
         // Reset loading and disabled state
@@ -428,11 +417,7 @@ export default function AddAccount() {
     inputEmail.current.value = "";
     inputPassword.current.value = "";
     inputConfirmPassword.current.value = "";
-    setAccountTypeAd(false);
-    setAccountTypeSpAd(false);
-    setAccountTypeDevAd(false);
-    setAccountType3(false);
-    setAccountType4(false);
+
     setEmailError(false);
     setIsEmailDuplicate(false);
     setIsNameEmpty(true);
@@ -441,7 +426,8 @@ export default function AddAccount() {
     setPasswordMatch(false);
     setPasswordMatchLabel(true);
 
-
+    setTypeOfAccount('');
+    setTypeOfAccountDisplay('');
     // setInputConfirmPassword('');
     // setInputEmail('');
     // setInputName('');
@@ -454,57 +440,50 @@ export default function AddAccount() {
     inputRefs.current[index] = ref;
   };
 
-  const handleToggleAccountTypeAd = () => {
+  const handleToggleAccountTypeAdmin = () => {
     const text = 'admin';
-    setAccountTypeAd(true);
-    setAccountTypeSpAd(false);
-    setAccountTypeDevAd(false);
-    setAccountType3(false);
-    setAccountType4(false);
 
 
     setTypeOfAccount(text);
     setTypeOfAccountDisplay('Admin');
   };
 
-  const handleToggleAccountTypeDevAd = () => {
-    const text = 'devadmin';
-    setAccountTypeDevAd(true);
-
-    setAccountTypeAd(false);
-    setAccountTypeSpAd(false);
-    setAccountType3(false);
-    setAccountType4(false);
-    setTypeOfAccountDisplay('Developer Admin');
-
-    setTypeOfAccount(text);
-
-  };
-
-  const handleToggleAccountType3 = () => {
-    const text = 'staff';
-    setAccountType3(true);
-    setAccountTypeDevAd(false);
-    setAccountTypeAd(false);
-    setAccountTypeSpAd(false);
-    setAccountType4(false);
-
-    setTypeOfAccount(text);
-
-    setTypeOfAccountDisplay('Staff');
-  };
-
-  const handleToggleAccountType4 = () => {
+  const handleToggleAccountTypeBooking = () => {
     const text = 'booking';
-    setAccountType4(true);
-    setAccountType3(false);
-    setAccountTypeDevAd(false);
-    setAccountTypeAd(false);
-    setAccountTypeSpAd(false);
 
 
     setTypeOfAccount(text);
+
     setTypeOfAccountDisplay('Booking');
+  };
+
+
+  const handleToggleAccountTypeSales = () => {
+    const text = 'sales';
+
+
+    setTypeOfAccount(text);
+
+    setTypeOfAccountDisplay('Sales');
+  };
+
+  const handleToggleAccountTypeHamanasu = () => {
+    const text = 'hamanasu';
+
+
+
+    setTypeOfAccount(text);
+    setTypeOfAccountDisplay('Hamanasu');
+  };
+
+
+  const handleToggleAccountTypeApi = () => {
+    const text = 'api';
+
+
+
+    setTypeOfAccount(text);
+    setTypeOfAccountDisplay('Api');
   };
 
   // const handleToggleLogs = useCallback(() => {
@@ -682,9 +661,9 @@ export default function AddAccount() {
   //   );
   // };
 
-  const isAccountType = () => {
-    return accountTypeDevAd || accountTypeSpAd || accountTypeAd || accountType3 || accountType4 === true;
-  };
+  // const isAccountType = () => {
+  //   return accountTypeDevAd || accountTypeSpAd || accountTypeAd || accountType3 || accountType4 === true;
+  // };
 
   // const isPasswordMatchLabel = () => {
   //   const inputPasswordValue = inputPassword.current?.value;
@@ -931,37 +910,73 @@ export default function AddAccount() {
                         )}
 
                         <Text fontSize={16} color={'white'} bold>ACCOUNT TYPE:                                                             </Text>
-                        <Box borderColor={isAccountType() ? 'green.300' : 'red.500'} borderWidth={2}>
-                          <HStack space={1} justifyContent="center" >
-                            <Button _hover={{ bgColor: accountType4 ? '#0642F4' : 'blueGray.400', }} size="sm" borderWidth='1' borderColor='white' w={{
-                              base: 90,
-                              md: 90,
-                              sm: 90,
-                            }} onPress={handleToggleAccountType4} bgColor={accountType4 ? '#0642F4' : '#CED5EA'} ><Text style={{ color: 'white', }}>Booking</Text></Button>
-                            <Button _hover={{ bgColor: accountType3 ? '#0642F4' : 'blueGray.400', }} size="sm" borderWidth='1' borderColor='white' w={{
-                              base: 90,
-                              md: 90,
-                              sm: 90,
-                            }} onPress={handleToggleAccountType3} bgColor={accountType3 ? '#0642F4' : '#CED5EA'}  ><Text style={{ color: 'white', }}>Staff</Text></Button>
-                            <Button _hover={{ bgColor: accountTypeAd ? '#0642F4' : 'blueGray.400', }} size="sm" borderWidth='1' borderColor='white' w={{
-                              base: 90,
-                              md: 90,
-                              sm: 90,
-                            }} onPress={handleToggleAccountTypeAd} bgColor={accountTypeAd ? '#0642F4' : '#CED5EA'}  ><Text style={{ color: 'white', }}>Admin</Text></Button>
-                            <Button _hover={{ bgColor: accountTypeSpAd ? '#0642F4' : 'blueGray.400', }} size="sm" borderWidth='1' borderColor='white' w={{
-                              base: 90,
-                              md: 90,
-                              sm: 90,
-                            }} onPress={handleToggleAccountTypeSpAd} bgColor={accountTypeSpAd ? '#0642F4' : '#CED5EA'} ><Text style={{ color: 'white', }}>Super Admin</Text></Button>
+                        <Box borderColor={typeOfAccount !== '' ? 'green.300' : 'red.500'} borderWidth={2}>
+                          <Flex wrap="wrap" flexDir={'row'} justifyContent="center" space={1}>
+                            <Button
+                              margin={1}
+                              _hover={{ bgColor: typeOfAccount == 'hamanasu' ? '#0642F4' : 'blueGray.400' }}
+                              size="sm"
+                              borderWidth='1'
+                              borderColor='white'
+                              w={{ base: 90, md: 90, sm: 90 }}
+                              onPress={handleToggleAccountTypeHamanasu}
+                              bgColor={typeOfAccount == 'hamanasu' ? '#0642F4' : '#CED5EA'}
+                            >
+                              <Text style={{ color: 'white', }}>Hamanasu</Text>
+                            </Button>
 
-                          </HStack>
-                          <HStack space={1} justifyContent="center" marginTop={1}>
-                            <Button _hover={{ bgColor: accountTypeDevAd ? '#0642F4' : 'blueGray.400', }} size="sm" borderWidth='1' borderColor='white' w={{
-                              base: 90,
-                              md: 90,
-                              sm: 90,
-                            }} onPress={handleToggleAccountTypeDevAd} bgColor={accountTypeDevAd ? '#0642F4' : '#CED5EA'} ><Text style={{ color: 'white', }}>Dev Admin</Text></Button>
-                          </HStack>
+                            <Button
+                              margin={1}
+                              _hover={{ bgColor: typeOfAccount == 'booking' ? '#0642F4' : 'blueGray.400' }}
+                              size="sm"
+                              borderWidth='1'
+                              borderColor='white'
+                              w={{ base: 90, md: 90, sm: 90 }}
+                              onPress={handleToggleAccountTypeBooking}
+                              bgColor={typeOfAccount == 'booking' ? '#0642F4' : '#CED5EA'}
+                            >
+                              <Text style={{ color: 'white', }}>Booking</Text>
+                            </Button>
+
+                            <Button
+                              margin={1}
+                              _hover={{ bgColor: typeOfAccount == 'sales' ? '#0642F4' : 'blueGray.400' }}
+                              size="sm"
+                              borderWidth='1'
+                              borderColor='white'
+                              w={{ base: 90, md: 90, sm: 90 }}
+                              onPress={handleToggleAccountTypeSales}
+                              bgColor={typeOfAccount == 'sales' ? '#0642F4' : '#CED5EA'}
+                            >
+                              <Text style={{ color: 'white', }}>Sales</Text>
+                            </Button>
+
+                            <Button
+                              margin={1}
+                              _hover={{ bgColor: typeOfAccount == 'admin' ? '#0642F4' : 'blueGray.400' }}
+                              size="sm"
+                              borderWidth='1'
+                              borderColor='white'
+                              w={{ base: 90, md: 90, sm: 90 }}
+                              onPress={handleToggleAccountTypeAdmin}
+                              bgColor={typeOfAccount == 'admin' ? '#0642F4' : '#CED5EA'}
+                            >
+                              <Text style={{ color: 'white', }}>Admin</Text>
+                            </Button>
+
+                            <Button
+                              margin={1}
+                              _hover={{ bgColor: typeOfAccount == 'api' ? '#0642F4' : 'blueGray.400' }}
+                              size="sm"
+                              borderWidth='1'
+                              borderColor='white'
+                              w={{ base: 90, md: 90, sm: 90 }}
+                              onPress={handleToggleAccountTypeApi}
+                              bgColor={typeOfAccount == 'api' ? '#0642F4' : '#CED5EA'}
+                            >
+                              <Text style={{ color: 'white', }}>API</Text>
+                            </Button>
+                          </Flex>
                         </Box>
                         <HStack space={1} justifyContent="center" marginBottom={5}>
                           <Button _hover={{ bgColor: '#D9D9D9', }} _pressed={{ bgColor: '#D9D9D9', }} _focus={{ bgColor: '#D9D9D9', }} bgColor='warmGray.200' size="lg" borderWidth='1' borderColor='white' w={{

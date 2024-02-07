@@ -29,6 +29,7 @@ import { signOut, onAuthStateChanged, reload, getAuth } from 'firebase/auth';
 import { MaterialIcons } from "@expo/vector-icons";
 import { useSelector, useDispatch } from 'react-redux';
 import {
+  setLoginAccountType,
   // setModelData,
   setLoginEmail,
   setLoginName
@@ -58,6 +59,8 @@ export default function Checkpoint() {
   const dispatch = useDispatch();
   const loginEmail = useSelector((state) => state.loginEmail);
   const loginName = useSelector((state) => state.loginName);
+  const loginAccountType = useSelector((state) => state.loginAccountType);
+
   const [email, setEmail] = useState('');
   const [type, setType] = useState('');
   const [emailCredential, setEmailCredential] = React.useState('');
@@ -148,35 +151,47 @@ export default function Checkpoint() {
     try {
       const accountDocRef = doc(firestore, 'accounts', email);
 
-      onSnapshot(accountDocRef, (docSnapshot) => {
-        if (docSnapshot.exists()) {
-          const data = docSnapshot.data();
-          const fieldType = data.type;
-          const fieldName = data.name;
+      // if (loginAccountType !== '') {
+      const delay = getRandomDelay();
+      setTimeout(() => {
+        // navigation.replace(fieldType);
+        navigate(`/top`)
+      }, delay);
+      // navigate(`/top`)
+      // }
+      // else {
+      //   onSnapshot(accountDocRef, (docSnapshot) => {
+      //     if (docSnapshot.exists()) {
+      //       const data = docSnapshot.data();
+      //       const fieldType = data.type;
+      //       const fieldName = data.name;
 
-          if (data.active === true) {
-            setType(fieldType);
-            dispatch(setLoginName(fieldName));
-            const delay = getRandomDelay();
-            // setTimeout(() => {
-            // navigation.replace(fieldType);
-            navigate(`/${fieldType}`)
-            // }, delay);
-          }
-          else {
-            signOut(auth)
-              .then(() => {
-                // navigation.navigate('Login');
-                navigate('/Login');
-              })
-              .catch((error) => {
-                console.error('Error signing out:', error);
-              });
-          }
-        } else {
-          // Handle the case where the document does not exist
-        }
-      });
+      //       if (data.active === true) {
+      //         setType(fieldType);
+      //         dispatch(setLoginAccountType(fieldType));
+      //         dispatch(setLoginName(fieldName));
+      //         const delay = getRandomDelay();
+      //         // setTimeout(() => {
+      //         // navigation.replace(fieldType);
+      //         navigate(`/top`)
+      //         // }, delay);
+      //       }
+      //       else {
+      //         signOut(auth)
+      //           .then(() => {
+      //             // navigation.navigate('Login');
+      //             navigate('/Login');
+      //           })
+      //           .catch((error) => {
+      //             console.error('Error signing out:', error);
+      //           });
+      //       }
+      //     } else {
+      //       // Handle the case where the document does not exist
+      //     }
+      //   });
+      // }
+
     } catch (error) {
       console.error('Error fetching field value:', error);
     }

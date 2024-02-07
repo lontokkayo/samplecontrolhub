@@ -27,8 +27,8 @@ import { MaterialIcons } from "@expo/vector-icons";
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import LoginPage from './components/LoginPage';
-import DevAdmin from './components/DevAdmin';
-import Admin from './components/Admin';
+import Top from './components/Top';
+import Admin from './components/Top';
 import Checkpoint from './components/Checkpoint';
 import ResetPassword from './components/ResetPassword';
 import ResetPasswordSuccess from './components/ResetPasswordSuccess';
@@ -101,9 +101,8 @@ export default function App() {
           <Route path="/Login" element={<LoginPage />} />
           <Route path="/Login/*" element={<LoginPage />} />
           <Route path="/Checkpoint" element={<Checkpoint />} />
-          <Route path="/DevAdmin/*" element={<DevAdmin />} />
           {/* Corrected path for Admin if needed */}
-          <Route path="/Admin" element={<Admin />} />
+          <Route path="/top/*" element={<Top />} />
           {/* Define other routes */}
         </Routes>
       </Router>

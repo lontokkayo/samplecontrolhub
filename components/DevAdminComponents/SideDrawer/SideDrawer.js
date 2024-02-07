@@ -22,10 +22,13 @@ import { View, TouchableOpacity, Easing, Image, Dimensions, Animated, Pressable 
 import { TouchableHighlight } from 'react-native-gesture-handler';
 import { useNavigation } from '@react-navigation/core';
 import { HashRouter as Router, Route, Routes, Navigate, useNavigate } from 'react-router-dom';
+import { useSelector } from 'react-redux';
 
 
 
 const SideDrawer = ({ selectedScreen }) => {
+
+    const loginAccountType = useSelector((state) => state.loginAccountType);
 
     const [isOpen, setIsOpen] = useState(false);
     const logo2 = require('../../../assets/C-Hub Logo Only.png');
@@ -34,6 +37,8 @@ const SideDrawer = ({ selectedScreen }) => {
     const screenWidth = Dimensions.get('window').width;
 
     // const navigation = useNavigation();
+
+
     const navigate = useNavigate();
     const handleOpen = () => {
 
@@ -47,35 +52,35 @@ const SideDrawer = ({ selectedScreen }) => {
     }
 
     const handleToggleLogs = useCallback(() => {
-        navigate("/devadmin/logs");
+        navigate("/top/logs");
     }, []);
 
     const handleToggleAddAccount = useCallback(() => {
-        navigate("/devadmin/add-c-hub-account");
+        navigate("/top/add-c-hub-account");
     }, []);
 
     const handleToggleAccountList = useCallback(() => {
 
-        navigate("/devadmin/account-list");
+        navigate("/top/account-list");
     }, []);
 
     const handleToggleAddVehicle = useCallback(() => {
 
-        navigate("/devadmin/add-new-vehicle");
+        navigate("/top/add-new-vehicle");
     }, []);
 
 
     const handleVehicleList = useCallback(() => {
-        navigate("/devadmin/vehicle-list");
+        navigate("/top/vehicle-list");
     }, []);
 
 
     const handleFreight = useCallback(() => {
-        navigate("/devadmin/freight");
+        navigate("/top/freight");
     }, []);
 
     const handleChatMessages = useCallback(() => {
-        navigate("/devadmin/chat-messages");
+        navigate("/top/chat-messages");
     }, []);
 
 
@@ -182,26 +187,28 @@ const SideDrawer = ({ selectedScreen }) => {
                                     <ScrollView style={{ width: 245 }}>
                                         <View style={{ height: 20 }}>
                                             {/* Sidebar Content Items */}
-                                            <Button
-                                                borderRadius={0}
-                                                borderTopWidth={1}
-                                                borderBottomWidth={1}
-                                                borderColor={'white'}
-                                                _hover={{ bgColor: selectedScreen == 'LOGS' ? '#0642F4' : '#5a7bc9', }}
-                                                marginTop={0}
-                                                w={'full'}
-                                                onPress={() => selectedScreen == 'LOGS' ? null : handleToggleLogs()}
-                                                colorScheme={undefined}
-                                                bgColor={selectedScreen == 'LOGS' ? '#0642F4' : '#7b9cff'}
-                                                leftIcon={<MaterialCommunityIcons name="history" size={20} color="white" />}
-                                                justifyContent="flex-start"
-                                                alignItems="center"
-                                            >
-                                                LOGS
-                                            </Button>
+                                            {(loginAccountType == 'admin' || loginAccountType == 'sales') &&
+                                                <Button
+                                                    borderRadius={0}
+                                                    borderTopWidth={1}
+                                                    borderBottomWidth={1}
+                                                    borderColor={'white'}
+                                                    _hover={{ bgColor: selectedScreen == 'LOGS' ? '#0642F4' : '#5a7bc9', }}
+                                                    marginTop={0}
+                                                    w={'full'}
+                                                    onPress={() => selectedScreen == 'LOGS' ? null : handleToggleLogs()}
+                                                    colorScheme={undefined}
+                                                    bgColor={selectedScreen == 'LOGS' ? '#0642F4' : '#7b9cff'}
+                                                    leftIcon={<MaterialCommunityIcons name="history" size={20} color="white" />}
+                                                    justifyContent="flex-start"
+                                                    alignItems="center"
+                                                >
+                                                    LOGS
+                                                </Button>
+                                            }
 
                                             {/* ACCOUNT MANAGEMENT */}
-                                            <Button
+                                            {loginAccountType == 'admin' && <Button
                                                 borderRadius={0}
                                                 borderTopWidth={1}
                                                 borderBottomWidth={1}
@@ -214,9 +221,9 @@ const SideDrawer = ({ selectedScreen }) => {
                                                 leftIcon={<MaterialIcons name="person-add" size={20} color="white" />}
                                                 justifyContent="flex-start"
                                                 alignItems="center"
-                                            >ADD C-HUB ACCOUNT</Button>
+                                            >ADD C-HUB ACCOUNT</Button>}
 
-                                            <Button
+                                            {loginAccountType == 'admin' && <Button
                                                 borderRadius={0}
                                                 borderTopWidth={1}
                                                 borderBottomWidth={1}
@@ -232,78 +239,81 @@ const SideDrawer = ({ selectedScreen }) => {
                                                 }
                                                 justifyContent="flex-start"
                                                 alignItems="center"
-                                            >ACCOUNT LIST</Button>
+                                            >ACCOUNT LIST</Button>}
                                             {/* VEHICLE INFORMATION INPUT */}
-                                            <Button
-                                                borderRadius={0}
-                                                borderTopWidth={1}
-                                                borderBottomWidth={1}
-                                                borderColor={'white'}
-                                                _hover={{ bgColor: selectedScreen == 'ADD NEW VEHICLE' ? '#0642F4' : '#5a7bc9', }}
-                                                marginTop={0} w={'full'}
-                                                onPress={() => selectedScreen == 'ADD NEW VEHICLE' ? null : handleToggleAddVehicle()}
-                                                colorScheme={undefined}
-                                                bgColor={selectedScreen == 'ADD NEW VEHICLE' ? '#0642F4' : '#7b9cff'}
-                                                leftIcon={
-                                                    <>
-                                                        <View>
-                                                            <FontAwesome name="automobile" size={15} color="white" />
-                                                            <FontAwesome
-                                                                name="plus"
-                                                                size={10}
-                                                                color="white"
-                                                                style={{
-                                                                    position: 'absolute', // Position it absolutely...
-                                                                    top: -3, // ...at the top...
-                                                                    left: -5 // ...and left.
-                                                                }}
-                                                            />
-                                                        </View>
+                                            {(loginAccountType == 'admin' || loginAccountType == 'sales' || loginAccountType == 'booking') &&
+                                                <Button
+                                                    borderRadius={0}
+                                                    borderTopWidth={1}
+                                                    borderBottomWidth={1}
+                                                    borderColor={'white'}
+                                                    _hover={{ bgColor: selectedScreen == 'ADD NEW VEHICLE' ? '#0642F4' : '#5a7bc9', }}
+                                                    marginTop={0} w={'full'}
+                                                    onPress={() => selectedScreen == 'ADD NEW VEHICLE' ? null : handleToggleAddVehicle()}
+                                                    colorScheme={undefined}
+                                                    bgColor={selectedScreen == 'ADD NEW VEHICLE' ? '#0642F4' : '#7b9cff'}
+                                                    leftIcon={
+                                                        <>
+                                                            <View>
+                                                                <FontAwesome name="automobile" size={15} color="white" />
+                                                                <FontAwesome
+                                                                    name="plus"
+                                                                    size={10}
+                                                                    color="white"
+                                                                    style={{
+                                                                        position: 'absolute', // Position it absolutely...
+                                                                        top: -3, // ...at the top...
+                                                                        left: -5 // ...and left.
+                                                                    }}
+                                                                />
+                                                            </View>
 
 
-                                                    </>
-                                                }
-                                                justifyContent="flex-start"
-                                                alignItems="center"
-                                            >UPDATE / ADD NEW VEHICLE</Button>
+                                                        </>
+                                                    }
+                                                    justifyContent="flex-start"
+                                                    alignItems="center"
+                                                >UPDATE / ADD NEW VEHICLE</Button>
+                                            }
 
-                                            <Button
-                                                borderRadius={0}
-                                                borderTopWidth={1}
-                                                borderBottomWidth={1}
-                                                borderColor={'white'}
-                                                _hover={{ bgColor: selectedScreen == 'VEHICLE LIST' ? '#0642F4' : '#5a7bc9', }}
-                                                marginTop={0}
-                                                onPress={() => selectedScreen == 'VEHICLE LIST' ? null : handleVehicleList()}
-                                                colorScheme={undefined}
-                                                bgColor={selectedScreen == 'VEHICLE LIST' ? '#0642F4' : '#7b9cff'}
-                                                leftIcon={
-                                                    <>
-                                                        <View>
-                                                            <FontAwesome
-                                                                name="automobile"
-                                                                size={15}
-                                                                color="white" />
+                                            {(loginAccountType == 'admin' || loginAccountType == 'sales' || loginAccountType == 'booking') &&
+                                                <Button
+                                                    borderRadius={0}
+                                                    borderTopWidth={1}
+                                                    borderBottomWidth={1}
+                                                    borderColor={'white'}
+                                                    _hover={{ bgColor: selectedScreen == 'VEHICLE LIST' ? '#0642F4' : '#5a7bc9', }}
+                                                    marginTop={0}
+                                                    onPress={() => selectedScreen == 'VEHICLE LIST' ? null : handleVehicleList()}
+                                                    colorScheme={undefined}
+                                                    bgColor={selectedScreen == 'VEHICLE LIST' ? '#0642F4' : '#7b9cff'}
+                                                    leftIcon={
+                                                        <>
+                                                            <View>
+                                                                <FontAwesome
+                                                                    name="automobile"
+                                                                    size={15}
+                                                                    color="white" />
 
-                                                            <MaterialCommunityIcons name="format-list-bulleted" size={10} color="white"
-                                                                style={{
-                                                                    position: 'absolute', // Position it absolutely...
-                                                                    top: -3, // ...at the top...
-                                                                    left: -5 // ...and left.
-                                                                }}
-                                                            />
+                                                                <MaterialCommunityIcons name="format-list-bulleted" size={10} color="white"
+                                                                    style={{
+                                                                        position: 'absolute', // Position it absolutely...
+                                                                        top: -3, // ...at the top...
+                                                                        left: -5 // ...and left.
+                                                                    }}
+                                                                />
 
-                                                        </View>
+                                                            </View>
 
 
-                                                    </>
-                                                }
-                                                justifyContent="flex-start"
-                                                alignItems="center"
-                                            // rightIcon={<FontAwesome name="automobile" size={15} color="white" />}
-                                            >VEHICLE LIST</Button>
+                                                        </>
+                                                    }
+                                                    justifyContent="flex-start"
+                                                    alignItems="center"
+                                                // rightIcon={<FontAwesome name="automobile" size={15} color="white" />}
+                                                >VEHICLE LIST</Button>}
 
-                                            <Button
+                                            {loginAccountType == 'admin' && <Button
                                                 borderRadius={0}
                                                 borderTopWidth={1}
                                                 borderBottomWidth={1}
@@ -338,8 +348,9 @@ const SideDrawer = ({ selectedScreen }) => {
                                                 alignItems="center"
                                             // rightIcon={<FontAwesome name="automobile" size={15} color="white" />}
                                             >FREIGHT</Button>
+                                            }
 
-                                            <Button
+                                            {(loginAccountType == 'admin' || loginAccountType == 'sales' || loginAccountType == 'booking') && <Button
                                                 borderRadius={0}
                                                 borderTopWidth={1}
                                                 borderBottomWidth={1}
@@ -365,7 +376,7 @@ const SideDrawer = ({ selectedScreen }) => {
                                                 justifyContent="flex-start"
                                                 alignItems="center"
                                             // rightIcon={<FontAwesome name="automobile" size={15} color="white" />}
-                                            >CHAT MESSAGES</Button>
+                                            >CHAT MESSAGES</Button>}
                                         </View>
                                         {/* Footer Content */}
                                         {/* <TouchableOpacity

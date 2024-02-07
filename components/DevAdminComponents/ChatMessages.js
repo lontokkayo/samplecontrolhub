@@ -544,6 +544,19 @@ const SkeletonChatListLayout = () => {
                         width: '5%',
                         borderRadius: 4,
                     }} />
+
+                    <View
+                        style={{
+                            borderRadius: 4,
+                            backgroundColor: '#e0e0e0',
+                            position: 'absolute',
+                            right: -20,
+                            top: -20,
+                            padding: 10,
+                            alignSelf: 'center',
+                        }}
+
+                    />
                 </View>
             </View>
         </>
@@ -1623,13 +1636,14 @@ const ChatInputText = () => {
     );
 }
 
-const ChatListItem = ({ item, onPress, isActive, messageUnread, formattedDate, chatListData }) => {
+const ChatListItem = ({ item, onPress, onPressNewTab, isActive, messageUnread, formattedDate, chatListData }) => {
     const [imageUrl, setImageUrl] = useState(null);
     const [chatListStepImageUrl, setChatListStepImageUrl] = useState(null);
     const [textFirst, setTextFirst] = useState('');
     const [textLast, setTextLast] = useState('');
     const dispatch = useDispatch();
     const [isUnreadHovered, setIsUnreadHovered] = useState(false);
+    const [isOpenNewTabHovered, setIsOpenNewTabHovered] = useState(false);
     const [isUnreadVisible, setIsUnreadVisible] = useState(false);
     const [isHovered, setIsHovered] = useState(false);
     const [customerData, setCustomerData] = useState({});
@@ -1656,6 +1670,15 @@ const ChatListItem = ({ item, onPress, isActive, messageUnread, formattedDate, c
 
     const hoverOut = () => {
         setIsHovered(false);
+    };
+
+    const hoverOpenNewTabIn = () => {
+        setIsHovered(true)
+        setIsOpenNewTabHovered(true)
+    };
+
+    const hoverOpenNewTabOut = () => {
+        setIsOpenNewTabHovered(false)
     };
 
     const hoverUnreadIn = () => {
@@ -1721,6 +1744,22 @@ const ChatListItem = ({ item, onPress, isActive, messageUnread, formattedDate, c
 
     const handlePress = () => {
         onPress()
+
+        // dispatch(setSelectedCustomerData(customerData));
+        globalCustomerFirstName = textFirst ? textFirst : '';
+        globalCustomerLastName = textLast ? textLast : '';
+        globalImageUrl = imageUrl ? imageUrl : '';
+        dispatch(setCarImageUrl(imageUrl ? imageUrl : ''));
+
+        globalCustomerCarName = carName;
+        setIsHovered(false);
+        setIsUnreadHovered(false)
+
+
+    }
+
+    const handlePressNewTab = () => {
+        onPressNewTab()
 
         // dispatch(setSelectedCustomerData(customerData));
         globalCustomerFirstName = textFirst ? textFirst : '';
@@ -1848,6 +1887,27 @@ const ChatListItem = ({ item, onPress, isActive, messageUnread, formattedDate, c
                             </Pressable>
                         </Tooltip>
                     )}
+
+                    {isHovered && (
+                        <Tooltip label="Open in new tab" placement='right' openDelay={200} bgColor={'#FAFAFA'} _text={{ color: '#1C2B33', }}>
+                            <Pressable
+                                focusable={false}
+                                onHoverIn={hoverOpenNewTabIn}
+                                onHoverOut={hoverOpenNewTabOut}
+                                onPress={handlePressNewTab}
+                                style={{
+                                    position: 'absolute',
+                                    right: -22,
+                                    top: -22,
+                                    padding: 10,
+                                    alignSelf: 'center',
+                                }}
+
+                            >
+                                <MaterialIcons name="open-in-new" size={16} color={isOpenNewTabHovered ? "#1B81C2" : "#BABABA"} />
+                            </Pressable>
+                        </Tooltip>
+                    )}
                 </View>
 
 
@@ -1890,7 +1950,7 @@ const ChatList = ({ unreadButtonValue, activeButtonValue, }) => {
                 });
             } catch (error) {
                 console.error("Error updating document: ", error);
-                navigate(`/devadmin/chat-messages`);
+                navigate(`/top/chat-messages`);
 
             }
 
@@ -2305,17 +2365,49 @@ const ChatList = ({ unreadButtonValue, activeButtonValue, }) => {
     }, [chatId]);
 
     const handleChatPress = async (customerId, chatId) => {
+        if (chatId !== activeChatId) {
+            const encryptedChatId = encryptData(chatId);
+            const encodedChatId = encodeURIComponent(encryptedChatId); // URL-encode the encrypted data
+            navigate(`/top/chat-messages/${encodedChatId}`);
+            // console.log(encodedChatId)
+            // console.log(decodeURIComponent(encodedChatId))
+            // console.log(decryptData(decodeURIComponent(encodedChatId)))
+
+            // // Assuming chatId is already properly encoded and needs no further encoding
+            // const path = `/devadmin/chat-messages/${encodedChatId}`;
+            // // Construct the URL for hash-based routing
+            // const baseUrl = window.location.origin + window.location.pathname;
+            // const fullPath = `${baseUrl}#${path}`;
+            // window.open(fullPath, '_blank');
+
+            dispatch(setActiveChatId(chatId));
+
+            globalCustomerId = customerId;
+            globalChatId = chatId;
+
+        }
+    };
+
+    const handleChatPressNewTab = async (customerId, chatId) => {
         const encryptedChatId = encryptData(chatId);
         const encodedChatId = encodeURIComponent(encryptedChatId); // URL-encode the encrypted data
-        navigate(`/devadmin/chat-messages/${encodedChatId}`);
+        // navigate(`/devadmin/chat-messages/${encodedChatId}`);
         // console.log(encodedChatId)
         // console.log(decodeURIComponent(encodedChatId))
         // console.log(decryptData(decodeURIComponent(encodedChatId)))
 
-        dispatch(setActiveChatId(chatId));
+        // Assuming chatId is already properly encoded and needs no further encoding
+        const path = `/top/chat-messages/${encodedChatId}`;
+        // Construct the URL for hash-based routing
+        const baseUrl = window.location.origin + window.location.pathname;
+        const fullPath = `${baseUrl}#${path}`;
+        window.open(fullPath, '_blank');
+
+        // dispatch(setActiveChatId(chatId));
 
         globalCustomerId = customerId;
         globalChatId = chatId;
+
     };
 
     useEffect(() => {
@@ -2350,6 +2442,7 @@ const ChatList = ({ unreadButtonValue, activeButtonValue, }) => {
 
         return (
             <ChatListItem
+                onPressNewTab={() => handleChatPressNewTab(item.participants.customer, item.id)}
                 chatListData={chatListData}
                 item={item}
                 onPress={() => handleChatPress(item.participants.customer, item.id)}
@@ -8507,16 +8600,16 @@ const ChatMessageBox = ({ activeButtonValue, userEmail }) => {
                 Animated.timing(animatedValue, {
                     toValue: 1,
                     duration: 2000,
-                    useNativeDriver: false
+                    useNativeDriver: true
                 }),
                 Animated.timing(animatedValue, {
                     toValue: 0,
                     duration: 2000,
-                    useNativeDriver: false
+                    useNativeDriver: true
                 })
             ])
         ).start();
-    }, [animatedValue]);
+    }, [selectedChatData, animatedValue]);
 
     const borderColor = animatedValue.interpolate({
         inputRange: [0, 0.25, 0.5, 0.75, 1],
