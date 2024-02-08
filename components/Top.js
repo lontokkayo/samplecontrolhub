@@ -89,7 +89,7 @@ const getEmailOfCurrentUser = () => {
 // const Drawer = createDrawerNavigator();
 
 
-export default function DevAdmin({ navigation }) {
+export default function Top({ navigation }) {
   const [drawerVisible, setDrawerVisible] = useState(false);
   const [email, setEmail] = useState('');
   const [type, setType] = useState('');
@@ -219,12 +219,12 @@ export default function DevAdmin({ navigation }) {
           if (data.active === true) {
             setType(fieldType);
             dispatch(setLoginAccountType(fieldType));
-            console.log('Account Type: ', fieldType);
+            // console.log('Account Type: ', fieldType);
             dispatch(setLoginName(fieldName));
             const delay = getRandomDelay();
             // setTimeout(() => {
             // navigation.replace(fieldType);
-            navigate(`/top`)
+            // navigate(`/top`)
             // }, delay);
           }
           else {
@@ -337,7 +337,6 @@ export default function DevAdmin({ navigation }) {
       <Routes>
         <Route path="*" element={<Navigate to="chat-messages" replace />} />
         <Route path="chat-messages" element={<ChatMessages />} />
-        <Route path="/chat-messages" element={<ProtectedRoute loginAccountType={loginAccountType} allowedAccountTypes={['admin', 'sales', 'booking']} redirectTo="/"><ChatMessages /></ProtectedRoute>} />
         <Route path="chat-messages/:chatId" element={<ChatMessages />} />
         <Route path="freight" element={<FreightComponent />} />
         <Route path="add-new-vehicle" element={<AddVehicleComponent />} />
