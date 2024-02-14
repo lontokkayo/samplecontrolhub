@@ -4876,7 +4876,7 @@ export default function Freight() {
                 {/* Header */}
                 <Box
                     px="3"
-                    bgColor='#7b9cff'
+                    bgColor='#0642f4'
                     height={54}
                     position="sticky"
                     top={0}

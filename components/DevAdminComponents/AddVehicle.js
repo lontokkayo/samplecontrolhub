@@ -6671,8 +6671,8 @@ export default function AddVehicle() {
         {/* Header */}
         <Box
           px="3"
-          bgColor='#7b9cff'
-          height={54}
+          bgColor='#0642f4'
+           height={54}
           position="sticky"
           top={0}
           zIndex={999}

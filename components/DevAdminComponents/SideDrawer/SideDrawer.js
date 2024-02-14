@@ -157,7 +157,7 @@ const SideDrawer = ({ selectedScreen }) => {
                         }}
                     >
 
-                        <View style={{ backgroundColor: '#7b9cff', flex: 1, borderRightWidth: 2, borderColor: 'cyan' }}>
+                        <View style={{ backgroundColor: '#0642f4', flex: 1, borderRightWidth: 0, borderColor: 'cyan' }}>
                             <View style={{ flex: 1, }}>
 
                                 <View style={{ flexDirection: 'row', margin: 3, justifyContent: 'space-between' }}>
@@ -183,23 +183,24 @@ const SideDrawer = ({ selectedScreen }) => {
                                 </View>
 
                                 {/* Sidebar Content */}
-                                <View style={{ paddingHorizontal: 1, backgroundColor: '#7b9cff', height: '100%' }}>
+                                <View style={{ paddingHorizontal: 1, backgroundColor: '#0642f4', height: '100%' }}>
                                     <ScrollView style={{ width: 245 }}>
                                         <View style={{ height: 20 }}>
                                             {/* Sidebar Content Items */}
                                             {(loginAccountType == 'admin' || loginAccountType == 'sales') &&
                                                 <Button
+                                                    _text={{ color: selectedScreen == 'LOGS' ? '#0642F4' : "white", }}
                                                     borderRadius={0}
                                                     borderTopWidth={1}
                                                     borderBottomWidth={1}
                                                     borderColor={'white'}
-                                                    _hover={{ bgColor: selectedScreen == 'LOGS' ? '#0642F4' : '#5a7bc9', }}
+                                                    _hover={{ bgColor: selectedScreen == 'LOGS' ? '#FFFFFF' : '#032da8', }}
                                                     marginTop={0}
                                                     w={'full'}
                                                     onPress={() => selectedScreen == 'LOGS' ? null : handleToggleLogs()}
                                                     colorScheme={undefined}
-                                                    bgColor={selectedScreen == 'LOGS' ? '#0642F4' : '#7b9cff'}
-                                                    leftIcon={<MaterialCommunityIcons name="history" size={20} color="white" />}
+                                                    bgColor={selectedScreen == 'LOGS' ? '#FFFFFF' : '#0642F4'}
+                                                    leftIcon={<MaterialCommunityIcons name="history" size={20} color={selectedScreen == 'LOGS' ? '#0642F4' : "white"} />}
                                                     justifyContent="flex-start"
                                                     alignItems="center"
                                                 >
@@ -209,32 +210,36 @@ const SideDrawer = ({ selectedScreen }) => {
 
                                             {/* ACCOUNT MANAGEMENT */}
                                             {loginAccountType == 'admin' && <Button
+                                                _text={{ color: selectedScreen == 'ADD C-HUB ACCOUNT' ? '#0642F4' : "white", }}
                                                 borderRadius={0}
                                                 borderTopWidth={1}
                                                 borderBottomWidth={1}
                                                 borderColor={'white'}
-                                                _hover={{ bgColor: selectedScreen == 'ADD C-HUB ACCOUNT' ? '#0642F4' : '#5a7bc9', }}
+                                                _hover={{ bgColor: selectedScreen == 'ADD C-HUB ACCOUNT' ? '#FFFFFF' : '#032da8', }}
                                                 marginTop={0} w={'full'}
                                                 onPress={() => selectedScreen == 'ADD C-HUB ACCOUNT' ? null : handleToggleAddAccount()}
                                                 colorScheme={undefined}
-                                                bgColor={selectedScreen == 'ADD C-HUB ACCOUNT' ? '#0642F4' : '#7b9cff'}
-                                                leftIcon={<MaterialIcons name="person-add" size={20} color="white" />}
+                                                bgColor={selectedScreen == 'ADD C-HUB ACCOUNT' ? '#FFFFFF' : '#0642F4'}
+                                                leftIcon={<MaterialIcons name="person-add" size={20} color={selectedScreen == 'ADD C-HUB ACCOUNT' ? '#0642F4' : "white"} />}
                                                 justifyContent="flex-start"
                                                 alignItems="center"
                                             >ADD C-HUB ACCOUNT</Button>}
 
                                             {loginAccountType == 'admin' && <Button
+                                                _text={{ color: selectedScreen == 'ACCOUNT LIST' ? '#0642F4' : "white", }}
                                                 borderRadius={0}
                                                 borderTopWidth={1}
                                                 borderBottomWidth={1}
                                                 borderColor={'white'}
-                                                _hover={{ bgColor: selectedScreen == 'ACCOUNT LIST' ? '#0642F4' : '#5a7bc9', }}
+                                                _hover={{ bgColor: selectedScreen == 'ACCOUNT LIST' ? '#FFFFFF' : '#032da8', }}
                                                 marginTop={0}
                                                 onPress={() => selectedScreen == 'ACCOUNT LIST' ? null : handleToggleAccountList()}
                                                 colorScheme={undefined}
-                                                bgColor={selectedScreen == 'ACCOUNT LIST' ? '#0642F4' : '#7b9cff'}
+                                                bgColor={selectedScreen == 'ACCOUNT LIST' ? '#FFFFFF' : '#0642F4'}
                                                 leftIcon={
-                                                    <MaterialCommunityIcons name="account-details" size={20} color="white" />
+                                                    <MaterialCommunityIcons name="account-details" size={20}
+                                                        color={selectedScreen == 'ACCOUNT LIST' ? '#0642F4' : "white"}
+                                                    />
 
                                                 }
                                                 justifyContent="flex-start"
@@ -243,23 +248,26 @@ const SideDrawer = ({ selectedScreen }) => {
                                             {/* VEHICLE INFORMATION INPUT */}
                                             {(loginAccountType == 'admin' || loginAccountType == 'sales' || loginAccountType == 'booking') &&
                                                 <Button
+                                                    _text={{ color: selectedScreen == 'UPDATE / ADD NEW VEHICLE' ? '#0642F4' : "white", }}
                                                     borderRadius={0}
                                                     borderTopWidth={1}
                                                     borderBottomWidth={1}
                                                     borderColor={'white'}
-                                                    _hover={{ bgColor: selectedScreen == 'ADD NEW VEHICLE' ? '#0642F4' : '#5a7bc9', }}
+                                                    _hover={{ bgColor: selectedScreen == 'ADD NEW VEHICLE' ? '#FFFFFF' : '#032da8', }}
                                                     marginTop={0} w={'full'}
                                                     onPress={() => selectedScreen == 'ADD NEW VEHICLE' ? null : handleToggleAddVehicle()}
                                                     colorScheme={undefined}
-                                                    bgColor={selectedScreen == 'ADD NEW VEHICLE' ? '#0642F4' : '#7b9cff'}
+                                                    bgColor={selectedScreen == 'ADD NEW VEHICLE' ? '#FFFFFF' : '#0642F4'}
                                                     leftIcon={
                                                         <>
                                                             <View>
-                                                                <FontAwesome name="automobile" size={15} color="white" />
+                                                                <FontAwesome name="automobile" size={15}
+                                                                    color={selectedScreen == 'UPDATE / ADD NEW VEHICLE' ? '#0642F4' : "white"}
+                                                                />
                                                                 <FontAwesome
                                                                     name="plus"
                                                                     size={10}
-                                                                    color="white"
+                                                                    color={selectedScreen == 'UPDATE / ADD NEW VEHICLE' ? '#0642F4' : "white"}
                                                                     style={{
                                                                         position: 'absolute', // Position it absolutely...
                                                                         top: -3, // ...at the top...
@@ -278,24 +286,27 @@ const SideDrawer = ({ selectedScreen }) => {
 
                                             {(loginAccountType == 'admin' || loginAccountType == 'sales' || loginAccountType == 'booking') &&
                                                 <Button
+                                                    _text={{ color: selectedScreen == 'VEHICLE LIST' ? '#0642F4' : "white", }}
                                                     borderRadius={0}
                                                     borderTopWidth={1}
                                                     borderBottomWidth={1}
                                                     borderColor={'white'}
-                                                    _hover={{ bgColor: selectedScreen == 'VEHICLE LIST' ? '#0642F4' : '#5a7bc9', }}
+                                                    _hover={{ bgColor: selectedScreen == 'VEHICLE LIST' ? '#FFFFFF' : '#032da8', }}
                                                     marginTop={0}
                                                     onPress={() => selectedScreen == 'VEHICLE LIST' ? null : handleVehicleList()}
                                                     colorScheme={undefined}
-                                                    bgColor={selectedScreen == 'VEHICLE LIST' ? '#0642F4' : '#7b9cff'}
+                                                    bgColor={selectedScreen == 'VEHICLE LIST' ? '#FFFFFF' : '#0642F4'}
                                                     leftIcon={
                                                         <>
                                                             <View>
                                                                 <FontAwesome
                                                                     name="automobile"
                                                                     size={15}
-                                                                    color="white" />
+                                                                    color={selectedScreen == 'VEHICLE LIST' ? '#0642F4' : "white"}
+                                                                />
 
-                                                                <MaterialCommunityIcons name="format-list-bulleted" size={10} color="white"
+                                                                <MaterialCommunityIcons name="format-list-bulleted" size={10}
+                                                                    color={selectedScreen == 'VEHICLE LIST' ? '#0642F4' : "white"}
                                                                     style={{
                                                                         position: 'absolute', // Position it absolutely...
                                                                         top: -3, // ...at the top...
@@ -314,24 +325,27 @@ const SideDrawer = ({ selectedScreen }) => {
                                                 >VEHICLE LIST</Button>}
 
                                             {loginAccountType == 'admin' && <Button
+                                                _text={{ color: selectedScreen == 'FREIGHT' ? '#0642F4' : "white", }}
                                                 borderRadius={0}
                                                 borderTopWidth={1}
                                                 borderBottomWidth={1}
                                                 borderColor={'white'}
-                                                _hover={{ bgColor: selectedScreen == 'FREIGHT' ? '#0642F4' : '#5a7bc9', }}
+                                                _hover={{ bgColor: selectedScreen == 'FREIGHT' ? '#FFFFFF' : '#032da8', }}
                                                 marginTop={0}
                                                 onPress={() => selectedScreen == 'FREIGHT' ? null : handleFreight()}
                                                 colorScheme={undefined}
-                                                bgColor={selectedScreen == 'FREIGHT' ? '#0642F4' : '#7b9cff'}
+                                                bgColor={selectedScreen == 'FREIGHT' ? '#FFFFFF' : '#0642F4'}
                                                 leftIcon={
                                                     <>
                                                         <View>
                                                             <MaterialIcons
                                                                 name="public"
                                                                 size={20}
-                                                                color="white" />
+                                                                color={selectedScreen == 'FREIGHT' ? '#0642F4' : "white"}
+                                                            />
 
-                                                            <MaterialIcons name="sync" size={12} color="white"
+                                                            <MaterialIcons name="sync" size={12}
+                                                                color={selectedScreen == 'FREIGHT' ? '#0642F4' : "white"}
                                                                 style={{
                                                                     position: 'absolute', // Position it absolutely...
                                                                     top: -3, // ...at the top...
@@ -351,22 +365,25 @@ const SideDrawer = ({ selectedScreen }) => {
                                             }
 
                                             {(loginAccountType == 'admin' || loginAccountType == 'sales' || loginAccountType == 'booking') && <Button
+                                                _text={{ color: selectedScreen == 'CHAT MESSAGES' ? '#0642F4' : "white", }}
                                                 borderRadius={0}
                                                 borderTopWidth={1}
                                                 borderBottomWidth={1}
                                                 borderColor={'white'}
-                                                _hover={{ bgColor: selectedScreen == 'CHAT MESSAGES' ? '#0642F4' : '#5a7bc9', }}
+                                                _hover={{ bgColor: selectedScreen == 'CHAT MESSAGES' ? '#FFFFFF' : '#032da8', }}
                                                 marginTop={0}
                                                 onPress={() => { selectedScreen == 'CHAT MESSAGES' ? null : handleChatMessages() }}
                                                 colorScheme={undefined}
-                                                bgColor={selectedScreen == 'CHAT MESSAGES' ? '#0642F4' : '#7b9cff'}
+                                                bgColor={selectedScreen == 'CHAT MESSAGES' ? '#FFFFFF' : '#0642F4'}
                                                 leftIcon={
                                                     <>
                                                         <View>
                                                             <Entypo
                                                                 name="chat"
                                                                 size={20}
-                                                                color="white" />
+                                                                color={selectedScreen == 'CHAT MESSAGES' ? '#0642F4' : "white"}
+
+                                                            />
 
                                                         </View>
 

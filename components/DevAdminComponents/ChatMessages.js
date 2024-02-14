@@ -1505,7 +1505,7 @@ const ChatInputText = () => {
 
     return (
 
-        <View style={{ width: '98%', flexDirection: 'row', borderWidth: 1, borderColor: '#D9D9D9', borderRadius: 10, }}>
+        <View style={{ width: '98%', flexDirection: 'row', borderWidth: 0, borderColor: '#D9D9D9', borderRadius: 0, backgroundColor: 'white', }}>
 
             <View style={{ flexDirection: 'column', flex: 1, }}>
 
@@ -8833,7 +8833,7 @@ const ChatMessageBox = ({ activeButtonValue, userEmail }) => {
                             selectable
                             style={{
                                 fontWeight: '400',
-                                color: isGlobalCustomerSender ? 'black' : 'white',
+                                color: isGlobalCustomerSender ? '#555659' : '#555659',
                                 fontSize: 16,
                                 flexShrink: 1,
                                 textDecorationLine: 'underline',
@@ -8851,7 +8851,7 @@ const ChatMessageBox = ({ activeButtonValue, userEmail }) => {
                         key={index}
                         style={{
                             fontWeight: '400',
-                            color: isGlobalCustomerSender ? 'black' : 'white',
+                            color: isGlobalCustomerSender ? '#555659' : '#555659',
                             fontSize: 16,
                             flexShrink: 1,
                             flexWrap: 'wrap',
@@ -8923,8 +8923,8 @@ const ChatMessageBox = ({ activeButtonValue, userEmail }) => {
                             <Animated.View style={{
                                 padding: 7,
                                 flex: 1,
-                                borderRadius: 20,
-                                backgroundColor: isGlobalCustomerSender ? '#EFEFEF' : '#0A7CFF',
+                                borderRadius: 5,
+                                backgroundColor: isGlobalCustomerSender ? '#FFFFFF' : '#f1f5ff',
                                 marginRight: isGlobalCustomerSender ? 0 : 10,
                                 borderWidth: 3,
                                 borderColor: borderColor,
@@ -8932,7 +8932,7 @@ const ChatMessageBox = ({ activeButtonValue, userEmail }) => {
                                 <Pressable onPress={handlePreviewInvoiceModalOpen}>
                                     <Text underline selectable style={{
                                         fontWeight: 400,
-                                        color: isGlobalCustomerSender ? 'black' : 'white',
+                                        color: isGlobalCustomerSender ? '#555659' : '#555659',
                                         fontSize: 16,
                                     }}>
                                         {item.text.trim()}
@@ -9010,15 +9010,15 @@ const ChatMessageBox = ({ activeButtonValue, userEmail }) => {
                             <Animated.View style={{
                                 padding: 7,
                                 flex: 1,
-                                borderRadius: 20,
-                                backgroundColor: isGlobalCustomerSender ? '#EFEFEF' : '#0A7CFF',
+                                borderRadius: 5,
+                                backgroundColor: isGlobalCustomerSender ? '#FFFFFF' : '#f1f5ff',
                                 marginRight: isGlobalCustomerSender ? 0 : 10,
                                 borderWidth: 3,
                                 borderColor: borderColor,
                             }}>
                                 <Text selectable style={{
                                     fontWeight: 400,
-                                    color: isGlobalCustomerSender ? 'black' : 'white',
+                                    color: isGlobalCustomerSender ? '#555659' : '#555659',
                                     fontSize: 16,
                                 }}>
                                     {item.text.trim()}
@@ -9095,8 +9095,8 @@ const ChatMessageBox = ({ activeButtonValue, userEmail }) => {
                             <View style={{
                                 marginBottom: 5,
                                 padding: 10,
-                                borderRadius: 20,
-                                backgroundColor: isGlobalCustomerSender ? '#EFEFEF' : '#0A7CFF',
+                                borderRadius: 5,
+                                backgroundColor: isGlobalCustomerSender ? '#FFFFFF' : '#f1f5ff',
                                 marginLeft: isGlobalCustomerSender ? 10 : 0,
                                 marginRight: isGlobalCustomerSender ? 0 : 10,
                                 flexShrink: 1,
@@ -9113,8 +9113,8 @@ const ChatMessageBox = ({ activeButtonValue, userEmail }) => {
                                 <View style={{
                                     marginBottom: 5,
                                     padding: 10,
-                                    borderRadius: 20,
-                                    backgroundColor: isGlobalCustomerSender ? '#EFEFEF' : '#0A7CFF',
+                                    borderRadius: 5,
+                                    backgroundColor: isGlobalCustomerSender ? '#FFFFFF' : '#f1f5ff',
                                     marginLeft: isGlobalCustomerSender ? 10 : 0,
                                     marginRight: isGlobalCustomerSender ? 0 : 10,
                                     flexShrink: 1,
@@ -9150,7 +9150,7 @@ const ChatMessageBox = ({ activeButtonValue, userEmail }) => {
 
                                         <Text underline selectable style={{
                                             fontWeight: 400,
-                                            color: isGlobalCustomerSender ? 'black' : 'white',
+                                            color: isGlobalCustomerSender ? '#555659' : '#555659',
                                             fontSize: 16,
                                         }}>
                                             {item.file.name.trim()}
@@ -9231,8 +9231,8 @@ const ChatMessageBox = ({ activeButtonValue, userEmail }) => {
                             <View style={{
                                 marginBottom: 5,
                                 padding: 10,
-                                borderRadius: 20,
-                                backgroundColor: isGlobalCustomerSender ? '#EFEFEF' : '#0A7CFF',
+                                borderRadius: 5,
+                                backgroundColor: isGlobalCustomerSender ? '#FFFFFF' : '#f1f5ff',
                                 marginLeft: isGlobalCustomerSender ? 10 : 0,
                                 marginRight: isGlobalCustomerSender ? 0 : 10,
                                 flexShrink: 1,
@@ -9358,8 +9358,8 @@ const ChatMessageBox = ({ activeButtonValue, userEmail }) => {
                             }}>
                                 <View style={{
                                     padding: 10,
-                                    borderRadius: 20,
-                                    backgroundColor: isGlobalCustomerSender ? '#EFEFEF' : '#0A7CFF',
+                                    borderRadius: 5,
+                                    backgroundColor: isGlobalCustomerSender ? '#FFFFFF' : '#f1f5ff',
                                     marginLeft: isGlobalCustomerSender ? 10 : 0,
                                     marginRight: isGlobalCustomerSender ? 0 : 10,
                                     flexShrink: 1,
@@ -9416,7 +9416,7 @@ const ChatMessageBox = ({ activeButtonValue, userEmail }) => {
                         {/* Additional message properties like timestamp and sender */}
                         <Text style={{
                             fontWeight: '300',
-                            color: 'gray',
+                            color: '#888c96',
                             fontSize: 11,
                             marginTop: 4,
                             marginBottom: 4,
@@ -9841,14 +9841,14 @@ export default function ChatMessages() {
                     {/* Header */}
                     <Box
                         px="3"
-                        bgColor='#7b9cff'
+                        bgColor='#0642f4'
                         height={54}
                         position="sticky"
                         top={0}
                         zIndex={999}
                         flexDirection="row"
                         alignItems="center"
-                        borderBottomWidth={2}
+                        borderBottomWidth={0}
                         borderBottomColor={'cyan.500'}
                     >
 
@@ -9902,7 +9902,7 @@ export default function ChatMessages() {
 
                                 <View style={{
                                     borderBottomWidth: 1,
-                                    borderColor: '#DADDE1',
+                                    borderColor: '#f5f5f5',
                                     width: '100%',
                                     backgroundColor: 'white',
                                     height: 60,
@@ -10007,7 +10007,7 @@ export default function ChatMessages() {
 
                                     <View>
 
-                                        <View style={{ flex: 1, maxWidth: 380, minWidth: 380, borderRightWidth: 1, borderColor: '#DADDE1', maxHeight: 100, minHeight: 100, backgroundColor: 'white', }}>
+                                        <View style={{ flex: 1, maxWidth: 380, minWidth: 380, borderRightWidth: 0, borderColor: '#DADDE1', maxHeight: 100, minHeight: 100, backgroundColor: 'white', }}>
                                             {/* Chat Search */}
                                             <View style={{ flex: 1, paddingHorizontal: 10 }}>
                                                 <SearchChat lastVisible={lastVisible} setLastVisible={setLastVisible} unreadButtonValue={unreadButtonValue} activeButtonValue={activeButtonValue} />
@@ -10050,7 +10050,7 @@ export default function ChatMessages() {
                                             </View>
                                         </View>
 
-                                        <View style={{ flex: 1, maxWidth: 380, minWidth: 380, borderRightWidth: 1, borderColor: '#DADDE1', backgroundColor: 'white', borderBottomLeftRadius: 5, }}>
+                                        <View style={{ flex: 1, maxWidth: 380, minWidth: 380, borderRightWidth: 0, borderColor: '#DADDE1', backgroundColor: 'white', borderBottomLeftRadius: 5, }}>
                                             {/* Chat List */}
                                             <ChatList unreadButtonValue={unreadButtonValue} activeButtonValue={activeButtonValue} />
                                         </View>
@@ -10067,16 +10067,16 @@ export default function ChatMessages() {
                                         </View>) : (
                                         <View style={{ flex: 1, }}>
 
-                                            <View style={{ flex: 1, minHeight: 90, maxHeight: screenWidth < 1281 ? 130 : 125, borderBottomWidth: 1, borderColor: '#DADDE1', backgroundColor: 'white', justifyContent: 'center', }}>
+                                            <View style={{ flex: 1, minHeight: 90, maxHeight: screenWidth < 1281 ? 130 : 125, borderBottomWidth: 0, borderColor: '#DADDE1', backgroundColor: 'white', justifyContent: 'center', }}>
                                                 {/* Chat Message Header */}
                                                 <ScrollView scrollEnabled horizontal>
                                                     {chatMessagesData.length < 1 ? null : (<ChatMessageHeader />)}
                                                 </ScrollView>
                                             </View>
 
-                                            <View style={{ flex: 1, borderColor: '#DADDE1', backgroundColor: 'white', borderBottomRightRadius: 5, paddingBottom: 5, }}>
+                                            <View style={{ flex: 1, borderColor: '#DADDE1', backgroundColor: '#e5ebfe', borderBottomRightRadius: 5, paddingBottom: 5, }}>
 
-                                                <View style={{ flex: 1 }}>
+                                                <View style={{ flex: 1, }}>
                                                     {/* Chat Message Box */}
                                                     <ChatMessageBox activeButtonValue={activeButtonValue} userEmail={email} />
                                                     <DocumentPreviewModal />
