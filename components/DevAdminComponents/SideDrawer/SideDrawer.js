@@ -248,7 +248,7 @@ const SideDrawer = ({ selectedScreen }) => {
                                             {/* VEHICLE INFORMATION INPUT */}
                                             {(loginAccountType == 'admin' || loginAccountType == 'sales' || loginAccountType == 'booking') &&
                                                 <Button
-                                                    _text={{ color: selectedScreen == 'UPDATE / ADD NEW VEHICLE' ? '#0642F4' : "white", }}
+                                                    _text={{ color: selectedScreen == 'ADD NEW VEHICLE' ? '#0642F4' : "white", }}
                                                     borderRadius={0}
                                                     borderTopWidth={1}
                                                     borderBottomWidth={1}
@@ -262,12 +262,12 @@ const SideDrawer = ({ selectedScreen }) => {
                                                         <>
                                                             <View>
                                                                 <FontAwesome name="automobile" size={15}
-                                                                    color={selectedScreen == 'UPDATE / ADD NEW VEHICLE' ? '#0642F4' : "white"}
+                                                                    color={selectedScreen == 'ADD NEW VEHICLE' ? '#0642F4' : "white"}
                                                                 />
                                                                 <FontAwesome
                                                                     name="plus"
                                                                     size={10}
-                                                                    color={selectedScreen == 'UPDATE / ADD NEW VEHICLE' ? '#0642F4' : "white"}
+                                                                    color={selectedScreen == 'ADD NEW VEHICLE' ? '#0642F4' : "white"}
                                                                     style={{
                                                                         position: 'absolute', // Position it absolutely...
                                                                         top: -3, // ...at the top...

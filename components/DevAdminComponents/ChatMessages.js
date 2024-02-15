@@ -7643,6 +7643,141 @@ const TransactionButton = ({ title, buttonValue, transactionValue, colorHoverIn,
     );
 };
 
+const TransactionHistoryModal = () => {
+
+    const [transactionHistoryVisible, setTransactionHistoryVisible] = useState(false);
+    const selectedCustomerData = useSelector((state) => state.selectedCustomerData);
+
+
+    const [displayedTransactions, setDisplayedTransactions] = useState(selectedCustomerData.transactions ? selectedCustomerData.transactions.slice(0, 5) : null);
+    const [loadingMore, setLoadingMore] = useState(false);
+
+    const loadMorePayments = () => {
+        if (loadingMore) return; // Prevent multiple loads
+
+        setLoadingMore(true);
+        const nextItems = selectedCustomerData.transactions.slice(
+            displayedTransactions.length,
+            displayedTransactions.length + 5
+        );
+
+        setTimeout(() => { // Simulate network request
+            setDisplayedTransactions([...displayedTransactions, ...nextItems]);
+            setLoadingMore(false);
+        }, 500); // Adjust the timeout as needed
+    };
+
+    const handleTransactionHistoryModalOpen = () => {
+        setDisplayedTransactions(selectedCustomerData.transactions ? selectedCustomerData.transactions.slice(0, 5) : null);
+        setTransactionHistoryVisible(true);
+
+    };
+
+    const handleTransactionHistoryModalClose = () => {
+        setTransactionHistoryVisible(false);
+    };
+
+
+    const isCloseToBottom = ({ layoutMeasurement, contentOffset, contentSize }) => {
+        return layoutMeasurement.height + contentOffset.y >= contentSize.height - 20;
+    };
+
+    return (
+
+        <>
+
+
+            <Pressable onPress={handleTransactionHistoryModalOpen}>
+                <Text style={{ fontSize: 14, color: '#0A78BE', textAlign: 'center', }} underline>
+                    {`View Transactions`}
+                </Text>
+            </Pressable>
+
+            <Modal isOpen={transactionHistoryVisible} onClose={handleTransactionHistoryModalClose} useRNModal>
+                <Modal.Content style={{ backgroundColor: 'white', borderRadius: 10 }}>
+                    <Modal.CloseButton />
+                    <Modal.Header style={{ backgroundColor: 'white', textAlign: 'center', fontSize: 18, fontWeight: 'bold', color: '#333' }}>
+                        Transactions History
+                    </Modal.Header>
+                    <Modal.Body>
+                        <ScrollView
+                            style={{ flex: 1, paddingHorizontal: 15, maxHeight: 500 }}
+                            onScroll={({ nativeEvent }) => {
+                                if (isCloseToBottom(nativeEvent)) {
+                                    loadMorePayments();
+                                }
+                            }}
+                            scrollEventThrottle={400} // Adjust as needed
+                        >
+                            {
+                                Array.isArray(selectedCustomerData.transactions) && selectedCustomerData.transactions.length > 0 ?
+                                    displayedTransactions.map((transactions, index) => (
+                                        <Pressable key={index} style={{
+                                            marginBottom: 15,
+                                            backgroundColor: '#F8F9FF', // Card background color
+                                            borderRadius: 10, // Rounded corners for the card
+                                            shadowColor: '#000', // Shadow color
+                                            shadowOffset: { width: 0, height: 2 },
+                                            shadowOpacity: 0.1,
+                                            shadowRadius: 2,
+                                            elevation: 3, // Elevation for Android
+                                            padding: 5, // Padding inside the card
+                                            borderBottomWidth: 1,
+                                            borderBottomColor: '#eee',
+                                            flexDirection: 'row',
+                                            alignItems: 'center',
+                                        }}>
+
+                                            <View>
+                                                <FastImage
+                                                    source={{ uri: transactions.imageUrl, priority: FastImage.priority.normal }}
+                                                    style={{
+                                                        width: 60,
+                                                        height: 60,
+                                                        borderRadius: 30,
+                                                        alignSelf: 'center',
+                                                        margin: 10,
+                                                    }}
+                                                    resizeMode={FastImage.resizeMode.stretch}
+                                                />
+                                            </View>
+
+                                            <View>
+                                                <Text style={{ fontSize: 14, fontWeight: 'bold', color: 'black', marginBottom: 5 }}>
+                                                    <Text style={{ color: '#0A78BE' }}>
+                                                        {transactions.carName}
+                                                    </Text>
+                                                </Text>
+
+                                                <Text style={{ fontSize: 14, fontWeight: 'bold', color: 'black', marginBottom: 5 }}>
+                                                    <Text style={{ color: '#333' }}>{transactions.referenceNumber}</Text>
+                                                </Text>
+                                            </View>
+
+
+
+                                        </Pressable>
+
+                                    )) :
+                                    <Text style={{ fontWeight: 'bold', alignSelf: 'center', }} italic>No history to show</Text>
+                            }
+                            <View style={{ height: 20, }}>
+                                {loadingMore && <Spinner size='sm' color="#7B9CFF" />}
+                            </View>
+
+                        </ScrollView>
+
+
+
+                    </Modal.Body>
+                </Modal.Content>
+            </Modal>
+        </>
+
+    )
+}
+
+
 
 const PaymentHistoryModal = () => {
 
@@ -7942,7 +8077,7 @@ const CustomerProfileModal = () => {
                                     {`Overbalance`}
                                 </Text>
 
-                                <Text style={{ fontSize: 14, color: 'transparent', textAlign: 'center', }} underline>
+                                <Text style={{ fontSize: 14, color: 'transparent', textAlign: 'center', }} underline selectable={false}>
                                     {`-----`}
                                 </Text>
 
@@ -7951,17 +8086,13 @@ const CustomerProfileModal = () => {
 
                             <View style={{ flex: 1, alignItems: 'center', }}>
                                 <Text style={{ fontWeight: 'bold', fontSize: 24, color: '#0029A3', textAlign: 'center', }} selectable>
-                                    {`11`}
+                                    {`${selectedCustomerData.transactions ? (selectedCustomerData.transactions).length : 0}`}
                                 </Text>
                                 <Text style={{ fontWeight: 'bold', fontSize: 16, color: '#5E4343', textAlign: 'center', }}>
                                     {`Transactions`}
                                 </Text>
 
-                                <Pressable>
-                                    <Text style={{ fontSize: 14, color: '#0A78BE', textAlign: 'center', }} underline>
-                                        {`View Transactions`}
-                                    </Text>
-                                </Pressable>
+                                <TransactionHistoryModal />
 
                             </View>
 
@@ -10074,7 +10205,7 @@ export default function ChatMessages() {
                                                 </ScrollView>
                                             </View>
 
-                                            <View style={{ flex: 1, borderColor: '#DADDE1', backgroundColor: '#e5ebfe', borderBottomRightRadius: 5, paddingBottom: 5, }}>
+                                            <View style={{ flex: 1, borderColor: '#DADDE1', backgroundColor: chatMessagesData.length < 1 ? 'white' : '#e5ebfe', borderBottomRightRadius: 5, paddingBottom: 5, }}>
 
                                                 <View style={{ flex: 1, }}>
                                                     {/* Chat Message Box */}

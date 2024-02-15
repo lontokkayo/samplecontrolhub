@@ -4883,7 +4883,7 @@ export default function Freight() {
                     zIndex={999}
                     flexDirection="row"
                     alignItems="center"
-                    borderBottomWidth={2}
+                    borderBottomWidth={0}
                     borderBottomColor={'cyan.500'}
                 >
 

@@ -6672,13 +6672,13 @@ export default function AddVehicle() {
         <Box
           px="3"
           bgColor='#0642f4'
-           height={54}
+          height={54}
           position="sticky"
           top={0}
           zIndex={999}
           flexDirection="row"
           alignItems="center"
-          borderBottomWidth={2}
+          borderBottomWidth={0}
           borderBottomColor={'cyan.500'} >
 
           <SideDrawer
