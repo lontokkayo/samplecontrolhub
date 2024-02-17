@@ -5214,6 +5214,8 @@ const IssueProformaInvoiceModalContent = () => {
 
                 await setDoc(updateDocRef, {
                     ...globalInvoiceVariable,
+                    isCancelled: false,
+                    chatId: selectedChatData.id,
                     carData: selectedChatData.carData,
                 }, { merge: true });
 
@@ -5234,6 +5236,8 @@ const IssueProformaInvoiceModalContent = () => {
 
                 await setDoc(docRef, {
                     ...globalInvoiceVariable,
+                    isCancelled: false,
+                    chatId: selectedChatData.id,
                     cryptoNumber: hashedData,
                     carData: selectedChatData.carData,
                 });
@@ -7643,14 +7647,82 @@ const TransactionButton = ({ title, buttonValue, transactionValue, colorHoverIn,
     );
 };
 
+
+const TransactionList = ({ displayedTransactions, handleChatPress, selectedCustomerData }) => {
+    // Assuming an environment that supports onMouseEnter and onMouseLeave
+    return (
+        Array.isArray(selectedCustomerData.transactions) && selectedCustomerData.transactions.length > 0 ? (
+            displayedTransactions.map((transaction, index) => {
+                const [isHovered, setIsHovered] = useState(false); // This won't work as expected due to scope
+
+                return (
+                    <Pressable
+                        key={index}
+                        onPress={() => handleChatPress(`chat_${transaction.stockId}_${selectedCustomerData.textEmail}`)}
+                        onMouseEnter={() => setIsHovered(true)} // These events are not native to React Native
+                        onMouseLeave={() => setIsHovered(false)}
+                        style={{
+                            marginBottom: 15,
+                            backgroundColor: isHovered ? '#F2F2F2' : '#FFFFFF', // Change color on hover
+                            borderRadius: 10,
+                            shadowColor: '#000',
+                            shadowOffset: { width: 0, height: 2 },
+                            shadowOpacity: 0.1,
+                            shadowRadius: 2,
+                            elevation: 3,
+                            padding: 5,
+                            borderBottomWidth: 1,
+                            borderBottomColor: '#eee',
+                            flexDirection: 'row',
+                            alignItems: 'center',
+                        }}
+                    >
+                        <View>
+                            <FastImage
+                                source={{ uri: transaction.imageUrl, priority: FastImage.priority.normal }}
+                                style={{
+                                    width: 60,
+                                    height: 60,
+                                    borderRadius: 30,
+                                    alignSelf: 'center',
+                                    margin: 10,
+                                }}
+                                resizeMode={FastImage.resizeMode.stretch}
+                            />
+                        </View>
+                        <View>
+                            <Text style={{ fontSize: 14, fontWeight: 'bold', color: 'black', marginBottom: 5 }}>
+                                <Text style={{ color: '#0A78BE' }} selectable={false}>
+                                    {transaction.carName}
+                                </Text>
+                            </Text>
+                            <Text style={{ fontSize: 14, fontWeight: 'bold', color: 'black', marginBottom: 5 }}>
+                                <Text style={{ color: '#333' }} selectable={false}>{transaction.referenceNumber}</Text>
+                            </Text>
+                        </View>
+                    </Pressable>
+                );
+            })
+        ) : (
+            <Text style={{ fontWeight: 'bold', alignSelf: 'center' }} italic>No history to show</Text>
+        )
+    );
+};
+
 const TransactionHistoryModal = () => {
 
     const [transactionHistoryVisible, setTransactionHistoryVisible] = useState(false);
     const selectedCustomerData = useSelector((state) => state.selectedCustomerData);
 
-
+    const navigate = useNavigate();
     const [displayedTransactions, setDisplayedTransactions] = useState(selectedCustomerData.transactions ? selectedCustomerData.transactions.slice(0, 5) : null);
     const [loadingMore, setLoadingMore] = useState(false);
+    const [isHovered, setIsHovered] = useState(false);
+
+    const hoverStyle = isHovered ? {
+        backgroundColor: '#E8EAF6', // Lighter background color on hover
+        // Any other style changes on hover
+    } : {};
 
     const loadMorePayments = () => {
         if (loadingMore) return; // Prevent multiple loads
@@ -7677,10 +7749,20 @@ const TransactionHistoryModal = () => {
         setTransactionHistoryVisible(false);
     };
 
-
     const isCloseToBottom = ({ layoutMeasurement, contentOffset, contentSize }) => {
         return layoutMeasurement.height + contentOffset.y >= contentSize.height - 20;
     };
+
+    const handleChatPress = (chatId) => {
+        const encryptedChatId = encryptData(chatId);
+        const encodedChatId = encodeURIComponent(encryptedChatId); // URL-encode the encrypted data
+        // navigate(`/top/chat-messages/${encodedChatId}`);
+        const path = `/top/chat-messages/${encodedChatId}`;
+        // Construct the URL for hash-based routing
+        const baseUrl = window.location.origin + window.location.pathname;
+        const fullPath = `${baseUrl}#${path}`;
+        window.open(fullPath, '_blank');
+    }
 
     return (
 
@@ -7709,58 +7791,13 @@ const TransactionHistoryModal = () => {
                             }}
                             scrollEventThrottle={400} // Adjust as needed
                         >
-                            {
-                                Array.isArray(selectedCustomerData.transactions) && selectedCustomerData.transactions.length > 0 ?
-                                    displayedTransactions.map((transactions, index) => (
-                                        <Pressable key={index} style={{
-                                            marginBottom: 15,
-                                            backgroundColor: '#F8F9FF', // Card background color
-                                            borderRadius: 10, // Rounded corners for the card
-                                            shadowColor: '#000', // Shadow color
-                                            shadowOffset: { width: 0, height: 2 },
-                                            shadowOpacity: 0.1,
-                                            shadowRadius: 2,
-                                            elevation: 3, // Elevation for Android
-                                            padding: 5, // Padding inside the card
-                                            borderBottomWidth: 1,
-                                            borderBottomColor: '#eee',
-                                            flexDirection: 'row',
-                                            alignItems: 'center',
-                                        }}>
 
-                                            <View>
-                                                <FastImage
-                                                    source={{ uri: transactions.imageUrl, priority: FastImage.priority.normal }}
-                                                    style={{
-                                                        width: 60,
-                                                        height: 60,
-                                                        borderRadius: 30,
-                                                        alignSelf: 'center',
-                                                        margin: 10,
-                                                    }}
-                                                    resizeMode={FastImage.resizeMode.stretch}
-                                                />
-                                            </View>
+                            <TransactionList
+                                displayedTransactions={displayedTransactions}
+                                handleChatPress={handleChatPress}
+                                selectedCustomerData={selectedCustomerData}
+                            />
 
-                                            <View>
-                                                <Text style={{ fontSize: 14, fontWeight: 'bold', color: 'black', marginBottom: 5 }}>
-                                                    <Text style={{ color: '#0A78BE' }}>
-                                                        {transactions.carName}
-                                                    </Text>
-                                                </Text>
-
-                                                <Text style={{ fontSize: 14, fontWeight: 'bold', color: 'black', marginBottom: 5 }}>
-                                                    <Text style={{ color: '#333' }}>{transactions.referenceNumber}</Text>
-                                                </Text>
-                                            </View>
-
-
-
-                                        </Pressable>
-
-                                    )) :
-                                    <Text style={{ fontWeight: 'bold', alignSelf: 'center', }} italic>No history to show</Text>
-                            }
                             <View style={{ height: 20, }}>
                                 {loadingMore && <Spinner size='sm' color="#7B9CFF" />}
                             </View>
@@ -8702,7 +8739,6 @@ const ChatMessageBox = ({ activeButtonValue, userEmail }) => {
         setSelectedImageIndex(null);
     };
 
-
     const handleImageMessageMouseEnter = (index) => {
         setHoveredImageIndex(index);
     };
@@ -8740,7 +8776,7 @@ const ChatMessageBox = ({ activeButtonValue, userEmail }) => {
                 })
             ])
         ).start();
-    }, [selectedChatData, animatedValue]);
+    }, [selectedChatData, chatMessagesData, animatedValue]);
 
     const borderColor = animatedValue.interpolate({
         inputRange: [0, 0.25, 0.5, 0.75, 1],
@@ -8768,7 +8804,6 @@ const ChatMessageBox = ({ activeButtonValue, userEmail }) => {
                     </View>
                 )}
             </>
-
 
         );
     };
@@ -9002,15 +9037,15 @@ const ChatMessageBox = ({ activeButtonValue, userEmail }) => {
         const lowerFileName = fileName.toLowerCase();
 
         if (lowerFileName.endsWith('.pdf')) {
-            return <MaterialIcons name={'picture-as-pdf'} size={iconSize} color="white" />;
+            return <MaterialIcons name={'picture-as-pdf'} size={iconSize} color="#fca19a" />;
         }
         // Add more conditions for other file types as needed
         // Example for .docx files
         if (lowerFileName.endsWith('.docx') || lowerFileName.endsWith('.doc')) {
-            return <MaterialCommunityIcons name={'microsoft-word'} size={iconSize} color="white" />;
+            return <MaterialCommunityIcons name={'microsoft-word'} size={iconSize} color="#7B9CFF" />;
         }
         if (lowerFileName.endsWith('.xlsx') || lowerFileName.endsWith('.xls') || lowerFileName.endsWith('.csv')) {
-            return <MaterialCommunityIcons name={'microsoft-excel'} size={iconSize} color="white" />;
+            return <MaterialCommunityIcons name={'microsoft-excel'} size={iconSize} color="#6db375" />;
         }
 
         if (lowerFileName.endsWith('.rar') || lowerFileName.endsWith('.zip')) {
@@ -9024,7 +9059,7 @@ const ChatMessageBox = ({ activeButtonValue, userEmail }) => {
             />;
         }
         // Default icon if no specific type is matched
-        return <MaterialIcons name="insert-drive-file" size={iconSize} color="black" />;
+        return <MaterialIcons name="insert-drive-file" size={iconSize} color="#b3afaf" />;
     };
 
     const isUrlForText = (text) => {
