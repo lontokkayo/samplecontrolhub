@@ -3132,6 +3132,7 @@ const PaymentDetails = () => {
     const additionalNameRef = useRef(null);
     const additionalPriceRef = useRef(null);
 
+
     const safelyParseNumber = (value) => {
         const number = Number(value.replace(/,/g, ''));
         return isNaN(number) ? 0 : number;
@@ -7269,6 +7270,42 @@ const PreviewInvoice = () => {
 
 }
 
+const CancelTransaction = () => {
+
+    const [isHovered, setIsHovered] = useState(false);
+
+
+
+    const hoverIn = () => setIsHovered(true);
+    const hoverOut = () => setIsHovered(false);
+    return (
+        <>
+
+            <Pressable
+                focusable={false}
+                variant='ghost'
+                // onPress={handleModalOpen}
+                onHoverIn={hoverIn}
+                onHoverOut={hoverOut}
+                style={{
+                    marginTop: 3,
+                    paddingVertical: 3,
+                    paddingHorizontal: 5,
+                    flexDirection: 'row', // Align items in a row
+                    alignItems: 'center', // Center items vertically
+                    justifyContent: 'center',
+                    borderRadius: 5,
+                    backgroundColor: isHovered ? '#AAAAAA' : '#CCCCCC',
+                }}
+            >
+                <MaterialIcons name='cancel' size={15} color={'#FFFFFF'} />
+                <Text color={'#FFFFFF'} style={{ fontWeight: 700, marginLeft: 5, }}>{`Cancel Transaction`}</Text>
+            </Pressable>
+        </>
+
+    )
+}
+
 const ExtendDueDateButton = () => {
     const [isHovered, setIsHovered] = useState(false);
     const [isConfirmHovered, setIsConfirmHovered] = useState(false);
@@ -8397,6 +8434,8 @@ const ChatMessageHeader = () => {
 
                             <ExtendDueDateButton />
 
+                            <CancelTransaction />
+
                             <View style={{ flexDirection: 'row', }}>
                                 {invoiceData && invoiceData.bankInformations && invoiceData.bankInformations.dueDate &&
                                     <>
@@ -8459,7 +8498,9 @@ const ReadByListModal = ({ userEmail, handleReadByListModalClose }) => {
                                         .sort((a, b) => a === email ? -1 : b === email ? 1 : 0)
                                         .map(item => (
                                             <View key={item} style={{ flexDirection: 'row', alignItems: 'center', marginVertical: 8, borderBottomWidth: 0.5, borderColor: '#ddd', paddingBottom: 8 }}>
-                                                <FontAwesome name="user-circle" size={24} color="#4A90E2" style={{ marginRight: 12 }} />
+                                                {item === 'RMJ-Bot' ?
+                                                    <FontAwesome5 name="robot" size={24} color="#4A90E2" style={{ marginRight: 12 }} /> :
+                                                    <FontAwesome name="user-circle" size={24} color="#4A90E2" style={{ marginRight: 12 }} />}
                                                 <Text style={{ flex: 1, color: '#555' }}>{email === item ? 'You' : item}</Text>
                                             </View>
                                         ))
