@@ -44,6 +44,15 @@ const pdfViewerModalVisibleSlice = createSlice({
 })
 
 
+const selectedVehicleDataSlice = createSlice({
+  name: 'selectedVehicleData',
+  initialState: [],
+  reducers: {
+    setSelectedVehicleData: (state, action) => {
+      return action.payload
+    },
+  },
+})
 const selectedCustomerDataSlice = createSlice({
   name: 'selectedCustomerData',
   initialState: [],
@@ -838,6 +847,7 @@ const deleteImageVisibleSlice = createSlice({
 });
 
 // =============================== Chat Messages ========================================
+export const { setSelectedVehicleData } = selectedVehicleDataSlice.actions
 export const { setCarImageUrl } = carImageUrlSlice.actions
 export const { setSelectedFileUrl } = selectedFileUrlSlice.actions
 export const { setPdfViewerModalVisible } = pdfViewerModalVisibleSlice.actions
@@ -939,7 +949,8 @@ export const { setModelData } = modelDataSlice.actions
 const store = configureStore({
   reducer: {
 
-    // =============================== Chat Messages ========================================     
+    // =============================== Chat Messages ========================================    
+    selectedVehicleData: selectedVehicleDataSlice.reducer,
     carImageUrl: carImageUrlSlice.reducer,
     selectedFileUrl: selectedFileUrlSlice.reducer,
     pdfViewerModalVisible: pdfViewerModalVisibleSlice.reducer,

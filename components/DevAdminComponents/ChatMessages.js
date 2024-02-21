@@ -126,6 +126,7 @@ import {
     setIsLoading,
     setLoginName,
     setCarImageUrl,
+    setSelectedVehicleData,
 } from './redux/store';
 // import { TextInput } from 'react-native-gesture-handler';
 import { nanoid } from 'nanoid';
@@ -1636,6 +1637,30 @@ const ChatInputText = () => {
     );
 }
 
+
+
+
+const CancelledView = () => {
+
+    return (
+        <View style={{
+            zIndex: 999,
+            position: 'absolute',
+            borderRadius: 40,
+            borderWidth: 0, // Border width
+            justifyContent: 'center',
+            alignItems: 'center',
+            opacity: 0.5,
+            // Centering the view within its parent
+            top: 38,
+            left: 17,
+        }}>
+
+            <View style={{ backgroundColor: "#FF0000", width: 50, height: 6, borderRadius: 20, }} />
+        </View>
+    );
+};
+
 const ChatListItem = ({ item, onPress, onPressNewTab, isActive, messageUnread, formattedDate, chatListData }) => {
     const [imageUrl, setImageUrl] = useState(null);
     const [chatListStepImageUrl, setChatListStepImageUrl] = useState(null);
@@ -1796,6 +1821,8 @@ const ChatListItem = ({ item, onPress, onPressNewTab, isActive, messageUnread, f
                 }}
                 onPress={handlePress}
             >
+                {item.isCancelled && <CancelledView />}
+
                 <View style={{ width: '20%', justifyContent: 'center', }}>
                     {imageUrl ? (
                         <FastImage
@@ -2305,6 +2332,27 @@ const ChatList = ({ unreadButtonValue, activeButtonValue, }) => {
 
                     const docRef = doc(projectExtensionFirestore, collectionPath, emailPart);
 
+                    const docRefVehicle = doc(projectExtensionFirestore, 'VehicleProducts', stockIdPart);
+
+                    const unsubscribeVehicle = onSnapshot(docRefVehicle, (doc) => {
+                        if (doc.exists()) {
+                            const data = doc.data();
+                            dispatch(setSelectedVehicleData(data ? data : {}));
+                            // console.log(`Name: ${data.textFirst} ${data.textLast}`)
+                            console.log(data)
+
+                            // globalCustomerCarName = carName;
+                            // setTextFirst(data.textFirst ? data.textFirst : '');
+                            // setTextLast(data.textLast ? data.textLast : '');
+
+
+                        } else {
+                            console.log("Document not found");
+                        }
+                    }, (error) => {
+                        console.error("Error fetching document: ", error);
+                    });
+
                     const unsubscribe = onSnapshot(docRef, (doc) => {
                         if (doc.exists()) {
                             const data = doc.data();
@@ -2313,6 +2361,7 @@ const ChatList = ({ unreadButtonValue, activeButtonValue, }) => {
                             globalCustomerLastName = data.textLast ? data.textLast : '';
                             // console.log(`Name: ${data.textFirst} ${data.textLast}`)
 
+                            console.log(data)
 
                             // globalCustomerCarName = carName;
                             // setTextFirst(data.textFirst ? data.textFirst : '');
@@ -2327,8 +2376,14 @@ const ChatList = ({ unreadButtonValue, activeButtonValue, }) => {
                     });
 
                     // Clean up function to unsubscribe from the listener when the component unmounts
-                    return () => unsubscribe();
+                    return () => {
+
+                        unsubscribe()
+                        unsubscribeVehicle()
+                    };
                 }
+
+
 
 
             }, 1);
@@ -3088,7 +3143,7 @@ The customer is responsible for the bank charges incurred when the T/T (Telegrap
 No warranty service is provided on used vehicles.
 
 Conditions for order cancellation:
-(1) Order Cancellation Penalty: If the order is canceled after payment, a penalty of USD 220 will apply.
+(1) Order Cancellation Penalty: If the order is cancelled after payment, a penalty of USD 220 will apply.
 (2) Non-refund: Payment for vehicles purchased through pre-delivery inspection is non-refundable.
 
 Intermediary Banking Information:
@@ -5127,6 +5182,7 @@ Real Motor Japan`,
 const IssueProformaInvoiceModalContent = () => {
     const dispatch = useDispatch();
     const selectedChatData = useSelector((state) => state.selectedChatData);
+    const selectedCustomerData = useSelector((state) => state.selectedCustomerData);
     const invoiceData = useSelector((state) => state.invoiceData);
     const currentDate = useSelector((state) => state.currentDate);
     const [isConfirmHovered, setIsConfirmHovered] = useState(false);
@@ -5216,6 +5272,7 @@ const IssueProformaInvoiceModalContent = () => {
                 await setDoc(updateDocRef, {
                     ...globalInvoiceVariable,
                     isCancelled: false,
+                    customerEmail: selectedCustomerData.textEmail,
                     chatId: selectedChatData.id,
                     carData: selectedChatData.carData,
                 }, { merge: true });
@@ -5238,6 +5295,7 @@ const IssueProformaInvoiceModalContent = () => {
                 await setDoc(docRef, {
                     ...globalInvoiceVariable,
                     isCancelled: false,
+                    customerEmail: selectedCustomerData.textEmail,
                     chatId: selectedChatData.id,
                     cryptoNumber: hashedData,
                     carData: selectedChatData.carData,
@@ -6100,34 +6158,32 @@ const PreviewInvoice = () => {
     return (
         <> {invoiceData && Object.keys(invoiceData).length > 0 &&
 
-            <>
-                <Pressable
-                    onPress={handlePreviewInvoiceModalOpen}
-                    focusable={false}
-                    variant='ghost'
-                    onHoverIn={hoverPreviewIn}
-                    onHoverOut={hoverPreviewOut}
-                    style={{
-                        marginTop: 3,
-                        paddingVertical: 3,
-                        paddingHorizontal: 5,
-                        flexDirection: 'row', // Align items in a row
-                        alignItems: 'center', // Center items vertically
-                        justifyContent: 'center',
-                        borderRadius: 5,
-                        backgroundColor: isPreviewHovered ? '#0772ad' : '#0A8DD5',
-                    }}>
+            <>{!selectedChatData.isCancelled && <Pressable
+                onPress={handlePreviewInvoiceModalOpen}
+                focusable={false}
+                variant='ghost'
+                onHoverIn={hoverPreviewIn}
+                onHoverOut={hoverPreviewOut}
+                style={{
+                    marginTop: 3,
+                    paddingVertical: 3,
+                    paddingHorizontal: 5,
+                    flexDirection: 'row', // Align items in a row
+                    alignItems: 'center', // Center items vertically
+                    justifyContent: 'center',
+                    borderRadius: 5,
+                    backgroundColor: isPreviewHovered ? '#0772ad' : '#0A8DD5',
+                }}>
 
-                    {selectedChatData.invoiceNumber && selectedChatData.stepIndicator.value > 2 ?
-                        <Text style={{ fontWeight: 700, color: 'white', }}>
-                            {`Preview Invoice No. ${selectedChatData.invoiceNumber}`}
-                        </Text>
-                        :
-                        <Text style={{ fontWeight: 700, color: 'white', }}>
-                            {`Preview Invoice`}
-                        </Text>}
-
-                </Pressable>
+                {selectedChatData.invoiceNumber && selectedChatData.stepIndicator.value > 2 ?
+                    <Text style={{ fontWeight: 700, color: 'white', }}>
+                        {`Preview Invoice No. ${selectedChatData.invoiceNumber}`}
+                    </Text>
+                    :
+                    <Text style={{ fontWeight: 700, color: 'white', }}>
+                        {`Preview Invoice`}
+                    </Text>}
+            </Pressable>}
 
                 <Modal
                     isOpen={previewInvoiceVisible}
@@ -7136,7 +7192,7 @@ const PreviewInvoice = () => {
                                             fontSize: 12 * widthScaleFactor,
                                             lineHeight: 14 * heightScaleFactor,
                                         }}>
-                                            {'(1) Order Cancellation Penalty: If the order is canceled after payment, a penalty of USD 220 will apply.'}
+                                            {'(1) Order Cancellation Penalty: If the order is cancelled after payment, a penalty of USD 220 will apply.'}
                                         </Text>
                                         <Text style={{
                                             fontWeight: 400,
@@ -7270,21 +7326,400 @@ const PreviewInvoice = () => {
 
 }
 
-const CancelTransaction = () => {
-
+const ReopenTransaction = () => {
+    const selectedChatData = useSelector((state) => state.selectedChatData)
+    const selectedCustomerData = useSelector((state) => state.selectedCustomerData)
     const [isHovered, setIsHovered] = useState(false);
 
-
+    const [isModalVisible, setIsModalVisible] = useState(false);
+    const [isYesHovered, setIsYesHovered] = useState(false);
+    const [isNoHovered, setIsNoHovered] = useState(false);
+    const [isYesLoading, setIsYesLoading] = useState(false);
 
     const hoverIn = () => setIsHovered(true);
     const hoverOut = () => setIsHovered(false);
+
+
+    const yesHoverIn = () => setIsYesHovered(true);
+    const yesHoverOut = () => setIsYesHovered(false);
+
+    const noHoverIn = () => setIsNoHovered(true);
+    const noHoverOut = () => setIsNoHovered(false);
+
+    const handleModalOpen = () => {
+        setIsModalVisible(true);
+
+    }
+
+    const handleModalClose = () => {
+        setIsModalVisible(false);
+
+    }
+
+
+    const reopenTransactionMessage = async () => {
+        const response = await axios.get('https://worldtimeapi.org/api/timezone/Asia/Tokyo');
+        const { datetime } = response.data;
+        const formattedTime = moment(datetime).format('YYYY/MM/DD [at] HH:mm:ss.SSS');
+
+        const email = projectControlAuth.currentUser ? projectControlAuth.currentUser.email : '';
+
+        try {
+
+            // Adding the message to the 'messages' subcollection
+            await addDoc(collection(projectExtensionFirestore, 'chats', selectedChatData.id, 'messages'), {
+                text: `The transaction has been reopened by the seller.`,
+                sender: email,
+                timestamp: formattedTime, // Using the fetched timestamp
+                ip: ip, // IP Address
+                ipCountry: ipCountry // Country of the IP Address
+            });
+
+
+            // Updating the main chat document with the latest message details
+            await updateDoc(doc(projectExtensionFirestore, 'chats', selectedChatData.id), {
+                lastMessageSender: email,
+                lastMessage: `The transaction has been reopened by the seller.`,
+                lastMessageDate: formattedTime,
+                customerRead: false,
+                read: true,
+                readBy: [email],
+            });
+        } catch (e) {
+            console.error('Error adding document: ', e);
+        }
+    }
+
+    const handleReopenTransaction = async () => {
+        const response = await axios.get('https://worldtimeapi.org/api/timezone/Asia/Tokyo');
+        const { datetime } = response.data;
+        const formattedTime = moment(datetime).format('YYYY/MM/DD [at] HH:mm:ss.SSS');
+        const formattedTimeEmail = moment(datetime).format('MMMM D, YYYY');
+
+        const docRef = doc(projectExtensionFirestore, "IssuedInvoice", selectedChatData.invoiceNumber);
+        const docRefChatId = doc(projectExtensionFirestore, "chats", selectedChatData.id);
+        const docRefVehicle = doc(projectExtensionFirestore, "VehicleProducts", selectedChatData.carData.stockID);
+
+        setIsYesLoading(true);
+        try {
+            await updateDoc(docRef, {
+                'isCancelled': false // Update the specific field
+            });
+            try {
+                await updateDoc(docRefChatId, {
+                    'isCancelled': false // Update the specific field
+                });
+
+                try {
+                    await updateDoc(docRefVehicle, {
+                        'stockStatus': 'Reserved', // Update the specific field
+                        'reservedTo': selectedCustomerData.textEmail,
+                    });
+                } catch (error) {
+                    console.error("Error updating document: ", error);
+                }
+                await reopenTransactionMessage();
+
+                setIsYesLoading(false);
+                console.log("Document successfully updated");
+            } catch (error) {
+                console.error("Error updating document: ", error);
+            }
+            console.log("Document successfully updated");
+        } catch (error) {
+            console.error("Error updating document: ", error);
+        }
+
+
+    };
+
+    return (
+        <>
+            <Pressable
+                focusable={false}
+                variant='ghost'
+                onPress={handleModalOpen}
+                onHoverIn={hoverIn}
+                onHoverOut={hoverOut}
+                style={{
+                    marginTop: 3,
+                    paddingVertical: 3,
+                    paddingHorizontal: 5,
+                    flexDirection: 'row', // Align items in a row
+                    alignItems: 'center', // Center items vertically
+                    justifyContent: 'center',
+                    borderRadius: 5,
+                    backgroundColor: isHovered ? '#0772ad' : '#0A8DD5',
+                    padding: 10,
+                }}>
+
+                <MaterialCommunityIcons name='restart' size={15} color={'white'} />
+                <Text color={'white'} style={{ fontWeight: 700, marginLeft: 5, }}>{`Reopen Transaction`}</Text>
+            </Pressable>
+
+            <Modal
+                isOpen={isModalVisible}
+                onClose={() => {
+                    handleModalClose()
+                }}
+
+            >
+                <Modal.Content>
+                    <Modal.Header>Reopen Transaction</Modal.Header>
+                    <Modal.Body>
+                        Do you want to reopen the transaction?
+                    </Modal.Body>
+                    <Modal.Footer>
+                        <View style={{ flex: 1, flexDirection: 'row', justifyContent: 'space-between', }}>
+                            <Pressable
+                                focusable={false}
+                                variant='ghost'
+                                onPress={handleModalClose}
+                                onHoverIn={noHoverIn}
+                                onHoverOut={noHoverOut}
+                                style={{
+                                    marginTop: 3,
+                                    paddingVertical: 3,
+                                    alignItems: 'center', // Center items vertically
+                                    justifyContent: 'center',
+                                    borderRadius: 5,
+                                    backgroundColor: isNoHovered ? '#3F3F46' : '#52525B',
+                                    flex: 1,
+                                }}
+                            >
+                                <Text color={'white'} style={{ fontWeight: 700, }}>No</Text>
+                            </Pressable>
+
+                            <View style={{ flex: 1 }} />
+
+                            <Pressable
+                                onPress={handleReopenTransaction}
+                                focusable={false}
+                                variant='ghost'
+                                onHoverIn={yesHoverIn}
+                                onHoverOut={yesHoverOut}
+                                disabled={isYesLoading}
+                                style={{
+                                    marginTop: 3,
+                                    paddingVertical: 3,
+                                    alignItems: 'center', // Center items vertically
+                                    justifyContent: 'center',
+                                    borderRadius: 5,
+                                    backgroundColor: isYesHovered ? '#0772ad' : '#0A8DD5',
+                                    flex: 1,
+                                }}
+                            >
+                                {!isYesLoading ? <Text color={'white'} style={{ fontWeight: 700, }}>Yes</Text> : <Spinner size={'sm'} color={'white'} />}
+                            </Pressable>
+                        </View>
+                    </Modal.Footer>
+                </Modal.Content>
+            </Modal>
+        </>
+
+
+    );
+}
+
+
+
+const CancelTransaction = () => {
+    const selectedChatData = useSelector((state) => state.selectedChatData)
+    const selectedCustomerData = useSelector((state) => state.selectedCustomerData)
+    const [isHovered, setIsHovered] = useState(false);
+
+    const [isModalVisible, setIsModalVisible] = useState(false);
+    const [isYesHovered, setIsYesHovered] = useState(false);
+    const [isNoHovered, setIsNoHovered] = useState(false);
+    const [isYesLoading, setIsYesLoading] = useState(false);
+
+    const hoverIn = () => setIsHovered(true);
+    const hoverOut = () => setIsHovered(false);
+
+
+    const yesHoverIn = () => setIsYesHovered(true);
+    const yesHoverOut = () => setIsYesHovered(false);
+
+    const noHoverIn = () => setIsNoHovered(true);
+    const noHoverOut = () => setIsNoHovered(false);
+
+    const handleModalOpen = () => {
+        setIsModalVisible(true);
+
+    }
+
+    const handleModalClose = () => {
+        setIsModalVisible(false);
+
+    }
+
+
+    const sendEmail = async (to, subject, htmlContent) => {
+        try {
+            const response = await fetch('http://34.97.28.40:2000/send-email', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    to,
+                    subject,
+                    htmlContent,
+                }),
+            });
+
+            if (response.ok) {
+                console.log('Email sent successfully');
+            } else {
+                console.error('Failed to send email');
+            }
+        } catch (error) {
+            console.error('Error sending email:', error);
+        }
+    };
+
+    const htmlContent = `<html><head>
+    <title>Transaction Cancellation Notice</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f4f4f4;
+            color: #333;
+            padding: 10px;
+            margin: 0;
+        }
+        .container {
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin: 20px auto;
+            max-width: 600px;
+            padding: 20px;
+        }
+        .highlight-red {
+            color: #FF0000; /* Red */
+            font-weight: bold;
+        }
+        .highlight-bold {
+            font-weight: bold;
+        }
+        p {
+            font-size: 16px;
+            line-height: 1.6;
+            margin: 10px 0 20px;
+        }
+        .signature {
+            font-weight: bold;
+            margin-top: 40px;
+            text-align: left;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <p><strong>Dear Valued Customer,</strong></p>
+
+        <p>I hope this message finds you well.</p>
+        
+        <p>I wanted to inform you that unfortunately, due to the non-receipt of payment for <span class="highlight-bold">Invoice No. <span class="highlight-red">${selectedChatData.invoiceNumber}</span></span> by the due date, </p>
+
+        <p>We had to proceed with the <span class="highlight-red">cancellation of the transaction.</span></p>
+
+        <p>We understand that unforeseen circumstances can arise, and we're here to discuss any concerns or possible ways to support you moving forward.</p>
+
+        <p>Please reach out if you have any questions or require assistance.</p>
+
+        <p>Thank you for your understanding.</p>
+        
+        <p class="signature">Best regards,<br>Real Motor Japan</p>
+    </div>
+
+</body></html>`;
+
+    const cancelTransactionMessage = async () => {
+        const response = await axios.get('https://worldtimeapi.org/api/timezone/Asia/Tokyo');
+        const { datetime } = response.data;
+        const formattedTime = moment(datetime).format('YYYY/MM/DD [at] HH:mm:ss.SSS');
+
+        const email = projectControlAuth.currentUser ? projectControlAuth.currentUser.email : '';
+
+        try {
+
+            // Adding the message to the 'messages' subcollection
+            await addDoc(collection(projectExtensionFirestore, 'chats', selectedChatData.id, 'messages'), {
+                text: `The transaction has been cancelled.`,
+                sender: email,
+                timestamp: formattedTime, // Using the fetched timestamp
+                ip: ip, // IP Address
+                ipCountry: ipCountry // Country of the IP Address
+            });
+
+
+            // Updating the main chat document with the latest message details
+            await updateDoc(doc(projectExtensionFirestore, 'chats', selectedChatData.id), {
+                lastMessageSender: email,
+                lastMessage: `The transaction has been cancelled.`,
+                lastMessageDate: formattedTime,
+                customerRead: false,
+                read: true,
+                readBy: [email],
+            });
+        } catch (e) {
+            console.error('Error adding document: ', e);
+        }
+    }
+
+    const handleCancelTransaction = async () => {
+        const response = await axios.get('https://worldtimeapi.org/api/timezone/Asia/Tokyo');
+        const { datetime } = response.data;
+        const formattedTime = moment(datetime).format('YYYY/MM/DD [at] HH:mm:ss.SSS');
+        const formattedTimeEmail = moment(datetime).format('MMMM D, YYYY');
+
+        const docRef = doc(projectExtensionFirestore, "IssuedInvoice", selectedChatData.invoiceNumber);
+        const docRefChatId = doc(projectExtensionFirestore, "chats", selectedChatData.id);
+        const docRefVehicle = doc(projectExtensionFirestore, "VehicleProducts", selectedChatData.carData.stockID);
+
+        setIsYesLoading(true);
+        try {
+            await updateDoc(docRef, {
+                'isCancelled': true // Update the specific field
+            });
+            try {
+                await updateDoc(docRefChatId, {
+                    'isCancelled': true // Update the specific field
+                });
+                await sendEmail(selectedCustomerData.textEmail, `Transaction Cancelled | Real Motor Japan | Invoice No. ${selectedChatData.invoiceNumber}  (${formattedTimeEmail})`, htmlContent);
+
+                try {
+                    await updateDoc(docRefVehicle, {
+                        'stockStatus': 'On-Sale', // Update the specific field
+                        'reservedTo': ''
+                    });
+                } catch (error) {
+                    console.error("Error updating document: ", error);
+                }
+                await cancelTransactionMessage();
+
+                setIsYesLoading(false);
+                console.log("Document successfully updated");
+            } catch (error) {
+                console.error("Error updating document: ", error);
+            }
+            console.log("Document successfully updated");
+        } catch (error) {
+            console.error("Error updating document: ", error);
+        }
+
+
+    };
+
     return (
         <>
 
             <Pressable
                 focusable={false}
                 variant='ghost'
-                // onPress={handleModalOpen}
+                onPress={handleModalOpen}
                 onHoverIn={hoverIn}
                 onHoverOut={hoverOut}
                 style={{
@@ -7298,10 +7733,72 @@ const CancelTransaction = () => {
                     backgroundColor: isHovered ? '#AAAAAA' : '#CCCCCC',
                 }}
             >
-                <MaterialIcons name='cancel' size={15} color={'#FFFFFF'} />
-                <Text color={'#FFFFFF'} style={{ fontWeight: 700, marginLeft: 5, }}>{`Cancel Transaction`}</Text>
+                <MaterialIcons name='cancel' size={15} color={'#52525B'} />
+                <Text color={'#52525B'} style={{ fontWeight: 700, marginLeft: 5, }}>{`Cancel Transaction`}</Text>
             </Pressable>
+
+
+            <Modal
+                isOpen={isModalVisible}
+                onClose={() => {
+                    handleModalClose()
+                }}
+
+            >
+                <Modal.Content>
+                    <Modal.Header>Cancel Transaction</Modal.Header>
+                    <Modal.Body>
+                        Do you want to cancel the transation?
+                    </Modal.Body>
+                    <Modal.Footer>
+                        <View style={{ flex: 1, flexDirection: 'row', justifyContent: 'space-between', }}>
+                            <Pressable
+                                focusable={false}
+                                variant='ghost'
+                                onPress={handleModalClose}
+                                onHoverIn={noHoverIn}
+                                onHoverOut={noHoverOut}
+                                style={{
+                                    marginTop: 3,
+                                    paddingVertical: 3,
+                                    alignItems: 'center', // Center items vertically
+                                    justifyContent: 'center',
+                                    borderRadius: 5,
+                                    backgroundColor: isNoHovered ? '#3F3F46' : '#52525B',
+                                    flex: 1,
+                                }}
+                            >
+                                <Text color={'white'} style={{ fontWeight: 700, }}>No</Text>
+                            </Pressable>
+
+                            <View style={{ flex: 1 }} />
+
+                            <Pressable
+                                onPress={handleCancelTransaction}
+                                focusable={false}
+                                variant='ghost'
+                                onHoverIn={yesHoverIn}
+                                onHoverOut={yesHoverOut}
+                                disabled={isYesLoading}
+                                style={{
+                                    marginTop: 3,
+                                    paddingVertical: 3,
+                                    alignItems: 'center', // Center items vertically
+                                    justifyContent: 'center',
+                                    borderRadius: 5,
+                                    backgroundColor: isYesHovered ? '#800101' : '#FF0000',
+                                    flex: 1,
+                                }}
+                            >
+                                {!isYesLoading ? <Text color={'white'} style={{ fontWeight: 700, }}>Yes</Text> : <Spinner size={'sm'} color={'white'} />}
+                            </Pressable>
+                        </View>
+                    </Modal.Footer>
+                </Modal.Content>
+            </Modal>
+
         </>
+
 
     )
 }
@@ -8188,7 +8685,11 @@ const CustomerProfileModal = () => {
 
 const ChatMessageHeader = () => {
 
+    const chatMessagesData = useSelector((state) => state.chatMessagesData);
+    const selectedVehicleData = useSelector((state) => state.selectedVehicleData);
+    const selectedCustomerData = useSelector((state) => state.selectedCustomerData);
     const activeChatId = useSelector((state) => state.activeChatId);
+
     const selectedChatData = useSelector((state) => state.selectedChatData);
     const invoiceData = useSelector((state) => state.invoiceData);
     const carImageUrl = useSelector((state) => state.carImageUrl);
@@ -8234,6 +8735,7 @@ const ChatMessageHeader = () => {
             alignSelf: 'flex-start',
             flexDirection: 'row',
         }}>
+
 
             {carImageUrl ? (
                 <FastImage
@@ -8363,50 +8865,22 @@ const ChatMessageHeader = () => {
                 </View>
             </View>
 
-            <View style={{ paddingLeft: 10, paddingRight: 10, paddingTop: 2, }}>
-                {(selectedChatData.stepIndicator.value == 1 || selectedChatData.stepIndicator.value == 2) &&
-                    <>
-                        <ProfitCalculator />
-
-                        <TransactionButton
-                            key={'Issue Proforma Invoice'}
-                            title={selectedChatData.stepIndicator.value == 1 ? 'Issue Proforma Invoice' : selectedChatData.stepIndicator.value == 2 ? 'Update Invoice' : ''}
-                            colorHoverIn={'#0f7534'}
-                            colorHoverOut={'#16A34A'}
-                            transactionValue={2}
-                            buttonValue={2}
-                            iconActive={<FontAwesome5 name="file-invoice-dollar" color="#1C2B33" size={14} />} />
-
-                        <PreviewInvoice />
-
-                        <View style={{ flexDirection: 'row' }}>
-                            <Text style={{ fontWeight: 700, fontSize: 18 }}>Final Price: </Text>
-                            <Text selectable style={{ fontWeight: 700, fontSize: 18, color: "#FF0000", textAlign: 'right' }}>
-                                {`$${(invoiceData && invoiceData.paymentDetails && invoiceData.paymentDetails.totalAmount ? Number(invoiceData.paymentDetails.totalAmount.replace(/,/g, '')) : 0).toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`}
-                            </Text>
-                            <Text selectable style={{ fontWeight: 400, fontSize: 12, color: "#8D7777", paddingTop: 4, marginLeft: 2 }}>
-                                ({`¥${(invoiceData && invoiceData.paymentDetails && invoiceData.paymentDetails.totalAmount && selectedChatData && selectedChatData.currency && selectedChatData.currency.jpyToUsd ? (Number(invoiceData.paymentDetails.totalAmount.replace(/,/g, '')) / Number(selectedChatData.currency.jpyToUsd)) : 0).toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`})
-                            </Text>
-                        </View>
-                    </>
-                }
-
-                {(selectedChatData.stepIndicator.value == 3) &&
-
-                    <View style={{ flexDirection: 'row', paddingRight: 10, paddingTop: 2, }}>
-
-                        <View style={{ paddingLeft: 10, }}>
+            {(chatMessagesData.length > 0 && selectedVehicleData.stockStatus == 'Reserved' &&
+                selectedVehicleData.reservedTo !== selectedCustomerData.textEmail) ?
+                null :
+                (<View style={{ paddingLeft: 10, paddingRight: 10, paddingTop: 2, }}>
+                    {(selectedChatData.stepIndicator.value == 1 || selectedChatData.stepIndicator.value == 2) &&
+                        <>
                             <ProfitCalculator />
 
                             <TransactionButton
-                                key={'Input Payment'}
-                                title={'Input Payment'}
-                                colorHoverOut={'#FF0000'}
-                                colorHoverIn={'#800101'}
-                                transactionValue={3}
-                                buttonValue={4}
+                                key={'Issue Proforma Invoice'}
+                                title={selectedChatData.stepIndicator.value == 1 ? 'Issue Proforma Invoice' : selectedChatData.stepIndicator.value == 2 ? 'Update Invoice' : ''}
+                                colorHoverIn={'#0f7534'}
+                                colorHoverOut={'#16A34A'}
+                                transactionValue={2}
+                                buttonValue={2}
                                 iconActive={<FontAwesome5 name="file-invoice-dollar" color="#1C2B33" size={14} />} />
-
 
                             <PreviewInvoice />
 
@@ -8419,47 +8893,89 @@ const ChatMessageHeader = () => {
                                     ({`¥${(invoiceData && invoiceData.paymentDetails && invoiceData.paymentDetails.totalAmount && selectedChatData && selectedChatData.currency && selectedChatData.currency.jpyToUsd ? (Number(invoiceData.paymentDetails.totalAmount.replace(/,/g, '')) / Number(selectedChatData.currency.jpyToUsd)) : 0).toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`})
                                 </Text>
                             </View>
-                        </View>
+                        </>
+                    }
 
-                        <View style={{ paddingLeft: 10, }}>
+                    {(selectedChatData.stepIndicator.value == 3) &&
 
-                            <TransactionButton
-                                key={'Issue Proforma Invoice'}
-                                title={selectedChatData.stepIndicator.value == 1 ? 'Issue Proforma Invoice' : 'Update Invoice'}
-                                colorHoverIn={'#0f7534'}
-                                colorHoverOut={'#16A34A'}
-                                transactionValue={2}
-                                buttonValue={2}
-                                iconActive={<FontAwesome5 name="file-invoice-dollar" color="#1C2B33" size={14} />} />
 
-                            <ExtendDueDateButton />
+                        (
+                            <View style={{ flexDirection: 'row', paddingRight: 10, paddingTop: 2, }}>
+                                {
+                                    selectedChatData.isCancelled == true && (
+                                        <View style={{ flexDirection: 'row', paddingRight: 10, }}>
+                                            <View style={{ paddingLeft: 10, }}>
+                                                <ReopenTransaction />
+                                            </View>
+                                        </View>
+                                    )
+                                }
+                                <View style={{ paddingLeft: 10, }}>
+                                    {!selectedChatData.isCancelled && <ProfitCalculator />}
 
-                            <CancelTransaction />
+                                    {!selectedChatData.isCancelled && <TransactionButton
+                                        key={'Input Payment'}
+                                        title={'Input Payment'}
+                                        colorHoverOut={'#FF0000'}
+                                        colorHoverIn={'#800101'}
+                                        transactionValue={3}
+                                        buttonValue={4}
+                                        iconActive={<FontAwesome5 name="file-invoice-dollar" color="#1C2B33" size={14} />} />}
 
-                            <View style={{ flexDirection: 'row', }}>
-                                {invoiceData && invoiceData.bankInformations && invoiceData.bankInformations.dueDate &&
-                                    <>
-                                        <Text style={{ fontWeight: 700, fontSize: 14, }}>Due Date: </Text>
-                                        <Text selectable style={{ fontWeight: 700, fontSize: 14, textAlign: 'right', color: '#FF0000', }}>
-                                            {
-                                                invoiceData.bankInformations.dueDate
-                                                    ? new Date(invoiceData.bankInformations.dueDate).toLocaleDateString(undefined, {
-                                                        year: 'numeric',
-                                                        month: 'long',
-                                                        day: 'numeric',
-                                                    })
-                                                    : 'Invalid Date'
-                                            }
+                                    <PreviewInvoice />
+
+                                    {!selectedChatData.isCancelled && <View style={{ flexDirection: 'row' }}>
+                                        <Text style={{ fontWeight: 700, fontSize: 18 }}>Final Price: </Text>
+                                        <Text selectable style={{ fontWeight: 700, fontSize: 18, color: "#FF0000", textAlign: 'right' }}>
+                                            {`$${(invoiceData && invoiceData.paymentDetails && invoiceData.paymentDetails.totalAmount ? Number(invoiceData.paymentDetails.totalAmount.replace(/,/g, '')) : 0).toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`}
                                         </Text>
-                                    </>}
-                            </View>
+                                        <Text selectable style={{ fontWeight: 400, fontSize: 12, color: "#8D7777", paddingTop: 4, marginLeft: 2 }}>
+                                            ({`¥${(invoiceData && invoiceData.paymentDetails && invoiceData.paymentDetails.totalAmount && selectedChatData && selectedChatData.currency && selectedChatData.currency.jpyToUsd ? (Number(invoiceData.paymentDetails.totalAmount.replace(/,/g, '')) / Number(selectedChatData.currency.jpyToUsd)) : 0).toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`})
+                                        </Text>
+                                    </View>}
+                                </View>
 
-                        </View>
-                    </View>
+                                <View style={{ paddingLeft: 10, }}>
 
-                }
+                                    {!selectedChatData.isCancelled && <TransactionButton
+                                        key={'Issue Proforma Invoice'}
+                                        title={selectedChatData.stepIndicator.value == 1 ? 'Issue Proforma Invoice' : 'Update Invoice'}
+                                        colorHoverIn={'#0f7534'}
+                                        colorHoverOut={'#16A34A'}
+                                        transactionValue={2}
+                                        buttonValue={2}
+                                        iconActive={<FontAwesome5 name="file-invoice-dollar" color="#1C2B33" size={14} />} />}
 
-            </View>
+                                    {!selectedChatData.isCancelled && <ExtendDueDateButton />}
+
+                                    {!selectedChatData.isCancelled && <CancelTransaction />}
+
+                                    {!selectedChatData.isCancelled && <View style={{ flexDirection: 'row', }}>
+                                        {invoiceData && invoiceData.bankInformations && invoiceData.bankInformations.dueDate &&
+                                            <>
+                                                <Text style={{ fontWeight: 700, fontSize: 14, }}>Due Date: </Text>
+                                                <Text selectable style={{ fontWeight: 700, fontSize: 14, textAlign: 'right', color: '#FF0000', }}>
+                                                    {
+                                                        invoiceData.bankInformations.dueDate
+                                                            ? new Date(invoiceData.bankInformations.dueDate).toLocaleDateString(undefined, {
+                                                                year: 'numeric',
+                                                                month: 'long',
+                                                                day: 'numeric',
+                                                            })
+                                                            : 'Invalid Date'
+                                                    }
+                                                </Text>
+                                            </>}
+                                    </View>}
+
+                                </View>
+                            </View>)
+                    }
+                </View>)
+
+            }
+
+
             <TransactionModal />
         </View>
 
@@ -9655,7 +10171,7 @@ const ChatMessageBox = ({ activeButtonValue, userEmail }) => {
                     keyExtractor={item => item.id}
                     initialNumToRender={10} // Adjust based on your average message size and performance
                     maxToRenderPerBatch={10}
-                    windowSize={500}
+                    windowSize={100}
                     onEndReachedThreshold={0.05}
                     ListFooterComponent={renderFooter}
                     onEndReached={handleLoadMoreMessages}
@@ -9675,11 +10191,51 @@ const ChatMessageBox = ({ activeButtonValue, userEmail }) => {
 };
 
 
+const ReservedStatusViewForHeader = () => {
 
+    return (
+        <View style={{
+            zIndex: 999,
+            flex: 1,
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            backgroundColor: '#FFFFCC',
+            padding: 10,
+            borderRadius: 5,
+            opacity: 0.7, // Set border color
+        }}>
+            <Text style={{ color: '#FF0000', fontSize: 16, fontWeight: 'bold', textAlign: 'center', }} selectable={false}>The vehicle is reserved to a customer</Text>
+        </View>
+    );
+};
+
+const CancelledViewForHeader = () => {
+
+    return (
+        <View style={{
+            zIndex: 999,
+            flex: 1,
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            backgroundColor: 'red',
+            padding: 10,
+            borderRadius: 5,
+            opacity: 0.7, // Set border color
+        }}>
+            <Text style={{ color: 'white', fontSize: 16, fontWeight: 'bold', textAlign: 'center', }} selectable={false}>Cancelled Transaction</Text>
+        </View>
+    );
+};
 
 export default function ChatMessages() {
     const navigate = useNavigate();
-
+    const selectedChatData = useSelector(state => state.selectedChatData);
+    const selectedVehicleData = useSelector(state => state.selectedVehicleData);
+    const selectedCustomerData = useSelector(state => state.selectedCustomerData);
     const [email, setEmail] = useState('');
     const chatListData = useSelector((state) => state.chatListData);
     const activeChatId = useSelector((state) => state.activeChatId);
@@ -10105,7 +10661,7 @@ export default function ChatMessages() {
 
                         {/* <Box px="3" bgColor="#A6BCFE" height="full" > */}
                         <View style={{ flex: 1, backgroundColor: "#A6BCFE", height: '100%' }}>
-                            <View style={{ flex: 1, margin: 10, }}>
+                            <View style={{ flex: 1, margin: 0, }}>
 
                                 <View style={{
                                     borderBottomWidth: 1,
@@ -10279,11 +10835,21 @@ export default function ChatMessages() {
                                                 <ScrollView scrollEnabled horizontal>
                                                     {chatMessagesData.length < 1 ? null : (<ChatMessageHeader />)}
                                                 </ScrollView>
+
                                             </View>
 
                                             <View style={{ flex: 1, borderColor: '#DADDE1', backgroundColor: chatMessagesData.length < 1 ? 'white' : '#e5ebfe', borderBottomRightRadius: 5, paddingBottom: 5, }}>
 
                                                 <View style={{ flex: 1, }}>
+
+                                                    {(chatMessagesData.length > 0 && selectedVehicleData.stockStatus == 'Reserved' &&
+                                                        selectedVehicleData.reservedTo !== selectedCustomerData.textEmail)
+                                                        ? <ReservedStatusViewForHeader /> :
+                                                        (selectedChatData.isCancelled && chatMessagesData.length > 0 && <CancelledViewForHeader />)
+
+                                                    }
+
+
                                                     {/* Chat Message Box */}
                                                     <ChatMessageBox activeButtonValue={activeButtonValue} userEmail={email} />
                                                     <DocumentPreviewModal />
