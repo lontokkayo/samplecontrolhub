@@ -2339,7 +2339,6 @@ const ChatList = ({ unreadButtonValue, activeButtonValue, }) => {
                             const data = doc.data();
                             dispatch(setSelectedVehicleData(data ? data : {}));
                             // console.log(`Name: ${data.textFirst} ${data.textLast}`)
-                            console.log(data)
 
                             // globalCustomerCarName = carName;
                             // setTextFirst(data.textFirst ? data.textFirst : '');
@@ -2361,7 +2360,6 @@ const ChatList = ({ unreadButtonValue, activeButtonValue, }) => {
                             globalCustomerLastName = data.textLast ? data.textLast : '';
                             // console.log(`Name: ${data.textFirst} ${data.textLast}`)
 
-                            console.log(data)
 
                             // globalCustomerCarName = carName;
                             // setTextFirst(data.textFirst ? data.textFirst : '');
@@ -2983,12 +2981,12 @@ const BankInformation = () => {
                         }
                     });
 
-                    console.log(bankAccounts);
+                    // console.log(bankAccounts);
                     setBankAccountsData(bankAccounts);
                     globalInvoiceVariable.bankInformations.bankAccount = bankAccounts["SUMITOMO MITSUI BANKING CORPORATION"];
                     // Use state or context to store selected bank data if needed
                     // setSelectedBank(bankAccounts["SUMITOMO MITSUI BANKING CORPORATION"]);
-                    console.log(bankAccounts["SUMITOMO MITSUI BANKING CORPORATION"]);
+                    // console.log(bankAccounts["SUMITOMO MITSUI BANKING CORPORATION"]);
                 } else {
                     console.log("No such document!");
                 }
@@ -3480,7 +3478,7 @@ const SelectPortOfDischarge = () => {
 
 
     useEffect(() => {
-        console.log(invoiceData && Object.keys(invoiceData).length > 0 ? invoiceData.discharge.port : selectedChatData.port);
+        // console.log(invoiceData && Object.keys(invoiceData).length > 0 ? invoiceData.discharge.port : selectedChatData.port);
 
         const fetchPorts = async () => {
             const docRef = doc(projectExtensionFirestore, 'CustomerCountryPort', 'PortsDoc');
@@ -7403,7 +7401,8 @@ const ReopenTransaction = () => {
         setIsYesLoading(true);
         try {
             await updateDoc(docRef, {
-                'isCancelled': false // Update the specific field
+                'isCancelled': false, // Update the specific field
+                'orderPlaced': true
             });
             try {
                 await updateDoc(docRefChatId, {
@@ -7682,7 +7681,8 @@ const CancelTransaction = () => {
         setIsYesLoading(true);
         try {
             await updateDoc(docRef, {
-                'isCancelled': true // Update the specific field
+                'isCancelled': true, // Update the specific field
+                'orderPlaced': false
             });
             try {
                 await updateDoc(docRefChatId, {
