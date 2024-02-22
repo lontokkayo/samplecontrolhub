@@ -7556,7 +7556,7 @@ const CancelTransaction = () => {
 
     const sendEmail = async (to, subject, htmlContent) => {
         try {
-            const response = await fetch('http://34.97.28.40:2000/send-email', {
+            const response = await fetch('https://rmjsmtp.duckdns.org/emailServer/send-email', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
