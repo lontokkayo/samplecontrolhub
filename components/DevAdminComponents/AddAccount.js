@@ -776,9 +776,9 @@ export default function AddAccount() {
             placement='bottom right'
             trapFocus={false}
           >
-            <Popover.Content backgroundColor={'#7B9CFF'}>
+            <Popover.Content backgroundColor={'#0642F4'}>
               {/* <Popover.Arrow bgColor={'#7B9CFF'} /> */}
-              <Popover.Body backgroundColor={'#7B9CFF'}>
+              <Popover.Body backgroundColor={'#0642F4'}>
                 <Button _hover={{ bgColor: 'blueGray.500' }} onPress={handleSignOut} leftIcon={<MaterialCommunityIcons name="logout" size={20} color="white" />} bgColor={'transparent'}>
                   Logout
                 </Button>

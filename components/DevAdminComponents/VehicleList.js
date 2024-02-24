@@ -4395,8 +4395,22 @@ export default function VehicleList() {
   const dispatch = useDispatch();
 
 
-  const screenWidth = Dimensions.get('window').width;
+  const [screenWidth, setScreenWidth] = useState(Dimensions.get('window').width);
 
+  useEffect(() => {
+    const updateWidth = () => {
+      const newWidth = Dimensions.get('window').width;
+      setScreenWidth(newWidth); // Update the screenWidth state
+    };
+
+    // Add event listener for window resize
+    Dimensions.addEventListener('change', updateWidth);
+
+    // Clean up the event listener when the component unmounts or re-renders
+    return () => {
+      Dimensions.removeEventListener('change', updateWidth);
+    };
+  }, []);
 
 
   // useEffect(() => {
@@ -4619,9 +4633,9 @@ export default function VehicleList() {
             placement='bottom right'
             trapFocus={false}
           >
-            <Popover.Content backgroundColor={'#7B9CFF'}>
+            <Popover.Content backgroundColor={'#0642F4'}>
               {/* <Popover.Arrow bgColor={'#7B9CFF'} /> */}
-              <Popover.Body backgroundColor={'#7B9CFF'}>
+              <Popover.Body backgroundColor={'#0642F4'}>
                 <Button _hover={{ bgColor: 'blueGray.500' }} onPress={handleSignOut} leftIcon={<MaterialCommunityIcons name="logout" size={20} color="white" />} bgColor={'transparent'}>
                   Logout
                 </Button>

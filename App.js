@@ -92,6 +92,13 @@ export default function App() {
     config,
   };
 
+  const style = document.createElement('style');
+  style.textContent = `
+    body, html {
+      overscroll-behavior: none;
+    }
+  `;
+  document.head.append(style);
 
   return (
     <Provider store={store}>

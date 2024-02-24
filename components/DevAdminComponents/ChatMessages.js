@@ -43,6 +43,7 @@ import {
     View,
     PanResponder,
     Animated,
+    Easing,
     InputAccessoryView,
     FlatList,
     ScrollView,
@@ -304,7 +305,6 @@ const TimelineStatus = ({ data }) => {
                             backgroundColor: selectedChatData.stepIndicator.value < item.value ? '#C1C1C1' : '#abf7c7',
                             justifyContent: 'center',
                         }}>
-
                             {selectedChatData.stepIndicator.value < item.value ? (
                                 <FastImage
                                     source={{
@@ -1506,7 +1506,7 @@ const ChatInputText = () => {
 
     return (
 
-        <View style={{ width: '98%', flexDirection: 'row', borderWidth: 0, borderColor: '#D9D9D9', borderRadius: 0, backgroundColor: 'white', }}>
+        <View style={{ width: '98%', flexDirection: 'row', backgroundColor: 'white', }}>
 
             <View style={{ flexDirection: 'column', flex: 1, }}>
 
@@ -1564,7 +1564,7 @@ const ChatInputText = () => {
                         placeholder='Send a message...'
                         placeholderTextColor={'#9B9E9F'}
                         onKeyPress={handleKeyPress}
-                        style={{ outlineStyle: 'none', width: '100%', height: 80, alignSelf: 'center', padding: 10 }}
+                        style={{ outlineStyle: 'none', width: '100%', minHeight: 80, maxHeight: 180, alignSelf: 'center', padding: 10 }}
                     />
                     <Pressable
                         focusable={false}
@@ -1823,7 +1823,7 @@ const ChatListItem = ({ item, onPress, onPressNewTab, isActive, messageUnread, f
             >
                 {item.isCancelled && <CancelledView />}
 
-                <View style={{ width: '20%', justifyContent: 'center', }}>
+                <View style={{ paddingRight: 10, justifyContent: 'center', }}>
                     {imageUrl ? (
                         <FastImage
                             source={{ uri: imageUrl, priority: FastImage.priority.normal }}
@@ -7688,7 +7688,6 @@ const CancelTransaction = () => {
                 await updateDoc(docRefChatId, {
                     'isCancelled': true // Update the specific field
                 });
-                await sendEmail(selectedCustomerData.textEmail, `Transaction Cancelled | Real Motor Japan | Invoice No. ${selectedChatData.invoiceNumber}  (${formattedTimeEmail})`, htmlContent);
 
                 try {
                     await updateDoc(docRefVehicle, {
@@ -7699,6 +7698,8 @@ const CancelTransaction = () => {
                     console.error("Error updating document: ", error);
                 }
                 await cancelTransactionMessage();
+
+                await sendEmail(selectedCustomerData.textEmail, `Transaction Cancelled | Real Motor Japan | Invoice No. ${selectedChatData.invoiceNumber}  (${formattedTimeEmail})`, htmlContent);
 
                 setIsYesLoading(false);
                 console.log("Document successfully updated");
@@ -7743,7 +7744,6 @@ const CancelTransaction = () => {
                 onClose={() => {
                     handleModalClose()
                 }}
-
             >
                 <Modal.Content>
                     <Modal.Header>Cancel Transaction</Modal.Header>
@@ -8696,6 +8696,7 @@ const ChatMessageHeader = () => {
     const dispatch = useDispatch();
     const [reRenderKey, setReRenderKey] = useState(0);
     const totalPriceCondition = selectedChatData.fobPrice && selectedChatData.jpyToUsd && selectedChatData.m3 && selectedChatData.freightPrice;
+    const screenWidth = Dimensions.get('window').width;
 
     const freightCalculation = ((selectedChatData.m3 ? selectedChatData.m3 :
         (selectedChatData.carData && selectedChatData.carData.dimensionCubicMeters ?
@@ -8727,6 +8728,8 @@ const ChatMessageHeader = () => {
         dispatch(setChatMessageBoxLoading(false));
 
     }, [activeChatId]);
+
+
 
     return (
 
@@ -9575,7 +9578,7 @@ const ChatMessageBox = ({ activeButtonValue, userEmail }) => {
                         style={{
                             fontWeight: '400',
                             color: isGlobalCustomerSender ? '#555659' : '#555659',
-                            fontSize: 16,
+                            fontSize: screenWidth < 770 ? 14 : 16,
                             flexShrink: 1,
                             flexWrap: 'wrap',
                         }}
@@ -9628,15 +9631,16 @@ const ChatMessageBox = ({ activeButtonValue, userEmail }) => {
         const isGlobalCustomerSender = item.sender === globalCustomerId;
         const isLastMessage = index === 0; // Since the list is inverted, the first item is actually the last message
         const isHovered = hoveredImageIndex === index;
-
+        const textFontSize = screenWidth < 770 ? 14 : 16;
 
         return (
             <View style={{
                 flexDirection: isGlobalCustomerSender ? 'row' : 'row-reverse',
                 width: '100%',
+                height: '100%',
                 alignSelf: isGlobalCustomerSender ? 'flex-start' : 'flex-end',
                 marginVertical: 4,
-                maxWidth: '60%', // Max width for long messages
+                maxWidth: screenWidth < 770 ? '85%' : '60%', // Max width for long messages
                 // borderWidth: 1,
                 // borderColor: 'red',
             }}>
@@ -9656,7 +9660,7 @@ const ChatMessageBox = ({ activeButtonValue, userEmail }) => {
                                     <Text underline selectable style={{
                                         fontWeight: 400,
                                         color: isGlobalCustomerSender ? '#555659' : '#555659',
-                                        fontSize: 16,
+                                        fontSize: textFontSize,
                                     }}>
                                         {item.text.trim()}
                                     </Text>
@@ -9742,7 +9746,7 @@ const ChatMessageBox = ({ activeButtonValue, userEmail }) => {
                                 <Text selectable style={{
                                     fontWeight: 400,
                                     color: isGlobalCustomerSender ? '#555659' : '#555659',
-                                    fontSize: 16,
+                                    fontSize: textFontSize,
                                 }}>
                                     {item.text.trim()}
                                 </Text>
@@ -9874,7 +9878,7 @@ const ChatMessageBox = ({ activeButtonValue, userEmail }) => {
                                         <Text underline selectable style={{
                                             fontWeight: 400,
                                             color: isGlobalCustomerSender ? '#555659' : '#555659',
-                                            fontSize: 16,
+                                            fontSize: textFontSize,
                                         }}>
                                             {item.file.name.trim()}
                                         </Text>
@@ -10246,7 +10250,7 @@ export default function ChatMessages() {
 
     const [name, setName] = useState(loginName);
 
-    const screenWidth = Dimensions.get('window').width;
+    // const screenWidth = Dimensions.get('window').width;
 
     const [activeButton, setActiveButton] = useState('All messages');
     const [activeButtonValue, setActiveButtonValue] = useState(0);
@@ -10258,10 +10262,26 @@ export default function ChatMessages() {
     const [unreadCount, setUnreadCount] = useState(0);
     const dispatch = useDispatch();
 
+    const [screenWidth, setScreenWidth] = useState(Dimensions.get('window').width);
+
+
+
 
     useEffect(() => {
         // globalImageUrl = '';
         // navigate(`/devadmin/chat-messages/#`);
+        const updateWidth = () => {
+            const newWidth = Dimensions.get('window').width;
+            setScreenWidth(newWidth); // Update the screenWidth state
+        };
+
+        // Add event listener for window resize
+        Dimensions.addEventListener('change', updateWidth);
+
+        // Clean up the event listener when the component unmounts or re-renders
+        return () => {
+            Dimensions.removeEventListener('change', updateWidth);
+        };
 
         const fetchIpAndCountry = async () => {
             try {
@@ -10574,9 +10594,9 @@ export default function ChatMessages() {
                         placement='bottom right'
                         trapFocus={false}
                     >
-                        <Popover.Content backgroundColor={'#7B9CFF'}>
+                        <Popover.Content backgroundColor={'#0642F4'}>
                             {/* <Popover.Arrow bgColor={'#7B9CFF'} /> */}
-                            <Popover.Body backgroundColor={'#7B9CFF'}>
+                            <Popover.Body backgroundColor={'#0642F4'}>
                                 <Button _hover={{ bgColor: 'blueGray.500' }} onPress={handleSignOut} leftIcon={<MaterialCommunityIcons name="logout" size={20} color="white" />} bgColor={'transparent'}>
                                     Logout
                                 </Button>
@@ -10587,6 +10607,38 @@ export default function ChatMessages() {
             </Box>
         );
     };
+
+    const slideAnim = useRef(new Animated.Value(screenWidth)).current;
+    const isVisible = chatMessagesData.length > 0;
+
+    useEffect(() => {
+        if (isVisible) {
+            // Delayed slide in from right to left with smooth easing
+            Animated.timing(slideAnim, {
+                toValue: 0, // Final position on the screen
+                duration: 300, // Slightly longer duration for smoother effect
+                useNativeDriver: true, // Use native driver for better performance
+                easing: Easing.bezier(0.25, 0.1, 0.25, 1), // Smooth and natural easing curve
+                delay: 100, // Start with a slight delay for a smoother transition
+            }).start();
+        } else {
+            // Delayed slide out to the right with smooth easing when not visible
+            Animated.timing(slideAnim, {
+                toValue: screenWidth,
+                duration: 300, // Slightly longer duration for smoother effect
+                useNativeDriver: true,
+                easing: Easing.bezier(0.25, 0.1, 0.25, 1), // Smooth and natural easing curve
+                delay: 100, // Start with a slight delay for a smoother transition
+            }).start();
+        }
+    }, [isVisible, screenWidth, slideAnim]);
+
+    const handlePressBack = () => {
+
+        dispatch(setChatMessagesData([]));
+        dispatch(setActiveChatId(''));
+        navigate(`/top/chat-messages`);
+    }
 
     const styles = StyleSheet.create({
         container: {
@@ -10600,7 +10652,7 @@ export default function ChatMessages() {
     return (
         <>
             <NativeBaseProvider>
-                <View style={{ backgroundColor: "#A6BCFE", height: '100%', width: '100%', flexDirection: 'column', }} bgColor="#A6BCFE" h="100vh" w="full" flexDirection="column">
+                <View style={{ backgroundColor: "white", height: '100%', width: '100%', flexDirection: 'column', maxHeight: '100vh', overflow: 'auto', }} >
                     {/* Header */}
                     <Box
                         px="3"
@@ -10649,7 +10701,7 @@ export default function ChatMessages() {
                     </Box>
 
                     {/* Content */}
-                    <View style={{ flex: 1, flexDirection: 'row' }} flex={[1]} flexDirection="row">
+                    <View style={{ flex: 1, flexDirection: 'row' }}>
                         {/* Sidebar */}
                         {/* <SideDrawer
                             selectedScreen={selectedScreen} /> */}
@@ -10658,19 +10710,17 @@ export default function ChatMessages() {
                         {/* <Box flex={1} flexGrow={1} minHeight={0}> */}
                         {/* Main Content Content */}
 
-
                         {/* <Box px="3" bgColor="#A6BCFE" height="full" > */}
-                        <View style={{ flex: 1, backgroundColor: "#A6BCFE", height: '100%' }}>
-                            <View style={{ flex: 1, margin: 0, }}>
+                        <View style={{ flex: 1, backgroundColor: "white", height: '100%' }}>
+                            <View style={{ flex: 1, height: '100%' }}>
 
                                 <View style={{
+                                    display: screenWidth < 770 && activeChatId !== '' ? 'none' : 'flex',
                                     borderBottomWidth: 1,
                                     borderColor: '#f5f5f5',
                                     width: '100%',
                                     backgroundColor: 'white',
                                     height: 60,
-                                    borderTopLeftRadius: 5,
-                                    borderTopRightRadius: 5,
                                 }}>
                                     {/* Chat Header */}
                                     <View style={{
@@ -10682,7 +10732,6 @@ export default function ChatMessages() {
                                             flexDirection: 'row',
                                         }}>
                                             <ScrollView scrollEnabled horizontal>
-
 
                                                 <HeaderButton
                                                     key={'All messages'}
@@ -10707,7 +10756,6 @@ export default function ChatMessages() {
                                                                 }}>{unreadCount > 9 ? `9+` : unreadCount}</Text>
                                                             </View>) : (<></>)}
                                                 />
-
 
                                                 <HeaderButton
                                                     key={'Negotiation'}
@@ -10737,14 +10785,12 @@ export default function ChatMessages() {
                                                     isActive={activeButton === 'Payment Confirmed'}
                                                 />
 
-
                                                 <HeaderButton
                                                     key={'Shipping Schedule'}
                                                     title={'Shipping Schedule'}
                                                     onPress={() => handlePress('Shipping Schedule', 5)}
                                                     isActive={activeButton === 'Shipping Schedule'}
                                                 />
-
 
                                                 <HeaderButton
                                                     key={'Documents'}
@@ -10765,12 +10811,12 @@ export default function ChatMessages() {
                                     </View>
                                 </View>
 
-                                <View style={{ flex: 1, flexDirection: 'row', }}>
+                                <View style={{ flex: 1, flexDirection: 'row', height: '100%', }}>
                                     {/* Chat Body */}
 
-                                    <View>
+                                    <View style={{ flex: screenWidth > 770 ? '' : 1, display: screenWidth < 770 && activeChatId !== '' ? 'none' : 'flex', }}>
 
-                                        <View style={{ flex: 1, maxWidth: 380, minWidth: 380, borderRightWidth: 0, borderColor: '#DADDE1', maxHeight: 100, minHeight: 100, backgroundColor: 'white', }}>
+                                        <View style={{ flex: 1, maxWidth: screenWidth > 770 ? 380 : '100%', minWidth: screenWidth > 770 ? 380 : '100%', borderRightWidth: 0, borderColor: '#DADDE1', maxHeight: 100, minHeight: 100, backgroundColor: 'white', }}>
                                             {/* Chat Search */}
                                             <View style={{ flex: 1, paddingHorizontal: 10 }}>
                                                 <SearchChat lastVisible={lastVisible} setLastVisible={setLastVisible} unreadButtonValue={unreadButtonValue} activeButtonValue={activeButtonValue} />
@@ -10813,15 +10859,15 @@ export default function ChatMessages() {
                                             </View>
                                         </View>
 
-                                        <View style={{ flex: 1, maxWidth: 380, minWidth: 380, borderRightWidth: 0, borderColor: '#DADDE1', backgroundColor: 'white', borderBottomLeftRadius: 5, }}>
+                                        <View style={{ flex: 1, maxWidth: screenWidth > 770 ? 380 : '100%', minWidth: screenWidth > 770 ? 380 : '100%', borderRightWidth: 0, borderColor: '#DADDE1', backgroundColor: 'white', }}>
                                             {/* Chat List */}
                                             <ChatList unreadButtonValue={unreadButtonValue} activeButtonValue={activeButtonValue} />
                                         </View>
 
                                     </View>
 
-                                    {chatMessageBoxLoading ? (
-                                        <View style={{ flex: 1, backgroundColor: 'white', justifyContent: 'center', alignItems: 'center', }}>
+                                    {screenWidth > 770 && (chatMessageBoxLoading ? (
+                                        <View style={{ flex: 1, backgroundColor: 'white', justifyContent: 'center', alignItems: 'center', height: '100%', }}>
                                             <Spinner
                                                 animating
                                                 size="lg"
@@ -10830,15 +10876,16 @@ export default function ChatMessages() {
                                         </View>) : (
                                         <View style={{ flex: 1, }}>
 
-                                            <View style={{ flex: 1, minHeight: 90, maxHeight: screenWidth < 1281 ? 130 : 125, borderBottomWidth: 0, borderColor: '#DADDE1', backgroundColor: 'white', justifyContent: 'center', }}>
+                                            <View style={{ flex: 1, minHeight: 90, maxHeight: screenWidth < 1281 ? 130 : 125, borderBottomWidth: 0, borderColor: '#DADDE1', backgroundColor: 'white', justifyContent: 'center', flexDirection: 'row', }}>
                                                 {/* Chat Message Header */}
+
                                                 <ScrollView scrollEnabled horizontal>
                                                     {chatMessagesData.length < 1 ? null : (<ChatMessageHeader />)}
                                                 </ScrollView>
 
                                             </View>
 
-                                            <View style={{ flex: 1, borderColor: '#DADDE1', backgroundColor: chatMessagesData.length < 1 ? 'white' : '#e5ebfe', borderBottomRightRadius: 5, paddingBottom: 5, }}>
+                                            <View style={{ flex: 1, borderColor: '#DADDE1', backgroundColor: chatMessagesData.length < 1 ? 'white' : '#e5ebfe', paddingBottom: 10, }}>
 
                                                 <View style={{ flex: 1, }}>
 
@@ -10846,9 +10893,7 @@ export default function ChatMessages() {
                                                         selectedVehicleData.reservedTo !== selectedCustomerData.textEmail)
                                                         ? <ReservedStatusViewForHeader /> :
                                                         (selectedChatData.isCancelled && chatMessagesData.length > 0 && <CancelledViewForHeader />)
-
                                                     }
-
 
                                                     {/* Chat Message Box */}
                                                     <ChatMessageBox activeButtonValue={activeButtonValue} userEmail={email} />
@@ -10863,30 +10908,74 @@ export default function ChatMessages() {
                                             </View>
 
                                         </View>
-                                    )}
+                                    ))}
 
+                                    {screenWidth < 770 && activeChatId !== '' && (chatMessageBoxLoading ? (
 
+                                        <View style={{ flex: 1, backgroundColor: 'white', justifyContent: 'center', alignItems: 'center', }}>
+                                            <Spinner
+                                                animating
+                                                size="lg"
+                                                color={'#7B9CFF'}
+                                            />
+                                        </View>) : (
 
+                                        <Animated.View
+                                            style={{
+                                                backgroundColor: '#E5EBFE',
+                                                height: '100%',
+                                                flex: 1,
+                                                transform: [{ translateX: slideAnim }]
+                                            }}
 
+                                        >
+
+                                            <View style={{ flex: 1 }}>
+                                                <View style={{ flex: 1, minHeight: 90, maxHeight: screenWidth < 1281 ? 130 : 125, borderBottomWidth: 0, borderColor: '#DADDE1', backgroundColor: 'white', justifyContent: 'center', flexDirection: 'row', }}>
+                                                    {/* Chat Message Header */}
+                                                    {(screenWidth < 770 && chatMessagesData.length > 0) &&
+                                                        <Pressable onPress={handlePressBack} style={{ justifyContent: 'center', alignItems: 'center', }}>
+                                                            <Ionicons name="chevron-back" size={40} color='black' />
+                                                        </Pressable>
+                                                    }
+
+                                                    <ScrollView scrollEnabled horizontal>
+                                                        {chatMessagesData.length < 1 ? null : (<ChatMessageHeader />)}
+                                                    </ScrollView>
+                                                </View>
+
+                                                <View style={{ flex: 1, borderColor: '#DADDE1', backgroundColor: chatMessagesData.length < 1 ? 'white' : '#e5ebfe', paddingBottom: 10, }}>
+                                                    <View style={{ flex: 1, }}>
+                                                        {(chatMessagesData.length > 0 && selectedVehicleData.stockStatus == 'Reserved' &&
+                                                            selectedVehicleData.reservedTo !== selectedCustomerData.textEmail)
+                                                            ? <ReservedStatusViewForHeader /> :
+                                                            (selectedChatData.isCancelled && chatMessagesData.length > 0 && <CancelledViewForHeader />)
+                                                        }
+                                                        {/* Chat Message Box */}
+                                                        <ChatMessageBox activeButtonValue={activeButtonValue} userEmail={email} />
+                                                        <DocumentPreviewModal />
+                                                    </View>
+                                                </View>
+                                            </View>
+
+                                            {/* Absolute Positioned Chat Input Text at the Bottom */}
+                                            <View style={{ alignItems: 'center', paddingBottom: 10 }}>
+                                                {chatMessagesData.length < 1 ? null : (<ChatInputText />)}
+                                            </View>
+
+                                        </Animated.View>
+                                    ))}
                                 </View>
-
-
                             </View>
                             {/* <SuccessModal /> */}
-
                         </View>
-
-
-                        {/* </Box> */}
-
-                        {/* </Box> */}
                     </View>
-
                 </View>
                 <LoadingModal />
             </NativeBaseProvider>
 
 
         </>
+
     );
 }

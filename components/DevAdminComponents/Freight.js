@@ -4657,18 +4657,30 @@ export default function Freight() {
 
     const [selectedImages, setSelectedImages] = useState([]);
 
-    const [widthState, setWidthState] = useState(Dimensions.get('window').width);
+    const [screenWidth, setScreenWidth] = useState(Dimensions.get('window').width);
 
 
 
 
-    const screenWidth = Dimensions.get('window').width;
+    useEffect(() => {
+        const updateWidth = () => {
+            const newWidth = Dimensions.get('window').width;
+            setScreenWidth(newWidth); // Update the screenWidth state
+        };
+
+        // Add event listener for window resize
+        Dimensions.addEventListener('change', updateWidth);
+
+        // Clean up the event listener when the component unmounts or re-renders
+        return () => {
+            Dimensions.removeEventListener('change', updateWidth);
+        };
+    }, []);
 
 
     useEffect(() => {
         dispatch(setSelectedButton(defaultSelectedButton));
     }, [])
-
 
     useEffect(() => {
         const unsubscribe = projectControlAuth.onAuthStateChanged(user => {
@@ -4847,9 +4859,9 @@ export default function Freight() {
                         placement='bottom right'
                         trapFocus={false}
                     >
-                        <Popover.Content backgroundColor={'#7B9CFF'}>
+                        <Popover.Content backgroundColor={'#0642F4'}>
                             {/* <Popover.Arrow bgColor={'#7B9CFF'} /> */}
-                            <Popover.Body backgroundColor={'#7B9CFF'}>
+                            <Popover.Body backgroundColor={'#0642F4'}>
                                 <Button _hover={{ bgColor: 'blueGray.500' }} onPress={handleSignOut} leftIcon={<MaterialCommunityIcons name="logout" size={20} color="white" />} bgColor={'transparent'}>
                                     Logout
                                 </Button>
@@ -4900,9 +4912,9 @@ export default function Freight() {
                             resizeMode={FastImage.resizeMode.stretch}
                             style={styles.image} />
                     </Box>
-
+                    {/* 
                     {screenWidth <= 960 && <MobileViewDrawer
-                        selectedScreen={selectedScreen} />}
+                        selectedScreen={selectedScreen} />} */}
 
 
                     <Box w={screenWidth <= 960 ? 120 : 0} h={screenWidth <= 960 ? 6 : 10} marginBottom={1.5} marginTop={1.5} marginLeft={[3, 3, 3, 10]}>
