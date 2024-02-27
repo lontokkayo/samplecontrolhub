@@ -12,6 +12,17 @@ let email = '';
 
 // =============================== Chat Messages ========================================
 
+const messageTextInputValueSlice = createSlice({
+  name: 'messageTextInputValue',
+  initialState: '',
+  reducers: {
+    setMessageTextInputValue: (state, action) => {
+      return action.payload
+    },
+  },
+})
+
+
 const carImageUrlSlice = createSlice({
   name: 'carImageUrl',
   initialState: '',
@@ -847,6 +858,7 @@ const deleteImageVisibleSlice = createSlice({
 });
 
 // =============================== Chat Messages ========================================
+export const { setMessageTextInputValue } = messageTextInputValueSlice.actions
 export const { setSelectedVehicleData } = selectedVehicleDataSlice.actions
 export const { setCarImageUrl } = carImageUrlSlice.actions
 export const { setSelectedFileUrl } = selectedFileUrlSlice.actions
@@ -950,6 +962,7 @@ const store = configureStore({
   reducer: {
 
     // =============================== Chat Messages ========================================    
+    messageTextInputValue: messageTextInputValueSlice.reducer,
     selectedVehicleData: selectedVehicleDataSlice.reducer,
     carImageUrl: carImageUrlSlice.reducer,
     selectedFileUrl: selectedFileUrlSlice.reducer,

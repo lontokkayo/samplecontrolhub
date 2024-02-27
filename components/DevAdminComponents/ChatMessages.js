@@ -128,6 +128,7 @@ import {
     setLoginName,
     setCarImageUrl,
     setSelectedVehicleData,
+    setMessageTextInputValue,
 } from './redux/store';
 // import { TextInput } from 'react-native-gesture-handler';
 import { nanoid } from 'nanoid';
@@ -143,8 +144,7 @@ import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
 import QRCode from 'react-native-qrcode-svg';
 import { useRoute } from '@react-navigation/native';
-import { HashRouter as Router, Route, Routes, useNavigate, Navigate, useParams } from 'react-router-dom';
-
+import { HashRouter as Router, Route, Routes, useNavigate, Navigate, useParams, useHistory, useLocation } from 'react-router-dom';
 
 // import { CollectionGroup } from 'firebase-admin/firestore';
 const { width } = Dimensions.get('window');
@@ -422,6 +422,7 @@ const HeaderButton = ({ title, onPress, isActive, headerCount }) => {
     const [isHovered, setIsHovered] = useState(false);
     const hoverIn = () => setIsHovered(true);
     const hoverOut = () => setIsHovered(false);
+
     return (
         <Pressable
             onHoverIn={hoverIn}
@@ -435,6 +436,7 @@ const HeaderButton = ({ title, onPress, isActive, headerCount }) => {
 
         </Pressable>
     );
+
 };
 
 const FilterButton = ({ title, onPress, isActive, iconActive, iconNotActive }) => {
@@ -649,7 +651,8 @@ const MessageTemplateItem = ({ setOriginalTitle, addVisible, titleInputRef, valu
     const dispatch = useDispatch();
 
     const onPress = (item) => {
-        textInputRef.current.value = item.value;
+        // textInputRef.current.value = item.value;
+        dispatch(setMessageTextInputValue(item.value));
         setPopoverOpen(false);
     };
 
@@ -757,6 +760,8 @@ const MessageTemplate = ({ textInputRef }) => {
     const [saveLoading, setSaveLoading] = useState(false);
 
     const [templateData, setTemplateData] = useState([]);
+
+    const screenWidth = Dimensions.get('window').width;
 
     const searchInputRef = useRef(null);
     const titleInputRef = useRef(null);
@@ -895,7 +900,7 @@ const MessageTemplate = ({ textInputRef }) => {
             <Popover
                 isOpen={popoverOpen}
                 onClose={handlePopoverClose}
-                initialFocusRef={searchInputRef}
+                // initialFocusRef={searchInputRef}
                 finalFocusRef={textInputRef}
                 placement={'top'}
                 trigger={(triggerProps) => {
@@ -919,7 +924,7 @@ const MessageTemplate = ({ textInputRef }) => {
                         <Ionicons name="chatbox-ellipses-outline" size={24} color={isTemplateHovered ? "#0A78BE" : "#C1C1C1"} />
                     </Pressable>
                 }} >
-                <Popover.Content w={400} marginRight={10} >
+                <Popover.Content w={screenWidth < 770 ? 320 : 400} marginRight={10} >
                     <Popover.Arrow />
                     <View style={{ display: addVisible ? 'flex' : 'none', }}><Popover.Header backgroundColor={'white'}>
                         <View style={{ flexDirection: 'row', flex: 1 }}>
@@ -1051,6 +1056,67 @@ const FileDisplay = ({ file, onRemove }) => {
     );
 };
 
+const MessageTextInput = ({ handleSendMessage }) => {
+    const [inputHeight, setInputHeight] = useState(50);
+    const screenWidth = Dimensions.get('window').width;
+    const messageTextInputValue = useSelector((state) => state.messageTextInputValue)
+    const dispatch = useDispatch();
+
+    const handleContentSizeChange = (event) => {
+        const target = event.target;
+        // Temporarily reset height to ensure scrollHeight reflects current content
+        target.style.height = '0px'; // Reset height to recalculate
+        const updatedHeight = Math.max(50, Math.min(200, target.scrollHeight));
+        target.style.height = `${updatedHeight}px`; // Set to new calculated height
+        setInputHeight(updatedHeight);
+
+    };
+
+    const handleKeyPress = (e) => {
+        // Define a breakpoint for mobile resolution, e.g., 768 pixels
+        const mobileBreakpoint = 768;
+
+        // Check if the screen width is less than or equal to the mobile breakpoint
+        if (screenWidth >= mobileBreakpoint) {
+            // Check if 'Enter' key is pressed
+            if (e.nativeEvent.key === 'Enter' && !e.nativeEvent.shiftKey) {
+                e.preventDefault(); // Prevent the default behavior of adding a new line
+                handleSendMessage();
+
+            }
+        }
+    };
+
+    const handleInputChange = (text) => {
+        dispatch(setMessageTextInputValue(text));
+        // You can also call handleContentSizeChange manually here if needed
+    };
+
+    return (
+        <TextInput
+            value={messageTextInputValue} // Controlled component
+            multiline
+            placeholder='Send a message...'
+            placeholderTextColor='#9B9E9F'
+            onChangeText={handleInputChange} // Use onChangeText for React Native
+            onChange={handleContentSizeChange}
+            onKeyPress={handleKeyPress}
+            style={{
+                outlineStyle: 'none',
+                width: '100%',
+                minHeight: 50,
+                maxHeight: 200,
+                height: inputHeight,
+                alignSelf: 'center',
+                padding: 10,
+                overflow: 'auto',
+                marginBottom: 25,
+                marginRight: 50,
+            }}
+        />
+    )
+}
+
 const ChatInputText = () => {
     const selectedChatData = useSelector((state) => state.selectedChatData);
     const activeChatId = useSelector((state) => state.activeChatId);
@@ -1066,6 +1132,20 @@ const ChatInputText = () => {
     const [isSendAttachmentHovered, setIsSendAttachmentHovered] = useState(false);
     const [sendIsLoading, setSendIsLoading] = useState(false);
     const textInputRef = useRef(null);
+    const [inputHeight, setInputHeight] = useState(50);
+
+    const [inputValue, setInputValue] = useState(''); // Add state for input value
+    const messageTextInputValue = useSelector((state) => state.messageTextInputValue)
+    const dispatch = useDispatch();
+    const handleContentSizeChange = (event) => {
+        const target = event.target;
+        // Temporarily reset height to ensure scrollHeight reflects current content
+        target.style.height = '0px'; // Reset height to recalculate
+        const updatedHeight = Math.max(50, Math.min(200, target.scrollHeight));
+        target.style.height = `${updatedHeight}px`; // Set to new calculated height
+        setInputHeight(updatedHeight);
+
+    };
 
     const removeImage = () => {
         setImageUri(null);
@@ -1432,10 +1512,11 @@ const ChatInputText = () => {
         const time = moment(datetime).format('HH:mm');
         const timeWithMinutesSeconds = moment(datetime).format('HH:mm:ss');
 
-        const inputValue = textInputRef.current?.value;
-
-        textInputRef.current.clear();
-        textInputRef.current.focus();
+        // const inputValue = textInputRef.current?.value;
+        const inputValue = messageTextInputValue;
+        dispatch(setMessageTextInputValue(''));
+        // textInputRef.current.clear();
+        // textInputRef.current.focus();
 
         if (inputValue !== '') {
             const email = projectControlAuth.currentUser ? projectControlAuth.currentUser.email : '';
@@ -1558,14 +1639,29 @@ const ChatInputText = () => {
                             resizeMode={FastImage.resizeMode.cover}
                         />
                     </View>
-                    <TextInput
+                    {/* <TextInput
                         ref={textInputRef}
                         multiline
                         placeholder='Send a message...'
-                        placeholderTextColor={'#9B9E9F'}
+                        placeholderTextColor='#9B9E9F'
+                        onChange={handleContentSizeChange}
                         onKeyPress={handleKeyPress}
-                        style={{ outlineStyle: 'none', width: '100%', minHeight: 80, maxHeight: 180, alignSelf: 'center', padding: 10 }}
-                    />
+                        style={{
+                            outlineStyle: 'none',
+                            width: '100%',
+                            minHeight: 50, // Set your desired minHeight
+                            maxHeight: 200, // Set your desired maxHeight
+                            height: inputHeight, // Dynamic height
+                            alignSelf: 'center',
+                            padding: 10,
+                            overflow: 'auto',
+                            marginBottom: 25,
+                            marginRight: 50,
+                        }}
+                    /> */}
+
+                    <MessageTextInput handleSendMessage={handleSendMessage} />
+
                     <Pressable
                         focusable={false}
                         onPress={() => sendIsLoading ? null : handleSendMessage()}
@@ -5091,7 +5187,7 @@ Real Motor Japan`,
 
                 <Text style={{ fontWefight: 700, fontSize: 14, }}>Total Paid:</Text>
 
-                <Progress w="300" shadow={2} value={Number(totalValue)} max={totalAmountNumber} _filledTrack={{
+                <Progress w="90%" shadow={2} value={Number(totalValue)} max={totalAmountNumber} _filledTrack={{
                     bg: "lime.500"
                 }} />
 
@@ -8247,6 +8343,7 @@ const TransactionHistoryModal = () => {
 
     const [transactionHistoryVisible, setTransactionHistoryVisible] = useState(false);
     const selectedCustomerData = useSelector((state) => state.selectedCustomerData);
+    const screenWidth = Dimensions.get('window').width;
 
     const navigate = useNavigate();
     const [displayedTransactions, setDisplayedTransactions] = useState(selectedCustomerData.transactions ? selectedCustomerData.transactions.slice(0, 5) : null);
@@ -8304,7 +8401,7 @@ const TransactionHistoryModal = () => {
 
 
             <Pressable onPress={handleTransactionHistoryModalOpen}>
-                <Text style={{ fontSize: 14, color: '#0A78BE', textAlign: 'center', }} underline>
+                <Text style={{ fontSize: screenWidth < 770 ? 10 : 14, color: '#0A78BE', textAlign: 'center', }} underline>
                     {`View Transactions`}
                 </Text>
             </Pressable>
@@ -8354,6 +8451,7 @@ const PaymentHistoryModal = () => {
 
     const [paymentHistoryVisible, setPaymentHistoryVisible] = useState(false);
     const selectedCustomerData = useSelector((state) => state.selectedCustomerData);
+    const screenWidth = Dimensions.get('window').width;
 
     const sortedPayments = selectedCustomerData.paymentsHistory
         ? [...selectedCustomerData.paymentsHistory].sort((a, b) => {
@@ -8430,7 +8528,7 @@ const PaymentHistoryModal = () => {
 
         <>
             <Pressable onPress={handlePaymentHistoryModalOpen}>
-                <Text style={{ fontSize: 14, color: '#0A78BE', textAlign: 'center', }} underline>
+                <Text style={{ fontSize: screenWidth < 770 ? 10 : 14, color: '#0A78BE', textAlign: 'center', }} underline>
                     {`View Payments History`}
                 </Text>
             </Pressable>
@@ -8516,6 +8614,7 @@ const PaymentHistoryModal = () => {
 const CustomerProfileModal = () => {
     const [customerModalVisible, setCustomerModalVisible] = useState(false);
     const selectedCustomerData = useSelector((state) => state.selectedCustomerData);
+    const screenWidth = Dimensions.get('window').width;
 
 
     const handleModalOpen = () => {
@@ -8562,17 +8661,17 @@ const CustomerProfileModal = () => {
                             <View style={{
                                 borderRadius: 10,
                                 backgroundColor: '#F8F9FF',
-                                width: 440,
+                                width: screenWidth < 770 ? '100%' : '90%',
                                 alignItems: 'center',
                                 paddingBottom: 15,
 
                             }}>
 
-                                <Text style={{ fontWeight: 'bold', fontSize: 26, color: '#0A78BE', }} selectable>
+                                <Text style={{ fontWeight: 'bold', fontSize: screenWidth < 770 ? 24 : 26, color: '#0A78BE', }} selectable>
                                     {`${globalCustomerFirstName} ${globalCustomerLastName}`}
                                 </Text>
 
-                                <Text style={{ fontSize: 14, color: '#6F6F6F', width: '45%', textAlign: 'center', }} selectable>
+                                <Text style={{ fontSize: screenWidth < 770 ? 12 : 14, color: '#6F6F6F', width: '45%', textAlign: 'center', }} selectable>
                                     {`${selectedCustomerData.textZip}, ${selectedCustomerData.textStreet}, ${selectedCustomerData.city}, ${selectedCustomerData.country}`}
                                 </Text>
 
@@ -8582,10 +8681,11 @@ const CustomerProfileModal = () => {
                                         flexDirection: 'row',
                                         paddingTop: 20,
                                         justifyContent: 'center',
+                                        alignItems: 'center',
                                     }}
                                 >
 
-                                    <Text style={{ fontSize: 14, color: '#6F6F6F', textAlign: 'center' }} selectable>
+                                    <Text style={{ fontSize: screenWidth < 770 ? 12 : 14, color: '#6F6F6F', textAlign: 'center', paddingTop: 2, }} selectable>
                                         {`${selectedCustomerData.textPhoneNumber}`}
                                     </Text>
 
@@ -8600,7 +8700,7 @@ const CustomerProfileModal = () => {
 
                                     <Hyperlink
                                         linkDefault={true}
-                                        linkStyle={{ color: '#8A64F6', fontSize: 14 }}
+                                        linkStyle={{ color: '#8A64F6', fontSize: screenWidth < 770 ? 12 : 14 }}
 
                                     >
                                         <Text style={{ textAlign: 'center' }} selectable>
@@ -8617,9 +8717,8 @@ const CustomerProfileModal = () => {
 
                         <View
                             style={{
-                                width: 440,
+                                width: screenWidth < 770 ? '100%' : '90%',
                                 justifyContent: 'center',
-                                alignItems: 'center',
                                 marginTop: 50,
                                 flexDirection: 'row',
                                 alignSelf: 'center',
@@ -8627,11 +8726,11 @@ const CustomerProfileModal = () => {
 
                             <View style={{ flex: 1, alignItems: 'center', }}>
 
-                                <Text style={{ fontWeight: 'bold', fontSize: 24, color: '#009922', textAlign: 'center', }} selectable>
+                                <Text style={{ fontWeight: 'bold', fontSize: screenWidth < 770 ? 20 : 24, color: '#009922', textAlign: 'center', }} selectable>
                                     {`$${(totalPaymentValue).toLocaleString('en-US')}`}
                                 </Text>
 
-                                <Text style={{ fontWeight: 'bold', fontSize: 16, color: '#5E4343', textAlign: 'center', }}>
+                                <Text style={{ fontWeight: 'bold', fontSize: screenWidth < 770 ? 12 : 16, color: '#5E4343', textAlign: 'center', }}>
                                     {`Total Payment`}
                                 </Text>
 
@@ -8641,10 +8740,10 @@ const CustomerProfileModal = () => {
                             </View>
 
                             <View style={{ flex: 1, alignItems: 'center', }}>
-                                <Text style={{ fontWeight: 'bold', fontSize: 24, color: '#990000', textAlign: 'center', }} selectable>
+                                <Text style={{ fontWeight: 'bold', fontSize: screenWidth < 770 ? 20 : 24, color: '#990000', textAlign: 'center', }} selectable>
                                     {`$${selectedCustomerData.overBalance ? Number(selectedCustomerData.overBalance).toLocaleString('en-US') : 0}`}
                                 </Text>
-                                <Text style={{ fontWeight: 'bold', fontSize: 16, color: '#5E4343', textAlign: 'center', }}>
+                                <Text style={{ fontWeight: 'bold', fontSize: screenWidth < 770 ? 12 : 16, color: '#5E4343', textAlign: 'center', }}>
                                     {`Overbalance`}
                                 </Text>
 
@@ -8656,10 +8755,10 @@ const CustomerProfileModal = () => {
                             </View>
 
                             <View style={{ flex: 1, alignItems: 'center', }}>
-                                <Text style={{ fontWeight: 'bold', fontSize: 24, color: '#0029A3', textAlign: 'center', }} selectable>
+                                <Text style={{ fontWeight: 'bold', fontSize: screenWidth < 770 ? 20 : 24, color: '#0029A3', textAlign: 'center', }} selectable>
                                     {`${selectedCustomerData.transactions ? (selectedCustomerData.transactions).length : 0}`}
                                 </Text>
-                                <Text style={{ fontWeight: 'bold', fontSize: 16, color: '#5E4343', textAlign: 'center', }}>
+                                <Text style={{ fontWeight: 'bold', fontSize: screenWidth < 770 ? 12 : 16, color: '#5E4343', textAlign: 'center', }}>
                                     {`Transactions`}
                                 </Text>
 
@@ -9288,6 +9387,28 @@ const ChatMessageBox = ({ activeButtonValue, userEmail }) => {
 
     const screenWidth = Dimensions.get('window').width;
     const screenHeight = Dimensions.get('window').height;
+    const navigate = useNavigate();
+    const location = useLocation();
+
+    useEffect(() => {
+        // Store the current path
+        const handlePopState = () => {
+            if (screenWidth < 770 && activeChatId !== '') {
+                dispatch(setChatMessagesData([]));
+                dispatch(setActiveChatId(''));
+                navigate('/top/chat-messages');
+            }
+        };
+
+        // Add event listener when component mounts or when dependencies change
+        window.addEventListener('popstate', handlePopState);
+
+        // Cleanup function to remove event listener when component unmounts or dependencies change
+        return () => {
+            window.removeEventListener('popstate', handlePopState);
+        };
+
+    }, []);
 
     const openPreview = (index) => {
         setSelectedImageIndex(index);
@@ -9640,7 +9761,7 @@ const ChatMessageBox = ({ activeButtonValue, userEmail }) => {
                 height: '100%',
                 alignSelf: isGlobalCustomerSender ? 'flex-start' : 'flex-end',
                 marginVertical: 4,
-                maxWidth: screenWidth < 770 ? '85%' : '60%', // Max width for long messages
+                maxWidth: screenWidth < 770 ? '80%' : '60%', // Max width for long messages
                 // borderWidth: 1,
                 // borderColor: 'red',
             }}>
@@ -10095,56 +10216,65 @@ const ChatMessageBox = ({ activeButtonValue, userEmail }) => {
                                 </View>
                             </View>
 
-                            {/* Display read status text outside of the message bubble */}
-                            {isLastMessage && selectedChatData.customerRead && !isGlobalCustomerSender && (
-                                <Tooltip label="Already read by the customer" openDelay={200} bgColor={'#FAFAFA'} _text={{ color: '#1C2B33', }}>
-                                    <View style={{
-                                        alignSelf: 'flex-end',
-                                        marginLeft: isGlobalCustomerSender ? 8 : 0,
-                                        marginRight: isGlobalCustomerSender ? 0 : 8,
-                                        alignSelf: 'center',
-                                    }}>
-                                        <Ionicons name="mail-open" size={20} color={'#1B81C2'} />
-                                    </View>
-                                </Tooltip>
-                            )}
+                            <View style={{
+                                position: 'absolute',
+                                left: -60,
+                                top: '50%',
+                                bottom: '50%',
+                                flexDirection: isGlobalCustomerSender ? 'row' : 'row-reverse',
+                            }}>
+                                {/* Display read status text outside of the message bubble */}
+                                {isLastMessage && selectedChatData.customerRead && !isGlobalCustomerSender && (
+                                    <Tooltip label="Already read by the customer" openDelay={200} bgColor={'#FAFAFA'} _text={{ color: '#1C2B33', }}>
+                                        <View style={{
+                                            alignSelf: 'flex-end',
+                                            marginLeft: isGlobalCustomerSender ? 8 : 0,
+                                            marginRight: isGlobalCustomerSender ? 0 : 8,
+                                            alignSelf: 'center',
+                                        }}>
+                                            <Ionicons name="mail-open" size={20} color={'#1B81C2'} />
+                                        </View>
+                                    </Tooltip>
+                                )}
 
-                            {isLastMessage && !selectedChatData.customerRead && !isGlobalCustomerSender && (
-                                <Tooltip label="Message sent to the customer" openDelay={200} bgColor={'#FAFAFA'} _text={{ color: '#1C2B33', }}>
+                                {isLastMessage && !selectedChatData.customerRead && !isGlobalCustomerSender && (
+                                    <Tooltip label="Message sent to the customer" openDelay={200} bgColor={'#FAFAFA'} _text={{ color: '#1C2B33', }}>
+                                        <View style={{
+                                            alignSelf: 'flex-end',
+                                            marginLeft: isGlobalCustomerSender ? 8 : 0,
+                                            marginRight: isGlobalCustomerSender ? 0 : 8,
+                                            alignSelf: 'center',
+                                        }}>
+                                            <Ionicons name="mail" size={20} color={'#1B81C2'} />
+                                        </View>
+                                    </Tooltip>
+                                )}
+                                {isLastMessage && selectedChatData.readBy.length > 0 && (
                                     <View style={{
                                         alignSelf: 'flex-end',
                                         marginLeft: isGlobalCustomerSender ? 8 : 0,
                                         marginRight: isGlobalCustomerSender ? 0 : 8,
                                         alignSelf: 'center',
                                     }}>
-                                        <Ionicons name="mail" size={20} color={'#1B81C2'} />
+                                        <Pressable
+                                            focusable={false}
+                                            onHoverIn={() => setIsEyeHovered(true)}
+                                            onHoverOut={() => setIsEyeHovered(false)}
+                                            onPress={handleReadByListModalOpen}
+                                        >
+                                            <Entypo name="eye" size={20} color={isEyeHovered ? '#c5d1ce' : '#75A99C'} />
+                                        </Pressable>
                                     </View>
-                                </Tooltip>
-                            )}
-                            {isLastMessage && selectedChatData.readBy.length > 0 && (
-                                <View style={{
-                                    alignSelf: 'flex-end',
-                                    marginLeft: isGlobalCustomerSender ? 8 : 0,
-                                    marginRight: isGlobalCustomerSender ? 0 : 8,
-                                    alignSelf: 'center',
-                                }}>
-                                    <Pressable
-                                        focusable={false}
-                                        onHoverIn={() => setIsEyeHovered(true)}
-                                        onHoverOut={() => setIsEyeHovered(false)}
-                                        onPress={handleReadByListModalOpen}
-                                    >
-                                        <Entypo name="eye" size={20} color={isEyeHovered ? '#c5d1ce' : '#75A99C'} />
-                                    </Pressable>
-                                </View>
-                            )}
+                                )}
+                            </View>
+
                         </View>
 
                         {/* Additional message properties like timestamp and sender */}
                         <Text style={{
                             fontWeight: '300',
                             color: '#888c96',
-                            fontSize: 11,
+                            fontSize: screenWidth < 770 ? 9 : 11,
                             marginTop: 4,
                             marginBottom: 4,
                             marginLeft: isGlobalCustomerSender ? 15 : 0,
@@ -10279,9 +10409,6 @@ export default function ChatMessages() {
         Dimensions.addEventListener('change', updateWidth);
 
         // Clean up the event listener when the component unmounts or re-renders
-        return () => {
-            Dimensions.removeEventListener('change', updateWidth);
-        };
 
         const fetchIpAndCountry = async () => {
             try {
@@ -10321,7 +10448,11 @@ export default function ChatMessages() {
 
 
         // Clean up function to unsubscribe from the listener when the component unmounts
-        return () => unsubscribe();
+        return () => {
+            Dimensions.removeEventListener('change', updateWidth);
+            unsubscribe();
+        };
+
     }, []);
 
     const handlePress = (buttonTitle, buttonTitleValue) => {
@@ -10652,7 +10783,7 @@ export default function ChatMessages() {
     return (
         <>
             <NativeBaseProvider>
-                <View style={{ backgroundColor: "white", height: '100%', width: '100%', flexDirection: 'column', maxHeight: '100vh', overflow: 'auto', }} >
+                <View style={{ backgroundColor: "white", height: '100%', width: '100%', flexDirection: 'column', maxHeight: '100vh', }} >
                     {/* Header */}
                     <Box
                         px="3"
@@ -10687,13 +10818,13 @@ export default function ChatMessages() {
 
                         <Box w={screenWidth <= 960 ? 120 : 0} h={screenWidth <= 960 ? 6 : 10} marginBottom={1.5} marginTop={1.5} marginLeft={[3, 3, 3, 10]}>
 
-                            <FastImage
+                            {/* <FastImage
                                 source={{
                                     uri: 'https://firebasestorage.googleapis.com/v0/b/samplermj.appspot.com/o/C-HUB%20Logos%2FC-HUB%20LOGO%20HALF.png?alt=media&token=7ce6aef2-0527-40c7-b1ce-e47079e144df',
                                     priority: FastImage.priority.high,
                                 }}
                                 resizeMode={FastImage.resizeMode.stretch}
-                                style={styles.image} />
+                                style={styles.image} /> */}
                         </Box>
                         <NamePopover name={loginName} handleSignOut={handleSignOut} />
 
