@@ -99,6 +99,7 @@ export default function App() {
     overscroll-behavior-y: none;
   }
 `;
+
   document.head.append(style);
 
   return (

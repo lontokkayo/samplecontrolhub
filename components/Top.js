@@ -252,6 +252,16 @@ export default function Top({ navigation }) {
   };
 
 
+  const style = document.createElement('style');
+  style.textContent = `
+  body, html {
+    overscroll-behavior-x: none;
+    overscroll-behavior-y: none;
+  }
+`;
+
+  document.head.append(style);
+
   return (
 
 

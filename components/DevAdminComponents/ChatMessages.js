@@ -145,7 +145,7 @@ import html2canvas from 'html2canvas';
 import QRCode from 'react-native-qrcode-svg';
 import { useRoute } from '@react-navigation/native';
 import { HashRouter as Router, Route, Routes, useNavigate, Navigate, useParams, useHistory, useLocation } from 'react-router-dom';
-
+import { Iframe } from '@bounceapp/iframe';
 // import { CollectionGroup } from 'firebase-admin/firestore';
 const { width } = Dimensions.get('window');
 let selectedScreen = 'CHAT MESSAGES'
@@ -665,6 +665,7 @@ const MessageTemplateItem = ({ setOriginalTitle, addVisible, titleInputRef, valu
         titleInputRef.current.value = item.title;
         valueInputRef.current.value = item.value;
         setOriginalTitle(item.title);
+        textInputRef.current.focus();
 
     };
 
@@ -988,6 +989,7 @@ const MessageTemplate = ({ textInputRef }) => {
                         <Popover.Body backgroundColor={'white'} height={300}>
                             <TextInput
                                 ref={searchInputRef}
+                                focusable={false}
                                 placeholder='Search'
                                 placeholderTextColor='#9B9E9F'
                                 underlineColorAndroid="transparent"
@@ -1056,13 +1058,13 @@ const FileDisplay = ({ file, onRemove }) => {
     );
 };
 
-const MessageTextInput = ({ handleSendMessage }) => {
+const MessageTextInput = ({ handleSendMessage, textInputRef }) => {
     const [inputHeight, setInputHeight] = useState(50);
     const screenWidth = Dimensions.get('window').width;
     const messageTextInputValue = useSelector((state) => state.messageTextInputValue)
     const dispatch = useDispatch();
 
-    const handleContentSizeChange = (event) => {
+    const handleContentOnChange = (event) => {
         const target = event.target;
         // Temporarily reset height to ensure scrollHeight reflects current content
         target.style.height = '0px'; // Reset height to recalculate
@@ -1070,6 +1072,12 @@ const MessageTextInput = ({ handleSendMessage }) => {
         target.style.height = `${updatedHeight}px`; // Set to new calculated height
         setInputHeight(updatedHeight);
 
+    };
+
+    const handleContentSizeChange = (event) => {
+        const { width, height } = event.nativeEvent.contentSize;
+        const updatedHeight = Math.max(50, Math.min(200, height));
+        setInputHeight(updatedHeight); // Set to new calculated height
     };
 
     const handleKeyPress = (e) => {
@@ -1094,12 +1102,14 @@ const MessageTextInput = ({ handleSendMessage }) => {
 
     return (
         <TextInput
+            ref={textInputRef}
             value={messageTextInputValue} // Controlled component
             multiline
             placeholder='Send a message...'
             placeholderTextColor='#9B9E9F'
             onChangeText={handleInputChange} // Use onChangeText for React Native
-            onChange={handleContentSizeChange}
+            onChange={handleContentOnChange}
+            onContentSizeChange={handleContentSizeChange}
             onKeyPress={handleKeyPress}
             style={{
                 outlineStyle: 'none',
@@ -1515,8 +1525,8 @@ const ChatInputText = () => {
         // const inputValue = textInputRef.current?.value;
         const inputValue = messageTextInputValue;
         dispatch(setMessageTextInputValue(''));
-        // textInputRef.current.clear();
-        // textInputRef.current.focus();
+        textInputRef.current.clear();
+        textInputRef.current.focus();
 
         if (inputValue !== '') {
             const email = projectControlAuth.currentUser ? projectControlAuth.currentUser.email : '';
@@ -1572,6 +1582,7 @@ const ChatInputText = () => {
 
 
     const handleSendMessage = () => {
+        textInputRef.current.focus();
 
         if (imageUri !== null) {
             addImageMessage();
@@ -1660,7 +1671,7 @@ const ChatInputText = () => {
                         }}
                     /> */}
 
-                    <MessageTextInput handleSendMessage={handleSendMessage} />
+                    <MessageTextInput handleSendMessage={handleSendMessage} textInputRef={textInputRef} />
 
                     <Pressable
                         focusable={false}
@@ -1755,6 +1766,7 @@ const CancelledView = () => {
             <View style={{ backgroundColor: "#FF0000", width: 50, height: 6, borderRadius: 20, }} />
         </View>
     );
+
 };
 
 const ChatListItem = ({ item, onPress, onPressNewTab, isActive, messageUnread, formattedDate, chatListData }) => {
@@ -2380,6 +2392,7 @@ const ChatList = ({ unreadButtonValue, activeButtonValue, }) => {
 
     useEffect(() => {
         // dispatch(setCarImageUrl(''));
+        dispatch(setMessageTextInputValue(''));
 
         if (chatId) {
 
@@ -5994,6 +6007,7 @@ const PreviewInvoice = () => {
 
 
     useEffect(() => {
+        // setTimeout(() => {
         const captureImageAsync = async () => {
             try {
                 if (invoiceRef.current) {
@@ -6043,56 +6057,10 @@ const PreviewInvoice = () => {
         // Trigger image capture when invoiceRef changes
         captureImageAsync();
 
-        if (screenWidth < 960) {
-            const captureImageAsync = async () => {
-                try {
-                    if (invoiceRef.current) {
-                        // Adjust the scale to control the captured image resolution
-                        const scale = 0.85; // Experiment with different scale values
-                        const width = 2480 * scale;
-                        const height = 3508 * scale;
 
-                        const imageUri = await captureRef(invoiceRef, {
-                            format: 'jpg',
-                            quality: 1, // Adjust quality if needed
-                            result: 'base64',
-                            width: width,
-                            height: height,
-                        });
-                        setCapturedImageUri(`data:image/jpeg;base64,${imageUri}`);
-                        const trueCount = countTrueValuesInCarData(invoiceData);
-                        setFeaturesTrueCount(trueCount);
-                    }
-                } catch (error) {
-                    console.error("Error capturing view:", error);
-                }
-            };
 
-            const convertImageToBase64 = async (url) => {
-                try {
-                    const response = await fetch(url);
-                    if (!response.ok) {
-                        throw new Error(`HTTP error! status: ${response.status}`);
-                    }
-                    const blob = await response.blob();
-                    return new Promise((resolve, reject) => {
-                        const reader = new FileReader();
-                        reader.onloadend = () => resolve(reader.result);
-                        reader.onerror = reject;
-                        reader.readAsDataURL(blob);
-                    });
-                } catch (error) {
-                    console.error('Fetch error:', error.message);
-                    return null;
-                }
-            };
-            convertImageToBase64(globalImageUrl)
-                .then(base64String => {
-                    setVehicleImageUri(base64String);
-                });
-            // Trigger image capture when invoiceRef changes
-            captureImageAsync();
-        }
+        // }, 100)
+
 
     }, [invoiceRef.current, vehicleImageUri]);
 
@@ -9115,11 +9083,13 @@ const ReadByListModal = ({ userEmail, handleReadByListModalClose }) => {
                                     [...selectedChatData.readBy]
                                         .sort((a, b) => a === email ? -1 : b === email ? 1 : 0)
                                         .map(item => (
-                                            <View key={item} style={{ flexDirection: 'row', alignItems: 'center', marginVertical: 8, borderBottomWidth: 0.5, borderColor: '#ddd', paddingBottom: 8 }}>
+                                            <View key={item} style={{ flex: 1, flexDirection: 'row', alignItems: 'center', marginVertical: 8, borderBottomWidth: 0.5, borderColor: '#ddd', paddingBottom: 8 }}>
                                                 {item === 'RMJ-Bot' ?
                                                     <FontAwesome5 name="robot" size={24} color="#4A90E2" style={{ marginRight: 12 }} /> :
                                                     <FontAwesome name="user-circle" size={24} color="#4A90E2" style={{ marginRight: 12 }} />}
-                                                <Text style={{ flex: 1, color: '#555' }}>{email === item ? 'You' : item}</Text>
+                                                <View style={{ flex: 1 }}> {/* Ensure text has its own block and can wrap */}
+                                                    <Text style={{ color: '#555', flexWrap: 'wrap' }}>{email === item ? 'You' : item}</Text>
+                                                </View>
                                             </View>
                                         ))
                                 }
@@ -9226,6 +9196,7 @@ const DocumentPreviewModal = () => {
     const dispatch = useDispatch();
     const selectedFileUrl = useSelector((state) => state.selectedFileUrl);
     const pdfViewerModalVisible = useSelector((state) => state.pdfViewerModalVisible);
+    const screenWidth = Dimensions.get('window').width;
 
     const [iframeKey, setIframeKey] = useState(0);
 
@@ -9353,12 +9324,34 @@ const DocumentPreviewModal = () => {
                                     />
                                 </View>
                             )}
-                            {selectedFileUrl !== '' && <iframe
-                                src={selectedFileUrl}
-                                style={{ width: '100%', height: '700px' }}
-                                title="PDF Viewer"
-                                onLoad={handleIframeLoad} // Event when iframe has loaded
-                            />}
+                            {selectedFileUrl !== '' &&
+                                (
+                                    screenWidth < 770 ?
+                                        (<>
+                                            {!isLoading &&
+                                                <View style={{ flexDirection: 'row', width: '100%', height: 57, borderRadius: 0, backgroundColor: '#323639', justifyContent: 'flex-end', alignItems: 'center', }}>
+
+                                                    <HoverablePressable url={globalSelectedPDFUrl} printComponent={printIframe} />
+                                                </View>
+                                            }
+
+                                            <iframe
+                                                key={iframeKey}
+                                                src={`https://docs.google.com/viewer?url=${encodeURIComponent(selectedFileUrl)}&embedded=true`}
+                                                id='mobilePdfIframe'
+                                                style={{ width: '100%', height: '700px' }}
+                                                title="PDF Viewer"
+                                                onLoad={handleIframeLoad}
+                                            />
+                                        </>) :
+                                        (<iframe
+                                            src={selectedFileUrl}
+                                            style={{ width: '100%', height: '700px' }}
+                                            title="PDF Viewer"
+                                            onLoad={handleIframeLoad} // Event when iframe has loaded
+                                        />)
+                                )
+                            }
                         </>
                     )
 
@@ -9394,6 +9387,7 @@ const ChatMessageBox = ({ activeButtonValue, userEmail }) => {
         // Store the current path
         const handlePopState = () => {
             if (screenWidth < 770 && activeChatId !== '') {
+                dispatch(setMessageTextInputValue(''));
                 dispatch(setChatMessagesData([]));
                 dispatch(setActiveChatId(''));
                 navigate('/top/chat-messages');
@@ -9573,6 +9567,7 @@ const ChatMessageBox = ({ activeButtonValue, userEmail }) => {
         if (activeChatId == selectedChatData.id) {
             if (selectedChatData.stepIndicator.value !== activeButtonValue && activeButtonValue !== 0) {
                 dispatch(setChatMessagesData([]));
+                dispatch(setMessageTextInputValue(''));
                 dispatch(setActiveChatId(''));
             }
             else {
@@ -9832,11 +9827,11 @@ const ChatMessageBox = ({ activeButtonValue, userEmail }) => {
                             )}
                         </View>
 
-                        {/* Additional message properties like timestamp, sender email, IP, and country */}
+                        {/* Additional message properties like timestamp and sender */}
                         <Text style={{
                             fontWeight: '300',
-                            color: 'gray',
-                            fontSize: 11,
+                            color: '#888c96',
+                            fontSize: screenWidth < 770 ? 9 : 11,
                             marginTop: 4,
                             marginBottom: 4,
                             marginLeft: isGlobalCustomerSender ? 15 : 0,
@@ -9848,6 +9843,7 @@ const ChatMessageBox = ({ activeButtonValue, userEmail }) => {
                                 : (`${formatDate(item.timestamp)}${item.ip ? ` - ${item.ip}${item.ipCountry ? ` - ${item.ipCountry}` : ''}` : ''}`)
                             }
                         </Text>
+
                     </View>
                 }
 
@@ -10056,8 +10052,8 @@ const ChatMessageBox = ({ activeButtonValue, userEmail }) => {
                         {/* Additional message properties like timestamp and sender */}
                         <Text style={{
                             fontWeight: '300',
-                            color: 'gray',
-                            fontSize: 11,
+                            color: '#888c96',
+                            fontSize: screenWidth < 770 ? 9 : 11,
                             marginTop: 4,
                             marginBottom: 4,
                             marginLeft: isGlobalCustomerSender ? 15 : 0,
@@ -10069,6 +10065,7 @@ const ChatMessageBox = ({ activeButtonValue, userEmail }) => {
                                 : (`${formatDate(item.timestamp)}${item.ip ? ` - ${item.ip}${item.ipCountry ? ` - ${item.ipCountry}` : ''}` : ''}`)
                             }
                         </Text>
+
 
                     </View>}
 
@@ -10181,8 +10178,8 @@ const ChatMessageBox = ({ activeButtonValue, userEmail }) => {
                         {/* Additional message properties like timestamp and sender */}
                         <Text style={{
                             fontWeight: '300',
-                            color: 'gray',
-                            fontSize: 11,
+                            color: '#888c96',
+                            fontSize: screenWidth < 770 ? 9 : 11,
                             marginTop: 4,
                             marginBottom: 4,
                             marginLeft: isGlobalCustomerSender ? 15 : 0,
@@ -10194,6 +10191,7 @@ const ChatMessageBox = ({ activeButtonValue, userEmail }) => {
                                 : (`${formatDate(item.timestamp)}${item.ip ? ` - ${item.ip}${item.ipCountry ? ` - ${item.ipCountry}` : ''}` : ''}`)
                             }
                         </Text>
+
 
                     </View>}
 
@@ -10491,7 +10489,7 @@ export default function ChatMessages() {
     //Main fetch
     useEffect(() => {
         let queryRef;
-
+        dispatch(setMessageTextInputValue(''));
         dispatch(setChatMessagesData([]));
         dispatch(setChatMessageBoxLoading(false));
         dispatch(setActiveChatId(''));
@@ -10765,7 +10763,7 @@ export default function ChatMessages() {
     }, [isVisible, screenWidth, slideAnim]);
 
     const handlePressBack = () => {
-
+        dispatch(setMessageTextInputValue(''));
         dispatch(setChatMessagesData([]));
         dispatch(setActiveChatId(''));
         navigate(`/top/chat-messages`);
@@ -10783,7 +10781,7 @@ export default function ChatMessages() {
     return (
         <>
             <NativeBaseProvider>
-                <View style={{ backgroundColor: "white", height: '100%', width: '100%', flexDirection: 'column', maxHeight: '100vh', }} >
+                <View style={{ backgroundColor: "white", height: '100%', width: '100%', flexDirection: 'column', maxHeight: '100vh', overflow: 'hidden', }} >
                     {/* Header */}
                     <Box
                         px="3"

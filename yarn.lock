@@ -1203,6 +1203,11 @@
     "@babel/helper-validator-identifier" "^7.22.20"
     to-fast-properties "^2.0.0"
 
+"@bounceapp/iframe@^0.2.1":
+  version "0.2.1"
+  resolved "https://registry.npmjs.org/@bounceapp/iframe/-/iframe-0.2.1.tgz"
+  integrity sha512-yKvNBxJoVP/HoJCF8gfubPMV244VzUXBfQ1cicl4exA7aEgvRLPT2cEL6DgT014hmaArTkgKOtJtfwMgK9zQyg==
+
 "@callstack/react-theme-provider@^3.0.8":
   version "3.0.8"
   resolved "https://registry.npmjs.org/@callstack/react-theme-provider/-/react-theme-provider-3.0.8.tgz"
@@ -9025,6 +9030,14 @@ fflate@^0.4.8:
   resolved "https://registry.npmjs.org/fflate/-/fflate-0.4.8.tgz"
   integrity sha512-FJqqoDBR00Mdj9ppamLa/Y7vxm+PRmNWA67N846RvsoYVMKB4q3y/de5PA7gUmRMYK/8CMz2GDZQmCRN1wBcWA==
 
+file-loader@*:
+  version "6.2.0"
+  resolved "https://registry.npmjs.org/file-loader/-/file-loader-6.2.0.tgz"
+  integrity sha512-qo3glqyTa61Ytg4u73GultjHGjdRyig3tG6lPtyX/jOEJvHif9uB0/OCI2Kif6ctF3caQTW2G5gym21oAsI4pw==
+  dependencies:
+    loader-utils "^2.0.0"
+    schema-utils "^3.0.0"
+
 file-selector@^0.1.8:
   version "0.1.19"
   resolved "https://registry.npmjs.org/file-selector/-/file-selector-0.1.19.tgz"
@@ -14261,7 +14274,7 @@ qrcode@^1.5.1:
     pngjs "^5.0.0"
     yargs "^15.3.1"
 
-qs@^6.11.0, qs@6.11.0:
+qs@^6.11.0, qs@^6.5.1, qs@6.11.0:
   version "6.11.0"
   resolved "https://registry.npmjs.org/qs/-/qs-6.11.0.tgz"
   integrity sha512-MvjoMCJwEarSbUYk5O+nmoSzSutSsTwF85zcHPQ9OrlFoZOYIjaqBAJIqIXjptyD5vThxGq52Xu/MaJzRkIk4Q==
@@ -15090,6 +15103,13 @@ react-native-web-lite@1.29.3:
     react-native-web-internals "1.29.3"
     styleq "^0.1.3"
 
+react-native-web-webview@^1.0.2:
+  version "1.0.2"
+  resolved "https://registry.npmjs.org/react-native-web-webview/-/react-native-web-webview-1.0.2.tgz"
+  integrity sha512-oNAYNuqUqeqTuAAdIejzDqvUtYA+k5lrvhUYmASdUznZNmyIaoQFA6OKoA4K9F3wdMvark42vUXkUWIp875ewg==
+  dependencies:
+    qs "^6.5.1"
+
 react-native-web@*, react-native-web@^0.18.10, react-native-web@>=0.13.4, react-native-web@~0.18.10:
   version "0.18.12"
   resolved "https://registry.npmjs.org/react-native-web/-/react-native-web-0.18.12.tgz"
@@ -15103,7 +15123,7 @@ react-native-web@*, react-native-web@^0.18.10, react-native-web@>=0.13.4, react-
     postcss-value-parser "^4.2.0"
     styleq "^0.1.2"
 
-"react-native-webview@>=5.10.0 || >=6.1.0", react-native-webview@11.26.0:
+react-native-webview@*, "react-native-webview@>=5.10.0 || >=6.1.0", react-native-webview@11.26.0:
   version "11.26.0"
   resolved "https://registry.npmjs.org/react-native-webview/-/react-native-webview-11.26.0.tgz"
   integrity sha512-4T4CKRm8xlaQDz9h/bCMPGAvtkesrhkRWqCX9FDJEzBToaVUIsV0ZOqtC4w/JSnCtFKKYiaC1ReJtCGv+4mFeQ==
@@ -15833,6 +15853,15 @@ schema-utils@^2.6.5:
   dependencies:
     "@types/json-schema" "^7.0.5"
     ajv "^6.12.4"
+    ajv-keywords "^3.5.2"
+
+schema-utils@^3.0.0:
+  version "3.3.0"
+  resolved "https://registry.npmjs.org/schema-utils/-/schema-utils-3.3.0.tgz"
+  integrity sha512-pN/yOAvcC+5rQ5nERGuwrjLlYvLTbCibnZ1I7B1LaiAz9BRBlE9GMgE/eqV30P7aJQUf7Ddimy/RsbYO/GrVGg==
+  dependencies:
+    "@types/json-schema" "^7.0.8"
+    ajv "^6.12.5"
     ajv-keywords "^3.5.2"
 
 schema-utils@^3.1.1:
