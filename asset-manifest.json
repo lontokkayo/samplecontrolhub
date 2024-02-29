@@ -1,10 +1,10 @@
 {
   "files": {
     "main.css": "/samplecontrolhub/static/css/main.41e8abfd.css",
-    "main.js": "/samplecontrolhub/static/js/main.262b2aab.js",
+    "main.js": "/samplecontrolhub/static/js/main.a33f780e.js",
     "static/js/245.704124dc.chunk.js": "/samplecontrolhub/static/js/245.704124dc.chunk.js",
-    "static/js/162.da88e0a0.chunk.js": "/samplecontrolhub/static/js/162.da88e0a0.chunk.js",
-    "static/js/104.bef493f4.js": "/samplecontrolhub/static/js/104.bef493f4.js",
+    "static/js/162.10d758aa.chunk.js": "/samplecontrolhub/static/js/162.10d758aa.chunk.js",
+    "static/js/63.4054f486.js": "/samplecontrolhub/static/js/63.4054f486.js",
     "static/media/MaterialCommunityIcons.ttf": "/samplecontrolhub/static/media/MaterialCommunityIcons.5d42b4e60858731e7b65.ttf",
     "static/media/RMJ logo for invoice.png": "/samplecontrolhub/static/media/RMJ logo for invoice.260660476b8ac2af1cf6.png",
     "static/media/Ionicons.ttf": "/samplecontrolhub/static/media/Ionicons.3517aeaa34b2f8cd8eef.ttf",
@@ -40,14 +40,14 @@
     "manifest.json": "/samplecontrolhub/manifest.json",
     "serve.json": "/samplecontrolhub/serve.json",
     "main.41e8abfd.css.map": "/samplecontrolhub/static/css/main.41e8abfd.css.map",
-    "main.262b2aab.js.map": "/samplecontrolhub/static/js/main.262b2aab.js.map",
+    "main.a33f780e.js.map": "/samplecontrolhub/static/js/main.a33f780e.js.map",
     "245.704124dc.chunk.js.map": "/samplecontrolhub/static/js/245.704124dc.chunk.js.map",
-    "162.da88e0a0.chunk.js.map": "/samplecontrolhub/static/js/162.da88e0a0.chunk.js.map",
-    "104.bef493f4.js.map": "/samplecontrolhub/static/js/104.bef493f4.js.map"
+    "162.10d758aa.chunk.js.map": "/samplecontrolhub/static/js/162.10d758aa.chunk.js.map",
+    "63.4054f486.js.map": "/samplecontrolhub/static/js/63.4054f486.js.map"
   },
   "entrypoints": [
-    "static/js/104.bef493f4.js",
+    "static/js/63.4054f486.js",
     "static/css/main.41e8abfd.css",
-    "static/js/main.262b2aab.js"
+    "static/js/main.a33f780e.js"
   ]
 }
