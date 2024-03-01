@@ -8391,7 +8391,8 @@ const PreviewInvoice = () => {
                                         </View>}
 
 
-                                </View>}
+                                </View>
+                            }
 
 
                         </ScrollView>
