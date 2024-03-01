@@ -237,6 +237,8 @@ let globalInvoiceVariable = {
 
 }
 
+const mobileViewBreakpoint = 1367;
+
 let globalSelectedPDFUrl = '';
 let globalSelectedFileType = '';
 
@@ -925,7 +927,7 @@ const MessageTemplate = ({ textInputRef }) => {
                         <Ionicons name="chatbox-ellipses-outline" size={24} color={isTemplateHovered ? "#0A78BE" : "#C1C1C1"} />
                     </Pressable>
                 }} >
-                <Popover.Content w={screenWidth < 770 ? 320 : 400} marginRight={10} >
+                <Popover.Content w={screenWidth < mobileViewBreakpoint ? 320 : 400} marginRight={10} >
                     <Popover.Arrow />
                     <View style={{ display: addVisible ? 'flex' : 'none', }}><Popover.Header backgroundColor={'white'}>
                         <View style={{ flexDirection: 'row', flex: 1 }}>
@@ -3155,7 +3157,7 @@ const BankInformation = () => {
         return (
 
             <>
-                <Pressable style={{ width: '60%', height: 25, margin: 2, padding: 1, borderRadius: 2, borderWidth: 1, borderColor: '#D9D9D9', outlineStyle: 'none', }}
+                <Pressable style={{ height: 25, margin: 2, padding: 1, borderRadius: 2, borderWidth: 1, borderColor: '#D9D9D9', outlineStyle: 'none', }}
                     onPress={handleModalCalendarOpen}>
                     <TextInput value={selectedDate} onFocus={handleModalCalendarOpen} />
                 </Pressable>
@@ -3203,42 +3205,49 @@ const BankInformation = () => {
 
     return (
         <>
-            <View style={{ flex: 1, flexDirection: 'row', margin: 2, }}>
-                <Text style={{ width: '20%', fontWeight: 700, margin: 3, }}>Due Date:</Text>
+            <View style={{ marginLeft: 2, }}>
+                <Text style={{ fontWeight: 700, margin: 3, }}>Due Date:</Text>
                 <ModalCalendar currentDate={currentDate} selectedDate={selectedDueDate} setSelectedDate={setSelectedDueDate} />
             </View>
 
-            <View style={{ flex: 1, flexDirection: 'row', margin: 2, marginVertical: 10, }}>
-                <Text style={{ width: '20%', fontWeight: 700, margin: 3, }}>Bank Account: </Text>
-                <Select
-                    selectedValue={selectedBank}
-                    onValueChange={handleValueChange}
-                    bgColor={'#FAFAFA'}
-                    accessibilityLabel="Choose Country"
-                    placeholder="---"
-                    _selectedItem={{
-                        bg: "teal.600",
-                        endIcon: <CheckIcon />,
+            <View style={{ marginLeft: 2, marginVertical: 10, }}>
+                <Text style={{ fontWeight: 700, margin: 3, }}>Bank Account: </Text>
+                <View
+                    style={{
+                        flexDirection: 'row',
+                        flex: 1,
                     }}
-                    height={9}
-                    width={300}
-                    style={{ marginLeft: 10, marginRight: 10, paddingLeft: 1, }}
                 >
-                    {Object.keys(bankAccountsData).map((bankName) => (
-                        <Select.Item key={bankName} label={bankName} value={bankName} />
-                    ))}
-                </Select>
+                    <Select
+                        selectedValue={selectedBank}
+                        onValueChange={handleValueChange}
+                        bgColor={'#FAFAFA'}
+                        accessibilityLabel="Choose Country"
+                        placeholder="---"
+                        _selectedItem={{
+                            bg: "teal.600",
+                            endIcon: <CheckIcon />,
+                        }}
+                        height={9}
+                        style={{ flex: 1, marginLeft: 10, marginRight: 10, paddingLeft: 1, }}
+                    >
+                        {Object.keys(bankAccountsData).map((bankName) => (
+                            <Select.Item key={bankName} label={bankName} value={bankName} />
+                        ))}
+                    </Select>
 
-                <ModalAddBank />
+                    <ModalAddBank />
+                </View>
+
 
             </View>
 
-            <View style={{ flex: 3, flexDirection: 'row', margin: 2, }}>
-                <Text style={{ width: '20%', fontWeight: 700, margin: 3, }}>Payment Terms:</Text>
+            <View style={{ marginLeft: 2, }}>
+                <Text style={{ fontWeight: 700, margin: 3, }}>Payment Terms:</Text>
                 <TextInput onChangeText={(value) => {
                     globalInvoiceVariable.bankInformations.paymentTerms = value;
                 }} ref={paymentTermsRef} multiline defaultValue={invoiceData && Object.keys(invoiceData).length > 0 && invoiceData.bankInformations.paymentTerms ? invoiceData.bankInformations.paymentTerms : "Full payment via Telegraphic Transfer (T/T) required before the due date."} placeholderTextColor='#9B9E9F' placeholder='Email'
-                    style={{ width: '60%', height: 75, margin: 2, padding: 1, borderRadius: 2, borderWidth: 1, borderColor: '#D9D9D9', outlineStyle: 'none', }} />
+                    style={{ height: 75, margin: 2, padding: 1, borderRadius: 2, borderWidth: 1, borderColor: '#D9D9D9', outlineStyle: 'none', }} />
             </View>
 
             {/* <View style={{ flex: 4, flexDirection: 'row', margin: 2, }}>
@@ -3450,34 +3459,43 @@ const PaymentDetails = () => {
                 <Text style={{ fontWeight: 700, fontSize: 16, margin: 3, color: '#16A34A', }}>Payment Details</Text>
             </View>
 
-            <View style={{ flex: 1, flexDirection: 'row', margin: 2, }}>
-                <Text style={{ width: '15%', fontWeight: 700, margin: 3, }}>Incoterms:</Text>
-                <Select
-                    selectedValue={selectedIncoterms}
-                    onValueChange={(value) => setSelectedIncoterms(value)}
-                    bgColor={'#FAFAFA'}
-                    accessibilityLabel="Choose Country"
-                    placeholder="---"
-                    _selectedItem={{
-                        bg: "teal.600",
-                        endIcon: <CheckIcon />,
+            <View style={{ marginLeft: 2, }}>
+                <Text style={{ fontWeight: 700, margin: 3, }}>Incoterms:</Text>
+
+                <View
+                    style={{
+                        flexDirection: 'row',
+                        flex: 1,
                     }}
-                    height={9}
-                    style={{ marginLeft: 10, marginRight: 10, paddingLeft: 1, }}
                 >
-                    <Select.Item key={'C&F'} label={'C&F'} value={'C&F'} />
-                    <Select.Item key={'CIF'} label={'CIF'} value={'CIF'} />
-                    <Select.Item key={'FOB'} label={'FOB'} value={'FOB'} />
-                </Select>
-                <Text style={{ fontWeight: 700, margin: 3, }}>Rate: </Text>
-                <Text style={{ fontWeight: 700, margin: 3, color: '#16A34A', }}>
-                    {selectedChatData.currency && selectedChatData.currency.usdToJpy
-                        ? Number(selectedChatData.currency.usdToJpy).toFixed(2) : '0.00'}
-                </Text>
+                    <Select
+                        selectedValue={selectedIncoterms}
+                        onValueChange={(value) => setSelectedIncoterms(value)}
+                        bgColor={'#FAFAFA'}
+                        accessibilityLabel="Choose Country"
+                        placeholder="---"
+                        _selectedItem={{
+                            bg: "teal.600",
+                            endIcon: <CheckIcon />,
+                        }}
+                        height={9}
+                        style={{ flex: 1, marginLeft: 10, marginRight: 10, paddingLeft: 1, }}
+                    >
+                        <Select.Item key={'C&F'} label={'C&F'} value={'C&F'} />
+                        <Select.Item key={'CIF'} label={'CIF'} value={'CIF'} />
+                        <Select.Item key={'FOB'} label={'FOB'} value={'FOB'} />
+                    </Select>
+                    <Text style={{ fontWeight: 700, margin: 3, }}>Rate: </Text>
+                    <Text style={{ fontWeight: 700, margin: 3, color: '#16A34A', }}>
+                        {selectedChatData.currency && selectedChatData.currency.usdToJpy
+                            ? Number(selectedChatData.currency.usdToJpy).toFixed(2) : '0.00'}
+                    </Text>
+                </View>
+
             </View>
 
-            <View style={{ flex: 1, flexDirection: 'row', margin: 2, marginTop: 10, }}>
-                <Text style={{ width: '15%', fontWeight: 700, margin: 3, }}>Inspection:</Text>
+            <View style={{ flexDirection: 'row', marginLeft: 2, marginTop: 10, }}>
+                <Text style={{ fontWeight: 700, margin: 3, }}>Inspection:</Text>
                 <Checkbox
                     isChecked={inspectionIsChecked}
                     onChange={value => {
@@ -3502,65 +3520,109 @@ const PaymentDetails = () => {
                 <Text style={{ fontWeight: 700, margin: 3, color: '#16A34A', }}>${warrantyPrice}</Text>
             </View> */}
 
-            <View style={{ flex: 1, flexDirection: 'row', margin: 2 }}>
-                <Text style={{ width: '15%', fontWeight: 700, margin: 3 }}>FOB Price:</Text>
-                <Text style={{ fontWeight: 700, margin: 1, paddingTop: 1 }}>$</Text>
-                <TextInput
-                    onChangeText={handleFobPriceInputChangeText}
-                    ref={fobPriceInput}
-                    defaultValue={invoiceData && Object.keys(invoiceData).length > 0 ? invoiceData.paymentDetails.fobPrice : selectedIncoterms == 'FOB' ? 0 : fobPriceDollars}
-                    placeholderTextColor='#9B9E9F'
-                    placeholder='FOB Price'
-                    style={{ width: '60%', height: 25, margin: 2, padding: 1, borderRadius: 2, borderWidth: 1, borderColor: '#D9D9D9', outlineStyle: 'none', }}
-                />
+            <View style={{ marginLeft: 2 }}>
+                <Text style={{ fontWeight: 700, margin: 3 }}>FOB Price:</Text>
+
+                <View
+                    style={{
+                        flexDirection: 'row',
+                        flex: 1,
+                    }}
+                >
+                    <Text style={{ fontWeight: 700, margin: 1, paddingTop: 1 }}>$</Text>
+                    <TextInput
+                        onChangeText={handleFobPriceInputChangeText}
+                        ref={fobPriceInput}
+                        defaultValue={invoiceData && Object.keys(invoiceData).length > 0 ? invoiceData.paymentDetails.fobPrice : selectedIncoterms == 'FOB' ? 0 : fobPriceDollars}
+                        placeholderTextColor='#9B9E9F'
+                        placeholder='FOB Price'
+                        style={{ flex: 1, height: 25, margin: 2, padding: 1, borderRadius: 2, borderWidth: 1, borderColor: '#D9D9D9', outlineStyle: 'none', }}
+                    />
+                </View>
+
             </View>
 
-            <View style={{ flex: 1, flexDirection: 'row', margin: 2 }}>
-                <Text style={{ width: '15%', fontWeight: 700, margin: 3 }}>Freight:</Text>
-                <Text style={{ fontWeight: 700, margin: 1, paddingTop: 1 }}>$</Text>
-                <TextInput
-                    onChangeText={handleFreightInputChangeText}
-                    ref={freightInput}
-                    defaultValue={freightCalculation}
-                    placeholderTextColor='#9B9E9F'
-                    placeholder='Freight'
-                    style={{ width: '60%', height: 25, margin: 2, padding: 1, borderRadius: 2, borderWidth: 1, borderColor: '#D9D9D9', outlineStyle: 'none', }}
-                />
+            <View style={{ marginLeft: 2 }}>
+                <Text style={{ fontWeight: 700, margin: 3 }}>Freight:</Text>
+
+                <View
+                    style={{
+                        flexDirection: 'row',
+                        flex: 1,
+                    }}
+                >
+                    <Text style={{ fontWeight: 700, margin: 1, paddingTop: 1 }}>$</Text>
+                    <TextInput
+                        onChangeText={handleFreightInputChangeText}
+                        ref={freightInput}
+                        defaultValue={freightCalculation}
+                        placeholderTextColor='#9B9E9F'
+                        placeholder='Freight'
+                        style={{ flex: 1, height: 25, margin: 2, padding: 1, borderRadius: 2, borderWidth: 1, borderColor: '#D9D9D9', outlineStyle: 'none', }}
+                    />
+                </View>
+
             </View>
 
-            <View style={{ flex: 1, flexDirection: 'row', margin: 2, display: selectedIncoterms == 'CIF' ? 'flex' : 'none' }}>
-                <Text style={{ width: '15%', fontWeight: 700, margin: 3, }}>Insurance:</Text>
-                <Text style={{ fontWeight: 700, margin: 1, paddingTop: 1, }}>$</Text>
-                <TextInput
-                    onChangeText={handleInsuranceInputChangeText}
-                    ref={insuranceInput}
-                    defaultValue={50}
-                    placeholderTextColor='#9B9E9F'
-                    placeholder={`Insurance`}
-                    style={{ width: '60%', height: 25, margin: 2, padding: 1, borderRadius: 2, borderWidth: 1, borderColor: '#D9D9D9', outlineStyle: 'none', }}
-                />
+            <View style={{ marginLeft: 2, display: selectedIncoterms == 'CIF' ? 'flex' : 'none' }}>
+                <Text style={{ fontWeight: 700, margin: 3, }}>Insurance:</Text>
+                <View
+                    style={{
+                        flexDirection: 'row',
+                        flex: 1,
+                    }}
+                >
+                    <Text style={{ fontWeight: 700, margin: 1, paddingTop: 1, }}>$</Text>
+                    <TextInput
+                        onChangeText={handleInsuranceInputChangeText}
+                        ref={insuranceInput}
+                        defaultValue={50}
+                        placeholderTextColor='#9B9E9F'
+                        placeholder={`Insurance`}
+                        style={{ flex: 1, height: 25, margin: 2, padding: 1, borderRadius: 2, borderWidth: 1, borderColor: '#D9D9D9', outlineStyle: 'none', }}
+                    />
+                </View>
+
             </View>
 
-            <View style={{ flex: 1, flexDirection: 'row', margin: 2, display: inspectionIsChecked ? 'flex' : 'none' }}>
-                <Text style={{ width: '15%', fontWeight: 700, margin: 3, }}>Inspection:</Text>
-                <Text style={{ fontWeight: 700, margin: 1, paddingTop: 1, }}>$</Text>
-                <TextInput
-                    onChangeText={handleInspectionInputChangeText}
-                    ref={inspectionInput}
-                    placeholderTextColor='#9B9E9F'
-                    placeholder={`Inspection [${selectedChatData.inspectionName}]`}
-                    style={{ width: '60%', height: 25, margin: 2, padding: 1, borderRadius: 2, borderWidth: 1, borderColor: '#D9D9D9', outlineStyle: 'none', }}
-                />
-                <Text style={{ fontWeight: 700, margin: 3, color: '#16A34A', }}>{`[${selectedChatData.inspectionName}]`}</Text>
+            <View style={{ marginLeft: 2, display: inspectionIsChecked ? 'flex' : 'none' }}>
+                <Text style={{ fontWeight: 700, margin: 3, }}>Inspection:</Text>
+                <View
+                    style={{
+                        flexDirection: 'row',
+                        flex: 1,
+                    }}
+                >
+                    <Text style={{ fontWeight: 700, margin: 1, paddingTop: 1, }}>$</Text>
+                    <TextInput
+                        onChangeText={handleInspectionInputChangeText}
+                        ref={inspectionInput}
+                        placeholderTextColor='#9B9E9F'
+                        placeholder={`Inspection [${selectedChatData.inspectionName}]`}
+                        style={{ flex: 1, height: 25, margin: 2, padding: 1, borderRadius: 2, borderWidth: 1, borderColor: '#D9D9D9', outlineStyle: 'none', }}
+                    />
+                    <Text style={{ fontWeight: 700, margin: 3, color: '#16A34A', }}>{`[${selectedChatData.inspectionName}]`}</Text>
+                </View>
+
             </View>
 
 
-            <View style={{ flex: 3, flexDirection: 'row', margin: 2, }}>
-                <Text style={{ width: '15%', fontWeight: 700, margin: 3, }}>Additional:</Text>
-                <TextInput ref={additionalNameRef} onChangeText={handleAdditionalNameTextChange} multiline placeholderTextColor='#9B9E9F' placeholder='Name'
-                    style={{ width: '60%', height: 75, margin: 2, padding: 1, borderRadius: 2, borderWidth: 1, borderColor: '#D9D9D9', outlineStyle: 'none', }} />
-                <TextInput ref={additionalPriceRef} onChangeText={handleAdditionalPriceTextChange} multiline placeholderTextColor='#9B9E9F' placeholder='Price'
-                    style={{ width: '60%', height: 75, margin: 2, padding: 1, borderRadius: 2, borderWidth: 1, borderColor: '#D9D9D9', outlineStyle: 'none', }} />
+            <View style={{ marginLeft: 2, }}>
+                <Text style={{ fontWeight: 700, margin: 3, }}>Additional:</Text>
+
+                <View
+                    style={{
+                        flex: 1,
+                        flexDirection: 'row',
+                    }}
+                >
+                    <TextInput ref={additionalNameRef} onChangeText={handleAdditionalNameTextChange} multiline placeholderTextColor='#9B9E9F' placeholder='Name'
+                        style={{ flex: 1, height: 75, margin: 2, padding: 1, borderRadius: 2, borderWidth: 1, borderColor: '#D9D9D9', outlineStyle: 'none', }} />
+                    <TextInput ref={additionalPriceRef} onChangeText={handleAdditionalPriceTextChange} multiline placeholderTextColor='#9B9E9F' placeholder='Price'
+                        style={{ flex: 1, height: 75, margin: 2, padding: 1, borderRadius: 2, borderWidth: 1, borderColor: '#D9D9D9', outlineStyle: 'none', }} />
+                </View>
+
+
             </View>
 
             <View style={{ width: '100%', borderBottomWidth: 2, borderColor: '#0A9FDC', alignSelf: 'center', }} />
@@ -3761,8 +3823,13 @@ const SelectPortOfDeparture = () => {
     }, []);
 
     return (
-        <>
+        <View
+            style={{
+                flexDirection: 'row',
+            }}
+        >
             <Select
+                focusable={false}
                 selectedValue='Japan'
                 onValueChange={(value) => {
                     globalInvoiceVariable.departureCountry = value;
@@ -3775,11 +3842,12 @@ const SelectPortOfDeparture = () => {
                     bg: "teal.600",
                     endIcon: <CheckIcon />
                 }}
-                style={{ marginLeft: 10, marginRight: 10, paddingLeft: 1 }}>
+                style={{ marginLeft: 10, marginRight: 10, paddingLeft: 1, outlineStyle: 'none', }}>
                 <Select.Item key={'Japan'} label={'Japan'} value={'Japan'} />
             </Select>
 
             <Select
+                focusable={false}
                 selectedValue={selectedPort}
                 onValueChange={(value) => {
                     setSelectedPort(value);
@@ -3793,12 +3861,12 @@ const SelectPortOfDeparture = () => {
                     bg: "teal.600",
                     endIcon: <CheckIcon />
                 }}
-                style={{ marginLeft: 10, marginRight: 10, paddingLeft: 1 }}>
+                style={{ marginLeft: 10, marginRight: 10, paddingLeft: 1, outlineStyle: 'none' }}>
                 {portData.map((item) => (
                     <Select.Item key={item.id} label={item.name} value={item.name} />
                 ))}
             </Select>
-        </>
+        </View>
     );
 
 }
@@ -3861,55 +3929,55 @@ const NotifyPartyInput = ({ accountData, setAccountData }) => {
             </View>
 
             <View style={{ display: isChecked ? 'none' : 'flex', }}>
-                <View style={{ flex: 1, flexDirection: 'row', margin: 2, }}>
-                    <Text style={{ width: '15%', fontWeight: 700, margin: 3, }}>Name:</Text>
+                <View style={{ margin: 2, }}>
+                    <Text style={{ fontWeight: 700, marginLeft: 3, }}>Name:</Text>
                     <TextInput onChangeText={(value) => {
                         globalInvoiceVariable.notifyParty.name = value;
                     }}
                         ref={notifyPartyName} disabled={isChecked} placeholderTextColor='#9B9E9F' placeholder='Name'
-                        style={{ backgroundColor: isChecked ? '#F1F1F1' : 'default', width: '60%', height: 25, margin: 2, padding: 1, borderRadius: 2, borderWidth: 1, borderColor: '#D9D9D9', outlineStyle: 'none', }} />
+                        style={{ backgroundColor: isChecked ? '#F1F1F1' : 'default', height: 25, margin: 2, padding: 1, borderRadius: 2, borderWidth: 1, borderColor: '#D9D9D9', outlineStyle: 'none', }} />
                 </View>
-                <View style={{ flex: 1, flexDirection: 'row', margin: 2, }}>
-                    <Text style={{ width: '15%', fontWeight: 700, margin: 3, }}>Address:</Text>
+                <View style={{ margin: 2, }}>
+                    <Text style={{ fontWeight: 700, marginLeft: 3, }}>Address:</Text>
                     <TextInput onChangeText={(value) => {
                         globalInvoiceVariable.notifyParty.address = value;
                     }} ref={notifyPartyAddress} disabled={isChecked} placeholderTextColor='#9B9E9F' placeholder='Address'
-                        style={{ backgroundColor: isChecked ? '#F1F1F1' : 'default', width: '60%', height: 25, margin: 2, padding: 1, borderRadius: 2, borderWidth: 1, borderColor: '#D9D9D9', outlineStyle: 'none', }} />
+                        style={{ backgroundColor: isChecked ? '#F1F1F1' : 'default', height: 25, margin: 2, padding: 1, borderRadius: 2, borderWidth: 1, borderColor: '#D9D9D9', outlineStyle: 'none', }} />
                 </View>
-                <View style={{ flex: 1, flexDirection: 'row', margin: 2, }}>
-                    <Text style={{ width: '15%', fontWeight: 700, margin: 3, }}>City:</Text>
+                <View style={{ margin: 2, }}>
+                    <Text style={{ fontWeight: 700, marginLeft: 3, }}>City:</Text>
                     <TextInput onChangeText={(value) => {
                         globalInvoiceVariable.notifyParty.city = value;
                     }} ref={notifyPartyCity} disabled={isChecked} placeholderTextColor='#9B9E9F' placeholder='City'
-                        style={{ backgroundColor: isChecked ? '#F1F1F1' : 'default', width: '60%', height: 25, margin: 2, padding: 1, borderRadius: 2, borderWidth: 1, borderColor: '#D9D9D9', outlineStyle: 'none', }} />
+                        style={{ backgroundColor: isChecked ? '#F1F1F1' : 'default', height: 25, margin: 2, padding: 1, borderRadius: 2, borderWidth: 1, borderColor: '#D9D9D9', outlineStyle: 'none', }} />
                 </View>
-                <View style={{ flex: 1, flexDirection: 'row', margin: 2, }}>
-                    <Text style={{ width: '15%', fontWeight: 700, margin: 3, }}>Country:</Text>
+                <View style={{ margin: 2, }}>
+                    <Text style={{ fontWeight: 700, marginLeft: 3, }}>Country:</Text>
                     <TextInput onChangeText={(value) => {
                         globalInvoiceVariable.notifyParty.country = value;
                     }} ref={notifyPartyCountry} disabled={isChecked} placeholderTextColor='#9B9E9F' placeholder='Country'
-                        style={{ backgroundColor: isChecked ? '#F1F1F1' : 'default', width: '60%', height: 25, margin: 2, padding: 1, borderRadius: 2, borderWidth: 1, borderColor: '#D9D9D9', outlineStyle: 'none', }} />
+                        style={{ backgroundColor: isChecked ? '#F1F1F1' : 'default', height: 25, margin: 2, padding: 1, borderRadius: 2, borderWidth: 1, borderColor: '#D9D9D9', outlineStyle: 'none', }} />
                 </View>
-                <View style={{ flex: 3, flexDirection: 'row', margin: 2, }}>
-                    <Text style={{ width: '15%', fontWeight: 700, margin: 3, }}>Contact Number:</Text>
+                <View style={{ margin: 2, }}>
+                    <Text style={{ fontWeight: 700, marginLeft: 3, }}>Contact Number:</Text>
                     <TextInput onChangeText={(value) => {
                         globalInvoiceVariable.notifyParty.contactNumber = value;
                     }} ref={notifyPartyContactNumber} disabled={isChecked} multiline placeholderTextColor='#9B9E9F' placeholder='Contact Number'
-                        style={{ backgroundColor: isChecked ? '#F1F1F1' : 'default', width: '60%', height: 75, margin: 2, padding: 1, borderRadius: 2, borderWidth: 1, borderColor: '#D9D9D9', outlineStyle: 'none', }} />
+                        style={{ backgroundColor: isChecked ? '#F1F1F1' : 'default', height: 75, margin: 2, padding: 1, borderRadius: 2, borderWidth: 1, borderColor: '#D9D9D9', outlineStyle: 'none', }} />
                 </View>
-                <View style={{ flex: 1, flexDirection: 'row', margin: 2, }}>
-                    <Text style={{ width: '15%', fontWeight: 700, margin: 3, }}>FAX:</Text>
+                <View style={{ margin: 2, }}>
+                    <Text style={{ fontWeight: 700, marginLeft: 3, }}>FAX:</Text>
                     <TextInput onChangeText={(value) => {
                         globalInvoiceVariable.notifyParty.fax = value;
                     }} ref={notifyPartyFax} disabled={isChecked} placeholderTextColor='#9B9E9F' placeholder='FAX'
-                        style={{ backgroundColor: isChecked ? '#F1F1F1' : 'default', width: '60%', height: 25, margin: 2, padding: 1, borderRadius: 2, borderWidth: 1, borderColor: '#D9D9D9', outlineStyle: 'none', }} />
+                        style={{ backgroundColor: isChecked ? '#F1F1F1' : 'default', height: 25, margin: 2, padding: 1, borderRadius: 2, borderWidth: 1, borderColor: '#D9D9D9', outlineStyle: 'none', }} />
                 </View>
-                <View style={{ flex: 1, flexDirection: 'row', margin: 2, }}>
-                    <Text style={{ width: '15%', fontWeight: 700, margin: 3, }}>Email:</Text>
+                <View style={{ margin: 2, }}>
+                    <Text style={{ fontWeight: 700, marginLeft: 3, }}>Email:</Text>
                     <TextInput onChangeText={(value) => {
                         globalInvoiceVariable.notifyParty.email = value;
                     }} ref={notifyPartyEmail} disabled={isChecked} placeholderTextColor='#9B9E9F' placeholder='Email'
-                        style={{ backgroundColor: isChecked ? '#F1F1F1' : 'default', width: '60%', height: 25, margin: 2, padding: 1, borderRadius: 2, borderWidth: 1, borderColor: '#D9D9D9', outlineStyle: 'none', }} />
+                        style={{ backgroundColor: isChecked ? '#F1F1F1' : 'default', height: 25, margin: 2, padding: 1, borderRadius: 2, borderWidth: 1, borderColor: '#D9D9D9', outlineStyle: 'none', }} />
                 </View>
             </View>
 
@@ -4001,7 +4069,7 @@ const ConsigneeInput = () => {
             <View style={{ flex: 1, flexDirection: 'row', margin: 2, alignSelf: 'center', }}>
                 <Text style={{ fontWeight: 700, fontSize: 16, margin: 3, color: '#0A78BE', }}>Consignee</Text>
             </View>
-            <View style={{ flex: 1, flexDirection: 'row', margin: 5, }}>
+            <View style={{ flexDirection: 'row', margin: 5, }}>
                 <Checkbox
                     isChecked={isChecked}
                     onChange={value => {
@@ -4015,54 +4083,54 @@ const ConsigneeInput = () => {
                     Same as buyer
                 </Checkbox>
             </View>
-            <View style={{ flex: 1, flexDirection: 'row', margin: 2, }}>
-                <Text style={{ width: '15%', fontWeight: 700, margin: 3, }}>Name:</Text>
+            <View style={{ margin: 2, }}>
+                <Text style={{ fontWeight: 700, marginLeft: 3, }}>Name:</Text>
                 <TextInput onChangeText={(value) => {
                     globalInvoiceVariable.consignee.name = value;
                 }} ref={consigneeName} disabled={isChecked} placeholderTextColor='#9B9E9F' placeholder='Name'
-                    style={{ backgroundColor: isChecked ? '#F1F1F1' : 'default', width: '60%', height: 25, margin: 2, padding: 1, borderRadius: 2, borderWidth: 1, borderColor: '#D9D9D9', outlineStyle: 'none', }} />
+                    style={{ backgroundColor: isChecked ? '#F1F1F1' : 'default', height: 25, margin: 2, padding: 1, borderRadius: 2, borderWidth: 1, borderColor: '#D9D9D9', outlineStyle: 'none', }} />
             </View>
-            <View style={{ flex: 1, flexDirection: 'row', margin: 2, }}>
-                <Text style={{ width: '15%', fontWeight: 700, margin: 3, }}>Address:</Text>
+            <View style={{ margin: 2, }}>
+                <Text style={{ fontWeight: 700, marginLeft: 3, }}>Address:</Text>
                 <TextInput onChangeText={(value) => {
                     globalInvoiceVariable.consignee.address = value;
                 }} ref={consigneeAddress} disabled={isChecked} placeholderTextColor='#9B9E9F' placeholder='Address'
-                    style={{ backgroundColor: isChecked ? '#F1F1F1' : 'default', width: '60%', height: 25, margin: 2, padding: 1, borderRadius: 2, borderWidth: 1, borderColor: '#D9D9D9', outlineStyle: 'none', }} />
+                    style={{ backgroundColor: isChecked ? '#F1F1F1' : 'default', height: 25, margin: 2, padding: 1, borderRadius: 2, borderWidth: 1, borderColor: '#D9D9D9', outlineStyle: 'none', }} />
             </View>
-            <View style={{ flex: 1, flexDirection: 'row', margin: 2, }}>
-                <Text style={{ width: '15%', fontWeight: 700, margin: 3, }}>City:</Text>
+            <View style={{ margin: 2, }}>
+                <Text style={{ fontWeight: 700, marginLeft: 3, }}>City:</Text>
                 <TextInput onChangeText={(value) => {
                     globalInvoiceVariable.consignee.city = value;
                 }} ref={consigneeCity} disabled={isChecked} placeholderTextColor='#9B9E9F' placeholder='City'
-                    style={{ backgroundColor: isChecked ? '#F1F1F1' : 'default', width: '60%', height: 25, margin: 2, padding: 1, borderRadius: 2, borderWidth: 1, borderColor: '#D9D9D9', outlineStyle: 'none', }} />
+                    style={{ backgroundColor: isChecked ? '#F1F1F1' : 'default', height: 25, margin: 2, padding: 1, borderRadius: 2, borderWidth: 1, borderColor: '#D9D9D9', outlineStyle: 'none', }} />
             </View>
-            <View style={{ flex: 1, flexDirection: 'row', margin: 2, }}>
-                <Text style={{ width: '15%', fontWeight: 700, margin: 3, }}>Country:</Text>
+            <View style={{ margin: 2, }}>
+                <Text style={{ fontWeight: 700, marginLeft: 3, }}>Country:</Text>
                 <TextInput onChangeText={(value) => {
                     globalInvoiceVariable.consignee.country = value;
                 }} ref={consigneeCountry} disabled={isChecked} placeholderTextColor='#9B9E9F' placeholder='Country'
-                    style={{ backgroundColor: isChecked ? '#F1F1F1' : 'default', width: '60%', height: 25, margin: 2, padding: 1, borderRadius: 2, borderWidth: 1, borderColor: '#D9D9D9', outlineStyle: 'none', }} />
+                    style={{ backgroundColor: isChecked ? '#F1F1F1' : 'default', height: 25, margin: 2, padding: 1, borderRadius: 2, borderWidth: 1, borderColor: '#D9D9D9', outlineStyle: 'none', }} />
             </View>
-            <View style={{ flex: 3, flexDirection: 'row', margin: 2, }}>
-                <Text style={{ width: '15%', fontWeight: 700, margin: 3, }}>Contact Number:</Text>
+            <View style={{ margin: 2, }}>
+                <Text style={{ fontWeight: 700, marginLeft: 3, }}>Contact Number:</Text>
                 <TextInput onChangeText={(value) => {
                     globalInvoiceVariable.consignee.contactNumber = value;
                 }} ref={consigneeContactNumber} disabled={isChecked} multiline placeholderTextColor='#9B9E9F' placeholder='Contact Number'
-                    style={{ backgroundColor: isChecked ? '#F1F1F1' : 'default', width: '60%', height: 75, margin: 2, padding: 1, borderRadius: 2, borderWidth: 1, borderColor: '#D9D9D9', outlineStyle: 'none', }} />
+                    style={{ backgroundColor: isChecked ? '#F1F1F1' : 'default', height: 75, margin: 2, padding: 1, borderRadius: 2, borderWidth: 1, borderColor: '#D9D9D9', outlineStyle: 'none', }} />
             </View>
-            <View style={{ flex: 1, flexDirection: 'row', margin: 2, }}>
-                <Text style={{ width: '15%', fontWeight: 700, margin: 3, }}>FAX:</Text>
+            <View style={{ margin: 2, }}>
+                <Text style={{ fontWeight: 700, marginLeft: 3, }}>FAX:</Text>
                 <TextInput onChangeText={(value) => {
                     globalInvoiceVariable.consignee.fax = value;
                 }} ref={consigneeFax} disabled={isChecked} placeholderTextColor='#9B9E9F' placeholder='FAX'
-                    style={{ backgroundColor: isChecked ? '#F1F1F1' : 'default', width: '60%', height: 25, margin: 2, padding: 1, borderRadius: 2, borderWidth: 1, borderColor: '#D9D9D9', outlineStyle: 'none', }} />
+                    style={{ backgroundColor: isChecked ? '#F1F1F1' : 'default', height: 25, margin: 2, padding: 1, borderRadius: 2, borderWidth: 1, borderColor: '#D9D9D9', outlineStyle: 'none', }} />
             </View>
-            <View style={{ flex: 1, flexDirection: 'row', margin: 2, }}>
-                <Text style={{ width: '15%', fontWeight: 700, margin: 3, }}>Email:</Text>
+            <View style={{ margin: 2, }}>
+                <Text style={{ fontWeight: 700, marginLeft: 3, }}>Email:</Text>
                 <TextInput onChangeText={(value) => {
                     globalInvoiceVariable.consignee.email = value;
                 }} ref={consigneeEmail} disabled={isChecked} placeholderTextColor='#9B9E9F' placeholder='Email'
-                    style={{ backgroundColor: isChecked ? '#F1F1F1' : 'default', width: '60%', height: 25, margin: 2, padding: 1, borderRadius: 2, borderWidth: 1, borderColor: '#D9D9D9', outlineStyle: 'none', }} />
+                    style={{ backgroundColor: isChecked ? '#F1F1F1' : 'default', height: 25, margin: 2, padding: 1, borderRadius: 2, borderWidth: 1, borderColor: '#D9D9D9', outlineStyle: 'none', }} />
             </View>
 
             <NotifyPartyInput accountData={accountData} setAccountData={setAccountData} />
@@ -5445,8 +5513,8 @@ const IssueProformaInvoiceModalContent = () => {
     return (
         <ScrollView style={{ flex: 1, maxHeight: 500, }}>
 
-            <View style={{ flex: 1, flexDirection: 'row', margin: 2, }}>
-                <Text style={{ fontWeight: 700, margin: 3, }}>CFS:</Text>
+            <View style={{ margin: 2, }}>
+                <Text style={{ fontWeight: 700, marginLeft: 3, }}>CFS:</Text>
                 <TextInput
                     defaultValue={invoiceData && Object.keys(invoiceData).length > 0 && invoiceData.cfs ? invoiceData.cfs : ''}
                     ref={cfsInputRef} placeholderTextColor='#9B9E9F' placeholder='Input CFS (Optional)'
@@ -5454,8 +5522,8 @@ const IssueProformaInvoiceModalContent = () => {
                     onChangeText={(value) => globalInvoiceVariable.cfs = value} />
             </View>
 
-            <View style={{ flex: 1, flexDirection: 'row', margin: 2, }}>
-                <Text style={{ fontWeight: 700, margin: 3, }}>Place of Delivery:</Text>
+            <View style={{ margin: 2, }}>
+                <Text style={{ fontWeight: 700, marginLeft: 3, }}>Place of Delivery:</Text>
                 <TextInput
                     defaultValue={invoiceData && Object.keys(invoiceData).length > 0 && invoiceData.placeOfDelivery ? invoiceData.placeOfDelivery : ''}
                     ref={placeOfDeliveryInputRef} placeholderTextColor='#9B9E9F' placeholder='Place of Delivery (Optional)'
@@ -5463,19 +5531,19 @@ const IssueProformaInvoiceModalContent = () => {
                     onChangeText={(value) => globalInvoiceVariable.placeOfDelivery = value} />
             </View>
 
-            <View style={{ flex: 1, flexDirection: 'row', margin: 5, alignItems: 'center' }}>
+            <View style={{ margin: 5, }}>
                 <Text style={{ fontWeight: 700, margin: 3 }}>Port of Departure:</Text>
                 <SelectPortOfDeparture />
             </View>
 
-            <View style={{ flex: 1, flexDirection: 'row', margin: 5, }}>
+            <View style={{ margin: 5, }}>
                 <Text style={{ fontWeight: 700, margin: 3, }}>Sales Person:</Text>
                 <SelectSalesPerson />
             </View>
 
             <View style={{ width: '100%', borderBottomWidth: 2, borderColor: '#0A9FDC', alignSelf: 'center', margin: 5, }} />
 
-            <View style={{ flex: 1, flexDirection: 'row', margin: 2, }}>
+            <View style={{ margin: 2, }}>
                 <Text style={{ fontWeight: 700, margin: 3, }}>Port of Discharge:</Text>
                 {/*Select Discharge*/}
                 <SelectPortOfDischarge />
@@ -5817,7 +5885,7 @@ const ProfitCalculator = () => {
                         <View style={{ flex: 1, borderRightWidth: 1, borderRightColor: '#DADDE1', }}>
 
                             <View style={{ marginBottom: 10, borderWidth: 1, borderColor: '#DADDE1', borderRadius: 5, marginRight: 3, padding: 3, backgroundColor: 'white', }}>
-                                <Text style={{ fontWeight: 'bold', marginVertical: 5, fontSize: 20, lineHeight: 14, }}>Profit (Yen):</Text>
+                                <Text style={{ fontWeight: 'bold', marginVertical: 5, fontSize: 20, }}>Profit (Yen):</Text>
                                 <Text selectable style={{
                                     fontWeight: '700', fontSize: 18,
                                     color: Number(totalProfitAmountDollars * selectedChatData.currency.usdToJpy) < 0 ? '#FF0000' : '#8D7777',
@@ -5827,7 +5895,7 @@ const ProfitCalculator = () => {
                             </View>
 
                             <View style={{ marginBottom: 10, borderWidth: 1, borderColor: '#DADDE1', borderRadius: 5, marginRight: 3, padding: 3, backgroundColor: 'white', }}>
-                                <Text style={{ fontWeight: 'bold', marginVertical: 5, fontSize: 20, lineHeight: 14, }}>Profit (US Dollars):</Text>
+                                <Text style={{ fontWeight: 'bold', marginVertical: 5, fontSize: 20, }}>Profit (US Dollars):</Text>
                                 <Text selectable style={{
                                     fontWeight: '700', fontSize: 18,
                                     color: Number(totalProfitAmountDollars) < 0 ? '#FF0000' : '#16A34A',
@@ -5837,7 +5905,7 @@ const ProfitCalculator = () => {
                             </View>
 
                             <View style={{ marginBottom: 10, borderWidth: 1, borderColor: '#DADDE1', borderRadius: 5, marginRight: 3, padding: 3, backgroundColor: 'white', }}>
-                                <Text style={{ fontWeight: 'bold', marginVertical: 5, fontSize: 20, lineHeight: 14, }}>Profit (Percentage):</Text>
+                                <Text style={{ fontWeight: 'bold', marginVertical: 5, fontSize: 20, }}>Profit (Percentage):</Text>
                                 <Text selectable style={{
                                     fontWeight: '700', fontSize: 18,
                                     color: Number(((totalProfitAmountDollars * selectedChatData.currency.usdToJpy) / purchasedPrice) * 100) <= 10.5 ? '#FF0000' : '#336699',
@@ -5847,7 +5915,7 @@ const ProfitCalculator = () => {
                             </View>
 
                             <View style={{ marginBottom: 10, borderWidth: 1, borderColor: '#DADDE1', borderRadius: 5, marginRight: 3, padding: 3, backgroundColor: '#6E7A83', }}>
-                                <Text style={{ fontWeight: 'bold', marginVertical: 5, fontSize: 20, lineHeight: 14, color: 'white', }}>Price to calculate:</Text>
+                                <Text style={{ fontWeight: 'bold', marginVertical: 5, fontSize: 20, color: 'white', }}>Price to calculate:</Text>
                                 <TextInput
                                     onChangeText={handleInputPriceChangeText}
                                     defaultValue={defaultInputPrice}
@@ -5874,62 +5942,62 @@ const ProfitCalculator = () => {
                         <View style={{ flex: 1, marginLeft: 3 }}>
 
                             <View style={{ marginBottom: 10, borderWidth: 1, borderColor: '#DADDE1', borderRadius: 5, marginRight: 3, padding: 3, backgroundColor: 'white', }}>
-                                <Text style={{ fontWeight: 'bold', marginVertical: 5, fontSize: 16, lineHeight: 14, }}>Purchased Price:</Text>
-                                <Text selectable style={{ fontWeight: '400', fontSize: 14, lineHeight: 14, }}>
+                                <Text style={{ fontWeight: 'bold', marginVertical: 5, fontSize: 16, }}>Purchased Price:</Text>
+                                <Text selectable style={{ fontWeight: '400', fontSize: 14, }}>
                                     {`${formattedPurchasedPrice}`}
                                 </Text>
                             </View>
 
                             <View style={{ marginBottom: 10, borderWidth: 1, borderColor: '#DADDE1', borderRadius: 5, marginRight: 3, padding: 3, backgroundColor: 'white', }}>
-                                <Text style={{ fontWeight: 'bold', marginVertical: 5, fontSize: 16, lineHeight: 14, }}>Auction Fee:</Text>
-                                <Text selectable style={{ fontWeight: '400', fontSize: 14, lineHeight: 14, }}>
+                                <Text style={{ fontWeight: 'bold', marginVertical: 5, fontSize: 16, }}>Auction Fee:</Text>
+                                <Text selectable style={{ fontWeight: '400', fontSize: 14, }}>
                                     {`${formattedAuctionFee}`}
                                 </Text>
                             </View>
 
                             <View style={{ marginBottom: 10, borderWidth: 1, borderColor: '#DADDE1', borderRadius: 5, marginRight: 3, padding: 3, backgroundColor: 'white', }}>
-                                <Text style={{ fontWeight: 'bold', marginVertical: 5, fontSize: 16, lineHeight: 14, }}>Transport Fee:</Text>
-                                <Text selectable style={{ fontWeight: '400', fontSize: 14, lineHeight: 14, }}>
+                                <Text style={{ fontWeight: 'bold', marginVertical: 5, fontSize: 16, }}>Transport Fee:</Text>
+                                <Text selectable style={{ fontWeight: '400', fontSize: 14, }}>
                                     {`${formattedTransportFee}`}
                                 </Text>
                             </View>
 
                             <View style={{ marginBottom: 10, borderWidth: 1, borderColor: '#DADDE1', borderRadius: 5, marginRight: 3, padding: 3, backgroundColor: 'white', }}>
-                                <Text style={{ fontWeight: 'bold', marginVertical: 5, fontSize: 16, lineHeight: 14, }}>Shipping Agent Fee:</Text>
-                                <Text selectable style={{ fontWeight: '400', fontSize: 14, lineHeight: 14, }}>
+                                <Text style={{ fontWeight: 'bold', marginVertical: 5, fontSize: 16, }}>Shipping Agent Fee:</Text>
+                                <Text selectable style={{ fontWeight: '400', fontSize: 14, }}>
                                     {`${formattedShippingAgentFee}`}
                                 </Text>
                             </View>
 
                             <View style={{ marginBottom: 10, borderWidth: 1, borderColor: '#DADDE1', borderRadius: 5, marginRight: 3, padding: 3, backgroundColor: 'white', }}>
-                                <Text style={{ fontWeight: 'bold', marginVertical: 5, fontSize: 16, lineHeight: 14, }}>Supply Chains Costs:</Text>
-                                <Text selectable style={{ fontWeight: '400', fontSize: 14, lineHeight: 14, }}>
+                                <Text style={{ fontWeight: 'bold', marginVertical: 5, fontSize: 16, }}>Supply Chains Costs:</Text>
+                                <Text selectable style={{ fontWeight: '400', fontSize: 14, }}>
                                     {`${formattedTotalSCCAmount}`}
                                 </Text>
                             </View>
 
                             <View style={{ marginBottom: 10, borderWidth: 1, borderColor: '#DADDE1', borderRadius: 5, marginRight: 3, padding: 3, backgroundColor: 'white', }}>
-                                <Text style={{ fontWeight: 'bold', marginVertical: 5, fontSize: 16, lineHeight: 14, }}>Cubic Meter:</Text>
-                                <Text selectable style={{ fontWeight: '400', fontSize: 14, lineHeight: 14, }}>
+                                <Text style={{ fontWeight: 'bold', marginVertical: 5, fontSize: 16, }}>Cubic Meter:</Text>
+                                <Text selectable style={{ fontWeight: '400', fontSize: 14, }}>
                                     {`${cubicMeter}`}
                                 </Text>
                             </View>
 
                             <View style={{ marginBottom: 10, borderWidth: 1, borderColor: '#DADDE1', borderRadius: 5, marginRight: 3, padding: 3, backgroundColor: 'white', }}>
-                                <Text style={{ fontWeight: 'bold', marginVertical: 5, fontSize: 16, lineHeight: 14, }}>Cost per Cubic Meter:</Text>
-                                <Text selectable style={{ fontWeight: '400', fontSize: 14, lineHeight: 14, }}>
+                                <Text style={{ fontWeight: 'bold', marginVertical: 5, fontSize: 16, }}>Cost per Cubic Meter:</Text>
+                                <Text selectable style={{ fontWeight: '400', fontSize: 14, }}>
                                     {`${formattedCostPerCubicMeter} x ${cubicMeter}`}
                                 </Text>
-                                <Text selectable style={{ fontWeight: '700', fontSize: 14, lineHeight: 14, color: '#16A34A', }}>
+                                <Text selectable style={{ fontWeight: '700', fontSize: 14, color: '#16A34A', }}>
                                     {`${formattedTotalCubicMeterCostDollars}`}
                                 </Text>
-                                <Text selectable style={{ fontWeight: '700', fontSize: 14, lineHeight: 14, color: '#8D7777', }}>
+                                <Text selectable style={{ fontWeight: '700', fontSize: 14, color: '#8D7777', }}>
                                     {`${formattedTotalCubicMeterCostYen}`}
                                 </Text>
                             </View>
 
                             <View style={{ marginBottom: 10, borderWidth: 1, borderColor: '#DADDE1', borderRadius: 5, marginRight: 3, padding: 3, backgroundColor: 'white', }}>
-                                <Text style={{ fontWeight: 'bold', marginVertical: 5, fontSize: 20, lineHeight: 14, }}>Total:</Text>
+                                <Text style={{ fontWeight: 'bold', marginVertical: 5, fontSize: 20, }}>Total:</Text>
                                 <Text selectable style={{ fontWeight: '700', fontSize: 18, color: '#8D7777', }}>
                                     {`${formattedRealTotalPriceYen}`}
                                 </Text>
@@ -7228,14 +7296,14 @@ const PreviewInvoice = () => {
                                 alignItems: 'center', // Center horizontally
                             }}>
                                 {capturedImageUri ? (
-                                    (screenWidth < 770 ? <PreviewInvoiceForMobile /> :
+                                    (screenWidth < mobileViewBreakpoint ? <PreviewInvoiceForMobile /> :
                                         <RNImage
                                             key={imagePreviewKey}
                                             source={{ uri: capturedImageUri.toString() }}
                                             style={{
                                                 marginTop: 5,
-                                                width: screenWidth < 770 ? 377 : 595,
-                                                height: screenWidth < 770 ? 541 : 842,
+                                                width: screenWidth < mobileViewBreakpoint ? 377 : 595,
+                                                height: screenWidth < mobileViewBreakpoint ? 541 : 842,
                                                 resizeMode: 'stretch',
                                                 borderWidth: 1,
                                                 borderColor: '#DADDE1',
@@ -8950,7 +9018,7 @@ const ExtendDueDateButton = () => {
         return (
 
             <>
-                <Pressable style={{ width: '60%', height: 25, margin: 2, padding: 1, borderRadius: 2, borderWidth: 1, borderColor: '#D9D9D9', outlineStyle: 'none', }}
+                <Pressable style={{ height: 25, margin: 2, padding: 1, borderRadius: 2, borderWidth: 1, borderColor: '#D9D9D9', outlineStyle: 'none', }}
                     onPress={handleModalCalendarOpen}>
                     <Text style={{ flex: 1, }} >{selectedDate}</Text>
                 </Pressable>
@@ -9041,8 +9109,8 @@ const ExtendDueDateButton = () => {
             >
                 <Modal.Content>
                     <Modal.Header >Extend Due Date</Modal.Header>
-                    <View style={{ flex: 1, flexDirection: 'row', margin: 2, }}>
-                        <Text style={{ width: '20%', fontWeight: 700, margin: 3, }}>Due Date:</Text>
+                    <View style={{ margin: 2, }}>
+                        <Text style={{ fontWeight: 700, marginLeft: 3, }}>Due Date:</Text>
                         <ModalCalendar currentDate={currentDate} selectedDate={selectedDueDate} setSelectedDate={setSelectedDueDate} />
                     </View>
                     <Modal.Footer>
@@ -9319,7 +9387,7 @@ const TransactionHistoryModal = () => {
 
 
             <Pressable onPress={handleTransactionHistoryModalOpen}>
-                <Text style={{ fontSize: screenWidth < 770 ? 10 : 14, color: '#0A78BE', textAlign: 'center', }} underline>
+                <Text style={{ fontSize: screenWidth < mobileViewBreakpoint ? 10 : 14, color: '#0A78BE', textAlign: 'center', }} underline>
                     {`View Transactions`}
                 </Text>
             </Pressable>
@@ -9446,7 +9514,7 @@ const PaymentHistoryModal = () => {
 
         <>
             <Pressable onPress={handlePaymentHistoryModalOpen}>
-                <Text style={{ fontSize: screenWidth < 770 ? 10 : 14, color: '#0A78BE', textAlign: 'center', }} underline>
+                <Text style={{ fontSize: screenWidth < mobileViewBreakpoint ? 10 : 14, color: '#0A78BE', textAlign: 'center', }} underline>
                     {`View Payments History`}
                 </Text>
             </Pressable>
@@ -9579,17 +9647,17 @@ const CustomerProfileModal = () => {
                             <View style={{
                                 borderRadius: 10,
                                 backgroundColor: '#F8F9FF',
-                                width: screenWidth < 770 ? '100%' : '90%',
+                                width: screenWidth < mobileViewBreakpoint ? '100%' : '90%',
                                 alignItems: 'center',
                                 paddingBottom: 15,
 
                             }}>
 
-                                <Text style={{ fontWeight: 'bold', fontSize: screenWidth < 770 ? 24 : 26, color: '#0A78BE', }} selectable>
+                                <Text style={{ fontWeight: 'bold', fontSize: screenWidth < mobileViewBreakpoint ? 24 : 26, color: '#0A78BE', }} selectable>
                                     {`${globalCustomerFirstName} ${globalCustomerLastName}`}
                                 </Text>
 
-                                <Text style={{ fontSize: screenWidth < 770 ? 12 : 14, color: '#6F6F6F', width: '45%', textAlign: 'center', }} selectable>
+                                <Text style={{ fontSize: screenWidth < mobileViewBreakpoint ? 12 : 14, color: '#6F6F6F', width: '45%', textAlign: 'center', }} selectable>
                                     {`${selectedCustomerData.textZip}, ${selectedCustomerData.textStreet}, ${selectedCustomerData.city}, ${selectedCustomerData.country}`}
                                 </Text>
 
@@ -9603,7 +9671,7 @@ const CustomerProfileModal = () => {
                                     }}
                                 >
 
-                                    <Text style={{ fontSize: screenWidth < 770 ? 12 : 14, color: '#6F6F6F', textAlign: 'center', paddingTop: 2, }} selectable>
+                                    <Text style={{ fontSize: screenWidth < mobileViewBreakpoint ? 12 : 14, color: '#6F6F6F', textAlign: 'center', paddingTop: 2, }} selectable>
                                         {`${selectedCustomerData.textPhoneNumber}`}
                                     </Text>
 
@@ -9618,7 +9686,7 @@ const CustomerProfileModal = () => {
 
                                     <Hyperlink
                                         linkDefault={true}
-                                        linkStyle={{ color: '#8A64F6', fontSize: screenWidth < 770 ? 12 : 14 }}
+                                        linkStyle={{ color: '#8A64F6', fontSize: screenWidth < mobileViewBreakpoint ? 12 : 14 }}
 
                                     >
                                         <Text style={{ textAlign: 'center' }} selectable>
@@ -9635,7 +9703,7 @@ const CustomerProfileModal = () => {
 
                         <View
                             style={{
-                                width: screenWidth < 770 ? '100%' : '90%',
+                                width: screenWidth < mobileViewBreakpoint ? '100%' : '90%',
                                 justifyContent: 'center',
                                 marginTop: 50,
                                 flexDirection: 'row',
@@ -9644,11 +9712,11 @@ const CustomerProfileModal = () => {
 
                             <View style={{ flex: 1, alignItems: 'center', }}>
 
-                                <Text style={{ fontWeight: 'bold', fontSize: screenWidth < 770 ? 20 : 24, color: '#009922', textAlign: 'center', }} selectable>
+                                <Text style={{ fontWeight: 'bold', fontSize: screenWidth < mobileViewBreakpoint ? 20 : 24, color: '#009922', textAlign: 'center', }} selectable>
                                     {`$${(totalPaymentValue).toLocaleString('en-US')}`}
                                 </Text>
 
-                                <Text style={{ fontWeight: 'bold', fontSize: screenWidth < 770 ? 12 : 16, color: '#5E4343', textAlign: 'center', }}>
+                                <Text style={{ fontWeight: 'bold', fontSize: screenWidth < mobileViewBreakpoint ? 12 : 16, color: '#5E4343', textAlign: 'center', }}>
                                     {`Total Payment`}
                                 </Text>
 
@@ -9658,10 +9726,10 @@ const CustomerProfileModal = () => {
                             </View>
 
                             <View style={{ flex: 1, alignItems: 'center', }}>
-                                <Text style={{ fontWeight: 'bold', fontSize: screenWidth < 770 ? 20 : 24, color: '#990000', textAlign: 'center', }} selectable>
+                                <Text style={{ fontWeight: 'bold', fontSize: screenWidth < mobileViewBreakpoint ? 20 : 24, color: '#990000', textAlign: 'center', }} selectable>
                                     {`$${selectedCustomerData.overBalance ? Number(selectedCustomerData.overBalance).toLocaleString('en-US') : 0}`}
                                 </Text>
-                                <Text style={{ fontWeight: 'bold', fontSize: screenWidth < 770 ? 12 : 16, color: '#5E4343', textAlign: 'center', }}>
+                                <Text style={{ fontWeight: 'bold', fontSize: screenWidth < mobileViewBreakpoint ? 12 : 16, color: '#5E4343', textAlign: 'center', }}>
                                     {`Overbalance`}
                                 </Text>
 
@@ -9673,10 +9741,10 @@ const CustomerProfileModal = () => {
                             </View>
 
                             <View style={{ flex: 1, alignItems: 'center', }}>
-                                <Text style={{ fontWeight: 'bold', fontSize: screenWidth < 770 ? 20 : 24, color: '#0029A3', textAlign: 'center', }} selectable>
+                                <Text style={{ fontWeight: 'bold', fontSize: screenWidth < mobileViewBreakpoint ? 20 : 24, color: '#0029A3', textAlign: 'center', }} selectable>
                                     {`${selectedCustomerData.transactions ? (selectedCustomerData.transactions).length : 0}`}
                                 </Text>
-                                <Text style={{ fontWeight: 'bold', fontSize: screenWidth < 770 ? 12 : 16, color: '#5E4343', textAlign: 'center', }}>
+                                <Text style={{ fontWeight: 'bold', fontSize: screenWidth < mobileViewBreakpoint ? 12 : 16, color: '#5E4343', textAlign: 'center', }}>
                                     {`Transactions`}
                                 </Text>
 
@@ -10276,7 +10344,7 @@ const DocumentPreviewModal = () => {
                             )}
                             {selectedFileUrl !== '' &&
                                 (
-                                    screenWidth < 770 ?
+                                    screenWidth < mobileViewBreakpoint ?
                                         (<>
                                             {!isLoading &&
                                                 <View style={{ flexDirection: 'row', width: '100%', height: 57, borderRadius: 0, backgroundColor: '#323639', justifyContent: 'flex-end', alignItems: 'center', }}>
@@ -10336,7 +10404,7 @@ const ChatMessageBox = ({ activeButtonValue, userEmail }) => {
     useEffect(() => {
         // Store the current path
         const handlePopState = () => {
-            if (screenWidth < 770 && activeChatId !== '') {
+            if (screenWidth < mobileViewBreakpoint && activeChatId !== '') {
                 dispatch(setMessageTextInputValue(''));
                 dispatch(setChatMessagesData([]));
                 dispatch(setActiveChatId(''));
@@ -10644,7 +10712,7 @@ const ChatMessageBox = ({ activeButtonValue, userEmail }) => {
                         style={{
                             fontWeight: '400',
                             color: isGlobalCustomerSender ? '#555659' : '#555659',
-                            fontSize: screenWidth < 770 ? 14 : 16,
+                            fontSize: screenWidth < mobileViewBreakpoint ? 14 : 16,
                             flexShrink: 1,
                             flexWrap: 'wrap',
                         }}
@@ -10697,7 +10765,7 @@ const ChatMessageBox = ({ activeButtonValue, userEmail }) => {
         const isGlobalCustomerSender = item.sender === globalCustomerId;
         const isLastMessage = index === 0; // Since the list is inverted, the first item is actually the last message
         const isHovered = hoveredImageIndex === index;
-        const textFontSize = screenWidth < 770 ? 14 : 16;
+        const textFontSize = screenWidth < mobileViewBreakpoint ? 14 : 16;
 
         return (
             <View style={{
@@ -10706,7 +10774,7 @@ const ChatMessageBox = ({ activeButtonValue, userEmail }) => {
                 height: '100%',
                 alignSelf: isGlobalCustomerSender ? 'flex-start' : 'flex-end',
                 marginVertical: 4,
-                maxWidth: screenWidth < 770 ? '80%' : '60%', // Max width for long messages
+                maxWidth: screenWidth < mobileViewBreakpoint ? '80%' : '60%', // Max width for long messages
                 // borderWidth: 1,
                 // borderColor: 'red',
             }}>
@@ -10789,7 +10857,7 @@ const ChatMessageBox = ({ activeButtonValue, userEmail }) => {
                         <Text style={{
                             fontWeight: '300',
                             color: '#888c96',
-                            fontSize: screenWidth < 770 ? 9 : 11,
+                            fontSize: screenWidth < mobileViewBreakpoint ? 9 : 11,
                             marginTop: 4,
                             marginBottom: 4,
                             marginLeft: isGlobalCustomerSender ? 15 : 0,
@@ -11026,7 +11094,7 @@ const ChatMessageBox = ({ activeButtonValue, userEmail }) => {
                         <Text style={{
                             fontWeight: '300',
                             color: '#888c96',
-                            fontSize: screenWidth < 770 ? 9 : 11,
+                            fontSize: screenWidth < mobileViewBreakpoint ? 9 : 11,
                             marginTop: 4,
                             marginBottom: 4,
                             marginLeft: isGlobalCustomerSender ? 15 : 0,
@@ -11160,7 +11228,7 @@ const ChatMessageBox = ({ activeButtonValue, userEmail }) => {
                         <Text style={{
                             fontWeight: '300',
                             color: '#888c96',
-                            fontSize: screenWidth < 770 ? 9 : 11,
+                            fontSize: screenWidth < mobileViewBreakpoint ? 9 : 11,
                             marginTop: 4,
                             marginBottom: 4,
                             marginLeft: isGlobalCustomerSender ? 15 : 0,
@@ -11253,7 +11321,7 @@ const ChatMessageBox = ({ activeButtonValue, userEmail }) => {
                         <Text style={{
                             fontWeight: '300',
                             color: '#888c96',
-                            fontSize: screenWidth < 770 ? 9 : 11,
+                            fontSize: screenWidth < mobileViewBreakpoint ? 9 : 11,
                             marginTop: 4,
                             marginBottom: 4,
                             marginLeft: isGlobalCustomerSender ? 15 : 0,
@@ -11825,7 +11893,7 @@ export default function ChatMessages() {
                             <View style={{ flex: 1, height: '100%' }}>
 
                                 <View style={{
-                                    display: screenWidth < 770 && activeChatId !== '' ? 'none' : 'flex',
+                                    display: screenWidth < mobileViewBreakpoint && activeChatId !== '' ? 'none' : 'flex',
                                     borderBottomWidth: 1,
                                     borderColor: '#f5f5f5',
                                     width: '100%',
@@ -11924,9 +11992,9 @@ export default function ChatMessages() {
                                 <View style={{ flex: 1, flexDirection: 'row', height: '100%', }}>
                                     {/* Chat Body */}
 
-                                    <View style={{ flex: screenWidth > 770 ? '' : 1, display: screenWidth < 770 && activeChatId !== '' ? 'none' : 'flex', }}>
+                                    <View style={{ flex: screenWidth > mobileViewBreakpoint ? '' : 1, display: screenWidth < mobileViewBreakpoint && activeChatId !== '' ? 'none' : 'flex', }}>
 
-                                        <View style={{ flex: 1, maxWidth: screenWidth > 770 ? 380 : '100%', minWidth: screenWidth > 770 ? 380 : '100%', borderRightWidth: 0, borderColor: '#DADDE1', maxHeight: 100, minHeight: 100, backgroundColor: 'white', }}>
+                                        <View style={{ flex: 1, maxWidth: screenWidth > mobileViewBreakpoint ? 380 : '100%', minWidth: screenWidth > mobileViewBreakpoint ? 380 : '100%', borderRightWidth: 0, borderColor: '#DADDE1', maxHeight: 100, minHeight: 100, backgroundColor: 'white', }}>
                                             {/* Chat Search */}
                                             <View style={{ flex: 1, paddingHorizontal: 10 }}>
                                                 <SearchChat lastVisible={lastVisible} setLastVisible={setLastVisible} unreadButtonValue={unreadButtonValue} activeButtonValue={activeButtonValue} />
@@ -11969,14 +12037,14 @@ export default function ChatMessages() {
                                             </View>
                                         </View>
 
-                                        <View style={{ flex: 1, maxWidth: screenWidth > 770 ? 380 : '100%', minWidth: screenWidth > 770 ? 380 : '100%', borderRightWidth: 0, borderColor: '#DADDE1', backgroundColor: 'white', }}>
+                                        <View style={{ flex: 1, maxWidth: screenWidth > mobileViewBreakpoint ? 380 : '100%', minWidth: screenWidth > mobileViewBreakpoint ? 380 : '100%', borderRightWidth: 0, borderColor: '#DADDE1', backgroundColor: 'white', }}>
                                             {/* Chat List */}
                                             <ChatList unreadButtonValue={unreadButtonValue} activeButtonValue={activeButtonValue} />
                                         </View>
 
                                     </View>
 
-                                    {screenWidth > 770 && (chatMessageBoxLoading ? (
+                                    {screenWidth > mobileViewBreakpoint && (chatMessageBoxLoading ? (
                                         <View style={{ flex: 1, backgroundColor: 'white', justifyContent: 'center', alignItems: 'center', height: '100%', }}>
                                             <Spinner
                                                 animating
@@ -11999,8 +12067,9 @@ export default function ChatMessages() {
 
                                                 <View style={{ flex: 1, }}>
 
-                                                    {(chatMessagesData.length > 0 && selectedVehicleData.stockStatus == 'Reserved' &&
-                                                        selectedVehicleData.reservedTo !== selectedCustomerData.textEmail)
+                                                    {(selectedChatData && chatMessagesData.length > 0 && selectedCustomerData && selectedVehicleData) &&
+                                                        (selectedChatData && chatMessagesData.length > 0 && selectedVehicleData.stockStatus == 'Reserved' &&
+                                                            (selectedVehicleData.reservedTo !== selectedCustomerData.textEmail))
                                                         ? <ReservedStatusViewForHeader /> :
                                                         (selectedChatData.isCancelled && chatMessagesData.length > 0 && <CancelledViewForHeader />)
                                                     }
@@ -12020,7 +12089,7 @@ export default function ChatMessages() {
                                         </View>
                                     ))}
 
-                                    {screenWidth < 770 && activeChatId !== '' && (chatMessageBoxLoading ? (
+                                    {screenWidth < mobileViewBreakpoint && activeChatId !== '' && (chatMessageBoxLoading ? (
 
                                         <View style={{ flex: 1, backgroundColor: 'white', justifyContent: 'center', alignItems: 'center', }}>
                                             <Spinner
@@ -12043,7 +12112,7 @@ export default function ChatMessages() {
                                             <View style={{ flex: 1 }}>
                                                 <View style={{ flex: 1, minHeight: 90, maxHeight: screenWidth < 1281 ? 130 : 125, borderBottomWidth: 0, borderColor: '#DADDE1', backgroundColor: 'white', justifyContent: 'center', flexDirection: 'row', }}>
                                                     {/* Chat Message Header */}
-                                                    {(screenWidth < 770 && chatMessagesData.length > 0) &&
+                                                    {(screenWidth < mobileViewBreakpoint && chatMessagesData.length > 0) &&
                                                         <Pressable onPress={handlePressBack} style={{ justifyContent: 'center', alignItems: 'center', }}>
                                                             <Ionicons name="chevron-back" size={40} color='black' />
                                                         </Pressable>
