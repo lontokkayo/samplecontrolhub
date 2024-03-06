@@ -150,7 +150,7 @@ const LoadingModal = () => {
             {/* Content within the modal */}
             <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
                 <Spinner size="lg" color="white" />
-                <Text style={{ color: 'white' }}>Loading, please wait!</Text>
+                <Text style={{ color: 'white' }} selectable={false}>Loading, please wait!</Text>
             </View>
         </View>
 

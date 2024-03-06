@@ -235,7 +235,7 @@ const LoadingModal = () => {
       <Center flex={1}>
         <Box style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
           <Spinner size="lg" color="white" />
-          <Text color={'white'}>Loading, please wait!</Text>
+          <Text color={'white'}  selectable={false}>Loading, please wait!</Text>
         </Box>
       </Center>
     </Box>

@@ -138,14 +138,17 @@ import { UsePagination } from './VehicleListComponent/UsePagination';
 import Hyperlink from 'react-native-hyperlink';
 import { HmacSHA256, enc } from 'crypto-js';
 import { AES } from 'crypto-js';
-import { CRYPTO_KEY } from '@env';
+import { CRYPTO_KEY, CRYPTO_KEY_API } from '@env';
 import { captureRef } from 'react-native-view-shot';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
 import QRCode from 'react-native-qrcode-svg';
 import { useRoute } from '@react-navigation/native';
 import { HashRouter as Router, Route, Routes, useNavigate, Navigate, useParams, useHistory, useLocation } from 'react-router-dom';
-import { Iframe } from '@bounceapp/iframe';
+
+import * as XLSX from 'xlsx';
+import { saveAs } from 'file-saver';
+
 // import { CollectionGroup } from 'firebase-admin/firestore';
 const { width } = Dimensions.get('window');
 let selectedScreen = 'CHAT MESSAGES'
@@ -245,6 +248,8 @@ let globalSelectedFileType = '';
 
 const firestore = getFirestore();
 
+
+
 const getEmailOfCurrentUser = () => {
 
     const user = projectControlAuth.currentUser;
@@ -254,6 +259,19 @@ const getEmailOfCurrentUser = () => {
     } else {
         // console.log('No user is currently authenticated');
         return null;
+    }
+};
+
+const encryptDataAPI = (data) => {
+    try {
+        const secretKey = CRYPTO_KEY_API.toString();
+        return AES.encrypt(data, secretKey).toString();
+    } catch (error) {
+        console.error("Error encrypting data:", error);
+        // useNavigate(`/devadmin/chat-messages`);
+
+        // Handle the encryption error or return a fallback
+        return null; // or handle it in another appropriate way
     }
 };
 
@@ -387,7 +405,7 @@ const LoadingModal = () => {
             {/* Content within the modal */}
             <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
                 <Spinner size="lg" color="white" />
-                <Text style={{ color: 'white' }}>Loading, please wait!</Text>
+                <Text style={{ color: 'white' }} selectable={false}>Loading, please wait!</Text>
             </View>
         </View>
 
@@ -2087,6 +2105,7 @@ const ChatList = ({ unreadButtonValue, activeButtonValue, }) => {
                 });
             } catch (error) {
                 console.error("Error updating document: ", error);
+                dispatch(setActiveChatId(''));
                 navigate(`/top/chat-messages`);
 
             }
@@ -6030,6 +6049,7 @@ const PreviewInvoice = () => {
     const [isPreviewHovered, setIsPreviewHovered] = useState(false);
     const screenWidth = Dimensions.get('window').width;
     const invoiceRef = useRef(null);
+    const qrCodeRef = useRef(null);
     const [invoiceImageUri, setInvoiceImageUri] = useState('');
     const hoverPreviewIn = () => setIsPreviewHovered(true);
     const hoverPreviewOut = () => setIsPreviewHovered(false);
@@ -6275,6 +6295,44 @@ const PreviewInvoice = () => {
         } else {
             console.log('This feature is only available in a web environment');
         }
+    };
+
+
+    const s2ab = (s) => {
+        const buf = new ArrayBuffer(s.length);
+        const view = new Uint8Array(buf);
+        for (let i = 0; i < s.length; i++) view[i] = s.charCodeAt(i) & 0xFF;
+        return buf;
+    };
+
+    const modifyAndDownloadExcel = (file, dataToInsert) => {
+        // Read the file using SheetJS
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            const workbook = XLSX.read(e.target.result, { type: 'binary' });
+
+            // Assuming the data is for the first sheet
+            const sheetName = workbook.SheetNames[0];
+            const sheet = workbook.Sheets[sheetName];
+
+            // Insert your data into the sheet
+            // Example: Inserting data starting from the second row, in columns A, B, and C
+            dataToInsert.forEach((row, index) => {
+                const rowIndex = index + 2; // Adjust based on where you want to start inserting data
+                ['A', 'B', 'C'].forEach((col, colIndex) => {
+                    const cellRef = `${col}${rowIndex}`;
+                    XLSX.utils.sheet_add_aoa(sheet, [[row[colIndex]]], { origin: cellRef });
+                });
+            });
+
+            // Write the modified workbook to a binary string
+            const wbOut = XLSX.write(workbook, { bookType: 'xlsx', type: 'binary' });
+
+            // Convert the binary string to a Blob and trigger a download
+            const blob = new Blob([s2ab(wbOut)], { type: 'application/octet-stream' });
+            saveAs(blob, `Invoice No.${selectedChatData.invoiceNumber} Excel.xlsx`);
+        };
+        reader.readAsBinaryString(file);
     };
 
 
@@ -7221,6 +7279,79 @@ const PreviewInvoice = () => {
         )
     }
 
+
+
+    const handleSaveAsExcel = async () => {
+
+        const formData = {
+            qrCodeData: invoiceData.cryptoNumber || '',
+
+            invoiceNumber: invoiceData.id || '',
+            issuingDate: invoiceData.bankInformations.issuingDate || '',
+            shippedFrom: `${invoiceData.departurePort || ''}, ${invoiceData.departureCountry || ''}`,
+            shippedTo: `${invoiceData.discharge.port || ''}, ${invoiceData.discharge.country || ''}`,
+            placeOfDelivery: invoiceData.placeOfDelivery ? invoiceData.placeOfDelivery : '',
+            cfs: invoiceData.cfs ? invoiceData.cfs : '',
+
+            buyerName: invoiceData.consignee.name || '',
+            buyerAddress: invoiceData.consignee.address || '',
+            buyerEmail: invoiceData.consignee.email || '',
+            buyerContact: invoiceData.consignee.contactNumber || '',
+            buyerFax: `FAX: ${invoiceData.consignee.fax || 'N/A'}`,
+
+            notifyName: invoiceData.sameAsConsignee ? `Same as consignee / buyer` : (invoiceData.notifyParty.name || ''),
+            notifyAddress: invoiceData.notifyParty.address || '',
+            notifyEmail: invoiceData.notifyParty.email || '',
+            notifyContact: invoiceData.notifyParty.contactNumber || '',
+            notifyFax: invoiceData.sameAsConsignee ? `FAX: ${invoiceData.notifyParty.fax || 'N/A'}` : '',
+
+            bankName: invoiceData.bankInformations.bankAccount.bankName || '',
+            branchName: invoiceData.bankInformations.bankAccount.branchName || '',
+            swiftcode: invoiceData.bankInformations.bankAccount.swiftCode || '',
+            bankAddress: invoiceData.bankInformations.bankAccount.address || '',
+            nameOfAccountHolder: invoiceData.bankInformations.bankAccount.accountHolder || '',
+            accountNumber: invoiceData.bankInformations.bankAccount.accountNumberValue || '',
+            dueDate: invoiceData.bankInformations.dueDate || '',
+
+            fobText: 'FOB',
+            freightText: 'Freight',
+            inspectionText: `Inspection [${invoiceData.paymentDetails.inspectionName || ''}]`,
+            fobAmount: Math.round(Number(invoiceData.paymentDetails.fobPrice)),
+            freightAmount: Math.round(Number(invoiceData.paymentDetails.freightPrice)),
+            inspectionAmount: Math.round(Number(invoiceData.paymentDetails.inspectionPrice)),
+
+
+            usedVehicle: `Used Vehicle`,
+            carName: invoiceData.carData.carName || '',
+            chassisNumber: invoiceData.carData.chassisNumber || '',
+            color: invoiceData.carData.exteriorColor || '',
+            displacement: `${Number(invoiceData.carData.engineDisplacement || 0).toLocaleString('en-US')} cc`,
+            mileage: `${Number(invoiceData.carData.mileage || 0).toLocaleString('en-US')} km`,
+            fuel: invoiceData.carData.fuel || '',
+            transmission: invoiceData.carData.transmission || '',
+            notes: `${invoiceData.paymentDetails.incoterms || ''} ${invoiceData.discharge.port || ''}`,
+        };
+
+        try {
+            const response = await axios.post('http://localhost:4000/generate-excel', formData, {
+                responseType: 'blob', // Important for handling the binary Excel file
+            });
+
+            // Create a Blob from the PDF Stream
+            const file = new Blob([response.data], {
+                type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            });
+
+            // Build a URL from the file
+            const fileURL = URL.createObjectURL(file);
+
+            // Open the URL on new Window
+            window.open(fileURL);
+        } catch (error) {
+            console.error('Error generating Excel:', error);
+        }
+    };
+
     return (
         <> {invoiceData && Object.keys(invoiceData).length > 0 &&
 
@@ -7269,12 +7400,21 @@ const PreviewInvoice = () => {
                         </Pressable>
 
 
+                        <Pressable onPress={() => {
+                            capturedImageUri ? handleSaveAsExcel() : null;
+                        }}
+                            style={{ justifyContent: 'center', flexDirection: 'row', marginLeft: 10, padding: 5, borderRadius: 5, backgroundColor: 'white', }}>
+                            <MaterialCommunityIcons size={20} name='microsoft-excel' color='#16A34A' />
+                            <Text style={{ color: '#16A34A', }}>Save as Excel</Text>
+                        </Pressable>
+
+
 
                         <Pressable
                             onPress={() => {
                                 capturedImageUri ? openImage() : null;
                             }}
-                            style={{ position: 'absolute', top: -2, right: -380, flexDirection: 'row', padding: 5, borderRadius: 5, backgroundColor: '#0A8DD5', }}>
+                            style={{ position: 'absolute', top: -2, right: -310, flexDirection: 'row', padding: 5, borderRadius: 5, backgroundColor: '#0A8DD5', }}>
                             <Entypo size={20} name='images' color='white' />
                             <Text style={{ color: 'white', }}>View Image</Text>
                         </Pressable>
@@ -7349,12 +7489,17 @@ const PreviewInvoice = () => {
                                         {/* QR CODE */}
                                         {selectedChatData.stepIndicator.value < 3 ?
                                             null :
-                                            <QRCode
-                                                value={invoiceData.cryptoNumber}
-                                                size={80 * widthScaleFactor}
-                                                color="black"
-                                                backgroundColor="white"
-                                            />
+                                            <View
+                                                ref={qrCodeRef}
+                                            >
+                                                <QRCode
+                                                    value={invoiceData.cryptoNumber}
+                                                    size={80 * widthScaleFactor}
+                                                    color="black"
+                                                    backgroundColor="white"
+                                                />
+                                            </View>
+
                                         }
                                     </View>
 
@@ -8466,6 +8611,7 @@ const ReopenTransaction = () => {
                 read: true,
                 readBy: [email],
             });
+
         } catch (e) {
             console.error('Error adding document: ', e);
         }
@@ -11448,6 +11594,8 @@ export default function ChatMessages() {
     useEffect(() => {
         // globalImageUrl = '';
         // navigate(`/devadmin/chat-messages/#`);
+        console.log(encryptDataAPI('rmj-marc'));
+
         const updateWidth = () => {
             const newWidth = Dimensions.get('window').width;
             setScreenWidth(newWidth); // Update the screenWidth state
