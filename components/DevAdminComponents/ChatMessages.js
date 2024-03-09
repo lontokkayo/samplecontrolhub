@@ -3305,12 +3305,11 @@ const PaymentDetails = () => {
     const inspectionInput = useRef(null);
     const insuranceInput = useRef(null);
 
-
     const [totalAmountCalculated, setTotalAmountCalculated] = useState('0');
     const [selectedIncoterms, setSelectedIncoterms] = useState(invoiceData && Object.keys(invoiceData).length > 0 && invoiceData.paymentDetails.incoterms ? invoiceData.paymentDetails.incoterms :
         selectedChatData.insurance ? 'CIF' : 'C&F');
 
-    const [inspectionIsChecked, setInspectionIsChecked] = useState(invoiceData && Object.keys(invoiceData).length > 0 && invoiceData.paymentDetails.inspectionIsChecked ? invoiceData.paymentDetails.inspectionIsChecked : selectedChatData.inspection);
+    const [inspectionIsChecked, setInspectionIsChecked] = useState(invoiceData && Object.keys(invoiceData).length > 0 && invoiceData.paymentDetails.inspectionIsChecked ? invoiceData.paymentDetails.inspectionIsChecked : (invoiceData && Object.keys(invoiceData).length > 0 ? invoiceData.paymentDetails.inspectionIsChecked : selectedChatData.inspection));
     const [inspectionName, setInspectionName] = useState(invoiceData && Object.keys(invoiceData).length > 0 && invoiceData.paymentDetails.inspectionName ? invoiceData.paymentDetails.inspectionName : selectedChatData.inspectionName);
 
     const [warrantyIsChecked, setWarrantyIsChecked] = useState(invoiceData && Object.keys(invoiceData).length > 0 && invoiceData.paymentDetails.warrantyIsCheck ? invoiceData.paymentDetails.warrantyIsCheck : selectedChatData.warranty);
@@ -3318,10 +3317,8 @@ const PaymentDetails = () => {
     const warrantyPrice = invoiceData && Object.keys(invoiceData).length > 0 && invoiceData.paymentDetails.warrantyPrice && invoiceData.paymentDetails.warrantyPrice ? invoiceData.paymentDetails.warrantyPrice : 150;
     const insurancePrice = 50;
 
-
     const additionalNameRef = useRef(null);
     const additionalPriceRef = useRef(null);
-
 
     const safelyParseNumber = (value) => {
         const number = Number(value.replace(/,/g, ''));
@@ -3937,7 +3934,7 @@ const NotifyPartyInput = ({ accountData, setAccountData }) => {
                     isChecked={isChecked}
                     onChange={value => {
                         setIsChecked(value)
-                        globalInvoiceVariable.consignee.sameAsBuyer = value;
+                        globalInvoiceVariable.notifyParty.sameAsConsignee = value;
                     }}
                     style={{ margin: 2, borderColor: '#0A9FDC' }}
                     size="sm"
@@ -5901,7 +5898,7 @@ const ProfitCalculator = () => {
                     <Modal.Header>Profit Calculator</Modal.Header>
                     <Modal.Body style={{ flexDirection: 'row', backgroundColor: '#fafafa', }}>
 
-                        <View style={{ flex: 1, borderRightWidth: 1, borderRightColor: '#DADDE1', }}>
+                        <View style={{ flex: 1, borderRightWidth: 1, borderRightColor: '#DADDE1', maxHeight: 500, }}>
 
                             <View style={{ marginBottom: 10, borderWidth: 1, borderColor: '#DADDE1', borderRadius: 5, marginRight: 3, padding: 3, backgroundColor: 'white', }}>
                                 <Text style={{ fontWeight: 'bold', marginVertical: 5, fontSize: 20, }}>Profit (Yen):</Text>
@@ -6036,6 +6033,1545 @@ const ProfitCalculator = () => {
 
     );
 }
+
+
+
+const GenerateCustomInvoice = () => {
+
+    // npm install html2canvas jspdf
+    // import jsPDF from 'jspdf';
+    // import html2canvas from 'html2canvas';
+    const dispatch = useDispatch();
+    const selectedChatData = useSelector((state) => state.selectedChatData);
+    const [modalVisible, setModalVisible] = useState(false);
+    const invoiceData = useSelector((state) => state.invoiceData);
+    const [isPreviewHovered, setIsPreviewHovered] = useState(false);
+    const screenWidth = Dimensions.get('window').width;
+    const invoiceRef = useRef(null);
+    const qrCodeRef = useRef(null);
+    const [capturedImageUri, setCapturedImageUri] = useState('');
+    const [isChecked, setIsChecked] = useState(invoiceData && Object.keys(invoiceData).length > 0 ? invoiceData.notifyParty.sameAsConsignee : false);
+
+
+
+
+    const handleModalOpen = () => {
+        setModalVisible(true);
+
+    };
+
+    const handleModalClose = () => {
+        setModalVisible(false);
+        setCapturedImageUri('');
+    }
+
+    function countTrueValuesInCarData(invoiceData) {
+        let count = 0;
+
+        // Check if carData exists in invoiceData
+        if (invoiceData.carData) {
+            // List of fields to check within carData
+            const fields = ['interior', 'exterior', 'safetySystem', 'comfort', 'sellingPoints'];
+
+            fields.forEach(field => {
+                if (invoiceData.carData[field]) {
+                    // Count true values in each field of carData
+                    count += Object.values(invoiceData.carData[field]).filter(value => value === true).length;
+                }
+            });
+        }
+
+        return count;
+    }
+
+
+
+    useEffect(() => {
+        let generatedImageUri = '';
+        const captureImageAsync = async () => {
+            try {
+                if (invoiceRef.current && modalVisible == true) {
+                    // Adjust the scale to control the captured image resolution
+                    const scale = 0.85; // Experiment with different scale values
+                    const width = 2480 * scale;
+                    const height = 3508 * scale;
+
+                    const imageUri = await captureRef(invoiceRef, {
+                        format: 'jpg',
+                        quality: 1, // Adjust quality if needed
+                        result: 'base64',
+                        width: width,
+                        height: height,
+                    });
+
+                    generatedImageUri = `data:image/jpeg;base64,${imageUri}`
+                    setCapturedImageUri(`data:image/jpeg;base64,${imageUri}`);
+
+                    // console.log(`data:image/jpeg;base64,${imageUri}`);
+                }
+            } catch (error) {
+                console.error("Error capturing view:", error);
+            }
+        };
+
+        captureImageAsync();
+
+    }, [invoiceRef.current, invoiceData, modalVisible]);
+
+    useEffect(() => {
+        setCapturedImageUri(capturedImageUri);
+    }, [capturedImageUri])
+
+    const captureImage = async () => {
+        try {
+            // Adjust the scale to control the captured image resolution
+            const scale = 0.9; // Experiment with different scale values
+            const width = 2480 * scale;
+            const height = 3508 * scale;
+
+            const imageUri = await captureRef(invoiceRef, {
+                format: 'jpg',
+                quality: 1, // Adjust quality if needed
+                result: 'base64',
+                width: width,
+                height: height,
+            });
+            return `data:image/jpeg;base64,${imageUri}`;
+        } catch (error) {
+            console.error("Error capturing view:", error);
+        }
+    };
+
+    const createPDF = async () => {
+        const element = invoiceRef.current;
+        if (element) {
+            // Reduce the scale slightly for smaller file size
+            const scale = 1; // Fine-tune this value for balance
+
+            const canvas = await html2canvas(element, {
+                scale: scale,
+            });
+
+            // Experiment with JPEG quality for a balance between quality and file size
+            const imageData = canvas.toDataURL('image/jpeg', 0.9);
+
+            // A4 size dimensions in mm
+            const pdfWidth = 210;
+            const pdfHeight = 297;
+
+            const pdf = new jsPDF({
+                orientation: 'portrait',
+                unit: 'mm',
+                format: 'a4'
+            });
+
+            // Adjust PDF compression settings
+            const options = {
+                imageCompression: 'JPEG',
+                imageQuality: 1, // Fine-tune this value as well
+            };
+
+            const imgProps = pdf.getImageProperties(imageData);
+            const pdfWidthFit = pdfWidth;
+            const pdfHeightFit = (imgProps.height * pdfWidthFit) / imgProps.width;
+
+            pdf.addImage(imageData, 'JPEG', 0, 0, pdfWidthFit, pdfHeightFit, undefined, 'FAST', 0, options);
+
+            // Filename logic
+            selectedChatData.stepIndicator.value < 3 ?
+                pdf.save(`Proforma Invoice (${invoiceData.carData.carName} [${invoiceData.carData.referenceNumber}]) (A4 Paper Size).pdf`) :
+                pdf.save(`Invoice No. ${invoiceData.id} (A4 Paper Size).pdf`);
+        } else {
+            console.error("No element to capture");
+        }
+    };
+
+
+    const handleCaptureAndCreatePDF = async () => {
+        const capturedImageUri = await captureImage();
+        if (capturedImageUri) {
+            await createPDF(capturedImageUri);
+        }
+    };
+
+
+
+    if (invoiceData && Object.keys(invoiceData).length > 0) {
+        const issuingDateString = invoiceData.bankInformations.issuingDate;
+        const dueDateString = invoiceData.bankInformations.dueDate;
+        const issuingDateObject = new Date(issuingDateString);
+        const dueDateObject = new Date(dueDateString);
+
+
+        const options = {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric',
+        };
+
+        formattedIssuingDate = issuingDateObject.toLocaleDateString(undefined, options);
+        formattedDueDate = dueDateObject.toLocaleDateString(undefined, options);
+
+    }
+
+    const originalWidth = 794;
+    const originalHeight = 1123;
+
+
+    const originalSmallWidth = 794;
+    const originalSmallHeight = 1123;
+
+    const newWidth = 2480;
+    const newHeight = 3508;
+
+    const smallWidth = 377;
+    const smallHeight = 541;
+
+    const smallWidthScaleFactor = smallWidth / originalSmallWidth;
+    const smallHeightScaleFactor = smallHeight / originalSmallHeight;
+
+    const widthScaleFactor = newWidth / originalWidth;
+    const heightScaleFactor = newHeight / originalHeight;
+
+
+
+    const FormContent = () => {
+
+
+        return (
+
+            <View
+                style={{
+                    width: screenWidth < mobileViewBreakpoint ? '98%' : 500
+                }}
+            >
+                <View
+                    style={{
+                        flex: 1
+                    }}
+                >
+
+                    <Text style={{ fontSize: 16, fontWeight: 'bold', padding: 10, alignSelf: 'center', }}>Generate Custom Invoice</Text>
+
+                    <View style={{ width: '100%', borderBottomWidth: 2, borderColor: '#0A9FDC', alignSelf: 'center', margin: 2, }} />
+
+                    <Text style={{ margin: 2, fontWeight: 'bold', }}>Issuing Date:</Text>
+
+                    <TextInput
+                        defaultValue={invoiceData && Object.keys(invoiceData).length > 0 ? invoiceData.bankInformations.issuingDate : ''}
+                        placeholderTextColor='#9B9E9F'
+                        placeholder='Issuing Date'
+                        style={{ flex: 1, height: 25, margin: 2, padding: 1, borderRadius: 2, borderWidth: 1, borderColor: '#D9D9D9', outlineStyle: 'none', }}
+                    />
+
+                    <Text style={{ margin: 2, fontWeight: 'bold', }}>Due Date:</Text>
+
+                    <TextInput
+                        defaultValue={invoiceData && Object.keys(invoiceData).length > 0 ? invoiceData.bankInformations.dueDate : ''}
+                        placeholderTextColor='#9B9E9F'
+                        placeholder='Due Date'
+                        style={{ flex: 1, height: 25, margin: 2, padding: 1, borderRadius: 2, borderWidth: 1, borderColor: '#D9D9D9', outlineStyle: 'none', }}
+                    />
+
+                    <View style={{ width: '100%', borderBottomWidth: 2, borderColor: '#0A9FDC', alignSelf: 'center', margin: 2, }} />
+
+                    <Text style={{ margin: 2, paddingTop: 5, fontWeight: 'bold', }}>Shipped from:</Text>
+
+                    <TextInput
+                        defaultValue={invoiceData && Object.keys(invoiceData).length > 0 ? `${invoiceData.departurePort}, ${invoiceData.departureCountry}` : ''}
+                        placeholderTextColor='#9B9E9F'
+                        placeholder='Date'
+                        style={{ flex: 1, height: 25, margin: 2, padding: 1, borderRadius: 2, borderWidth: 1, borderColor: '#D9D9D9', outlineStyle: 'none', }}
+                    />
+
+                    <Text style={{ margin: 2, paddingTop: 5, fontWeight: 'bold', }}>Shipped to:</Text>
+
+                    <TextInput
+                        defaultValue={invoiceData && Object.keys(invoiceData).length > 0 ? `${invoiceData.discharge.port}, ${invoiceData.discharge.country}` : ''}
+                        placeholderTextColor='#9B9E9F'
+                        placeholder='Date'
+                        style={{ flex: 1, height: 25, margin: 2, padding: 1, borderRadius: 2, borderWidth: 1, borderColor: '#D9D9D9', outlineStyle: 'none', }}
+                    />
+
+                    <Text style={{ margin: 2, paddingTop: 5, fontWeight: 'bold', }}>Place of Delivery:</Text>
+
+                    <TextInput
+                        defaultValue={invoiceData && Object.keys(invoiceData).length && invoiceData.placeOfDelivery > 0 ? invoiceData.placeOfDelivery : ''}
+                        placeholderTextColor='#9B9E9F'
+                        placeholder='Place of Delivery'
+                        style={{ flex: 1, height: 25, margin: 2, padding: 1, borderRadius: 2, borderWidth: 1, borderColor: '#D9D9D9', outlineStyle: 'none', }}
+                    />
+
+                    <Text style={{ margin: 2, paddingTop: 5, fontWeight: 'bold', }}>CFS:</Text>
+
+                    <TextInput
+                        defaultValue={invoiceData && Object.keys(invoiceData).length && invoiceData.cfs > 0 ? invoiceData.cfs : ''}
+                        placeholderTextColor='#9B9E9F'
+                        placeholder='CFS'
+                        style={{ flex: 1, height: 25, margin: 2, padding: 1, borderRadius: 2, borderWidth: 1, borderColor: '#D9D9D9', outlineStyle: 'none', }}
+                    />
+
+                    <View style={{ width: '100%', borderBottomWidth: 2, borderColor: '#0A9FDC', alignSelf: 'center', margin: 2, }} />
+
+                    <Text style={{ fontSize: 16, fontWeight: 'bold', alignSelf: 'center', color: '#0A78BE', }}>Consignee</Text>
+
+                    <Text style={{ margin: 2, paddingTop: 5, fontWeight: 'bold', }}>Name:</Text>
+
+                    <TextInput
+                        defaultValue={invoiceData && Object.keys(invoiceData).length > 0 ? invoiceData.consignee.name : ''}
+                        placeholderTextColor='#9B9E9F'
+                        placeholder='Name'
+                        style={{ flex: 1, height: 25, margin: 2, padding: 1, borderRadius: 2, borderWidth: 1, borderColor: '#D9D9D9', outlineStyle: 'none', }}
+                    />
+
+                    <Text style={{ margin: 2, paddingTop: 5, fontWeight: 'bold', }}>Address:</Text>
+
+                    <TextInput
+                        defaultValue={invoiceData && Object.keys(invoiceData).length > 0 ? invoiceData.consignee.address : ''}
+                        placeholderTextColor='#9B9E9F'
+                        placeholder='Address'
+                        style={{ flex: 1, height: 25, margin: 2, padding: 1, borderRadius: 2, borderWidth: 1, borderColor: '#D9D9D9', outlineStyle: 'none', }}
+                    />
+
+                    <Text style={{ margin: 2, paddingTop: 5, fontWeight: 'bold', }}>Email:</Text>
+
+                    <TextInput
+                        defaultValue={invoiceData && Object.keys(invoiceData).length > 0 ? invoiceData.consignee.email : ''}
+                        placeholderTextColor='#9B9E9F'
+                        placeholder='Email'
+                        style={{ flex: 1, height: 25, margin: 2, padding: 1, borderRadius: 2, borderWidth: 1, borderColor: '#D9D9D9', outlineStyle: 'none', }}
+                    />
+
+                    <Text style={{ margin: 2, paddingTop: 5, fontWeight: 'bold', }}>Contact Number:</Text>
+
+                    <TextInput
+                        multiline
+                        defaultValue={invoiceData && Object.keys(invoiceData).length > 0 ? invoiceData.consignee.contactNumber : ''}
+                        placeholderTextColor='#9B9E9F'
+                        placeholder='Contact Number'
+                        style={{ flex: 1, height: 75, margin: 2, padding: 1, borderRadius: 2, borderWidth: 1, borderColor: '#D9D9D9', outlineStyle: 'none', }}
+                    />
+
+                    <Text style={{ margin: 2, paddingTop: 5, fontWeight: 'bold', }}>Fax:</Text>
+
+                    <TextInput
+                        defaultValue={invoiceData && Object.keys(invoiceData).length > 0 ? invoiceData.consignee.fax : ''}
+                        placeholderTextColor='#9B9E9F'
+                        placeholder='Fax'
+                        style={{ flex: 1, height: 25, margin: 2, padding: 1, borderRadius: 2, borderWidth: 1, borderColor: '#D9D9D9', outlineStyle: 'none', }}
+                    />
+
+                    <View style={{ width: '100%', borderBottomWidth: 2, borderColor: '#0A9FDC', alignSelf: 'center', margin: 2, }} />
+
+                    <Text style={{ fontSize: 16, fontWeight: 'bold', alignSelf: 'center', color: '#FF0000', }}>Notify Party</Text>
+
+
+                    <Checkbox
+                        isChecked={isChecked}
+                        onChange={value => {
+                            setIsChecked(value)
+                            globalInvoiceVariable.consignee.sameAsBuyer = value;
+                        }}
+                        style={{ margin: 2, borderColor: '#0A9FDC' }}
+                        size="sm"
+                        _text={{ fontWeight: 700 }}
+                    >
+                        Same as consignee
+                    </Checkbox>
+                    <Text style={{ margin: 2, paddingTop: 5, fontWeight: 'bold', }}>Name:</Text>
+
+                    <TextInput
+                        disabled={isChecked}
+                        defaultValue={invoiceData && Object.keys(invoiceData).length > 0 ? invoiceData.notifyParty.name : ''}
+                        placeholderTextColor='#9B9E9F'
+                        placeholder='Name'
+                        style={{ flex: 1, height: 25, margin: 2, padding: 1, borderRadius: 2, borderWidth: 1, backgroundColor: isChecked ? '#F1F1F1' : '#FFFFFF', borderColor: '#D9D9D9', outlineStyle: 'none', }}
+                    />
+
+                    <Text style={{ margin: 2, paddingTop: 5, fontWeight: 'bold', }}>Address:</Text>
+
+                    <TextInput
+                        disabled={isChecked}
+                        defaultValue={invoiceData && Object.keys(invoiceData).length > 0 ? invoiceData.notifyParty.address : ''}
+                        placeholderTextColor='#9B9E9F'
+                        placeholder='Address'
+                        style={{ flex: 1, height: 25, margin: 2, padding: 1, borderRadius: 2, backgroundColor: isChecked ? '#F1F1F1' : '#FFFFFF', borderWidth: 1, borderColor: '#D9D9D9', outlineStyle: 'none', }}
+                    />
+
+                    <Text style={{ margin: 2, paddingTop: 5, fontWeight: 'bold', }}>Email:</Text>
+
+                    <TextInput
+                        disabled={isChecked}
+                        defaultValue={invoiceData && Object.keys(invoiceData).length > 0 ? invoiceData.notifyParty.email : ''}
+                        placeholderTextColor='#9B9E9F'
+                        placeholder='Email'
+                        style={{ flex: 1, height: 25, margin: 2, padding: 1, borderRadius: 2, backgroundColor: isChecked ? '#F1F1F1' : '#FFFFFF', borderWidth: 1, borderColor: '#D9D9D9', outlineStyle: 'none', }}
+                    />
+
+                    <Text style={{ margin: 2, paddingTop: 5, fontWeight: 'bold', }}>Contact Number:</Text>
+
+                    <TextInput
+                        disabled={isChecked}
+                        multiline
+                        defaultValue={invoiceData && Object.keys(invoiceData).length > 0 ? invoiceData.notifyParty.contactNumber : ''}
+                        placeholderTextColor='#9B9E9F'
+                        placeholder='Contact Number'
+                        style={{ flex: 1, height: 75, margin: 2, padding: 1, borderRadius: 2, borderWidth: 1, backgroundColor: isChecked ? '#F1F1F1' : '#FFFFFF', borderColor: '#D9D9D9', outlineStyle: 'none', }}
+                    />
+
+                    <Text style={{ margin: 2, paddingTop: 5, fontWeight: 'bold', }}>Fax:</Text>
+
+                    <TextInput
+                        disabled={isChecked}
+                        defaultValue={invoiceData && Object.keys(invoiceData).length > 0 ? invoiceData.notifyParty.fax : ''}
+                        placeholderTextColor='#9B9E9F'
+                        placeholder='Fax'
+                        style={{ flex: 1, height: 25, margin: 2, padding: 1, borderRadius: 2, borderWidth: 1, backgroundColor: isChecked ? '#F1F1F1' : '#FFFFFF', borderColor: '#D9D9D9', outlineStyle: 'none', }}
+                    />
+
+                    <View style={{ width: '100%', borderBottomWidth: 2, borderColor: '#0A9FDC', alignSelf: 'center', margin: 2, }} />
+
+                    <Text style={{ margin: 2, paddingTop: 5, fontWeight: 'bold', }}>Car name:</Text>
+
+                    <TextInput
+                        defaultValue={invoiceData && Object.keys(invoiceData).length > 0 ? invoiceData.carData.carName : ''}
+                        placeholderTextColor='#9B9E9F'
+                        placeholder='Date'
+                        style={{ height: 25, margin: 2, padding: 1, borderRadius: 2, borderWidth: 1, borderColor: '#D9D9D9', outlineStyle: 'none', }}
+                    />
+
+                    <Text style={{ margin: 2, paddingTop: 5, fontWeight: 'bold', }}>Specifications:</Text>
+
+                    <TextInput
+                        multiline
+                        defaultValue={invoiceData && Object.keys(invoiceData).length > 0 ? `${invoiceData.carData.chassisNumber}\n${invoiceData.carData.exteriorColor}\n${Number(invoiceData.carData.engineDisplacement).toLocaleString('en-US')} cc\n${Number(invoiceData.carData.mileage).toLocaleString('en-US')} km\n${invoiceData.carData.fuel}\n${invoiceData.carData.transmission}` : ''}
+                        placeholderTextColor='#9B9E9F'
+                        placeholder='Date'
+                        style={{ height: 120, margin: 2, padding: 1, borderRadius: 2, borderWidth: 1, borderColor: '#D9D9D9', outlineStyle: 'none', }}
+                    />
+
+                    <Text style={{ margin: 2, paddingTop: 5, fontWeight: 'bold', }}>Item note:</Text>
+
+                    <TextInput
+                        defaultValue={invoiceData && Object.keys(invoiceData).length > 0 ? `${invoiceData.paymentDetails.incoterms} ${invoiceData.discharge.port}` : ''}
+                        placeholderTextColor='#9B9E9F'
+                        placeholder='Item note'
+                        style={{ flex: 1, height: 25, margin: 2, padding: 1, borderRadius: 2, borderWidth: 1, borderColor: '#D9D9D9', outlineStyle: 'none', }}
+                    />
+
+                    <View style={{ width: '100%', borderBottomWidth: 2, borderColor: '#0A9FDC', alignSelf: 'center', margin: 2, }} />
+
+                    <Text style={{ margin: 2, paddingTop: 5, fontWeight: 'bold', }}>FOB:</Text>
+
+                    <View
+                        style={{
+                            flexDirection: 'row',
+                        }}
+                    >
+                        <TextInput
+                            defaultValue={'FOB'}
+                            placeholderTextColor='#9B9E9F'
+                            placeholder='Fob'
+                            style={{ flex: 1, height: 25, margin: 2, padding: 1, borderRadius: 2, borderWidth: 1, borderColor: '#D9D9D9', outlineStyle: 'none', }}
+                        />
+
+                        <Text style={{ marginLeft: 2, paddingTop: 5, fontWeight: 'bold', }}>$</Text>
+                        <TextInput
+                            defaultValue={invoiceData && Object.keys(invoiceData).length > 0 ? Math.round(Number(invoiceData.paymentDetails.fobPrice)) : ''}
+                            placeholderTextColor='#9B9E9F'
+                            placeholder='FOB Price'
+                            style={{ flex: 1, height: 25, margin: 2, padding: 1, borderRadius: 2, borderWidth: 1, borderColor: '#D9D9D9', outlineStyle: 'none', }}
+                        />
+                    </View>
+
+                    <Text style={{ margin: 2, paddingTop: 5, fontWeight: 'bold', }}>Freight:</Text>
+
+                    <View
+                        style={{
+                            flexDirection: 'row',
+                        }}
+                    >
+                        <TextInput
+                            defaultValue={'Freight'}
+                            placeholderTextColor='#9B9E9F'
+                            placeholder='Freight'
+                            style={{ flex: 1, height: 25, margin: 2, padding: 1, borderRadius: 2, borderWidth: 1, borderColor: '#D9D9D9', outlineStyle: 'none', }}
+                        />
+
+                        <Text style={{ marginLeft: 2, paddingTop: 5, fontWeight: 'bold', }}>$</Text>
+                        <TextInput
+                            defaultValue={invoiceData && Object.keys(invoiceData).length > 0 ? Math.round(Number(invoiceData.paymentDetails.freightPrice)) : ''}
+                            placeholderTextColor='#9B9E9F'
+                            placeholder='Freight Price'
+                            style={{ flex: 1, height: 25, margin: 2, padding: 1, borderRadius: 2, borderWidth: 1, borderColor: '#D9D9D9', outlineStyle: 'none', }}
+                        />
+                    </View>
+
+                    <Text style={{ margin: 2, paddingTop: 5, fontWeight: 'bold', }}>Inspection:</Text>
+
+                    <View
+                        style={{
+                            flexDirection: 'row',
+                        }}
+                    >
+                        <TextInput
+                            defaultValue={'Inspection'}
+                            placeholderTextColor='#9B9E9F'
+                            placeholder='Inspection'
+                            style={{ flex: 1, height: 25, margin: 2, padding: 1, borderRadius: 2, borderWidth: 1, borderColor: '#D9D9D9', outlineStyle: 'none', }}
+                        />
+
+                        <Text style={{ marginLeft: 2, paddingTop: 5, fontWeight: 'bold', }}>$</Text>
+                        <TextInput
+                            defaultValue={invoiceData && Object.keys(invoiceData).length > 0 ? invoiceData.paymentDetails.inspectionPrice : ''}
+                            placeholderTextColor='#9B9E9F'
+                            placeholder='Inspection Price'
+                            style={{ flex: 1, height: 25, margin: 2, padding: 1, borderRadius: 2, borderWidth: 1, borderColor: '#D9D9D9', outlineStyle: 'none', }}
+                        />
+                    </View>
+
+
+                    <Text style={{ margin: 2, paddingTop: 5, fontWeight: 'bold', }}>Total price:</Text>
+
+                    <View
+                        style={{
+                            flexDirection: 'row',
+                        }}
+                    >
+                        <Text style={{ marginLeft: 2, paddingTop: 5, fontWeight: 'bold', }}>$</Text>
+                        <TextInput
+                            defaultValue={invoiceData && Object.keys(invoiceData).length > 0 ? `${(invoiceData.paymentDetails.totalAmount).replace(/,/g, '')}` : ''}
+                            placeholderTextColor='#9B9E9F'
+                            placeholder='Total price'
+                            style={{ flex: 1, height: 25, margin: 2, padding: 1, borderRadius: 2, borderWidth: 1, borderColor: '#D9D9D9', outlineStyle: 'none', }}
+                        />
+                    </View>
+
+
+
+                    <Text style={{ margin: 2, paddingTop: 5, fontWeight: 'bold', }}>Divided by:</Text>
+
+                    <TextInput
+                        defaultValue={'1'}
+                        placeholderTextColor='#9B9E9F'
+                        placeholder='Total price'
+                        style={{ flex: 1, height: 25, margin: 2, padding: 1, borderRadius: 2, borderWidth: 1, borderColor: '#D9D9D9', outlineStyle: 'none', }}
+                    />
+
+
+
+                </View>
+            </View>
+        )
+    }
+
+    return (
+        <> {invoiceData && Object.keys(invoiceData).length > 0 &&
+
+            <>{!selectedChatData.isCancelled && <Pressable
+                onPress={handleModalOpen}
+                focusable={false}
+                variant='ghost'
+                style={{
+                    justifyContent: 'center',
+                    flexDirection: 'row',
+                    padding: 5,
+                    borderRadius: 5,
+                    backgroundColor: '#0A8DD5',
+                }}>
+                <MaterialCommunityIcons size={20} name='file-document-edit' color='white' />
+                <Text style={{ fontWeight: 400, color: 'white', }}>
+                    {`Generate Custom Invoice`}
+                </Text>
+            </Pressable>}
+
+                <Modal
+                    isOpen={modalVisible}
+                    onClose={() => {
+                        handleModalClose();
+                    }}
+                    size={'full'}
+                    useRNModal
+                >
+                    <View style={{ flexDirection: 'row', margin: 2, }}>
+                        <Pressable onPress={() => {
+                            capturedImageUri ? handleCaptureAndCreatePDF() : null;
+                        }}
+                            style={{ justifyContent: 'center', flexDirection: 'row', padding: 5, borderRadius: 5, backgroundColor: '#16A34A', }}>
+                            <MaterialCommunityIcons size={20} name='download' color='white' />
+                            <Text style={{ color: 'white', }}>Download as PDF</Text>
+                        </Pressable>
+                    </View>
+
+                    {modalVisible &&
+                        <ScrollView
+                            style={{ maxHeight: 600, maxWidth: screenWidth < mobileViewBreakpoint ? '90%' : 520, }}
+                        >
+                            <View style={{
+                                position: 'absolute',
+                                top: 0,
+                                bottom: 0,
+                                right: 0,
+                                left: 0,
+                                backgroundColor: 'white',
+                                zIndex: 999,
+                                flex: 1,
+                                alignItems: 'center', // Center horizontally
+                            }}>
+                                <FormContent />
+                            </View>
+
+                            {/* Main content with invoice details */}
+                            {
+
+                                <View ref={invoiceRef}
+                                    style={{
+                                        width: newWidth,
+                                        height: newHeight,
+                                        backgroundColor: 'white',
+                                        zIndex: 1
+                                    }}>
+
+                                    <View style={{ position: 'absolute', left: 38 * widthScaleFactor, top: 38 * heightScaleFactor }}>
+                                        <NativeImage
+                                            source={require('../../assets/RMJ logo for invoice.png')}
+                                            style={{
+                                                width: 95 * widthScaleFactor,
+                                                height: 85 * heightScaleFactor,
+                                                resizeMode: 'stretch',
+                                            }}
+                                        />
+                                    </View>
+
+                                    <View style={{ position: 'absolute', alignSelf: 'center', top: 80 * heightScaleFactor }}>
+                                        {/* Title */}
+                                        {selectedChatData.stepIndicator.value < 3 ?
+                                            <Text style={{ fontWeight: 700, fontSize: 25 * widthScaleFactor }}>{`PROFORMA INVOICE`}</Text> :
+                                            <Text style={{ fontWeight: 700, fontSize: 25 * widthScaleFactor }}>{`INVOICE`}</Text>
+                                        }
+                                    </View>
+
+                                    <View style={{ position: 'absolute', right: 38 * widthScaleFactor, top: 38 * heightScaleFactor }}>
+                                        {/* QR CODE */}
+                                        {selectedChatData.stepIndicator.value < 3 ?
+                                            null :
+                                            <View
+                                                ref={qrCodeRef}
+                                            >
+                                                <QRCode
+                                                    value={invoiceData.cryptoNumber}
+                                                    size={80 * widthScaleFactor}
+                                                    color="black"
+                                                    backgroundColor="white"
+                                                />
+                                            </View>
+
+                                        }
+                                    </View>
+
+                                    <View style={{ position: 'absolute', right: 121 * widthScaleFactor, top: 34 * heightScaleFactor }}>
+                                        {/* Invoice Number */}
+                                        {selectedChatData.stepIndicator.value < 3 ?
+                                            null :
+                                            <Text style={{ fontWeight: 750, fontSize: 14 * widthScaleFactor }}>{`Invoice No. RMJ-${invoiceData.id}`}</Text>
+                                        }
+                                    </View>
+
+                                    {selectedChatData.stepIndicator.value < 3 ?
+                                        <View style={{ position: 'absolute', right: 38 * widthScaleFactor, top: 34 * heightScaleFactor, }}>
+                                            {/* Issuing Date */}
+                                            <View style={{ flexDirection: 'row', alignSelf: 'flex-end', }}>
+                                                <Text style={{ fontWeight: 750, fontSize: 14 * widthScaleFactor }}>{`Issuing Date: `}</Text>
+                                                <Text style={{ fontWeight: 400, fontSize: 14 * widthScaleFactor }}>{`${formattedIssuingDate}`}</Text>
+                                            </View>
+                                            <View style={{ flexDirection: 'row', alignSelf: 'flex-end', }}>
+                                                <Text style={{ fontWeight: 750, fontSize: 14 * widthScaleFactor, color: '#F00A0A', }}>{`Valid Until: `}</Text>
+                                                <Text style={{ fontWeight: 400, fontSize: 14 * widthScaleFactor }}>{`${formattedDueDate}`}</Text>
+                                            </View>
+
+                                        </View>
+                                        :
+                                        <View style={{ position: 'absolute', right: 121 * widthScaleFactor, top: 49 * heightScaleFactor, flexDirection: 'row' }}>
+                                            {/* Issuing Date */}
+                                            <Text style={{ fontWeight: 750, fontSize: 14 * widthScaleFactor }}>{`Issuing Date: `}</Text>
+                                            <Text style={{ fontWeight: 400, fontSize: 14 * widthScaleFactor }}>{`${formattedIssuingDate}`}</Text>
+                                        </View>
+                                    }
+
+                                    <View style={{
+                                        position: 'absolute',
+                                        left: 40 * widthScaleFactor,
+                                        top: 134 * heightScaleFactor,
+                                        width: 280 * widthScaleFactor,
+                                    }}>
+                                        {/* Shipper */}
+                                        <Text style={{
+                                            fontWeight: 750,
+                                            fontSize: 16 * widthScaleFactor,
+                                            borderBottomWidth: 3, // Adjust the thickness of the underline
+                                            width: 'fit-content', // Make the underline cover the text width
+                                            marginBottom: 5, // Add some space between text and underline
+                                        }}>
+                                            {`Shipper`}
+                                        </Text>
+                                        <Text style={{ fontWeight: 750, fontSize: 14 * widthScaleFactor, lineHeight: 14 * widthScaleFactor }}>{`Real Motor Japan (YANAGISAWA HD CO.,LTD)`}</Text>
+                                        <Text style={{ fontWeight: 400, fontSize: 14 * widthScaleFactor, marginTop: 20, lineHeight: 14 * widthScaleFactor }}>{`26-2 Takara Tsutsumi-cho Toyota City, Aichi Prefecture, Japan, 473-0932`}</Text>
+                                        <Text style={{ fontWeight: 400, fontSize: 14 * widthScaleFactor, marginTop: 20, lineHeight: 14 * widthScaleFactor }}>{`FAX: +81565850606`}</Text>
+
+                                        <Text style={{ fontWeight: 700, fontSize: 14 * widthScaleFactor, marginTop: 20, lineHeight: 14 * widthScaleFactor }}>{`Shipped From:`}</Text>
+                                        <Text style={{ fontWeight: 400, fontSize: 14 * widthScaleFactor, lineHeight: 14 * widthScaleFactor }}>{`${invoiceData.departurePort}, ${invoiceData.departureCountry}`}</Text>
+
+                                        <Text style={{ fontWeight: 700, fontSize: 14 * widthScaleFactor, marginTop: 20, lineHeight: 14 * widthScaleFactor }}>{`Shipped To:`}</Text>
+                                        <Text style={{ fontWeight: 400, fontSize: 14 * widthScaleFactor, lineHeight: 14 * widthScaleFactor }}>{`${invoiceData.discharge.port}, ${invoiceData.discharge.country}`}</Text>
+                                        {invoiceData.placeOfDelivery && invoiceData.placeOfDelivery !== '' ?
+                                            <>
+                                                <Text style={{ fontWeight: 700, fontSize: 14 * widthScaleFactor, marginTop: 20, lineHeight: 14 * widthScaleFactor }}>{`Place of Delivery:`}</Text>
+                                                <Text style={{ fontWeight: 400, fontSize: 14 * widthScaleFactor, lineHeight: 14 * widthScaleFactor }}>{`${invoiceData.placeOfDelivery}`}</Text>
+                                            </>
+                                            : null}
+                                        {invoiceData.cfs && invoiceData.cfs !== '' ?
+                                            <>
+                                                <Text style={{ fontWeight: 700, fontSize: 14 * widthScaleFactor, marginTop: 20, lineHeight: 14 * widthScaleFactor }}>{`CFS:`}</Text>
+                                                <Text style={{ fontWeight: 400, fontSize: 14 * widthScaleFactor, lineHeight: 14 * widthScaleFactor }}>{`${invoiceData.cfs}`}</Text>
+                                            </>
+                                            : null}
+
+                                        <View style={{ flex: 1, flexDirection: 'row', width: 715 * widthScaleFactor, }}>
+
+                                            <View style={{
+                                                flex: 1, width: 280 * widthScaleFactor,
+                                            }}>
+                                                {/* Buyer Information */}
+                                                <Text style={{
+                                                    fontWeight: 750,
+                                                    fontSize: 18 * widthScaleFactor,
+                                                    borderBottomWidth: 3, // Adjust the thickness of the underline
+                                                    borderBottomColor: '#0A78BE',
+                                                    width: 'fit-content', // Make the underline cover the text width
+                                                    marginBottom: 5, // Add some space between text and underline
+                                                    color: '#0A78BE',
+                                                    marginTop: 25 * heightScaleFactor,
+
+                                                }}>
+                                                    {`Buyer Information`}
+                                                </Text>
+                                                <Text style={{ fontWeight: 750, fontSize: 16 * widthScaleFactor, lineHeight: 14 * widthScaleFactor }}>{`${invoiceData.consignee.name}`}</Text>
+                                                <Text style={{ fontWeight: 400, fontSize: 16 * widthScaleFactor, marginTop: 20, lineHeight: 14 * widthScaleFactor }}>{`${invoiceData.consignee.address}`}</Text>
+                                                <Text style={{ fontWeight: 400, fontSize: 16 * widthScaleFactor, marginTop: 20, lineHeight: 14 * widthScaleFactor }}>{`${invoiceData.consignee.email}`}</Text>
+                                                <Text style={{ fontWeight: 400, fontSize: 16 * widthScaleFactor, marginTop: 20, lineHeight: 14 * widthScaleFactor }}>{`${invoiceData.consignee.contactNumber}`}</Text>
+                                                <Text style={{ fontWeight: 400, fontSize: 16 * widthScaleFactor, marginTop: 20, lineHeight: 14 * widthScaleFactor }}>{`FAX: ${invoiceData.consignee.fax == '' ? 'N/A' : invoiceData.consignee.fax}`}</Text>
+
+                                            </View>
+
+                                            <View style={{ flex: 1, paddingLeft: 20 * widthScaleFactor, width: 280 * widthScaleFactor, }}>
+                                                {/* Notify Party */}
+                                                <Text style={{
+                                                    fontWeight: 750,
+                                                    fontSize: 18 * widthScaleFactor,
+                                                    borderBottomWidth: 3, // Adjust the thickness of the underline
+                                                    borderBottomColor: '#FF0000',
+                                                    width: 'fit-content', // Make the underline cover the text width
+                                                    marginBottom: 5, // Add some space between text and underline
+                                                    color: '#FF0000',
+                                                    marginTop: 25 * heightScaleFactor,
+                                                }}>
+                                                    {`Notify Party`}
+                                                </Text>
+                                                {invoiceData.notifyParty.sameAsConsignee == true ? (
+                                                    <Text style={{ fontWeight: 400, fontSize: 16 * widthScaleFactor, }}>{`Same as consignee / buyer`}</Text>) :
+                                                    (<>
+                                                        <Text style={{ fontWeight: 750, fontSize: 16 * widthScaleFactor, lineHeight: 14 * widthScaleFactor }}>{`${invoiceData.notifyParty.name}`}</Text>
+                                                        <Text style={{ fontWeight: 400, fontSize: 16 * widthScaleFactor, marginTop: 20, lineHeight: 14 * widthScaleFactor }}>{`${invoiceData.notifyParty.address}`}</Text>
+                                                        <Text style={{ fontWeight: 400, fontSize: 16 * widthScaleFactor, marginTop: 20, lineHeight: 14 * widthScaleFactor }}>{`${invoiceData.notifyParty.email}`}</Text>
+                                                        <Text style={{ fontWeight: 400, fontSize: 16 * widthScaleFactor, marginTop: 20, lineHeight: 14 * widthScaleFactor }}>{`${invoiceData.notifyParty.contactNumber}`}</Text>
+                                                        <Text style={{ fontWeight: 400, fontSize: 16 * widthScaleFactor, marginTop: 20, lineHeight: 14 * widthScaleFactor }}>{`FAX: ${invoiceData.notifyParty.fax == '' ? 'N/A' : invoiceData.notifyParty.fax}`}</Text>
+                                                    </>)}
+                                            </View>
+
+                                        </View>
+
+
+                                    </View>
+                                    {selectedChatData.stepIndicator.value < 3 ?
+
+                                        <View style={{ position: 'absolute', right: 38 * widthScaleFactor, top: 130 * heightScaleFactor, borderWidth: 3, width: 430 * widthScaleFactor, borderColor: '#FF5C00', height: 194 * heightScaleFactor, }}>
+                                            <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', flexDirection: 'row', }}>
+                                                <Entypo size={50 * widthScaleFactor} name='warning' color={'#FF0000'} />
+                                                <Text style={{ fontWeight: 750, fontSize: 12 * widthScaleFactor, color: '#FF0000', marginLeft: 20 * widthScaleFactor, }}>{`Bank Information will be provided after placing an order.`}</Text>
+                                            </View>
+                                        </View>
+                                        :
+                                        <View style={{ position: 'absolute', right: 38 * widthScaleFactor, top: 130 * heightScaleFactor, borderWidth: 3, width: 430 * widthScaleFactor, borderColor: '#1ABA3D', }}>
+
+                                            <View style={{ flex: 1, alignItems: 'center', }}>
+                                                <Text style={{ fontWeight: 750, fontSize: 14 * widthScaleFactor, color: '#114B33', }}>{`Bank Information`}</Text>
+                                            </View>
+
+                                            <View style={{ flex: 1, flexDirection: 'row', marginHorizontal: 5 * widthScaleFactor, marginBottom: 5 * heightScaleFactor, }}>
+                                                <View style={{ flex: 1, marginRight: 50 * widthScaleFactor, }}>
+                                                    <Text style={{
+                                                        fontWeight: 750,
+                                                        fontSize: 14 * widthScaleFactor,
+                                                        borderBottomWidth: 3, // Adjust the thickness of the underline
+                                                        width: 'fit-content', // Make the underline cover the text width
+                                                        marginBottom: 2, // Add some space between text and underline
+                                                    }}>
+                                                        {`Bank Account`}
+                                                    </Text>
+
+                                                    <Text style={{ fontWeight: 750, fontSize: 12 * widthScaleFactor, lineHeight: 14 * widthScaleFactor, marginTop: 3 * heightScaleFactor, }}>{`Bank Name: `}
+                                                        <Text style={{ fontWeight: 400, fontSize: 12 * widthScaleFactor, lineHeight: 14 * widthScaleFactor }}>{`${invoiceData.bankInformations.bankAccount.bankName}`}</Text>
+                                                    </Text>
+
+                                                    <Text style={{ fontWeight: 750, fontSize: 12 * widthScaleFactor, lineHeight: 14 * widthScaleFactor, marginTop: 3 * heightScaleFactor, }}>{`Branch Name: `}
+                                                        <Text style={{ fontWeight: 400, fontSize: 12 * widthScaleFactor, lineHeight: 14 * widthScaleFactor }}>{`${invoiceData.bankInformations.bankAccount.branchName}`}</Text>
+                                                    </Text>
+
+                                                    <Text style={{ fontWeight: 750, fontSize: 12 * widthScaleFactor, lineHeight: 14 * widthScaleFactor, marginTop: 3 * heightScaleFactor, }}>{`SWIFTCODE: `}
+                                                        <Text style={{ fontWeight: 400, fontSize: 12 * widthScaleFactor, lineHeight: 14 * widthScaleFactor }}>{`${invoiceData.bankInformations.bankAccount.swiftCode}`}</Text>
+                                                    </Text>
+
+                                                    <Text style={{ fontWeight: 750, fontSize: 12 * widthScaleFactor, lineHeight: 14 * widthScaleFactor, marginTop: 3 * heightScaleFactor, }}>{`Address: `}
+                                                        <Text style={{ fontWeight: 400, fontSize: 12 * widthScaleFactor, lineHeight: 14 * widthScaleFactor }}>{`${invoiceData.bankInformations.bankAccount.address}`}</Text>
+                                                    </Text>
+
+                                                    <Text style={{ fontWeight: 750, fontSize: 12 * widthScaleFactor, lineHeight: 14 * widthScaleFactor, marginTop: 3 * heightScaleFactor, }}>{`Name of Account Holder: `}
+                                                        <Text style={{ fontWeight: 400, fontSize: 12 * widthScaleFactor, lineHeight: 14 * widthScaleFactor }}>{`${invoiceData.bankInformations.bankAccount.accountHolder}`}</Text>
+                                                    </Text>
+
+                                                    <Text style={{ fontWeight: 750, fontSize: 12 * widthScaleFactor, lineHeight: 14 * widthScaleFactor, marginTop: 3 * heightScaleFactor, }}>{`Account Number: `}
+                                                        <Text style={{ fontWeight: 400, fontSize: 12 * widthScaleFactor, lineHeight: 14 * widthScaleFactor }}>{`${invoiceData.bankInformations.bankAccount.accountNumberValue}`}</Text>
+                                                    </Text>
+                                                </View>
+
+                                                <View style={{ flex: 1 }}>
+
+                                                    <Text style={{
+                                                        fontWeight: 750,
+                                                        fontSize: 14 * widthScaleFactor,
+                                                        borderBottomWidth: 3, // Adjust the thickness of the underline
+                                                        width: 'fit-content', // Make the underline cover the text width
+                                                        marginBottom: 2, // Add some space between text and underline
+                                                    }}>
+                                                        {`Payment Terms`}
+                                                    </Text>
+
+                                                    <Text style={{ fontWeight: 750, fontSize: 12 * widthScaleFactor, lineHeight: 14 * widthScaleFactor }}>{`Terms: `}
+                                                        <Text style={{ fontWeight: 400, fontSize: 12 * widthScaleFactor, lineHeight: 14 * widthScaleFactor }}>{`${invoiceData.bankInformations.paymentTerms}`}</Text>
+                                                    </Text>
+
+                                                    <View style={{ paddingTop: 30 * heightScaleFactor, }}>
+
+                                                        <Text style={{
+                                                            fontWeight: 750,
+                                                            fontSize: 14 * widthScaleFactor,
+                                                            borderBottomWidth: 3, // Adjust the thickness of the underline
+                                                            width: 'fit-content', // Make the underline cover the text width
+                                                            marginBottom: 2, // Add some space between text and underline
+                                                            color: '#F00A0A',
+                                                            borderBottomColor: '#F00A0A',
+                                                        }}>
+                                                            {`Payment Due`}
+                                                        </Text>
+
+                                                        <Text style={{ fontWeight: 750, fontSize: 12 * widthScaleFactor, color: '#F00A0A', lineHeight: 14 * widthScaleFactor }}>{`Due Date: `}
+                                                            <Text style={{ fontWeight: 400, fontSize: 12 * widthScaleFactor, color: 'black', lineHeight: 14 * widthScaleFactor }}>{`${formattedDueDate}`}</Text>
+                                                        </Text>
+
+                                                    </View>
+
+                                                </View>
+
+                                            </View>
+
+                                        </View>}
+
+
+
+
+
+                                    <View style={{
+                                        position: 'absolute',
+                                        left: 38 * widthScaleFactor,
+                                        top: (invoiceData.placeOfDelivery && invoiceData.cfs) || (invoiceData.placeOfDelivery !== '' && invoiceData.cfs !== '') ? 577 * heightScaleFactor : 537 * heightScaleFactor,
+                                        width: 718 * widthScaleFactor,
+                                        borderWidth: 1 * widthScaleFactor,
+                                        borderColor: '#C2E2F4',
+                                        alignSelf: 'center',
+                                    }}>
+                                        <View style={{ flex: 1, flexDirection: 'row', }}>
+
+                                            <View style={{ flex: 2, justifyContent: 'center', }}>
+                                                <Text
+                                                    style={{
+                                                        fontWeight: 'bold',
+                                                        fontSize: 12 * widthScaleFactor,
+                                                        lineHeight: 14 * widthScaleFactor,
+                                                        marginBottom: 3 * heightScaleFactor,
+                                                        alignSelf: 'center',
+                                                        color: '#008AC6',
+                                                    }}>
+                                                    {`Description`}
+                                                </Text>
+
+                                            </View>
+
+                                            <View style={{ flex: 2, justifyContent: 'center', }}>
+                                                <Text
+                                                    style={{
+                                                        fontWeight: 'bold',
+                                                        fontSize: 12 * widthScaleFactor,
+                                                        lineHeight: 14 * widthScaleFactor,
+                                                        marginBottom: 3 * heightScaleFactor,
+                                                        alignSelf: 'center',
+                                                        color: '#008AC6',
+                                                    }}>
+                                                    {`Notes`}
+                                                </Text>
+                                            </View>
+
+                                            <View style={{ flex: 1, justifyContent: 'center', }}>
+                                                <Text
+                                                    style={{
+                                                        fontWeight: 'bold',
+                                                        fontSize: 12 * widthScaleFactor,
+                                                        lineHeight: 14 * widthScaleFactor,
+                                                        marginBottom: 3 * heightScaleFactor,
+                                                        alignSelf: 'center',
+                                                        color: '#008AC6',
+                                                    }}>
+                                                    {`Quantity`}
+                                                </Text>
+                                            </View>
+
+                                            <View style={{ flex: 2, justifyContent: 'center', }}>
+                                                <Text
+                                                    style={{
+                                                        fontWeight: 'bold',
+                                                        fontSize: 12 * widthScaleFactor,
+                                                        lineHeight: 14 * widthScaleFactor,
+                                                        marginBottom: 3 * heightScaleFactor,
+                                                        alignSelf: 'center',
+                                                        color: '#008AC6',
+                                                    }}>
+                                                    {`Amount`}
+                                                </Text>
+                                            </View>
+
+                                        </View>
+
+                                        <View style={{ flex: 1, flexDirection: 'row', }}>
+
+                                            <View style={{
+                                                borderTopWidth: 1 * widthScaleFactor,
+                                                borderColor: '#C2E2F4',
+                                                flex: 5,
+                                            }}>
+                                                <Text
+                                                    style={{
+                                                        fontWeight: 400,
+                                                        fontSize: 12 * widthScaleFactor,
+                                                        lineHeight: 14 * widthScaleFactor,
+                                                        marginBottom: 3 * heightScaleFactor,
+                                                        marginLeft: 2 * widthScaleFactor,
+                                                    }}>
+                                                    {`FOB`}
+                                                </Text>
+                                            </View>
+
+
+                                            <View style={{
+                                                borderTopWidth: 1 * widthScaleFactor,
+                                                borderColor: '#C2E2F4',
+                                                flex: 2,
+                                            }}>
+                                                <Text
+                                                    style={{
+                                                        fontWeight: 400,
+                                                        fontSize: 12 * widthScaleFactor,
+                                                        lineHeight: 14 * widthScaleFactor,
+                                                        marginBottom: 3 * heightScaleFactor,
+                                                        alignSelf: 'center',
+                                                    }}>
+                                                    {`$${Math.round(Number(invoiceData.paymentDetails.fobPrice)).toLocaleString('en-US', { useGrouping: true })}`}
+                                                </Text>
+                                            </View>
+
+                                        </View>
+
+                                        <View style={{ flex: 1, flexDirection: 'row', }}>
+
+                                            <View style={{
+                                                borderTopWidth: 1 * widthScaleFactor,
+                                                borderColor: '#C2E2F4',
+                                                flex: 5,
+                                            }}>
+                                                <Text
+                                                    style={{
+                                                        fontWeight: 400,
+                                                        fontSize: 12 * widthScaleFactor,
+                                                        lineHeight: 14 * widthScaleFactor,
+                                                        marginBottom: 3 * heightScaleFactor,
+                                                        marginLeft: 2 * widthScaleFactor,
+                                                    }}>
+                                                    {`Freight`}
+                                                </Text>
+                                            </View>
+
+                                            <View style={{
+                                                borderTopWidth: 1 * widthScaleFactor,
+                                                borderColor: '#C2E2F4',
+                                                flex: 2,
+                                            }}>
+                                                <Text
+                                                    style={{
+                                                        fontWeight: 400,
+                                                        fontSize: 12 * widthScaleFactor,
+                                                        lineHeight: 14 * widthScaleFactor,
+                                                        marginBottom: 3 * heightScaleFactor,
+                                                        alignSelf: 'center',
+                                                    }}>
+                                                    {`$${Math.round(Number(invoiceData.paymentDetails.freightPrice)).toLocaleString('en-US', { useGrouping: true })}`}
+                                                </Text>
+                                            </View>
+
+                                        </View>
+
+                                        <View style={{ flex: 1, flexDirection: 'row', }}>
+
+                                            <View style={{
+                                                borderTopWidth: 1 * widthScaleFactor,
+                                                borderColor: '#C2E2F4',
+                                                flex: 5,
+                                                flexDirection: 'row',
+                                            }}>
+                                                {invoiceData.paymentDetails.inspectionIsChecked && (invoiceData.paymentDetails.incoterms == "C&F" || invoiceData.paymentDetails.incoterms == "FOB") && <Text
+                                                    style={{
+                                                        fontWeight: 400,
+                                                        fontSize: 12 * widthScaleFactor,
+                                                        lineHeight: 14 * widthScaleFactor,
+                                                        marginBottom: 3 * heightScaleFactor,
+                                                        marginLeft: 2 * widthScaleFactor,
+                                                    }}>
+                                                    {invoiceData.paymentDetails.inspectionIsChecked ? `Inspection [${invoiceData.paymentDetails.inspectionName}]` : ' '}
+                                                </Text>}
+
+                                                {invoiceData.paymentDetails.inspectionIsChecked && invoiceData.paymentDetails.incoterms == "CIF" &&
+                                                    <>
+                                                        <Text
+                                                            style={{
+                                                                fontWeight: 400,
+                                                                fontSize: 12 * widthScaleFactor,
+                                                                lineHeight: 14 * widthScaleFactor,
+                                                                marginBottom: 3 * heightScaleFactor,
+                                                                marginLeft: 2 * widthScaleFactor,
+                                                            }}>
+                                                            {invoiceData.paymentDetails.inspectionIsChecked ? `Inspection [${invoiceData.paymentDetails.inspectionName}]` : ' '}
+                                                        </Text>
+                                                        <Text
+                                                            style={{
+                                                                fontWeight: 400,
+                                                                fontSize: 12 * widthScaleFactor,
+                                                                lineHeight: 14 * widthScaleFactor,
+                                                                marginBottom: 3 * heightScaleFactor,
+                                                                marginLeft: 2 * widthScaleFactor,
+                                                            }}>
+                                                            {invoiceData.paymentDetails.incoterms == "CIF" ? ` + Insurance` : ' '}
+                                                        </Text>
+                                                    </>
+                                                }
+
+                                                {!invoiceData.paymentDetails.inspectionIsChecked && invoiceData.paymentDetails.incoterms == "CIF" &&
+                                                    <Text
+                                                        style={{
+                                                            fontWeight: 400,
+                                                            fontSize: 12 * widthScaleFactor,
+                                                            lineHeight: 14 * widthScaleFactor,
+                                                            marginBottom: 3 * heightScaleFactor,
+                                                            marginLeft: 2 * widthScaleFactor,
+                                                        }}>
+                                                        {invoiceData.paymentDetails.incoterms == "CIF" ? `Insurance` : ' '}
+                                                    </Text>
+                                                }
+
+                                                {!invoiceData.paymentDetails.inspectionIsChecked && (invoiceData.paymentDetails.incoterms == "C&F" || invoiceData.paymentDetails.incoterms == "FOB") &&
+                                                    <Text
+                                                        style={{
+                                                            fontWeight: 400,
+                                                            fontSize: 12 * widthScaleFactor,
+                                                            lineHeight: 14 * widthScaleFactor,
+                                                            marginBottom: 3 * heightScaleFactor,
+                                                        }}>
+                                                        {' '}
+                                                    </Text>
+                                                }
+
+
+                                            </View>
+
+
+                                            <View style={{
+                                                borderTopWidth: 1 * widthScaleFactor,
+                                                borderColor: '#C2E2F4',
+                                                flex: 2,
+                                            }}>
+
+                                                {invoiceData.paymentDetails.inspectionIsChecked && (invoiceData.paymentDetails.incoterms == "C&F" || invoiceData.paymentDetails.incoterms == "FOB") && <Text
+                                                    style={{
+                                                        fontWeight: 400,
+                                                        fontSize: 12 * widthScaleFactor,
+                                                        lineHeight: 14 * widthScaleFactor,
+                                                        marginBottom: 3 * heightScaleFactor,
+                                                        alignSelf: 'center',
+                                                    }}>
+                                                    {invoiceData.paymentDetails.inspectionIsChecked ? `$${Number(invoiceData.paymentDetails.inspectionPrice).toLocaleString('en-US', { useGrouping: true }).split('.')[0]}` : ' '}
+                                                </Text>}
+
+                                                {invoiceData.paymentDetails.inspectionIsChecked && invoiceData.paymentDetails.incoterms == "CIF" &&
+                                                    <Text
+                                                        style={{
+                                                            fontWeight: 400,
+                                                            fontSize: 12 * widthScaleFactor,
+                                                            lineHeight: 14 * widthScaleFactor,
+                                                            marginBottom: 3 * heightScaleFactor,
+                                                            alignSelf: 'center',
+                                                        }}>
+                                                        {invoiceData.paymentDetails.inspectionIsChecked ? `$${Number(invoiceData.paymentDetails.inspectionPrice).toLocaleString('en-US', { useGrouping: true }).split('.')[0]}` : ' '}
+                                                        <Text
+                                                            style={{
+                                                                fontWeight: 400,
+                                                                fontSize: 12 * widthScaleFactor,
+                                                                lineHeight: 14 * widthScaleFactor,
+                                                                marginBottom: 3 * heightScaleFactor,
+                                                            }}>
+                                                            {invoiceData.paymentDetails.incoterms === "CIF" ? ` + $${Number(invoiceData.paymentDetails.insurancePrice).toLocaleString('en-US', { useGrouping: true }).split('.')[0]}` : ' '}
+                                                        </Text>
+                                                    </Text>
+
+                                                }
+
+                                                {!invoiceData.paymentDetails.inspectionIsChecked && invoiceData.paymentDetails.incoterms == "CIF" &&
+                                                    <Text
+                                                        style={{
+                                                            fontWeight: 400,
+                                                            fontSize: 12 * widthScaleFactor,
+                                                            lineHeight: 14 * widthScaleFactor,
+                                                            marginBottom: 3 * heightScaleFactor,
+                                                            alignSelf: 'center',
+
+                                                        }}>
+                                                        {invoiceData.paymentDetails.incoterms == "CIF" ? `$${Number(invoiceData.paymentDetails.insurancePrice).toLocaleString('en-US', { useGrouping: true }).split('.')[0]}` : ' '}
+                                                    </Text>
+                                                }
+
+                                            </View>
+
+
+                                        </View>
+
+                                        <View style={{ flex: 1, flexDirection: 'row', }}>
+
+                                            <View style={{
+                                                borderTopWidth: 1 * widthScaleFactor,
+                                                borderColor: '#C2E2F4',
+                                                flex: 5,
+                                                flexDirection: 'row',
+                                            }}>
+                                                {invoiceData.paymentDetails.additionalName && (invoiceData.paymentDetails.additionalName).length > 0 && <Text
+                                                    style={{
+                                                        fontWeight: 400,
+                                                        fontSize: 12 * widthScaleFactor,
+                                                        lineHeight: 14 * widthScaleFactor,
+                                                        marginBottom: 3 * heightScaleFactor,
+                                                        marginLeft: 2 * widthScaleFactor,
+                                                    }}>
+                                                    {invoiceData.paymentDetails.additionalName && (invoiceData.paymentDetails.additionalName).length > 0 ? `${invoiceData.paymentDetails.additionalName.join(' + ')}` : ' '}
+                                                </Text>}
+
+
+                                            </View>
+
+                                            <View style={{
+                                                borderTopWidth: 1 * widthScaleFactor,
+                                                borderColor: '#C2E2F4',
+                                                flex: 2,
+                                            }}>
+                                                <Text
+                                                    style={{
+                                                        fontWeight: 400,
+                                                        fontSize: 12 * widthScaleFactor,
+                                                        lineHeight: 14 * widthScaleFactor,
+                                                        marginBottom: 3 * heightScaleFactor,
+                                                        alignSelf: 'center',
+                                                    }}>
+                                                    {invoiceData.paymentDetails.additionalPrice && invoiceData.paymentDetails.additionalPrice.length > 0
+                                                        ? invoiceData.paymentDetails.additionalPrice.map(price =>
+                                                            `$${parseFloat(price).toLocaleString('en-US', {
+                                                                style: 'currency',
+                                                                currency: 'USD',
+                                                                minimumFractionDigits: 0,
+                                                                maximumFractionDigits: 0
+                                                            }).slice(1)}`
+                                                        ).join(' + ')
+                                                        : ' '}
+                                                </Text>
+                                            </View>
+
+                                        </View>
+
+                                        <View style={{ flex: 1, flexDirection: 'row', }}>
+
+                                            <View style={{
+                                                borderTopWidth: 1 * widthScaleFactor,
+                                                borderColor: '#C2E2F4',
+                                                flex: 2,
+                                                flexDirection: 'row',
+                                                paddingVertical: 2 * heightScaleFactor,
+
+                                            }}>
+                                                {invoiceData.carData && invoiceData.carData.carName ? (
+                                                    <Text style={{
+                                                        fontWeight: 400,
+                                                        fontSize: 12 * widthScaleFactor,
+                                                        lineHeight: 14 * widthScaleFactor,
+                                                        marginBottom: 3 * heightScaleFactor,
+                                                        alignSelf: 'center',
+                                                        marginLeft: 2 * widthScaleFactor,
+                                                    }}>
+                                                        {"Used Vehicle\n"}
+                                                        <Text style={{
+                                                            fontWeight: 700,
+                                                            fontSize: 12 * widthScaleFactor,
+                                                            lineHeight: 14 * widthScaleFactor,
+                                                            marginBottom: 3 * heightScaleFactor,
+                                                            alignSelf: 'center',
+                                                        }}>
+                                                            {`${invoiceData.carData.carName}\n`}
+                                                        </Text>
+                                                        <Text style={{
+                                                            fontWeight: 400,
+                                                            fontSize: 12 * widthScaleFactor,
+                                                            lineHeight: 14 * widthScaleFactor,
+                                                            marginBottom: 3 * heightScaleFactor,
+                                                            alignSelf: 'center',
+                                                        }}>
+                                                            {`${invoiceData.carData.chassisNumber}\n`}
+                                                        </Text>
+                                                        <Text style={{
+                                                            fontWeight: 400,
+                                                            fontSize: 12 * widthScaleFactor,
+                                                            lineHeight: 14 * widthScaleFactor,
+                                                            marginBottom: 3 * heightScaleFactor,
+                                                            alignSelf: 'center',
+                                                        }}>
+                                                            {`${invoiceData.carData.exteriorColor}\n`}
+                                                        </Text>
+                                                        <Text style={{
+                                                            fontWeight: 400,
+                                                            fontSize: 12 * widthScaleFactor,
+                                                            lineHeight: 14 * widthScaleFactor,
+                                                            marginBottom: 3 * heightScaleFactor,
+                                                            alignSelf: 'center',
+                                                        }}>
+                                                            {`${Number(invoiceData.carData.engineDisplacement).toLocaleString('en-US')} cc\n`}
+                                                        </Text>
+                                                        <Text style={{
+                                                            fontWeight: 400,
+                                                            fontSize: 12 * widthScaleFactor,
+                                                            lineHeight: 14 * widthScaleFactor,
+                                                            marginBottom: 3 * heightScaleFactor,
+                                                            alignSelf: 'center',
+                                                        }}>
+                                                            {`${Number(invoiceData.carData.mileage).toLocaleString('en-US')} km\n`}
+                                                        </Text>
+                                                        <Text style={{
+                                                            fontWeight: 400,
+                                                            fontSize: 12 * widthScaleFactor,
+                                                            lineHeight: 14 * widthScaleFactor,
+                                                            marginBottom: 3 * heightScaleFactor,
+                                                            alignSelf: 'center',
+                                                        }}>
+                                                            {`${invoiceData.carData.fuel}\n`}
+                                                        </Text>
+                                                        <Text style={{
+                                                            fontWeight: 400,
+                                                            fontSize: 12 * widthScaleFactor,
+                                                            lineHeight: 14 * widthScaleFactor,
+                                                            marginBottom: 3 * heightScaleFactor,
+                                                            alignSelf: 'center',
+                                                        }}>
+                                                            {`${invoiceData.carData.transmission}\n`}
+                                                        </Text>
+                                                    </Text>
+
+                                                ) : (
+                                                    <Text>{' '}</Text>
+                                                )}
+
+
+                                            </View>
+
+                                            <View style={{
+                                                borderTopWidth: 1 * widthScaleFactor,
+                                                borderColor: '#C2E2F4',
+                                                flex: 2,
+                                                flexDirection: 'row',
+                                                justifyContent: 'center',
+                                            }}>
+                                                {invoiceData.paymentDetails && invoiceData.paymentDetails.incoterms && invoiceData.discharge.port && invoiceData.discharge ? (
+                                                    <Text style={{
+                                                        fontWeight: 400,
+                                                        fontSize: 12 * widthScaleFactor,
+                                                        lineHeight: 14 * widthScaleFactor,
+                                                        marginBottom: 3 * heightScaleFactor,
+                                                        alignSelf: 'center',
+                                                    }}>
+                                                        {`${invoiceData.paymentDetails.incoterms} ${invoiceData.discharge.port}`}
+                                                    </Text>
+                                                ) : (
+                                                    <Text>{' '}</Text>
+                                                )}
+                                            </View>
+
+                                            <View style={{
+                                                borderTopWidth: 1 * widthScaleFactor,
+                                                borderColor: '#C2E2F4',
+                                                flex: 1,
+                                                flexDirection: 'row',
+                                                justifyContent: 'center',
+                                            }}>
+                                                {invoiceData.carData && invoiceData.carData.carName ? (
+                                                    <Text style={{
+                                                        fontWeight: 400,
+                                                        fontSize: 12 * widthScaleFactor,
+                                                        lineHeight: 14 * widthScaleFactor,
+                                                        marginBottom: 3 * heightScaleFactor,
+                                                        alignSelf: 'center',
+                                                    }}>
+                                                        {'1'}
+                                                    </Text>
+                                                ) : (
+                                                    <Text>{' '}</Text>
+                                                )}
+
+
+                                            </View>
+
+                                            <View style={{
+                                                borderTopWidth: 1 * widthScaleFactor,
+                                                borderColor: '#C2E2F4',
+                                                flex: 2,
+                                                justifyContent: 'center',
+                                                flexDirection: 'row',
+                                            }}>
+                                                {invoiceData.paymentDetails && invoiceData.paymentDetails.totalAmount ? (
+                                                    <>
+                                                        <Text style={{
+                                                            fontWeight: 700,
+                                                            fontSize: 12 * widthScaleFactor,
+                                                            lineHeight: 14 * widthScaleFactor,
+                                                            marginBottom: 3 * heightScaleFactor,
+                                                            color: '#008AC6',
+                                                            marginRight: 10 * widthScaleFactor,
+                                                            top: 51 * heightScaleFactor,
+                                                            left: 50 * widthScaleFactor,
+                                                            position: 'absolute',
+                                                        }}>
+                                                            {"Total"}
+                                                            <Text style={{
+                                                                fontWeight: 700,
+                                                                fontSize: 12 * widthScaleFactor,
+                                                                lineHeight: 14 * widthScaleFactor,
+                                                                marginBottom: 3 * heightScaleFactor,
+                                                                alignSelf: 'center',
+                                                                color: '#00720B',
+                                                                marginLeft: 5 * widthScaleFactor,
+                                                            }}>
+                                                                {`$${invoiceData.paymentDetails.totalAmount}`}
+                                                            </Text>
+                                                        </Text>
+
+                                                    </>
+                                                ) : (
+                                                    <Text>{' '}</Text>
+                                                )}
+                                            </View>
+
+                                        </View>
+
+                                    </View>
+
+                                    <View style={{ position: 'absolute', left: 38 * widthScaleFactor, top: 825 * heightScaleFactor, width: 350 * widthScaleFactor, }}>
+                                        <Text style={{
+                                            fontWeight: 700,
+                                            fontSize: 12 * widthScaleFactor,
+                                            lineHeight: 14 * heightScaleFactor,
+                                        }}>
+                                            {'Payment Information:'}
+                                        </Text>
+                                        <Text style={{
+                                            fontWeight: 400,
+                                            fontSize: 12 * widthScaleFactor,
+                                            lineHeight: 14 * heightScaleFactor,
+                                        }}>
+                                            {'The customer is responsible for the bank charges incurred when the T/T (Telegraphic Transfer) is paid.'}
+                                        </Text>
+                                        <Text style={{
+                                            fontWeight: 400,
+                                            fontSize: 12 * widthScaleFactor,
+                                            lineHeight: 14 * heightScaleFactor,
+                                            marginBottom: 5 * heightScaleFactor,
+                                        }}>
+                                            {'No warranty service is provided on used vehicles.'}
+                                        </Text>
+
+                                        <Text style={{
+                                            fontWeight: 700,
+                                            fontSize: 12 * widthScaleFactor,
+                                            lineHeight: 14 * heightScaleFactor,
+                                        }}>
+                                            {'Conditions for order cancellation:'}
+                                        </Text>
+                                        <Text style={{
+                                            fontWeight: 400,
+                                            fontSize: 12 * widthScaleFactor,
+                                            lineHeight: 14 * heightScaleFactor,
+                                        }}>
+                                            {'(1) Order Cancellation Penalty: If the order is cancelled after payment, a penalty of USD 220 will apply.'}
+                                        </Text>
+                                        <Text style={{
+                                            fontWeight: 400,
+                                            fontSize: 12 * widthScaleFactor,
+                                            lineHeight: 14 * heightScaleFactor,
+                                            marginBottom: 5 * heightScaleFactor,
+
+                                        }}>
+                                            {'(2) Non-refund: Payment for vehicles purchased through pre-delivery inspection is non-refundable.'}
+                                        </Text>
+
+                                        <Text style={{
+                                            fontWeight: 700,
+                                            fontSize: 12 * widthScaleFactor,
+                                            lineHeight: 14 * heightScaleFactor,
+                                        }}>
+                                            {'Intermediary Banking Information:'}
+                                        </Text>
+                                        <Text style={{
+                                            fontWeight: 400,
+                                            fontSize: 12 * widthScaleFactor,
+                                            lineHeight: 14 * heightScaleFactor,
+                                        }}>
+                                            {'Bank Name: SUMITOMO MITSUI BANKING CORPORATION (NEW YORK BRANCH).'}
+                                        </Text>
+                                        <Text style={{
+                                            fontWeight: 400,
+                                            fontSize: 12 * widthScaleFactor,
+                                            lineHeight: 14 * heightScaleFactor,
+
+                                        }}>
+                                            {'Swift code: SMBCUS33'}
+                                        </Text>
+                                        <Text style={{
+                                            fontWeight: 400,
+                                            fontSize: 12 * widthScaleFactor,
+                                            lineHeight: 14 * heightScaleFactor,
+                                        }}>
+                                            {'Address: 277 Park Avenue'}
+                                        </Text>
+                                        <Text style={{
+                                            fontWeight: 400,
+                                            fontSize: 12 * widthScaleFactor,
+                                            lineHeight: 14 * heightScaleFactor,
+
+                                        }}>
+                                            {'City: New York, NY'}
+                                        </Text>
+                                        <Text style={{
+                                            fontWeight: 400,
+                                            fontSize: 12 * widthScaleFactor,
+                                            lineHeight: 14 * heightScaleFactor,
+
+                                        }}>
+                                            {'Postal Code: 10172'}
+                                        </Text>
+                                        <Text style={{
+                                            fontWeight: 400,
+                                            fontSize: 12 * widthScaleFactor,
+                                            lineHeight: 14 * heightScaleFactor,
+                                            marginBottom: 5 * heightScaleFactor,
+
+                                        }}>
+                                            {'Country: United States'}
+                                        </Text>
+                                    </View>
+
+                                    {selectedChatData.stepIndicator.value < 3 ? null :
+                                        <View style={{ position: 'absolute', right: 39 * widthScaleFactor, top: 835 * heightScaleFactor, width: 300 * widthScaleFactor, }}>
+                                            <View style={{
+                                                width: 300 * widthScaleFactor,
+                                                alignItems: 'center',
+                                                paddingBottom: 80 * heightScaleFactor, // Adjust this value to control space between image and line
+                                            }}>
+                                                <NativeImage
+                                                    source={require('../../assets/RMJ Invoice Signature with Hanko.png')}
+                                                    style={{
+                                                        width: 276 * widthScaleFactor,
+                                                        height: 81 * heightScaleFactor,
+                                                        resizeMode: 'contain',
+                                                        alignSelf: 'center',
+                                                        marginBottom: 0, // Minimize margin to keep the line close
+                                                    }}
+                                                />
+                                                <View style={{
+                                                    borderBottomWidth: 1 * heightScaleFactor,
+                                                    borderColor: 'black', // Change the color as needed
+                                                    width: '100%', // Line width as per your requirement
+                                                }} />
+                                                <Text italic style={{
+                                                    fontWeight: 700,
+                                                    fontSize: 16 * widthScaleFactor,
+                                                }}>
+                                                    {'Real Motor Japan'}
+                                                </Text>
+                                            </View>
+
+                                            <View style={{
+                                                width: 300 * widthScaleFactor,
+                                                alignItems: 'center',
+                                                paddingBottom: 5 * heightScaleFactor, // Adjust this value to control space between image and line
+                                            }}>
+
+                                                <View style={{
+                                                    borderBottomWidth: 1 * heightScaleFactor,
+                                                    borderColor: 'black', // Change the color as needed
+                                                    width: '100%', // Line width as per your requirement
+                                                }} />
+                                                <Text italic style={{
+                                                    fontWeight: 700,
+                                                    fontSize: 16 * widthScaleFactor,
+                                                }}>
+                                                    {'Your Signature'}
+                                                </Text>
+                                            </View>
+                                        </View>}
+
+
+                                </View>
+                            }
+
+
+                        </ScrollView>
+
+                    }
+
+                </Modal>
+            </>
+        }
+        </>
+    );
+
+}
+
 
 const PreviewInvoice = () => {
 
@@ -7394,30 +8930,25 @@ const PreviewInvoice = () => {
                         <Pressable onPress={() => {
                             capturedImageUri ? handleCaptureAndCreatePDF() : null;
                         }}
-                            style={{ justifyContent: 'center', flexDirection: 'row', padding: 5, borderRadius: 5, backgroundColor: '#16A34A', }}>
+                            style={{ justifyContent: 'center', flexDirection: 'row', padding: 5, borderRadius: 5, marginRight: 5, backgroundColor: '#16A34A', }}>
                             <MaterialCommunityIcons size={20} name='download' color='white' />
                             <Text style={{ color: 'white', }}>Download as PDF</Text>
                         </Pressable>
 
-
-                        <Pressable onPress={() => {
-                            capturedImageUri ? handleSaveAsExcel() : null;
-                        }}
-                            style={{ justifyContent: 'center', flexDirection: 'row', marginLeft: 10, padding: 5, borderRadius: 5, backgroundColor: 'white', }}>
-                            <MaterialCommunityIcons size={20} name='microsoft-excel' color='#16A34A' />
-                            <Text style={{ color: '#16A34A', }}>Save as Excel</Text>
-                        </Pressable>
-
-
+                        {selectedChatData.stepIndicator.value < 3 ?
+                            null :
+                            <GenerateCustomInvoice />
+                        }
 
                         <Pressable
                             onPress={() => {
                                 capturedImageUri ? openImage() : null;
                             }}
-                            style={{ position: 'absolute', top: -2, right: -310, flexDirection: 'row', padding: 5, borderRadius: 5, backgroundColor: '#0A8DD5', }}>
+                            style={{ position: 'absolute', top: -2, right: selectedChatData.stepIndicator.value < 3 ? -375 : -285, flexDirection: 'row', padding: 5, borderRadius: 5, backgroundColor: '#0A8DD5', }}>
                             <Entypo size={20} name='images' color='white' />
                             <Text style={{ color: 'white', }}>View Image</Text>
                         </Pressable>
+
                     </View>
                     <Modal.CloseButton />
                     {previewInvoiceVisible &&

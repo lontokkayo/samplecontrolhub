@@ -5,6 +5,7 @@ import Encoding from 'encoding-japanese';
 
 
 
+
 const data = [
     {
         "仕入No.": 2024030011,
@@ -228,6 +229,8 @@ const ParseCSV = () => {
     }
 
     return (
+
+
         <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
             <input
                 type="file"
