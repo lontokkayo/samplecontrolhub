@@ -3150,7 +3150,6 @@ const BankInformation = () => {
             // globalInvoiceVariable.bankInformations.salesAgreement = invoiceData && Object.keys(invoiceData).length > 0 && invoiceData.bankInformations.salesAgreement ? invoiceData.bankInformations.salesAgreement : salesAgreementRef.current?.value;
             globalInvoiceVariable.bankInformations.issuingDate = invoiceData && Object.keys(invoiceData).length > 0 && invoiceData.bankInformations.issuingDate ? invoiceData.bankInformations.issuingDate : currentDate;
 
-
         }
 
         const unsubscribe = subscribeToBankAccounts();
@@ -3221,6 +3220,7 @@ const BankInformation = () => {
         globalInvoiceVariable.bankInformations.bankAccount = selectedBankObj;
         // console.log(selectedBankObj);
     };
+
 
     return (
         <>
@@ -6037,7 +6037,9 @@ const ProfitCalculator = () => {
 
 
 const GenerateCustomInvoice = () => {
-
+    let divideInvoice = 1;
+    let additionalPriceLocal;
+    let additionalNameLocal;
     // npm install html2canvas jspdf
     // import jsPDF from 'jspdf';
     // import html2canvas from 'html2canvas';
@@ -6052,7 +6054,97 @@ const GenerateCustomInvoice = () => {
     const [capturedImageUri, setCapturedImageUri] = useState('');
     const [isChecked, setIsChecked] = useState(invoiceData && Object.keys(invoiceData).length > 0 ? invoiceData.notifyParty.sameAsConsignee : false);
 
+    const [invoiceNumber, setInvoiceNumber] = useState(invoiceData && Object.keys(invoiceData).length > 0 ? invoiceData.id : '');
+    const [invoiceViewKey, setInvoiceViewKey] = useState(0);
 
+    const issuingDateRef = useRef(null);
+    const [issuingDate, setIssuingDate] = useState('');
+
+    const dueDateRef = useRef(null);
+    const [dueDate, setDueDate] = useState('');
+
+
+    const shippedFromRef = useRef(null);
+    const [shippedFrom, setShippedFrom] = useState('');
+
+    const shippedToRef = useRef(null);
+    const [shippedTo, setShippedTo] = useState('');
+
+    const placeOfDeliveryRef = useRef(null);
+    const [placeOfDelivery, setPlaceOfDelivery] = useState('');
+
+    const cfsRef = useRef(null);
+    const [cfs, setCfs] = useState('');
+
+    const consigneeNameRef = useRef(null);
+    const [consigneeName, setConsigneeName] = useState('');
+
+    const consigneeAddressRef = useRef(null);
+    const [consigneeAddress, setConsigneeAddress] = useState('');
+
+    const consigneeEmailRef = useRef(null);
+    const [consigneeEmail, setConsigneeEmail] = useState('');
+
+    const consigneeContactRef = useRef(null);
+    const [consigneeContact, setConsigneeContact] = useState('');
+
+    const consigneeFaxRef = useRef(null);
+    const [consigneeFax, setConsigneeFax] = useState('');
+
+    const notifyPartyNameRef = useRef(null);
+    const [notifyPartyName, setNotifyPartyName] = useState('');
+
+    const notifyPartyAddressRef = useRef(null);
+    const [notifyPartyAddress, setNotifyPartyAddress] = useState('');
+
+    const notifyPartyEmailRef = useRef(null);
+    const [notifyPartyEmail, setNotifyPartyEmail] = useState('');
+
+    const notifyPartyContactRef = useRef(null);
+    const [notifyPartyContact, setNotifyPartyContact] = useState('');
+
+    const notifyPartyFaxRef = useRef(null);
+    const [notifyPartyFax, setNotifyPartyFax] = useState('');
+
+    const carNameRef = useRef(null);
+    const [carName, setCarName] = useState('');
+
+    const specificationsRef = useRef(null);
+    const [specifications, setSpecifications] = useState('');
+
+    const itemNoteRef = useRef(null);
+    const [itemNote, setItemNote] = useState('');
+
+    const fobTextRef = useRef(null);
+    const [fobText, setFobText] = useState('');
+
+    const fobPriceRef = useRef(null);
+    const [fobPrice, setFobPrice] = useState('');
+
+    const freightTextRef = useRef(null);
+    const [freightText, setFreightText] = useState('');
+
+    const freightPriceRef = useRef(null);
+    const [freightPrice, setFreightPrice] = useState('');
+
+    const inspectionTextRef = useRef(null);
+    const [inspectionText, setInspectionText] = useState('');
+
+    const inspectionPriceRef = useRef(null);
+    const [inspectionPrice, setInspectionPrice] = useState('');
+
+    const totalPriceRef = useRef(null);
+    const [totalPrice, setTotalPrice] = useState('');
+
+
+    const additionalNameRef = useRef(null);
+    const [additionalName, setAdditionalName] = useState([]);
+
+    const additionalPriceRef = useRef(null);
+    const [additionalPrice, setAdditionalPrice] = useState([]);
+
+    const dividedByRef = useRef(null);
+    const [dividedBy, setDividedBy] = useState('');
 
 
     const handleModalOpen = () => {
@@ -6085,44 +6177,83 @@ const GenerateCustomInvoice = () => {
     }
 
 
+    // useEffect(() => {
+    //     let generatedImageUri = '';
+    //     const captureImageAsync = async () => {
+    //         try {
+    //             if (invoiceRef.current && modalVisible == true) {
+    //                 // Adjust the scale to control the captured image resolution
+    //                 const scale = 0.85; // Experiment with different scale values
+    //                 const width = 2480 * scale;
+    //                 const height = 3508 * scale;
 
-    useEffect(() => {
-        let generatedImageUri = '';
-        const captureImageAsync = async () => {
-            try {
-                if (invoiceRef.current && modalVisible == true) {
-                    // Adjust the scale to control the captured image resolution
-                    const scale = 0.85; // Experiment with different scale values
-                    const width = 2480 * scale;
-                    const height = 3508 * scale;
+    //                 const imageUri = await captureRef(invoiceRef, {
+    //                     format: 'jpg',
+    //                     quality: 1, // Adjust quality if needed
+    //                     result: 'base64',
+    //                     width: width,
+    //                     height: height,
+    //                 });
 
-                    const imageUri = await captureRef(invoiceRef, {
-                        format: 'jpg',
-                        quality: 1, // Adjust quality if needed
-                        result: 'base64',
-                        width: width,
-                        height: height,
-                    });
+    //                 generatedImageUri = `data:image/jpeg;base64,${imageUri}`
+    //                 setCapturedImageUri(`data:image/jpeg;base64,${imageUri}`);
 
-                    generatedImageUri = `data:image/jpeg;base64,${imageUri}`
-                    setCapturedImageUri(`data:image/jpeg;base64,${imageUri}`);
+    //                 // console.log(`data:image/jpeg;base64,${imageUri}`);
+    //             }
+    //         } catch (error) {
+    //             console.error("Error capturing view:", error);
+    //         }
+    //     };
 
-                    // console.log(`data:image/jpeg;base64,${imageUri}`);
-                }
-            } catch (error) {
-                console.error("Error capturing view:", error);
-            }
-        };
+    //     captureImageAsync();
 
-        captureImageAsync();
-
-    }, [invoiceRef.current, invoiceData, modalVisible]);
+    // }, [invoiceRef.current, invoiceData, modalVisible]);
 
     useEffect(() => {
         setCapturedImageUri(capturedImageUri);
     }, [capturedImageUri])
 
+
+
+
+
+
     const captureImage = async () => {
+
+        handleAdditionalNameTextChange(additionalNameRef.current.value)
+        handleAdditionalPriceTextChange(additionalPriceRef.current.value)
+
+        setIssuingDate(issuingDateRef.current.value);
+        setDueDate(dueDateRef.current.value);
+        setShippedFrom(shippedFromRef.current.value);
+        setShippedTo(shippedToRef.current.value);
+        setPlaceOfDelivery(placeOfDeliveryRef.current.value);
+        setCfs(cfsRef.current.value);
+        setConsigneeName(consigneeNameRef.current.value);
+        setConsigneeAddress(consigneeAddressRef.current.value);
+        setConsigneeEmail(consigneeEmailRef.current.value);
+        setConsigneeContact(consigneeContactRef.current.value);
+        setConsigneeFax(consigneeFaxRef.current.value);
+        setNotifyPartyName(notifyPartyNameRef.current.value);
+        setNotifyPartyAddress(notifyPartyAddressRef.current.value);
+        setNotifyPartyEmail(notifyPartyEmailRef.current.value);
+        setNotifyPartyContact(notifyPartyContactRef.current.value);
+        setNotifyPartyFax(notifyPartyFaxRef.current.value);
+        setCarName(carNameRef.current.value);
+        setSpecifications(specificationsRef.current.value);
+        setItemNote(itemNoteRef.current.value);
+        setFobText(fobTextRef.current.value);
+        setFobPrice(fobPriceRef.current.value);
+        setFreightText(freightTextRef.current.value);
+        setFreightPrice(freightPriceRef.current.value);
+        setInspectionText(inspectionTextRef.current.value);
+        setInspectionPrice(inspectionPriceRef.current.value);
+        setTotalPrice(totalPriceRef.current.value);
+        setAdditionalName(additionalNameLocal);
+        setAdditionalPrice(additionalPriceLocal);
+        setDividedBy(dividedByRef.current.value);
+
+
         try {
             // Adjust the scale to control the captured image resolution
             const scale = 0.9; // Experiment with different scale values
@@ -6136,6 +6267,10 @@ const GenerateCustomInvoice = () => {
                 width: width,
                 height: height,
             });
+
+            // generatedImageUri = `data:image/jpeg;base64,${imageUri}`
+            setCapturedImageUri(`data:image/jpeg;base64,${imageUri}`);
+            await createPDF(`data:image/jpeg;base64,${imageUri}`);
             return `data:image/jpeg;base64,${imageUri}`;
         } catch (error) {
             console.error("Error capturing view:", error);
@@ -6186,14 +6321,15 @@ const GenerateCustomInvoice = () => {
         }
     };
 
-
     const handleCaptureAndCreatePDF = async () => {
-        const capturedImageUri = await captureImage();
-        if (capturedImageUri) {
-            await createPDF(capturedImageUri);
-        }
-    };
 
+        // const capturedImageUri = await captureImage();
+        await captureImage();
+        // if (capturedImageUri) {
+        // await createPDF(capturedImageUri);
+        // }
+
+    };
 
 
     if (invoiceData && Object.keys(invoiceData).length > 0) {
@@ -6233,6 +6369,65 @@ const GenerateCustomInvoice = () => {
     const widthScaleFactor = newWidth / originalWidth;
     const heightScaleFactor = newHeight / originalHeight;
 
+    if (invoiceData && Object.keys(invoiceData).length > 0) {
+        const issuingDateString = invoiceData.bankInformations.issuingDate;
+        const dueDateString = invoiceData.bankInformations.dueDate;
+        const issuingDateObject = new Date(issuingDateString);
+        const dueDateObject = new Date(dueDateString);
+
+
+        const options = {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric',
+        };
+
+        formattedIssuingDate = issuingDateObject.toLocaleDateString(undefined, options);
+        formattedDueDate = dueDateObject.toLocaleDateString(undefined, options);
+
+    }
+
+    // additionalNameRef.current.value = invoiceData && Object.keys(invoiceData).length > 0 && invoiceData.paymentDetails.additionalName ? invoiceData.paymentDetails.additionalName.join('\n') : '';
+    // additionalPriceRef.current.value = invoiceData && Object.keys(invoiceData).length > 0 && invoiceData.paymentDetails.additionalPrice ? invoiceData.paymentDetails.additionalPrice.join('\n') : '';
+
+    const handleAdditionalPriceTextChange = (text) => {
+        // Process and filter each line
+        const filteredLines = text.split('\n').map(line => {
+            let filteredLine = line.replace(/[^0-9.]/g, '');
+            const parts = filteredLine.split('.');
+            if (parts.length > 2) {
+                filteredLine = parts[0] + '.' + parts[1];
+            }
+            return filteredLine;
+        });
+
+        // Update the ref and the state
+        additionalPriceRef.current.value = filteredLines.join('\n');
+        // setAdditionalPriceArray(filteredLines);
+        // globalAdditionalPriceArray = filteredLines;
+        additionalPriceLocal = filteredLines;
+
+    };
+
+    const handleAdditionalNameTextChange = (text) => {
+        // Update the ref
+        additionalNameRef.current.value = text;
+
+        // Split the text into lines and update the state
+        const lines = text.split('\n');
+        // setAdditionalNameArray(lines);
+        additionalNameLocal = lines;
+    };
+
+
+    const handleDividedByTextChange = (value) => {
+        // Remove any non-numeric characters and leading zeros
+        const numericValue = value.replace(/[^0-9]/g, '').replace(/^0+/g, '');
+        // Update your variable only if the result is not an empty string and not 0
+        dividedByRef.current.value = numericValue;
+        divideInvoice = numericValue;
+
+    }
 
 
     const FormContent = () => {
@@ -6255,10 +6450,11 @@ const GenerateCustomInvoice = () => {
 
                     <View style={{ width: '100%', borderBottomWidth: 2, borderColor: '#0A9FDC', alignSelf: 'center', margin: 2, }} />
 
-                    <Text style={{ margin: 2, fontWeight: 'bold', }}>Issuing Date:</Text>
+                    <Text key={invoiceViewKey} style={{ margin: 2, fontWeight: 'bold', }}>Issuing Date:</Text>
 
                     <TextInput
-                        defaultValue={invoiceData && Object.keys(invoiceData).length > 0 ? invoiceData.bankInformations.issuingDate : ''}
+                        ref={issuingDateRef}
+                        defaultValue={invoiceData && Object.keys(invoiceData).length > 0 ? formattedIssuingDate : ''}
                         placeholderTextColor='#9B9E9F'
                         placeholder='Issuing Date'
                         style={{ flex: 1, height: 25, margin: 2, padding: 1, borderRadius: 2, borderWidth: 1, borderColor: '#D9D9D9', outlineStyle: 'none', }}
@@ -6267,7 +6463,8 @@ const GenerateCustomInvoice = () => {
                     <Text style={{ margin: 2, fontWeight: 'bold', }}>Due Date:</Text>
 
                     <TextInput
-                        defaultValue={invoiceData && Object.keys(invoiceData).length > 0 ? invoiceData.bankInformations.dueDate : ''}
+                        ref={dueDateRef}
+                        defaultValue={invoiceData && Object.keys(invoiceData).length > 0 ? formattedDueDate : ''}
                         placeholderTextColor='#9B9E9F'
                         placeholder='Due Date'
                         style={{ flex: 1, height: 25, margin: 2, padding: 1, borderRadius: 2, borderWidth: 1, borderColor: '#D9D9D9', outlineStyle: 'none', }}
@@ -6278,24 +6475,27 @@ const GenerateCustomInvoice = () => {
                     <Text style={{ margin: 2, paddingTop: 5, fontWeight: 'bold', }}>Shipped from:</Text>
 
                     <TextInput
+                        ref={shippedFromRef}
                         defaultValue={invoiceData && Object.keys(invoiceData).length > 0 ? `${invoiceData.departurePort}, ${invoiceData.departureCountry}` : ''}
                         placeholderTextColor='#9B9E9F'
-                        placeholder='Date'
+                        placeholder='Shipped from'
                         style={{ flex: 1, height: 25, margin: 2, padding: 1, borderRadius: 2, borderWidth: 1, borderColor: '#D9D9D9', outlineStyle: 'none', }}
                     />
 
                     <Text style={{ margin: 2, paddingTop: 5, fontWeight: 'bold', }}>Shipped to:</Text>
 
                     <TextInput
+                        ref={shippedToRef}
                         defaultValue={invoiceData && Object.keys(invoiceData).length > 0 ? `${invoiceData.discharge.port}, ${invoiceData.discharge.country}` : ''}
                         placeholderTextColor='#9B9E9F'
-                        placeholder='Date'
+                        placeholder='Shipped to'
                         style={{ flex: 1, height: 25, margin: 2, padding: 1, borderRadius: 2, borderWidth: 1, borderColor: '#D9D9D9', outlineStyle: 'none', }}
                     />
 
                     <Text style={{ margin: 2, paddingTop: 5, fontWeight: 'bold', }}>Place of Delivery:</Text>
 
                     <TextInput
+                        ref={placeOfDeliveryRef}
                         defaultValue={invoiceData && Object.keys(invoiceData).length && invoiceData.placeOfDelivery > 0 ? invoiceData.placeOfDelivery : ''}
                         placeholderTextColor='#9B9E9F'
                         placeholder='Place of Delivery'
@@ -6305,6 +6505,7 @@ const GenerateCustomInvoice = () => {
                     <Text style={{ margin: 2, paddingTop: 5, fontWeight: 'bold', }}>CFS:</Text>
 
                     <TextInput
+                        ref={cfsRef}
                         defaultValue={invoiceData && Object.keys(invoiceData).length && invoiceData.cfs > 0 ? invoiceData.cfs : ''}
                         placeholderTextColor='#9B9E9F'
                         placeholder='CFS'
@@ -6318,6 +6519,7 @@ const GenerateCustomInvoice = () => {
                     <Text style={{ margin: 2, paddingTop: 5, fontWeight: 'bold', }}>Name:</Text>
 
                     <TextInput
+                        ref={consigneeNameRef}
                         defaultValue={invoiceData && Object.keys(invoiceData).length > 0 ? invoiceData.consignee.name : ''}
                         placeholderTextColor='#9B9E9F'
                         placeholder='Name'
@@ -6327,6 +6529,7 @@ const GenerateCustomInvoice = () => {
                     <Text style={{ margin: 2, paddingTop: 5, fontWeight: 'bold', }}>Address:</Text>
 
                     <TextInput
+                        ref={consigneeAddressRef}
                         defaultValue={invoiceData && Object.keys(invoiceData).length > 0 ? invoiceData.consignee.address : ''}
                         placeholderTextColor='#9B9E9F'
                         placeholder='Address'
@@ -6336,6 +6539,7 @@ const GenerateCustomInvoice = () => {
                     <Text style={{ margin: 2, paddingTop: 5, fontWeight: 'bold', }}>Email:</Text>
 
                     <TextInput
+                        ref={consigneeEmailRef}
                         defaultValue={invoiceData && Object.keys(invoiceData).length > 0 ? invoiceData.consignee.email : ''}
                         placeholderTextColor='#9B9E9F'
                         placeholder='Email'
@@ -6345,6 +6549,7 @@ const GenerateCustomInvoice = () => {
                     <Text style={{ margin: 2, paddingTop: 5, fontWeight: 'bold', }}>Contact Number:</Text>
 
                     <TextInput
+                        ref={consigneeContactRef}
                         multiline
                         defaultValue={invoiceData && Object.keys(invoiceData).length > 0 ? invoiceData.consignee.contactNumber : ''}
                         placeholderTextColor='#9B9E9F'
@@ -6355,6 +6560,7 @@ const GenerateCustomInvoice = () => {
                     <Text style={{ margin: 2, paddingTop: 5, fontWeight: 'bold', }}>Fax:</Text>
 
                     <TextInput
+                        ref={consigneeFaxRef}
                         defaultValue={invoiceData && Object.keys(invoiceData).length > 0 ? invoiceData.consignee.fax : ''}
                         placeholderTextColor='#9B9E9F'
                         placeholder='Fax'
@@ -6364,7 +6570,6 @@ const GenerateCustomInvoice = () => {
                     <View style={{ width: '100%', borderBottomWidth: 2, borderColor: '#0A9FDC', alignSelf: 'center', margin: 2, }} />
 
                     <Text style={{ fontSize: 16, fontWeight: 'bold', alignSelf: 'center', color: '#FF0000', }}>Notify Party</Text>
-
 
                     <Checkbox
                         isChecked={isChecked}
@@ -6378,9 +6583,11 @@ const GenerateCustomInvoice = () => {
                     >
                         Same as consignee
                     </Checkbox>
+
                     <Text style={{ margin: 2, paddingTop: 5, fontWeight: 'bold', }}>Name:</Text>
 
                     <TextInput
+                        ref={notifyPartyNameRef}
                         disabled={isChecked}
                         defaultValue={invoiceData && Object.keys(invoiceData).length > 0 ? invoiceData.notifyParty.name : ''}
                         placeholderTextColor='#9B9E9F'
@@ -6391,6 +6598,7 @@ const GenerateCustomInvoice = () => {
                     <Text style={{ margin: 2, paddingTop: 5, fontWeight: 'bold', }}>Address:</Text>
 
                     <TextInput
+                        ref={notifyPartyAddressRef}
                         disabled={isChecked}
                         defaultValue={invoiceData && Object.keys(invoiceData).length > 0 ? invoiceData.notifyParty.address : ''}
                         placeholderTextColor='#9B9E9F'
@@ -6401,6 +6609,7 @@ const GenerateCustomInvoice = () => {
                     <Text style={{ margin: 2, paddingTop: 5, fontWeight: 'bold', }}>Email:</Text>
 
                     <TextInput
+                        ref={notifyPartyEmailRef}
                         disabled={isChecked}
                         defaultValue={invoiceData && Object.keys(invoiceData).length > 0 ? invoiceData.notifyParty.email : ''}
                         placeholderTextColor='#9B9E9F'
@@ -6411,6 +6620,7 @@ const GenerateCustomInvoice = () => {
                     <Text style={{ margin: 2, paddingTop: 5, fontWeight: 'bold', }}>Contact Number:</Text>
 
                     <TextInput
+                        ref={notifyPartyContactRef}
                         disabled={isChecked}
                         multiline
                         defaultValue={invoiceData && Object.keys(invoiceData).length > 0 ? invoiceData.notifyParty.contactNumber : ''}
@@ -6422,6 +6632,7 @@ const GenerateCustomInvoice = () => {
                     <Text style={{ margin: 2, paddingTop: 5, fontWeight: 'bold', }}>Fax:</Text>
 
                     <TextInput
+                        ref={notifyPartyFaxRef}
                         disabled={isChecked}
                         defaultValue={invoiceData && Object.keys(invoiceData).length > 0 ? invoiceData.notifyParty.fax : ''}
                         placeholderTextColor='#9B9E9F'
@@ -6434,6 +6645,7 @@ const GenerateCustomInvoice = () => {
                     <Text style={{ margin: 2, paddingTop: 5, fontWeight: 'bold', }}>Car name:</Text>
 
                     <TextInput
+                        ref={carNameRef}
                         defaultValue={invoiceData && Object.keys(invoiceData).length > 0 ? invoiceData.carData.carName : ''}
                         placeholderTextColor='#9B9E9F'
                         placeholder='Date'
@@ -6443,16 +6655,18 @@ const GenerateCustomInvoice = () => {
                     <Text style={{ margin: 2, paddingTop: 5, fontWeight: 'bold', }}>Specifications:</Text>
 
                     <TextInput
+                        ref={specificationsRef}
                         multiline
                         defaultValue={invoiceData && Object.keys(invoiceData).length > 0 ? `${invoiceData.carData.chassisNumber}\n${invoiceData.carData.exteriorColor}\n${Number(invoiceData.carData.engineDisplacement).toLocaleString('en-US')} cc\n${Number(invoiceData.carData.mileage).toLocaleString('en-US')} km\n${invoiceData.carData.fuel}\n${invoiceData.carData.transmission}` : ''}
                         placeholderTextColor='#9B9E9F'
-                        placeholder='Date'
+                        placeholder='Specifications'
                         style={{ height: 120, margin: 2, padding: 1, borderRadius: 2, borderWidth: 1, borderColor: '#D9D9D9', outlineStyle: 'none', }}
                     />
 
                     <Text style={{ margin: 2, paddingTop: 5, fontWeight: 'bold', }}>Item note:</Text>
 
                     <TextInput
+                        ref={itemNoteRef}
                         defaultValue={invoiceData && Object.keys(invoiceData).length > 0 ? `${invoiceData.paymentDetails.incoterms} ${invoiceData.discharge.port}` : ''}
                         placeholderTextColor='#9B9E9F'
                         placeholder='Item note'
@@ -6469,6 +6683,7 @@ const GenerateCustomInvoice = () => {
                         }}
                     >
                         <TextInput
+                            ref={fobTextRef}
                             defaultValue={'FOB'}
                             placeholderTextColor='#9B9E9F'
                             placeholder='Fob'
@@ -6476,12 +6691,15 @@ const GenerateCustomInvoice = () => {
                         />
 
                         <Text style={{ marginLeft: 2, paddingTop: 5, fontWeight: 'bold', }}>$</Text>
+
                         <TextInput
+                            ref={fobPriceRef}
                             defaultValue={invoiceData && Object.keys(invoiceData).length > 0 ? Math.round(Number(invoiceData.paymentDetails.fobPrice)) : ''}
                             placeholderTextColor='#9B9E9F'
                             placeholder='FOB Price'
                             style={{ flex: 1, height: 25, margin: 2, padding: 1, borderRadius: 2, borderWidth: 1, borderColor: '#D9D9D9', outlineStyle: 'none', }}
                         />
+
                     </View>
 
                     <Text style={{ margin: 2, paddingTop: 5, fontWeight: 'bold', }}>Freight:</Text>
@@ -6492,6 +6710,7 @@ const GenerateCustomInvoice = () => {
                         }}
                     >
                         <TextInput
+                            ref={freightTextRef}
                             defaultValue={'Freight'}
                             placeholderTextColor='#9B9E9F'
                             placeholder='Freight'
@@ -6499,12 +6718,15 @@ const GenerateCustomInvoice = () => {
                         />
 
                         <Text style={{ marginLeft: 2, paddingTop: 5, fontWeight: 'bold', }}>$</Text>
+
                         <TextInput
+                            ref={freightPriceRef}
                             defaultValue={invoiceData && Object.keys(invoiceData).length > 0 ? Math.round(Number(invoiceData.paymentDetails.freightPrice)) : ''}
                             placeholderTextColor='#9B9E9F'
                             placeholder='Freight Price'
                             style={{ flex: 1, height: 25, margin: 2, padding: 1, borderRadius: 2, borderWidth: 1, borderColor: '#D9D9D9', outlineStyle: 'none', }}
                         />
+
                     </View>
 
                     <Text style={{ margin: 2, paddingTop: 5, fontWeight: 'bold', }}>Inspection:</Text>
@@ -6515,7 +6737,8 @@ const GenerateCustomInvoice = () => {
                         }}
                     >
                         <TextInput
-                            defaultValue={'Inspection'}
+                            ref={inspectionTextRef}
+                            defaultValue={`Inspection ${invoiceData && Object.keys(invoiceData).length > 0 ? `[${invoiceData.paymentDetails.inspectionName}]` : ''}`}
                             placeholderTextColor='#9B9E9F'
                             placeholder='Inspection'
                             style={{ flex: 1, height: 25, margin: 2, padding: 1, borderRadius: 2, borderWidth: 1, borderColor: '#D9D9D9', outlineStyle: 'none', }}
@@ -6523,6 +6746,7 @@ const GenerateCustomInvoice = () => {
 
                         <Text style={{ marginLeft: 2, paddingTop: 5, fontWeight: 'bold', }}>$</Text>
                         <TextInput
+                            ref={inspectionPriceRef}
                             defaultValue={invoiceData && Object.keys(invoiceData).length > 0 ? invoiceData.paymentDetails.inspectionPrice : ''}
                             placeholderTextColor='#9B9E9F'
                             placeholder='Inspection Price'
@@ -6530,6 +6754,20 @@ const GenerateCustomInvoice = () => {
                         />
                     </View>
 
+                    <Text style={{ margin: 2, paddingTop: 5, fontWeight: 'bold', }}>Additional:</Text>
+
+                    <View
+                        style={{
+                            flexDirection: 'row',
+                        }}
+                    >
+                        <TextInput ref={additionalNameRef} onChangeText={handleAdditionalNameTextChange} multiline placeholderTextColor='#9B9E9F' placeholder='Name'
+                            defaultValue={invoiceData && Object.keys(invoiceData).length > 0 && invoiceData.paymentDetails.additionalName ? invoiceData.paymentDetails.additionalName.join('\n') : ''}
+                            style={{ flex: 1, height: 75, margin: 2, padding: 1, borderRadius: 2, borderWidth: 1, borderColor: '#D9D9D9', outlineStyle: 'none', }} />
+                        <TextInput ref={additionalPriceRef} onChangeText={handleAdditionalPriceTextChange} multiline placeholderTextColor='#9B9E9F' placeholder='Price'
+                            defaultValue={invoiceData && Object.keys(invoiceData).length > 0 && invoiceData.paymentDetails.additionalPrice ? invoiceData.paymentDetails.additionalPrice.join('\n') : ''}
+                            style={{ flex: 1, height: 75, margin: 2, padding: 1, borderRadius: 2, borderWidth: 1, borderColor: '#D9D9D9', outlineStyle: 'none', }} />
+                    </View>
 
                     <Text style={{ margin: 2, paddingTop: 5, fontWeight: 'bold', }}>Total price:</Text>
 
@@ -6538,8 +6776,11 @@ const GenerateCustomInvoice = () => {
                             flexDirection: 'row',
                         }}
                     >
+
                         <Text style={{ marginLeft: 2, paddingTop: 5, fontWeight: 'bold', }}>$</Text>
+
                         <TextInput
+                            ref={totalPriceRef}
                             defaultValue={invoiceData && Object.keys(invoiceData).length > 0 ? `${(invoiceData.paymentDetails.totalAmount).replace(/,/g, '')}` : ''}
                             placeholderTextColor='#9B9E9F'
                             placeholder='Total price'
@@ -6547,18 +6788,26 @@ const GenerateCustomInvoice = () => {
                         />
                     </View>
 
-
-
                     <Text style={{ margin: 2, paddingTop: 5, fontWeight: 'bold', }}>Divided by:</Text>
 
                     <TextInput
+                        ref={dividedByRef}
                         defaultValue={'1'}
                         placeholderTextColor='#9B9E9F'
                         placeholder='Total price'
-                        style={{ flex: 1, height: 25, margin: 2, padding: 1, borderRadius: 2, borderWidth: 1, borderColor: '#D9D9D9', outlineStyle: 'none', }}
+                        onChangeText={handleDividedByTextChange}
+                        keyboardType='numeric' // This prop prompts the user with a numeric keypad
+                        style={{
+                            flex: 1,
+                            height: 25,
+                            margin: 2,
+                            padding: 1,
+                            borderRadius: 2,
+                            borderWidth: 1,
+                            borderColor: '#D9D9D9',
+                            outlineStyle: 'none',
+                        }}
                     />
-
-
 
                 </View>
             </View>
@@ -6595,7 +6844,7 @@ const GenerateCustomInvoice = () => {
                 >
                     <View style={{ flexDirection: 'row', margin: 2, }}>
                         <Pressable onPress={() => {
-                            capturedImageUri ? handleCaptureAndCreatePDF() : null;
+                            handleCaptureAndCreatePDF()
                         }}
                             style={{ justifyContent: 'center', flexDirection: 'row', padding: 5, borderRadius: 5, backgroundColor: '#16A34A', }}>
                             <MaterialCommunityIcons size={20} name='download' color='white' />
@@ -6624,7 +6873,9 @@ const GenerateCustomInvoice = () => {
                             {/* Main content with invoice details */}
                             {
 
-                                <View ref={invoiceRef}
+                                <View
+                                    ref={invoiceRef}
+                                    key={invoiceViewKey}
                                     style={{
                                         width: newWidth,
                                         height: newHeight,
@@ -6673,7 +6924,7 @@ const GenerateCustomInvoice = () => {
                                         {/* Invoice Number */}
                                         {selectedChatData.stepIndicator.value < 3 ?
                                             null :
-                                            <Text style={{ fontWeight: 750, fontSize: 14 * widthScaleFactor }}>{`Invoice No. RMJ-${invoiceData.id}`}</Text>
+                                            <Text style={{ fontWeight: 750, fontSize: 14 * widthScaleFactor }}>{`Invoice No. RMJ-${invoiceNumber}`}</Text>
                                         }
                                     </View>
 
@@ -6682,11 +6933,11 @@ const GenerateCustomInvoice = () => {
                                             {/* Issuing Date */}
                                             <View style={{ flexDirection: 'row', alignSelf: 'flex-end', }}>
                                                 <Text style={{ fontWeight: 750, fontSize: 14 * widthScaleFactor }}>{`Issuing Date: `}</Text>
-                                                <Text style={{ fontWeight: 400, fontSize: 14 * widthScaleFactor }}>{`${formattedIssuingDate}`}</Text>
+                                                <Text style={{ fontWeight: 400, fontSize: 14 * widthScaleFactor }}>{`${issuingDate}`}</Text>
                                             </View>
                                             <View style={{ flexDirection: 'row', alignSelf: 'flex-end', }}>
                                                 <Text style={{ fontWeight: 750, fontSize: 14 * widthScaleFactor, color: '#F00A0A', }}>{`Valid Until: `}</Text>
-                                                <Text style={{ fontWeight: 400, fontSize: 14 * widthScaleFactor }}>{`${formattedDueDate}`}</Text>
+                                                <Text style={{ fontWeight: 400, fontSize: 14 * widthScaleFactor }}>{`${dueDate}`}</Text>
                                             </View>
 
                                         </View>
@@ -6694,7 +6945,7 @@ const GenerateCustomInvoice = () => {
                                         <View style={{ position: 'absolute', right: 121 * widthScaleFactor, top: 49 * heightScaleFactor, flexDirection: 'row' }}>
                                             {/* Issuing Date */}
                                             <Text style={{ fontWeight: 750, fontSize: 14 * widthScaleFactor }}>{`Issuing Date: `}</Text>
-                                            <Text style={{ fontWeight: 400, fontSize: 14 * widthScaleFactor }}>{`${formattedIssuingDate}`}</Text>
+                                            <Text style={{ fontWeight: 400, fontSize: 14 * widthScaleFactor }}>{`${issuingDate}`}</Text>
                                         </View>
                                     }
 
@@ -6719,20 +6970,20 @@ const GenerateCustomInvoice = () => {
                                         <Text style={{ fontWeight: 400, fontSize: 14 * widthScaleFactor, marginTop: 20, lineHeight: 14 * widthScaleFactor }}>{`FAX: +81565850606`}</Text>
 
                                         <Text style={{ fontWeight: 700, fontSize: 14 * widthScaleFactor, marginTop: 20, lineHeight: 14 * widthScaleFactor }}>{`Shipped From:`}</Text>
-                                        <Text style={{ fontWeight: 400, fontSize: 14 * widthScaleFactor, lineHeight: 14 * widthScaleFactor }}>{`${invoiceData.departurePort}, ${invoiceData.departureCountry}`}</Text>
+                                        <Text style={{ fontWeight: 400, fontSize: 14 * widthScaleFactor, lineHeight: 14 * widthScaleFactor }}>{shippedFrom}</Text>
 
                                         <Text style={{ fontWeight: 700, fontSize: 14 * widthScaleFactor, marginTop: 20, lineHeight: 14 * widthScaleFactor }}>{`Shipped To:`}</Text>
-                                        <Text style={{ fontWeight: 400, fontSize: 14 * widthScaleFactor, lineHeight: 14 * widthScaleFactor }}>{`${invoiceData.discharge.port}, ${invoiceData.discharge.country}`}</Text>
-                                        {invoiceData.placeOfDelivery && invoiceData.placeOfDelivery !== '' ?
+                                        <Text style={{ fontWeight: 400, fontSize: 14 * widthScaleFactor, lineHeight: 14 * widthScaleFactor }}>{shippedTo}</Text>
+                                        {placeOfDelivery !== '' ?
                                             <>
                                                 <Text style={{ fontWeight: 700, fontSize: 14 * widthScaleFactor, marginTop: 20, lineHeight: 14 * widthScaleFactor }}>{`Place of Delivery:`}</Text>
-                                                <Text style={{ fontWeight: 400, fontSize: 14 * widthScaleFactor, lineHeight: 14 * widthScaleFactor }}>{`${invoiceData.placeOfDelivery}`}</Text>
+                                                <Text style={{ fontWeight: 400, fontSize: 14 * widthScaleFactor, lineHeight: 14 * widthScaleFactor }}>{placeOfDelivery}</Text>
                                             </>
                                             : null}
-                                        {invoiceData.cfs && invoiceData.cfs !== '' ?
+                                        {cfs !== '' ?
                                             <>
                                                 <Text style={{ fontWeight: 700, fontSize: 14 * widthScaleFactor, marginTop: 20, lineHeight: 14 * widthScaleFactor }}>{`CFS:`}</Text>
-                                                <Text style={{ fontWeight: 400, fontSize: 14 * widthScaleFactor, lineHeight: 14 * widthScaleFactor }}>{`${invoiceData.cfs}`}</Text>
+                                                <Text style={{ fontWeight: 400, fontSize: 14 * widthScaleFactor, lineHeight: 14 * widthScaleFactor }}>{cfs}</Text>
                                             </>
                                             : null}
 
@@ -6755,11 +7006,11 @@ const GenerateCustomInvoice = () => {
                                                 }}>
                                                     {`Buyer Information`}
                                                 </Text>
-                                                <Text style={{ fontWeight: 750, fontSize: 16 * widthScaleFactor, lineHeight: 14 * widthScaleFactor }}>{`${invoiceData.consignee.name}`}</Text>
-                                                <Text style={{ fontWeight: 400, fontSize: 16 * widthScaleFactor, marginTop: 20, lineHeight: 14 * widthScaleFactor }}>{`${invoiceData.consignee.address}`}</Text>
-                                                <Text style={{ fontWeight: 400, fontSize: 16 * widthScaleFactor, marginTop: 20, lineHeight: 14 * widthScaleFactor }}>{`${invoiceData.consignee.email}`}</Text>
-                                                <Text style={{ fontWeight: 400, fontSize: 16 * widthScaleFactor, marginTop: 20, lineHeight: 14 * widthScaleFactor }}>{`${invoiceData.consignee.contactNumber}`}</Text>
-                                                <Text style={{ fontWeight: 400, fontSize: 16 * widthScaleFactor, marginTop: 20, lineHeight: 14 * widthScaleFactor }}>{`FAX: ${invoiceData.consignee.fax == '' ? 'N/A' : invoiceData.consignee.fax}`}</Text>
+                                                <Text style={{ fontWeight: 750, fontSize: 16 * widthScaleFactor, lineHeight: 14 * widthScaleFactor }}>{consigneeName}</Text>
+                                                <Text style={{ fontWeight: 400, fontSize: 16 * widthScaleFactor, marginTop: 20, lineHeight: 14 * widthScaleFactor }}>{`${consigneeAddress}`}</Text>
+                                                <Text style={{ fontWeight: 400, fontSize: 16 * widthScaleFactor, marginTop: 20, lineHeight: 14 * widthScaleFactor }}>{`${consigneeEmail}`}</Text>
+                                                <Text style={{ fontWeight: 400, fontSize: 16 * widthScaleFactor, marginTop: 20, lineHeight: 14 * widthScaleFactor }}>{`${consigneeContact}`}</Text>
+                                                <Text style={{ fontWeight: 400, fontSize: 16 * widthScaleFactor, marginTop: 20, lineHeight: 14 * widthScaleFactor }}>{`FAX: ${consigneeFax == '' ? 'N/A' : consigneeFax}`}</Text>
 
                                             </View>
 
@@ -6777,14 +7028,14 @@ const GenerateCustomInvoice = () => {
                                                 }}>
                                                     {`Notify Party`}
                                                 </Text>
-                                                {invoiceData.notifyParty.sameAsConsignee == true ? (
+                                                {isChecked == true ? (
                                                     <Text style={{ fontWeight: 400, fontSize: 16 * widthScaleFactor, }}>{`Same as consignee / buyer`}</Text>) :
                                                     (<>
-                                                        <Text style={{ fontWeight: 750, fontSize: 16 * widthScaleFactor, lineHeight: 14 * widthScaleFactor }}>{`${invoiceData.notifyParty.name}`}</Text>
-                                                        <Text style={{ fontWeight: 400, fontSize: 16 * widthScaleFactor, marginTop: 20, lineHeight: 14 * widthScaleFactor }}>{`${invoiceData.notifyParty.address}`}</Text>
-                                                        <Text style={{ fontWeight: 400, fontSize: 16 * widthScaleFactor, marginTop: 20, lineHeight: 14 * widthScaleFactor }}>{`${invoiceData.notifyParty.email}`}</Text>
-                                                        <Text style={{ fontWeight: 400, fontSize: 16 * widthScaleFactor, marginTop: 20, lineHeight: 14 * widthScaleFactor }}>{`${invoiceData.notifyParty.contactNumber}`}</Text>
-                                                        <Text style={{ fontWeight: 400, fontSize: 16 * widthScaleFactor, marginTop: 20, lineHeight: 14 * widthScaleFactor }}>{`FAX: ${invoiceData.notifyParty.fax == '' ? 'N/A' : invoiceData.notifyParty.fax}`}</Text>
+                                                        <Text style={{ fontWeight: 750, fontSize: 16 * widthScaleFactor, lineHeight: 14 * widthScaleFactor }}>{`${notifyPartyName}`}</Text>
+                                                        <Text style={{ fontWeight: 400, fontSize: 16 * widthScaleFactor, marginTop: 20, lineHeight: 14 * widthScaleFactor }}>{`${notifyPartyAddress}`}</Text>
+                                                        <Text style={{ fontWeight: 400, fontSize: 16 * widthScaleFactor, marginTop: 20, lineHeight: 14 * widthScaleFactor }}>{`${notifyPartyEmail}`}</Text>
+                                                        <Text style={{ fontWeight: 400, fontSize: 16 * widthScaleFactor, marginTop: 20, lineHeight: 14 * widthScaleFactor }}>{`${notifyPartyContact}`}</Text>
+                                                        <Text style={{ fontWeight: 400, fontSize: 16 * widthScaleFactor, marginTop: 20, lineHeight: 14 * widthScaleFactor }}>{`FAX: ${notifyPartyFax == '' ? 'N/A' : notifyPartyFax}`}</Text>
                                                     </>)}
                                             </View>
 
@@ -6875,7 +7126,7 @@ const GenerateCustomInvoice = () => {
                                                         </Text>
 
                                                         <Text style={{ fontWeight: 750, fontSize: 12 * widthScaleFactor, color: '#F00A0A', lineHeight: 14 * widthScaleFactor }}>{`Due Date: `}
-                                                            <Text style={{ fontWeight: 400, fontSize: 12 * widthScaleFactor, color: 'black', lineHeight: 14 * widthScaleFactor }}>{`${formattedDueDate}`}</Text>
+                                                            <Text style={{ fontWeight: 400, fontSize: 12 * widthScaleFactor, color: 'black', lineHeight: 14 * widthScaleFactor }}>{`${dueDate}`}</Text>
                                                         </Text>
 
                                                     </View>
@@ -6959,129 +7210,14 @@ const GenerateCustomInvoice = () => {
                                             </View>
 
                                         </View>
+                                        {(fobText !== '' && fobPrice > 0) &&
+                                            <View style={{ flex: 1, flexDirection: 'row', }}>
 
-                                        <View style={{ flex: 1, flexDirection: 'row', }}>
-
-                                            <View style={{
-                                                borderTopWidth: 1 * widthScaleFactor,
-                                                borderColor: '#C2E2F4',
-                                                flex: 5,
-                                            }}>
-                                                <Text
-                                                    style={{
-                                                        fontWeight: 400,
-                                                        fontSize: 12 * widthScaleFactor,
-                                                        lineHeight: 14 * widthScaleFactor,
-                                                        marginBottom: 3 * heightScaleFactor,
-                                                        marginLeft: 2 * widthScaleFactor,
-                                                    }}>
-                                                    {`FOB`}
-                                                </Text>
-                                            </View>
-
-
-                                            <View style={{
-                                                borderTopWidth: 1 * widthScaleFactor,
-                                                borderColor: '#C2E2F4',
-                                                flex: 2,
-                                            }}>
-                                                <Text
-                                                    style={{
-                                                        fontWeight: 400,
-                                                        fontSize: 12 * widthScaleFactor,
-                                                        lineHeight: 14 * widthScaleFactor,
-                                                        marginBottom: 3 * heightScaleFactor,
-                                                        alignSelf: 'center',
-                                                    }}>
-                                                    {`$${Math.round(Number(invoiceData.paymentDetails.fobPrice)).toLocaleString('en-US', { useGrouping: true })}`}
-                                                </Text>
-                                            </View>
-
-                                        </View>
-
-                                        <View style={{ flex: 1, flexDirection: 'row', }}>
-
-                                            <View style={{
-                                                borderTopWidth: 1 * widthScaleFactor,
-                                                borderColor: '#C2E2F4',
-                                                flex: 5,
-                                            }}>
-                                                <Text
-                                                    style={{
-                                                        fontWeight: 400,
-                                                        fontSize: 12 * widthScaleFactor,
-                                                        lineHeight: 14 * widthScaleFactor,
-                                                        marginBottom: 3 * heightScaleFactor,
-                                                        marginLeft: 2 * widthScaleFactor,
-                                                    }}>
-                                                    {`Freight`}
-                                                </Text>
-                                            </View>
-
-                                            <View style={{
-                                                borderTopWidth: 1 * widthScaleFactor,
-                                                borderColor: '#C2E2F4',
-                                                flex: 2,
-                                            }}>
-                                                <Text
-                                                    style={{
-                                                        fontWeight: 400,
-                                                        fontSize: 12 * widthScaleFactor,
-                                                        lineHeight: 14 * widthScaleFactor,
-                                                        marginBottom: 3 * heightScaleFactor,
-                                                        alignSelf: 'center',
-                                                    }}>
-                                                    {`$${Math.round(Number(invoiceData.paymentDetails.freightPrice)).toLocaleString('en-US', { useGrouping: true })}`}
-                                                </Text>
-                                            </View>
-
-                                        </View>
-
-                                        <View style={{ flex: 1, flexDirection: 'row', }}>
-
-                                            <View style={{
-                                                borderTopWidth: 1 * widthScaleFactor,
-                                                borderColor: '#C2E2F4',
-                                                flex: 5,
-                                                flexDirection: 'row',
-                                            }}>
-                                                {invoiceData.paymentDetails.inspectionIsChecked && (invoiceData.paymentDetails.incoterms == "C&F" || invoiceData.paymentDetails.incoterms == "FOB") && <Text
-                                                    style={{
-                                                        fontWeight: 400,
-                                                        fontSize: 12 * widthScaleFactor,
-                                                        lineHeight: 14 * widthScaleFactor,
-                                                        marginBottom: 3 * heightScaleFactor,
-                                                        marginLeft: 2 * widthScaleFactor,
-                                                    }}>
-                                                    {invoiceData.paymentDetails.inspectionIsChecked ? `Inspection [${invoiceData.paymentDetails.inspectionName}]` : ' '}
-                                                </Text>}
-
-                                                {invoiceData.paymentDetails.inspectionIsChecked && invoiceData.paymentDetails.incoterms == "CIF" &&
-                                                    <>
-                                                        <Text
-                                                            style={{
-                                                                fontWeight: 400,
-                                                                fontSize: 12 * widthScaleFactor,
-                                                                lineHeight: 14 * widthScaleFactor,
-                                                                marginBottom: 3 * heightScaleFactor,
-                                                                marginLeft: 2 * widthScaleFactor,
-                                                            }}>
-                                                            {invoiceData.paymentDetails.inspectionIsChecked ? `Inspection [${invoiceData.paymentDetails.inspectionName}]` : ' '}
-                                                        </Text>
-                                                        <Text
-                                                            style={{
-                                                                fontWeight: 400,
-                                                                fontSize: 12 * widthScaleFactor,
-                                                                lineHeight: 14 * widthScaleFactor,
-                                                                marginBottom: 3 * heightScaleFactor,
-                                                                marginLeft: 2 * widthScaleFactor,
-                                                            }}>
-                                                            {invoiceData.paymentDetails.incoterms == "CIF" ? ` + Insurance` : ' '}
-                                                        </Text>
-                                                    </>
-                                                }
-
-                                                {!invoiceData.paymentDetails.inspectionIsChecked && invoiceData.paymentDetails.incoterms == "CIF" &&
+                                                <View style={{
+                                                    borderTopWidth: 1 * widthScaleFactor,
+                                                    borderColor: '#C2E2F4',
+                                                    flex: 5,
+                                                }}>
                                                     <Text
                                                         style={{
                                                             fontWeight: 400,
@@ -7090,44 +7226,16 @@ const GenerateCustomInvoice = () => {
                                                             marginBottom: 3 * heightScaleFactor,
                                                             marginLeft: 2 * widthScaleFactor,
                                                         }}>
-                                                        {invoiceData.paymentDetails.incoterms == "CIF" ? `Insurance` : ' '}
+                                                        {`${fobText}`}
                                                     </Text>
-                                                }
-
-                                                {!invoiceData.paymentDetails.inspectionIsChecked && (invoiceData.paymentDetails.incoterms == "C&F" || invoiceData.paymentDetails.incoterms == "FOB") &&
-                                                    <Text
-                                                        style={{
-                                                            fontWeight: 400,
-                                                            fontSize: 12 * widthScaleFactor,
-                                                            lineHeight: 14 * widthScaleFactor,
-                                                            marginBottom: 3 * heightScaleFactor,
-                                                        }}>
-                                                        {' '}
-                                                    </Text>
-                                                }
+                                                </View>
 
 
-                                            </View>
-
-
-                                            <View style={{
-                                                borderTopWidth: 1 * widthScaleFactor,
-                                                borderColor: '#C2E2F4',
-                                                flex: 2,
-                                            }}>
-
-                                                {invoiceData.paymentDetails.inspectionIsChecked && (invoiceData.paymentDetails.incoterms == "C&F" || invoiceData.paymentDetails.incoterms == "FOB") && <Text
-                                                    style={{
-                                                        fontWeight: 400,
-                                                        fontSize: 12 * widthScaleFactor,
-                                                        lineHeight: 14 * widthScaleFactor,
-                                                        marginBottom: 3 * heightScaleFactor,
-                                                        alignSelf: 'center',
-                                                    }}>
-                                                    {invoiceData.paymentDetails.inspectionIsChecked ? `$${Number(invoiceData.paymentDetails.inspectionPrice).toLocaleString('en-US', { useGrouping: true }).split('.')[0]}` : ' '}
-                                                </Text>}
-
-                                                {invoiceData.paymentDetails.inspectionIsChecked && invoiceData.paymentDetails.incoterms == "CIF" &&
+                                                <View style={{
+                                                    borderTopWidth: 1 * widthScaleFactor,
+                                                    borderColor: '#C2E2F4',
+                                                    flex: 2,
+                                                }}>
                                                     <Text
                                                         style={{
                                                             fontWeight: 400,
@@ -7136,21 +7244,38 @@ const GenerateCustomInvoice = () => {
                                                             marginBottom: 3 * heightScaleFactor,
                                                             alignSelf: 'center',
                                                         }}>
-                                                        {invoiceData.paymentDetails.inspectionIsChecked ? `$${Number(invoiceData.paymentDetails.inspectionPrice).toLocaleString('en-US', { useGrouping: true }).split('.')[0]}` : ' '}
-                                                        <Text
-                                                            style={{
-                                                                fontWeight: 400,
-                                                                fontSize: 12 * widthScaleFactor,
-                                                                lineHeight: 14 * widthScaleFactor,
-                                                                marginBottom: 3 * heightScaleFactor,
-                                                            }}>
-                                                            {invoiceData.paymentDetails.incoterms === "CIF" ? ` + $${Number(invoiceData.paymentDetails.insurancePrice).toLocaleString('en-US', { useGrouping: true }).split('.')[0]}` : ' '}
-                                                        </Text>
+                                                        {fobPrice > 0 ? `$${Math.round(Number(fobPrice)).toLocaleString('en-US')}` : ''}
                                                     </Text>
+                                                </View>
 
-                                                }
+                                            </View>
+                                        }
 
-                                                {!invoiceData.paymentDetails.inspectionIsChecked && invoiceData.paymentDetails.incoterms == "CIF" &&
+                                        {(freightText !== '' && freightPrice > 0) &&
+                                            <View style={{ flex: 1, flexDirection: 'row', }}>
+
+                                                <View style={{
+                                                    borderTopWidth: 1 * widthScaleFactor,
+                                                    borderColor: '#C2E2F4',
+                                                    flex: 5,
+                                                }}>
+                                                    <Text
+                                                        style={{
+                                                            fontWeight: 400,
+                                                            fontSize: 12 * widthScaleFactor,
+                                                            lineHeight: 14 * widthScaleFactor,
+                                                            marginBottom: 3 * heightScaleFactor,
+                                                            marginLeft: 2 * widthScaleFactor,
+                                                        }}>
+                                                        {`${freightText}`}
+                                                    </Text>
+                                                </View>
+
+                                                <View style={{
+                                                    borderTopWidth: 1 * widthScaleFactor,
+                                                    borderColor: '#C2E2F4',
+                                                    flex: 2,
+                                                }}>
                                                     <Text
                                                         style={{
                                                             fontWeight: 400,
@@ -7158,66 +7283,118 @@ const GenerateCustomInvoice = () => {
                                                             lineHeight: 14 * widthScaleFactor,
                                                             marginBottom: 3 * heightScaleFactor,
                                                             alignSelf: 'center',
-
                                                         }}>
-                                                        {invoiceData.paymentDetails.incoterms == "CIF" ? `$${Number(invoiceData.paymentDetails.insurancePrice).toLocaleString('en-US', { useGrouping: true }).split('.')[0]}` : ' '}
+                                                        {freightPrice > 0 ? `$${Math.round(Number(freightPrice)).toLocaleString('en-US')}` : ''}
                                                     </Text>
-                                                }
+                                                </View>
 
                                             </View>
+                                        }
 
 
-                                        </View>
+                                        {(inspectionText !== '' && inspectionPrice > 0) &&
+                                            <View style={{ flex: 1, flexDirection: 'row', }}>
 
-                                        <View style={{ flex: 1, flexDirection: 'row', }}>
+                                                <View style={{
+                                                    borderTopWidth: 1 * widthScaleFactor,
+                                                    borderColor: '#C2E2F4',
+                                                    flex: 5,
+                                                    flexDirection: 'row',
+                                                }}>
+                                                    <Text
+                                                        style={{
+                                                            fontWeight: 400,
+                                                            fontSize: 12 * widthScaleFactor,
+                                                            lineHeight: 14 * widthScaleFactor,
+                                                            marginBottom: 3 * heightScaleFactor,
+                                                            marginLeft: 2 * widthScaleFactor,
+                                                        }}>
+                                                        {inspectionText}
+                                                    </Text>
 
-                                            <View style={{
-                                                borderTopWidth: 1 * widthScaleFactor,
-                                                borderColor: '#C2E2F4',
-                                                flex: 5,
-                                                flexDirection: 'row',
-                                            }}>
-                                                {invoiceData.paymentDetails.additionalName && (invoiceData.paymentDetails.additionalName).length > 0 && <Text
-                                                    style={{
-                                                        fontWeight: 400,
-                                                        fontSize: 12 * widthScaleFactor,
-                                                        lineHeight: 14 * widthScaleFactor,
-                                                        marginBottom: 3 * heightScaleFactor,
-                                                        marginLeft: 2 * widthScaleFactor,
-                                                    }}>
-                                                    {invoiceData.paymentDetails.additionalName && (invoiceData.paymentDetails.additionalName).length > 0 ? `${invoiceData.paymentDetails.additionalName.join(' + ')}` : ' '}
-                                                </Text>}
+
+                                                </View>
+
+
+                                                <View style={{
+                                                    borderTopWidth: 1 * widthScaleFactor,
+                                                    borderColor: '#C2E2F4',
+                                                    flex: 2,
+                                                }}>
+
+                                                    <Text
+                                                        style={{
+                                                            fontWeight: 400,
+                                                            fontSize: 12 * widthScaleFactor,
+                                                            lineHeight: 14 * widthScaleFactor,
+                                                            marginBottom: 3 * heightScaleFactor,
+                                                            alignSelf: 'center',
+                                                        }}>
+                                                        {inspectionPrice > 0 ? `$${Number(inspectionPrice).toLocaleString('en-US', { useGrouping: true }).split('.')[0]}` : ' '}
+                                                    </Text>
+
+
+                                                </View>
 
 
                                             </View>
+                                        }
+                                        {(additionalName && additionalName.length > 0) &&
+                                            (additionalPrice && additionalPrice.length > 0) &&
+                                            <View style={{ flex: 1, flexDirection: 'row', }}>
 
-                                            <View style={{
-                                                borderTopWidth: 1 * widthScaleFactor,
-                                                borderColor: '#C2E2F4',
-                                                flex: 2,
-                                            }}>
-                                                <Text
-                                                    style={{
-                                                        fontWeight: 400,
-                                                        fontSize: 12 * widthScaleFactor,
-                                                        lineHeight: 14 * widthScaleFactor,
-                                                        marginBottom: 3 * heightScaleFactor,
-                                                        alignSelf: 'center',
-                                                    }}>
-                                                    {invoiceData.paymentDetails.additionalPrice && invoiceData.paymentDetails.additionalPrice.length > 0
-                                                        ? invoiceData.paymentDetails.additionalPrice.map(price =>
-                                                            `$${parseFloat(price).toLocaleString('en-US', {
-                                                                style: 'currency',
-                                                                currency: 'USD',
-                                                                minimumFractionDigits: 0,
-                                                                maximumFractionDigits: 0
-                                                            }).slice(1)}`
-                                                        ).join(' + ')
-                                                        : ' '}
-                                                </Text>
+                                                <View style={{
+                                                    borderTopWidth: 1 * widthScaleFactor,
+                                                    borderColor: '#C2E2F4',
+                                                    flex: 5,
+                                                    flexDirection: 'row',
+                                                }}>
+                                                    <Text
+                                                        style={{
+                                                            fontWeight: 400,
+                                                            fontSize: 12 * widthScaleFactor,
+                                                            lineHeight: 14 * widthScaleFactor,
+                                                            marginBottom: 3 * heightScaleFactor,
+                                                            marginLeft: 2 * widthScaleFactor,
+                                                        }}>
+                                                        {additionalName && additionalName.length > 0 ? `${additionalName.join(' + ')}` : ' '}
+                                                    </Text>
+
+
+                                                </View>
+
+                                                <View style={{
+                                                    borderTopWidth: 1 * widthScaleFactor,
+                                                    borderColor: '#C2E2F4',
+                                                    flex: 2,
+                                                }}>
+
+                                                    <Text
+                                                        style={{
+                                                            fontWeight: 400,
+                                                            fontSize: 12 * widthScaleFactor,
+                                                            lineHeight: 14 * widthScaleFactor,
+                                                            marginBottom: 3 * heightScaleFactor,
+                                                            alignSelf: 'center',
+                                                        }}>
+                                                        {additionalPrice && additionalPrice.length > 0
+                                                            ? additionalPrice.map(price =>
+                                                                !isNaN(parseFloat(price)) ? // Check if the price is a number
+                                                                    `$${parseFloat(price).toLocaleString('en-US', {
+                                                                        style: 'currency',
+                                                                        currency: 'USD',
+                                                                        minimumFractionDigits: 0,
+                                                                        maximumFractionDigits: 0
+                                                                    }).slice(1)}` : ''
+                                                            ).join(' + ')
+                                                            : ' '}
+
+                                                    </Text>
+                                                </View>
+
                                             </View>
+                                        }
 
-                                        </View>
 
                                         <View style={{ flex: 1, flexDirection: 'row', }}>
 
