@@ -129,6 +129,7 @@ import {
     setCarImageUrl,
     setSelectedVehicleData,
     setMessageTextInputValue,
+    setCustomInvoiceVisible,
 } from './redux/store';
 // import { TextInput } from 'react-native-gesture-handler';
 import { nanoid } from 'nanoid';
@@ -6037,6 +6038,7 @@ const ProfitCalculator = () => {
 
 
 const GenerateCustomInvoice = () => {
+    let invoiceNameExtension = '';
     let divideInvoice = 1;
     let additionalPriceLocal;
     let additionalNameLocal;
@@ -6045,7 +6047,7 @@ const GenerateCustomInvoice = () => {
     // import html2canvas from 'html2canvas';
     const dispatch = useDispatch();
     const selectedChatData = useSelector((state) => state.selectedChatData);
-    const [modalVisible, setModalVisible] = useState(false);
+    const customInvoiceVisible = useSelector((state) => state.customInvoiceVisible);
     const invoiceData = useSelector((state) => state.invoiceData);
     const [isPreviewHovered, setIsPreviewHovered] = useState(false);
     const screenWidth = Dimensions.get('window').width;
@@ -6147,13 +6149,11 @@ const GenerateCustomInvoice = () => {
     const [dividedBy, setDividedBy] = useState('');
 
 
-    const handleModalOpen = () => {
-        setModalVisible(true);
 
-    };
 
     const handleModalClose = () => {
-        setModalVisible(false);
+        dispatch(setCustomInvoiceVisible(false))
+        dispatch(setPreviewInvoiceVisible(true))
         setCapturedImageUri('');
     }
 
@@ -6220,38 +6220,7 @@ const GenerateCustomInvoice = () => {
 
     const captureImage = async () => {
 
-        handleAdditionalNameTextChange(additionalNameRef.current.value)
-        handleAdditionalPriceTextChange(additionalPriceRef.current.value)
 
-        setIssuingDate(issuingDateRef.current.value);
-        setDueDate(dueDateRef.current.value);
-        setShippedFrom(shippedFromRef.current.value);
-        setShippedTo(shippedToRef.current.value);
-        setPlaceOfDelivery(placeOfDeliveryRef.current.value);
-        setCfs(cfsRef.current.value);
-        setConsigneeName(consigneeNameRef.current.value);
-        setConsigneeAddress(consigneeAddressRef.current.value);
-        setConsigneeEmail(consigneeEmailRef.current.value);
-        setConsigneeContact(consigneeContactRef.current.value);
-        setConsigneeFax(consigneeFaxRef.current.value);
-        setNotifyPartyName(notifyPartyNameRef.current.value);
-        setNotifyPartyAddress(notifyPartyAddressRef.current.value);
-        setNotifyPartyEmail(notifyPartyEmailRef.current.value);
-        setNotifyPartyContact(notifyPartyContactRef.current.value);
-        setNotifyPartyFax(notifyPartyFaxRef.current.value);
-        setCarName(carNameRef.current.value);
-        setSpecifications(specificationsRef.current.value);
-        setItemNote(itemNoteRef.current.value);
-        setFobText(fobTextRef.current.value);
-        setFobPrice(fobPriceRef.current.value);
-        setFreightText(freightTextRef.current.value);
-        setFreightPrice(freightPriceRef.current.value);
-        setInspectionText(inspectionTextRef.current.value);
-        setInspectionPrice(inspectionPriceRef.current.value);
-        setTotalPrice(totalPriceRef.current.value);
-        setAdditionalName(additionalNameLocal);
-        setAdditionalPrice(additionalPriceLocal);
-        setDividedBy(dividedByRef.current.value);
 
 
         try {
@@ -6278,6 +6247,9 @@ const GenerateCustomInvoice = () => {
     };
 
     const createPDF = async () => {
+
+
+
         const element = invoiceRef.current;
         if (element) {
             // Reduce the scale slightly for smaller file size
@@ -6315,7 +6287,7 @@ const GenerateCustomInvoice = () => {
             // Filename logic
             selectedChatData.stepIndicator.value < 3 ?
                 pdf.save(`Proforma Invoice (${invoiceData.carData.carName} [${invoiceData.carData.referenceNumber}]) (A4 Paper Size).pdf`) :
-                pdf.save(`Invoice No. ${invoiceData.id} (A4 Paper Size).pdf`);
+                pdf.save(`Invoice No. ${invoiceData.id}${invoiceNameExtension} (A4 Paper Size).pdf`);
         } else {
             console.error("No element to capture");
         }
@@ -6323,8 +6295,55 @@ const GenerateCustomInvoice = () => {
 
     const handleCaptureAndCreatePDF = async () => {
 
-        // const capturedImageUri = await captureImage();
-        await captureImage();
+        handleAdditionalNameTextChange(additionalNameRef.current.value)
+        handleAdditionalPriceTextChange(additionalPriceRef.current.value)
+
+        setIssuingDate(issuingDateRef.current.value);
+        setDueDate(dueDateRef.current.value);
+        setShippedFrom(shippedFromRef.current.value);
+        setShippedTo(shippedToRef.current.value);
+        setPlaceOfDelivery(placeOfDeliveryRef.current.value);
+        setCfs(cfsRef.current.value);
+        setConsigneeName(consigneeNameRef.current.value);
+        setConsigneeAddress(consigneeAddressRef.current.value);
+        setConsigneeEmail(consigneeEmailRef.current.value);
+        setConsigneeContact(consigneeContactRef.current.value);
+        setConsigneeFax(consigneeFaxRef.current.value);
+        setNotifyPartyName(notifyPartyNameRef.current.value);
+        setNotifyPartyAddress(notifyPartyAddressRef.current.value);
+        setNotifyPartyEmail(notifyPartyEmailRef.current.value);
+        setNotifyPartyContact(notifyPartyContactRef.current.value);
+        setNotifyPartyFax(notifyPartyFaxRef.current.value);
+        setCarName(carNameRef.current.value);
+        setSpecifications(specificationsRef.current.value);
+        setItemNote(itemNoteRef.current.value);
+        setFobText(fobTextRef.current.value);
+        setFobPrice(fobPriceRef.current.value);
+        setFreightText(freightTextRef.current.value);
+        setFreightPrice(freightPriceRef.current.value);
+        setInspectionText(inspectionTextRef.current.value);
+        setInspectionPrice(inspectionPriceRef.current.value);
+        setTotalPrice(totalPriceRef.current.value);
+        setAdditionalName(additionalNameLocal);
+        setAdditionalPrice(additionalPriceLocal);
+        setDividedBy(dividedByRef.current.value);
+
+
+        if (Number(divideInvoice) > 1) {
+            for (let i = 0; i < Number(divideInvoice); i++) {
+                // Update the invoice number for each iteration based on 'i'
+                setInvoiceNumber(`${invoiceData.id}-${i + 1}`);
+                invoiceNameExtension = `-${i + 1}`;
+                // Await the capturing of the image
+                await captureImage();  // Assuming this is defined elsewhere and works asynchronously
+            }
+        } else if (Number(divideInvoice) === 1) {
+            // If dividedBy is exactly 1, you've already set the invoice number above
+            setInvoiceNumber(`${invoiceData.id}`);
+            invoiceNameExtension = '';
+            await captureImage();  // Just capture the image once
+        }
+
         // if (capturedImageUri) {
         // await createPDF(capturedImageUri);
         // }
@@ -6815,44 +6834,21 @@ const GenerateCustomInvoice = () => {
     }
 
     return (
-        <> {invoiceData && Object.keys(invoiceData).length > 0 &&
+        <>
 
-            <>{!selectedChatData.isCancelled && <Pressable
-                onPress={handleModalOpen}
-                focusable={false}
-                variant='ghost'
-                style={{
-                    justifyContent: 'center',
-                    flexDirection: 'row',
-                    padding: 5,
-                    borderRadius: 5,
-                    backgroundColor: '#0A8DD5',
-                }}>
-                <MaterialCommunityIcons size={20} name='file-document-edit' color='white' />
-                <Text style={{ fontWeight: 400, color: 'white', }}>
-                    {`Generate Custom Invoice`}
-                </Text>
-            </Pressable>}
 
-                <Modal
-                    isOpen={modalVisible}
-                    onClose={() => {
-                        handleModalClose();
-                    }}
-                    size={'full'}
-                    useRNModal
-                >
-                    <View style={{ flexDirection: 'row', margin: 2, }}>
-                        <Pressable onPress={() => {
-                            handleCaptureAndCreatePDF()
-                        }}
-                            style={{ justifyContent: 'center', flexDirection: 'row', padding: 5, borderRadius: 5, backgroundColor: '#16A34A', }}>
-                            <MaterialCommunityIcons size={20} name='download' color='white' />
-                            <Text style={{ color: 'white', }}>Download as PDF</Text>
-                        </Pressable>
-                    </View>
+            <Modal
+                isOpen={customInvoiceVisible}
+                onClose={() => {
+                    handleModalClose();
+                }}
+                size={'lg'}
+                useRNModal
+            >
 
-                    {modalVisible &&
+                <Modal.Content>
+
+                    {customInvoiceVisible &&
                         <ScrollView
                             style={{ maxHeight: 600, maxWidth: screenWidth < mobileViewBreakpoint ? '90%' : 520, }}
                         >
@@ -6868,6 +6864,17 @@ const GenerateCustomInvoice = () => {
                                 alignItems: 'center', // Center horizontally
                             }}>
                                 <FormContent />
+                                <View style={{ flexDirection: 'row', margin: 5, width: '100%', justifyContent: 'center', }}>
+                                    <Pressable
+                                        focusable={false}
+                                        onPress={() => {
+                                            handleCaptureAndCreatePDF()
+                                        }}
+                                        style={{ justifyContent: 'center', flexDirection: 'row', padding: 5, borderRadius: 5, marginHorizontal: 10, backgroundColor: '#16A34A', width: '100%' }}>
+                                        <MaterialCommunityIcons size={20} name='download' color='white' />
+                                        <Text style={{ color: 'white', }}>Download as PDF</Text>
+                                    </Pressable>
+                                </View>
                             </View>
 
                             {/* Main content with invoice details */}
@@ -7138,9 +7145,6 @@ const GenerateCustomInvoice = () => {
                                         </View>}
 
 
-
-
-
                                     <View style={{
                                         position: 'absolute',
                                         left: 38 * widthScaleFactor,
@@ -7229,7 +7233,6 @@ const GenerateCustomInvoice = () => {
                                                         {`${fobText}`}
                                                     </Text>
                                                 </View>
-
 
                                                 <View style={{
                                                     borderTopWidth: 1 * widthScaleFactor,
@@ -7423,7 +7426,7 @@ const GenerateCustomInvoice = () => {
                                                             marginBottom: 3 * heightScaleFactor,
                                                             alignSelf: 'center',
                                                         }}>
-                                                            {`${invoiceData.carData.carName}\n`}
+                                                            {`${carName}\n`}
                                                         </Text>
                                                         <Text style={{
                                                             fontWeight: 400,
@@ -7432,52 +7435,7 @@ const GenerateCustomInvoice = () => {
                                                             marginBottom: 3 * heightScaleFactor,
                                                             alignSelf: 'center',
                                                         }}>
-                                                            {`${invoiceData.carData.chassisNumber}\n`}
-                                                        </Text>
-                                                        <Text style={{
-                                                            fontWeight: 400,
-                                                            fontSize: 12 * widthScaleFactor,
-                                                            lineHeight: 14 * widthScaleFactor,
-                                                            marginBottom: 3 * heightScaleFactor,
-                                                            alignSelf: 'center',
-                                                        }}>
-                                                            {`${invoiceData.carData.exteriorColor}\n`}
-                                                        </Text>
-                                                        <Text style={{
-                                                            fontWeight: 400,
-                                                            fontSize: 12 * widthScaleFactor,
-                                                            lineHeight: 14 * widthScaleFactor,
-                                                            marginBottom: 3 * heightScaleFactor,
-                                                            alignSelf: 'center',
-                                                        }}>
-                                                            {`${Number(invoiceData.carData.engineDisplacement).toLocaleString('en-US')} cc\n`}
-                                                        </Text>
-                                                        <Text style={{
-                                                            fontWeight: 400,
-                                                            fontSize: 12 * widthScaleFactor,
-                                                            lineHeight: 14 * widthScaleFactor,
-                                                            marginBottom: 3 * heightScaleFactor,
-                                                            alignSelf: 'center',
-                                                        }}>
-                                                            {`${Number(invoiceData.carData.mileage).toLocaleString('en-US')} km\n`}
-                                                        </Text>
-                                                        <Text style={{
-                                                            fontWeight: 400,
-                                                            fontSize: 12 * widthScaleFactor,
-                                                            lineHeight: 14 * widthScaleFactor,
-                                                            marginBottom: 3 * heightScaleFactor,
-                                                            alignSelf: 'center',
-                                                        }}>
-                                                            {`${invoiceData.carData.fuel}\n`}
-                                                        </Text>
-                                                        <Text style={{
-                                                            fontWeight: 400,
-                                                            fontSize: 12 * widthScaleFactor,
-                                                            lineHeight: 14 * widthScaleFactor,
-                                                            marginBottom: 3 * heightScaleFactor,
-                                                            alignSelf: 'center',
-                                                        }}>
-                                                            {`${invoiceData.carData.transmission}\n`}
+                                                            {`${specifications}\n`}
                                                         </Text>
                                                     </Text>
 
@@ -7495,19 +7453,16 @@ const GenerateCustomInvoice = () => {
                                                 flexDirection: 'row',
                                                 justifyContent: 'center',
                                             }}>
-                                                {invoiceData.paymentDetails && invoiceData.paymentDetails.incoterms && invoiceData.discharge.port && invoiceData.discharge ? (
-                                                    <Text style={{
-                                                        fontWeight: 400,
-                                                        fontSize: 12 * widthScaleFactor,
-                                                        lineHeight: 14 * widthScaleFactor,
-                                                        marginBottom: 3 * heightScaleFactor,
-                                                        alignSelf: 'center',
-                                                    }}>
-                                                        {`${invoiceData.paymentDetails.incoterms} ${invoiceData.discharge.port}`}
-                                                    </Text>
-                                                ) : (
-                                                    <Text>{' '}</Text>
-                                                )}
+
+                                                <Text style={{
+                                                    fontWeight: 400,
+                                                    fontSize: 12 * widthScaleFactor,
+                                                    lineHeight: 14 * widthScaleFactor,
+                                                    marginBottom: 3 * heightScaleFactor,
+                                                    alignSelf: 'center',
+                                                }}>
+                                                    {`${itemNote}`}
+                                                </Text>
                                             </View>
 
                                             <View style={{
@@ -7517,7 +7472,7 @@ const GenerateCustomInvoice = () => {
                                                 flexDirection: 'row',
                                                 justifyContent: 'center',
                                             }}>
-                                                {invoiceData.carData && invoiceData.carData.carName ? (
+                                                {carName !== '' ? (
                                                     <Text style={{
                                                         fontWeight: 400,
                                                         fontSize: 12 * widthScaleFactor,
@@ -7564,7 +7519,7 @@ const GenerateCustomInvoice = () => {
                                                                 color: '#00720B',
                                                                 marginLeft: 5 * widthScaleFactor,
                                                             }}>
-                                                                {`$${invoiceData.paymentDetails.totalAmount}`}
+                                                                {`$${(Number(totalPrice) / Number(dividedBy)).toLocaleString('en-US')}`}
                                                             </Text>
                                                         </Text>
 
@@ -7740,10 +7695,10 @@ const GenerateCustomInvoice = () => {
                         </ScrollView>
 
                     }
+                </Modal.Content>
 
-                </Modal>
-            </>
-        }
+
+            </Modal>
         </>
     );
 
@@ -9112,9 +9067,28 @@ const PreviewInvoice = () => {
                             <Text style={{ color: 'white', }}>Download as PDF</Text>
                         </Pressable>
 
-                        {selectedChatData.stepIndicator.value < 3 ?
+                        {selectedChatData.isCancelled && selectedChatData.stepIndicator.value < 3 ?
                             null :
-                            <GenerateCustomInvoice />
+                            <Pressable
+                                onPress={() => {
+                                    dispatch(setCustomInvoiceVisible(true))
+                                    dispatch(setPreviewInvoiceVisible(false))
+                                }}
+                                focusable={false}
+                                variant='ghost'
+                                style={{
+                                    justifyContent: 'center',
+                                    flexDirection: 'row',
+                                    padding: 5,
+                                    borderRadius: 5,
+                                    backgroundColor: '#0A8DD5',
+                                }}>
+                                <MaterialCommunityIcons size={20} name='file-document-edit' color='white' />
+                                <Text style={{ fontWeight: 400, color: 'white', }}>
+                                    {`Generate Custom Invoice`}
+                                </Text>
+                            </Pressable>
+
                         }
 
                         <Pressable
@@ -11918,6 +11892,7 @@ const ChatMessageHeader = () => {
 
             }
 
+            <GenerateCustomInvoice />
 
             <TransactionModal />
         </View>
@@ -13990,6 +13965,7 @@ export default function ChatMessages() {
                                                         {/* Chat Message Box */}
                                                         <ChatMessageBox activeButtonValue={activeButtonValue} userEmail={email} />
                                                         <DocumentPreviewModal />
+
                                                     </View>
                                                 </View>
                                             </View>

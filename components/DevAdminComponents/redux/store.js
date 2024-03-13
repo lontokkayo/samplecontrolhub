@@ -54,7 +54,6 @@ const pdfViewerModalVisibleSlice = createSlice({
   },
 })
 
-
 const selectedVehicleDataSlice = createSlice({
   name: 'selectedVehicleData',
   initialState: [],
@@ -64,6 +63,7 @@ const selectedVehicleDataSlice = createSlice({
     },
   },
 })
+
 const selectedCustomerDataSlice = createSlice({
   name: 'selectedCustomerData',
   initialState: [],
@@ -84,6 +84,15 @@ const previewInvoiceVisibleSlice = createSlice({
   },
 })
 
+const customInvoiceVisibleSlice = createSlice({
+  name: 'customInvoiceVisible',
+  initialState: false,
+  reducers: {
+    setCustomInvoiceVisible: (state, action) => {
+      return action.payload
+    },
+  },
+})
 
 const transactionModalVisibleSlice = createSlice({
   name: 'transactionModalVisible',
@@ -859,6 +868,7 @@ const deleteImageVisibleSlice = createSlice({
 
 // =============================== Chat Messages ========================================
 export const { setMessageTextInputValue } = messageTextInputValueSlice.actions
+export const { setCustomInvoiceVisible } = customInvoiceVisibleSlice.actions
 export const { setSelectedVehicleData } = selectedVehicleDataSlice.actions
 export const { setCarImageUrl } = carImageUrlSlice.actions
 export const { setSelectedFileUrl } = selectedFileUrlSlice.actions
@@ -961,7 +971,8 @@ export const { setModelData } = modelDataSlice.actions
 const store = configureStore({
   reducer: {
 
-    // =============================== Chat Messages ========================================    
+    // =============================== Chat Messages ======================================== 
+    customInvoiceVisible: customInvoiceVisibleSlice.reducer,
     messageTextInputValue: messageTextInputValueSlice.reducer,
     selectedVehicleData: selectedVehicleDataSlice.reducer,
     carImageUrl: carImageUrlSlice.reducer,
