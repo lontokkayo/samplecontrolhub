@@ -1127,11 +1127,11 @@ const QRCodeScanner = () => {
                 <View
                     style={{ backgroundColor: 'black', }}
                 >
-                    <Webcam ref={webcamRef}
+                    {isScanning && <Webcam ref={webcamRef}
                         style={{
                             width: screenWidth < mobileViewBreakpoint ? 300 : 500,
                             height: screenWidth < mobileViewBreakpoint ? 300 : 500,
-                        }} videoConstraints={{ facingMode: "environment" }} />
+                        }} videoConstraints={{ facingMode: "environment" }} />}
                 </View>
 
 
