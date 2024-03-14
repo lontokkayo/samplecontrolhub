@@ -150,6 +150,8 @@ import { HashRouter as Router, Route, Routes, useNavigate, Navigate, useParams, 
 import * as XLSX from 'xlsx';
 import { saveAs } from 'file-saver';
 
+import QRCodeScanner from './QrCodeScanner/QrCodeScanner';
+
 // import { CollectionGroup } from 'firebase-admin/firestore';
 const { width } = Dimensions.get('window');
 let selectedScreen = 'CHAT MESSAGES'
@@ -6438,6 +6440,30 @@ const GenerateCustomInvoice = () => {
         additionalNameLocal = lines;
     };
 
+    const handleFreightTextChange = (value) => {
+        // Remove any non-numeric characters and leading zeros
+        const numericValue = value.replace(/[^0-9]/g, '');
+        // Update your variable only if the result is not an empty string and not 0
+        freightPriceRef.current.value = numericValue;
+
+    }
+
+    const handleInspectionTextChange = (value) => {
+        // Remove any non-numeric characters and leading zeros
+        const numericValue = value.replace(/[^0-9]/g, '');
+        // Update your variable only if the result is not an empty string and not 0
+        inspectionPriceRef.current.value = numericValue;
+
+    }
+
+
+    const handleFobTextChange = (value) => {
+        // Remove any non-numeric characters and leading zeros
+        const numericValue = value.replace(/[^0-9]/g, '');
+        // Update your variable only if the result is not an empty string and not 0
+        fobPriceRef.current.value = numericValue;
+
+    }
 
     const handleDividedByTextChange = (value) => {
         // Remove any non-numeric characters and leading zeros
@@ -6573,7 +6599,7 @@ const GenerateCustomInvoice = () => {
                         defaultValue={invoiceData && Object.keys(invoiceData).length > 0 ? invoiceData.consignee.contactNumber : ''}
                         placeholderTextColor='#9B9E9F'
                         placeholder='Contact Number'
-                        style={{ flex: 1, height: 75, margin: 2, padding: 1, borderRadius: 2, borderWidth: 1, borderColor: '#D9D9D9', outlineStyle: 'none', }}
+                        style={{ height: 75, margin: 2, padding: 1, borderRadius: 2, borderWidth: 1, borderColor: '#D9D9D9', outlineStyle: 'none', }}
                     />
 
                     <Text style={{ margin: 2, paddingTop: 5, fontWeight: 'bold', }}>Fax:</Text>
@@ -6645,7 +6671,7 @@ const GenerateCustomInvoice = () => {
                         defaultValue={invoiceData && Object.keys(invoiceData).length > 0 ? invoiceData.notifyParty.contactNumber : ''}
                         placeholderTextColor='#9B9E9F'
                         placeholder='Contact Number'
-                        style={{ flex: 1, height: 75, margin: 2, padding: 1, borderRadius: 2, borderWidth: 1, backgroundColor: isChecked ? '#F1F1F1' : '#FFFFFF', borderColor: '#D9D9D9', outlineStyle: 'none', }}
+                        style={{ height: 75, margin: 2, padding: 1, borderRadius: 2, borderWidth: 1, backgroundColor: isChecked ? '#F1F1F1' : '#FFFFFF', borderColor: '#D9D9D9', outlineStyle: 'none', }}
                     />
 
                     <Text style={{ margin: 2, paddingTop: 5, fontWeight: 'bold', }}>Fax:</Text>
@@ -6701,21 +6727,30 @@ const GenerateCustomInvoice = () => {
                             flexDirection: 'row',
                         }}
                     >
+
                         <TextInput
                             ref={fobTextRef}
                             defaultValue={'FOB'}
                             placeholderTextColor='#9B9E9F'
                             placeholder='Fob'
-                            style={{ flex: 1, height: 25, margin: 2, padding: 1, borderRadius: 2, borderWidth: 1, borderColor: '#D9D9D9', outlineStyle: 'none', }}
+                            style={{ flex: 1, height: 25, margin: 2, padding: 1, borderRadius: 2, borderWidth: 1, borderColor: '#D9D9D9', outlineStyle: 'none' }}
+                            onChangeText={(text) => {
+                                const filteredText = text.replace(/[^0-9]/g, ''); // Remove non-numeric characters
+
+                                fobTextRef.current.value = filteredText;
+
+                            }}
                         />
 
                         <Text style={{ marginLeft: 2, paddingTop: 5, fontWeight: 'bold', }}>$</Text>
 
                         <TextInput
                             ref={fobPriceRef}
+                            onChangeText={handleFobTextChange}
                             defaultValue={invoiceData && Object.keys(invoiceData).length > 0 ? Math.round(Number(invoiceData.paymentDetails.fobPrice)) : ''}
                             placeholderTextColor='#9B9E9F'
                             placeholder='FOB Price'
+                            keyboardType='numeric' // This prop prompts the user with a numeric keypad
                             style={{ flex: 1, height: 25, margin: 2, padding: 1, borderRadius: 2, borderWidth: 1, borderColor: '#D9D9D9', outlineStyle: 'none', }}
                         />
 
@@ -6740,9 +6775,11 @@ const GenerateCustomInvoice = () => {
 
                         <TextInput
                             ref={freightPriceRef}
+                            onChangeText={handleFreightTextChange}
                             defaultValue={invoiceData && Object.keys(invoiceData).length > 0 ? Math.round(Number(invoiceData.paymentDetails.freightPrice)) : ''}
                             placeholderTextColor='#9B9E9F'
                             placeholder='Freight Price'
+                            keyboardType='numeric' // This prop prompts the user with a numeric keypad
                             style={{ flex: 1, height: 25, margin: 2, padding: 1, borderRadius: 2, borderWidth: 1, borderColor: '#D9D9D9', outlineStyle: 'none', }}
                         />
 
@@ -6757,6 +6794,7 @@ const GenerateCustomInvoice = () => {
                     >
                         <TextInput
                             ref={inspectionTextRef}
+                            onChangeText={handleInspectionTextChange}
                             defaultValue={`Inspection ${invoiceData && Object.keys(invoiceData).length > 0 ? `[${invoiceData.paymentDetails.inspectionName}]` : ''}`}
                             placeholderTextColor='#9B9E9F'
                             placeholder='Inspection'
@@ -6764,11 +6802,13 @@ const GenerateCustomInvoice = () => {
                         />
 
                         <Text style={{ marginLeft: 2, paddingTop: 5, fontWeight: 'bold', }}>$</Text>
+
                         <TextInput
                             ref={inspectionPriceRef}
                             defaultValue={invoiceData && Object.keys(invoiceData).length > 0 ? invoiceData.paymentDetails.inspectionPrice : ''}
                             placeholderTextColor='#9B9E9F'
                             placeholder='Inspection Price'
+                            keyboardType='numeric' // This prop prompts the user with a numeric keypad
                             style={{ flex: 1, height: 25, margin: 2, padding: 1, borderRadius: 2, borderWidth: 1, borderColor: '#D9D9D9', outlineStyle: 'none', }}
                         />
                     </View>
@@ -6803,6 +6843,7 @@ const GenerateCustomInvoice = () => {
                             defaultValue={invoiceData && Object.keys(invoiceData).length > 0 ? `${(invoiceData.paymentDetails.totalAmount).replace(/,/g, '')}` : ''}
                             placeholderTextColor='#9B9E9F'
                             placeholder='Total price'
+                            keyboardType='numeric' // This prop prompts the user with a numeric keypad
                             style={{ flex: 1, height: 25, margin: 2, padding: 1, borderRadius: 2, borderWidth: 1, borderColor: '#D9D9D9', outlineStyle: 'none', }}
                         />
                     </View>
@@ -6850,7 +6891,7 @@ const GenerateCustomInvoice = () => {
 
                     {customInvoiceVisible &&
                         <ScrollView
-                            style={{ maxHeight: 600, maxWidth: screenWidth < mobileViewBreakpoint ? '90%' : 520, }}
+                            style={{ maxHeight: 600, maxWidth: screenWidth < mobileViewBreakpoint ? '100%' : 520, }}
                         >
                             <View style={{
                                 position: 'absolute',
@@ -7067,6 +7108,7 @@ const GenerateCustomInvoice = () => {
 
                                             <View style={{ flex: 1, flexDirection: 'row', marginHorizontal: 5 * widthScaleFactor, marginBottom: 5 * heightScaleFactor, }}>
                                                 <View style={{ flex: 1, marginRight: 50 * widthScaleFactor, }}>
+
                                                     <Text style={{
                                                         fontWeight: 750,
                                                         fontSize: 14 * widthScaleFactor,
@@ -8170,10 +8212,10 @@ const PreviewInvoice = () => {
                                 <Text style={{ fontWeight: 400, fontSize: 16 * smallWidthScaleFactor, }}>{`Same as consignee / buyer`}</Text>) :
                                 (<>
                                     <Text style={{ fontWeight: 750, fontSize: 16 * smallWidthScaleFactor, lineHeight: 14 * smallHeightScaleFactor }}>{`${invoiceData.notifyParty.name}`}</Text>
-                                    <Text style={{ fontWeight: 400, fontSize: 16 * smallWidthScaleFactor, marginTop: 20 * smallHeightScaleFactor, lineHeight: 14 * smallHeightScaleFactor }}>{`${invoiceData.notifyParty.address}`}</Text>
-                                    <Text style={{ fontWeight: 400, fontSize: 16 * smallWidthScaleFactor, marginTop: 20 * smallHeightScaleFactor, lineHeight: 14 * smallHeightScaleFactor }}>{`${invoiceData.notifyParty.email}`}</Text>
-                                    <Text style={{ fontWeight: 400, fontSize: 16 * smallWidthScaleFactor, marginTop: 20 * smallHeightScaleFactor, lineHeight: 14 * smallHeightScaleFactor }}>{`${invoiceData.notifyParty.contactNumber}`}</Text>
-                                    <Text style={{ fontWeight: 400, fontSize: 16 * smallWidthScaleFactor, marginTop: 20 * smallHeightScaleFactor, lineHeight: 14 * smallHeightScaleFactor }}>{`FAX: ${invoiceData.notifyParty.fax == '' ? 'N/A' : invoiceData.notifyParty.fax}`}</Text>
+                                    <Text style={{ fontWeight: 400, fontSize: 16 * smallWidthScaleFactor, marginTop: 6 * smallHeightScaleFactor, lineHeight: 14 * smallHeightScaleFactor }}>{`${invoiceData.notifyParty.address}`}</Text>
+                                    <Text style={{ fontWeight: 400, fontSize: 16 * smallWidthScaleFactor, marginTop: 6 * smallHeightScaleFactor, lineHeight: 14 * smallHeightScaleFactor }}>{`${invoiceData.notifyParty.email}`}</Text>
+                                    <Text style={{ fontWeight: 400, fontSize: 16 * smallWidthScaleFactor, marginTop: 6 * smallHeightScaleFactor, lineHeight: 14 * smallHeightScaleFactor }}>{`${invoiceData.notifyParty.contactNumber}`}</Text>
+                                    <Text style={{ fontWeight: 400, fontSize: 16 * smallWidthScaleFactor, marginTop: 6 * smallHeightScaleFactor, lineHeight: 14 * smallHeightScaleFactor }}>{`FAX: ${invoiceData.notifyParty.fax == '' ? 'N/A' : invoiceData.notifyParty.fax}`}</Text>
                                 </>)}
                         </View>
 
@@ -13593,6 +13635,7 @@ export default function ChatMessages() {
         return (
             <Box w={[100, 200, 1020]} h={[10, 10, 10]} flex={1}>
                 <Flex direction="row-reverse">
+
                     <Popover
                         isOpen={showNamePopover}
                         trigger={(triggerProps) => (
@@ -13613,6 +13656,9 @@ export default function ChatMessages() {
                             </Popover.Body>
                         </Popover.Content>
                     </Popover>
+
+
+
                 </Flex>
             </Box>
         );
@@ -13691,20 +13737,10 @@ export default function ChatMessages() {
                                 style={styles.image} />
                         </Box>
 
-                        {/* {screenWidth <= 960 && <MobileViewDrawer
-                            selectedScreen={selectedScreen} />} */}
+                        <View style={{ alignItems: 'center', flex: 1 }}>
+                            <QRCodeScanner />
+                        </View>
 
-
-                        <Box w={screenWidth <= 960 ? 120 : 0} h={screenWidth <= 960 ? 6 : 10} marginBottom={1.5} marginTop={1.5} marginLeft={[3, 3, 3, 10]}>
-
-                            {/* <FastImage
-                                source={{
-                                    uri: 'https://firebasestorage.googleapis.com/v0/b/samplermj.appspot.com/o/C-HUB%20Logos%2FC-HUB%20LOGO%20HALF.png?alt=media&token=7ce6aef2-0527-40c7-b1ce-e47079e144df',
-                                    priority: FastImage.priority.high,
-                                }}
-                                resizeMode={FastImage.resizeMode.stretch}
-                                style={styles.image} /> */}
-                        </Box>
                         <NamePopover name={loginName} handleSignOut={handleSignOut} />
 
 

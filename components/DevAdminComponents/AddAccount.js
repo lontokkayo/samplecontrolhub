@@ -58,6 +58,8 @@ import { setLoginName } from './redux/store';
 import MobileViewDrawer from './SideDrawer/MobileViewDrawer';
 import SideDrawer from './SideDrawer/SideDrawer';
 import { useNavigate } from 'react-router-dom';
+import QRCodeScanner from './QrCodeScanner/QrCodeScanner';
+
 let selectedScreen = 'ADD C-HUB ACCOUNT'
 
 const { width, height } = Dimensions.get('window');
@@ -844,6 +846,11 @@ export default function AddAccount() {
               style={styles.image}
             />
           </Box>
+
+
+          <View style={{ alignItems: 'center', flex: 1 }}>
+            <QRCodeScanner />
+          </View>
           <NamePopover name={loginName} handleSignOut={handleSignOut} />
 
 

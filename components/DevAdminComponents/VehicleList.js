@@ -106,6 +106,8 @@ import { cloneDeep } from 'lodash';
 import StickyHeader from './Header/StickyHeader';
 import { UsePagination } from './VehicleListComponent/UsePagination';
 import { useNavigate } from 'react-router-dom';
+import QRCodeScanner from './QrCodeScanner/QrCodeScanner';
+
 // import { CollectionGroup } from 'firebase-admin/firestore';
 const { width } = Dimensions.get('window');
 let selectedScreen = 'VEHICLE LIST'
@@ -4755,6 +4757,12 @@ export default function VehicleList() {
                 resizeMode={FastImage.resizeMode.stretch}
                 style={styles.image} />
             </Box>
+
+
+            <View style={{ alignItems: 'center', flex: 1 }}>
+              <QRCodeScanner />
+            </View>
+
             <NamePopover name={name} handleSignOut={handleSignOut} />
 
 

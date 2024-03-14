@@ -29,7 +29,7 @@ import {
   WarningOutlineIcon
 } from 'native-base';
 import React, { useEffect, useRef, useState, useCallback, useMemo, useLayoutEffect } from 'react';
-import { Dimensions, TouchableOpacity, StyleSheet, Platform } from 'react-native';
+import { Dimensions, TouchableOpacity, StyleSheet, Platform, View } from 'react-native';
 import 'react-native-gesture-handler';
 import {
   AntDesign,
@@ -56,6 +56,7 @@ import { useSelector, useDispatch } from 'react-redux';
 import SideDrawer from './SideDrawer/SideDrawer';
 import { cloneDeep } from 'lodash';
 import ImageMarker, { Position } from "react-native-image-marker";
+import QRCodeScanner from './QrCodeScanner/QrCodeScanner';
 
 
 
@@ -6708,6 +6709,10 @@ export default function AddVehicle() {
               style={styles.image}
             />
           </Box>
+
+          <View style={{ alignItems: 'center', flex: 1 }}>
+            <QRCodeScanner />
+          </View>
 
           <NamePopover name={loginName} handleSignOut={handleSignOut} />
           {/* <Box w={[100, 200, 1020]} h={[10, 10, 10]} flex={1}>

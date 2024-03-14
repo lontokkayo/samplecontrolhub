@@ -88,6 +88,8 @@ import {
     setLoadingModalVisible,
 } from './redux/store';
 import { useNavigate } from 'react-router-dom';
+import QRCodeScanner from './QrCodeScanner/QrCodeScanner';
+
 let selectedScreen = 'LOGS'
 
 
@@ -1217,6 +1219,11 @@ export default function Logs() {
                             style={styles.image}
                         />
                     </Box>
+
+
+                    <View style={{ alignItems: 'center', flex: 1 }}>
+                        <QRCodeScanner />
+                    </View>
 
                     <NamePopover name={loginName} handleSignOut={handleSignOut} />
 

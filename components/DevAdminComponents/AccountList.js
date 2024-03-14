@@ -69,6 +69,8 @@ import SideDrawer from './SideDrawer/SideDrawer';
 import { collectionGroup, endBefore, limitToLast, startAfter, where } from 'firebase/firestore';
 import { projectControlFirestore } from '../../crossFirebase';
 import { useNavigate } from 'react-router-dom';
+import QRCodeScanner from './QrCodeScanner/QrCodeScanner';
+
 let selectedScreen = 'ACCOUNT LIST'
 
 
@@ -1918,6 +1920,11 @@ export default function AccountList() {
                             style={styles.image}
                         />
                     </Box>
+
+
+                    <View style={{ alignItems: 'center', flex: 1 }}>
+                        <QRCodeScanner />
+                    </View>
                     <NamePopover name={loginName} handleSignOut={handleSignOut} />
                     {/* <Box w={[100, 200, 1020]} h={[10, 10, 10]} flex={1}>
                         <Flex direction="row-reverse">
