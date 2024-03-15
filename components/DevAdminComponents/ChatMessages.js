@@ -187,6 +187,7 @@ let globalInvoiceVariable = {
     carData: {
 
     },
+    selectedCurrencyExchange: '',
     cfs: '',
     placeOfDelivery: '',
     departureCountry: '',
@@ -3312,6 +3313,9 @@ const PaymentDetails = () => {
     const [selectedIncoterms, setSelectedIncoterms] = useState(invoiceData && Object.keys(invoiceData).length > 0 && invoiceData.paymentDetails.incoterms ? invoiceData.paymentDetails.incoterms :
         selectedChatData.insurance ? 'CIF' : 'C&F');
 
+    const [selectedCurrencyExchange, setSelectedCurrencyExchange] = useState(invoiceData && Object.keys(invoiceData).length > 0 && invoiceData.selectedCurrencyExchange !== 'None' && invoiceData.selectedCurrencyExchange ? invoiceData.selectedCurrencyExchange : 'None');
+
+
     const [inspectionIsChecked, setInspectionIsChecked] = useState(invoiceData && Object.keys(invoiceData).length > 0 && invoiceData.paymentDetails.inspectionIsChecked ? invoiceData.paymentDetails.inspectionIsChecked : (invoiceData && Object.keys(invoiceData).length > 0 ? invoiceData.paymentDetails.inspectionIsChecked : selectedChatData.inspection));
     const [inspectionName, setInspectionName] = useState(invoiceData && Object.keys(invoiceData).length > 0 && invoiceData.paymentDetails.inspectionName ? invoiceData.paymentDetails.inspectionName : selectedChatData.inspectionName);
 
@@ -3346,6 +3350,8 @@ const PaymentDetails = () => {
 
         additionalNameRef.current.value = invoiceData && Object.keys(invoiceData).length > 0 && invoiceData.paymentDetails.additionalName ? invoiceData.paymentDetails.additionalName.join('\n') : '';
         additionalPriceRef.current.value = invoiceData && Object.keys(invoiceData).length > 0 && invoiceData.paymentDetails.additionalPrice ? invoiceData.paymentDetails.additionalPrice.join('\n') : '';
+
+        globalInvoiceVariable.selectedCurrencyExchange = invoiceData && Object.keys(invoiceData).length > 0 && invoiceData.selectedCurrencyExchange !== 'None' && invoiceData.selectedCurrencyExchange ? invoiceData.selectedCurrencyExchange : 'None';
 
         globalInvoiceVariable.paymentDetails.incoterms = invoiceData && Object.keys(invoiceData).length > 0 && invoiceData.paymentDetails.incoterms ? invoiceData.paymentDetails.incoterms : selectedIncoterms;
         globalInvoiceVariable.paymentDetails.inspectionIsChecked = invoiceData && Object.keys(invoiceData).length > 0 && invoiceData.paymentDetails.inspectionIsChecked ? invoiceData.paymentDetails.inspectionIsChecked : inspectionIsChecked;
@@ -3568,6 +3574,7 @@ const PaymentDetails = () => {
                     style={{
                         flexDirection: 'row',
                         flex: 1,
+                        alignItems: 'center',
                     }}
                 >
                     <Text style={{ fontWeight: 700, margin: 1, paddingTop: 1 }}>$</Text>
@@ -3579,6 +3586,8 @@ const PaymentDetails = () => {
                         placeholder='Freight'
                         style={{ flex: 1, height: 25, margin: 2, padding: 1, borderRadius: 2, borderWidth: 1, borderColor: '#D9D9D9', outlineStyle: 'none', }}
                     />
+                    {/* <MaterialCommunityIcons name='swap-horizontal' size={18} color={'gray'} />
+                    <Text style={{ fontWeight: 700, margin: 1, paddingTop: 1, flex: 1, }}>$</Text> */}
                 </View>
 
             </View>
@@ -3644,10 +3653,38 @@ const PaymentDetails = () => {
 
             </View>
 
-            <View style={{ width: '100%', borderBottomWidth: 2, borderColor: '#0A9FDC', alignSelf: 'center', }} />
+            <View style={{ width: '100%', borderBottomWidth: 2, borderColor: '#0A9FDC', alignSelf: 'center', marginBottom: 4, }} />
             <View style={{ flex: 1, flexDirection: 'row', margin: 2, alignItems: 'center', }}>
                 <Text style={{ fontWeight: 700, margin: 3, }}>Total Amount:</Text>
                 <Text style={{ fontWeight: 700, fontSize: 18, margin: 3, color: '#FF0000', }}>{`$${totalAmountCalculated}`}</Text>
+
+                <MaterialCommunityIcons name='swap-horizontal' size={30} color={'gray'} />
+
+
+                <Select
+                    selectedValue={selectedCurrencyExchange}
+                    onValueChange={(value) => {
+
+                        setSelectedCurrencyExchange(value)
+                        globalInvoiceVariable.selectedCurrencyExchange = value;
+                    }}
+                    bgColor={'#FAFAFA'}
+                    accessibilityLabel="Choose Currency"
+                    placeholder="---"
+                    _selectedItem={{
+                        bg: "teal.600",
+                        endIcon: <CheckIcon />,
+                    }}
+                    height={9}
+                    style={{ flex: 1, marginLeft: 10, marginRight: 10, paddingLeft: 1, }}
+                >
+                    <Select.Item key={'None'} label={'None'} value={'None'} />
+                    <Select.Item key={'€ EURO'} label={'€ EURO'} value={'EURO'} />
+                    <Select.Item key={'A$ AUD'} label={'A$ AUD'} value={'AUD'} />
+                    <Select.Item key={'£ GBP'} label={'£ GBP'} value={'GBP'} />
+                    <Select.Item key={'C$ CAD'} label={'C$ CAD'} value={'CAD'} />
+                </Select>
+
             </View>
         </>
     );
@@ -5469,6 +5506,7 @@ const IssueProformaInvoiceModalContent = () => {
                     customerEmail: selectedCustomerData.textEmail,
                     chatId: selectedChatData.id,
                     carData: selectedChatData.carData,
+                    currency: selectedChatData.currency,
                 }, { merge: true });
 
                 if (selectedChatData.stepIndicator.value == 1) {
@@ -5493,6 +5531,7 @@ const IssueProformaInvoiceModalContent = () => {
                     chatId: selectedChatData.id,
                     cryptoNumber: hashedData,
                     carData: selectedChatData.carData,
+                    currency: selectedChatData.currency,
                 });
 
                 await updateDoc(docRefChatId, {
@@ -5574,11 +5613,11 @@ const IssueProformaInvoiceModalContent = () => {
 
             <PaymentDetails />
 
-            <View style={{ width: '100%', borderBottomWidth: 2, borderColor: '#0A9FDC', alignSelf: 'center', }} />
+            <View style={{ width: '100%', borderBottomWidth: 2, borderColor: '#0A9FDC', alignSelf: 'center', marginTop: 4, }} />
 
             <BankInformation />
 
-            <View style={{ width: '100%', borderBottomWidth: 2, borderColor: '#0A9FDC', alignSelf: 'center', margin: 2, }} />{/* Horizontal Line */}
+            <View style={{ width: '100%', borderBottomWidth: 2, borderColor: '#0A9FDC', alignSelf: 'center', margin: 2, marginTop: 4, }} />{/* Horizontal Line */}
 
             <View style={{ flex: 1, flexDirection: 'row', justifyContent: 'center', alignItems: 'center', margin: 5, }}>
                 <View
@@ -8045,6 +8084,24 @@ const PreviewInvoice = () => {
         reader.readAsBinaryString(file);
     };
 
+    const convertedCurrency = (baseValue) => {
+        if (invoiceData.selectedCurrencyExchange == 'None' || !invoiceData.selectedCurrencyExchange) {
+            return `$${Math.round(Number(baseValue)).toLocaleString('en-US', { useGrouping: true })}`
+        }
+
+        if (invoiceData.selectedCurrencyExchange == 'EURO') {
+            return `€${(Math.round(Number(baseValue) * Number(invoiceData.currency.usdToEur))).toLocaleString('en-US', { useGrouping: true })}`;
+        }
+        if (invoiceData.selectedCurrencyExchange == 'AUD') {
+            return `A$${(Math.round(Number(baseValue) * Number(invoiceData.currency.usdToAud))).toLocaleString('en-US', { useGrouping: true })}`;
+        }
+        if (invoiceData.selectedCurrencyExchange == 'GBP') {
+            return `£${(Math.round(Number(baseValue) * Number(invoiceData.currency.usdToGbp))).toLocaleString('en-US', { useGrouping: true })}`;
+        }
+        if (invoiceData.selectedCurrencyExchange == 'CAD') {
+            return `C$${(Math.round(Number(baseValue) * Number(invoiceData.currency.usdToCad))).toLocaleString('en-US', { useGrouping: true })}`;
+        }
+    }
 
     const PreviewInvoiceForMobile = () => {
 
@@ -8991,77 +9048,6 @@ const PreviewInvoice = () => {
 
 
 
-    const handleSaveAsExcel = async () => {
-
-        const formData = {
-            qrCodeData: invoiceData.cryptoNumber || '',
-
-            invoiceNumber: invoiceData.id || '',
-            issuingDate: invoiceData.bankInformations.issuingDate || '',
-            shippedFrom: `${invoiceData.departurePort || ''}, ${invoiceData.departureCountry || ''}`,
-            shippedTo: `${invoiceData.discharge.port || ''}, ${invoiceData.discharge.country || ''}`,
-            placeOfDelivery: invoiceData.placeOfDelivery ? invoiceData.placeOfDelivery : '',
-            cfs: invoiceData.cfs ? invoiceData.cfs : '',
-
-            buyerName: invoiceData.consignee.name || '',
-            buyerAddress: invoiceData.consignee.address || '',
-            buyerEmail: invoiceData.consignee.email || '',
-            buyerContact: invoiceData.consignee.contactNumber || '',
-            buyerFax: `FAX: ${invoiceData.consignee.fax || 'N/A'}`,
-
-            notifyName: invoiceData.sameAsConsignee ? `Same as consignee / buyer` : (invoiceData.notifyParty.name || ''),
-            notifyAddress: invoiceData.notifyParty.address || '',
-            notifyEmail: invoiceData.notifyParty.email || '',
-            notifyContact: invoiceData.notifyParty.contactNumber || '',
-            notifyFax: invoiceData.sameAsConsignee ? `FAX: ${invoiceData.notifyParty.fax || 'N/A'}` : '',
-
-            bankName: invoiceData.bankInformations.bankAccount.bankName || '',
-            branchName: invoiceData.bankInformations.bankAccount.branchName || '',
-            swiftcode: invoiceData.bankInformations.bankAccount.swiftCode || '',
-            bankAddress: invoiceData.bankInformations.bankAccount.address || '',
-            nameOfAccountHolder: invoiceData.bankInformations.bankAccount.accountHolder || '',
-            accountNumber: invoiceData.bankInformations.bankAccount.accountNumberValue || '',
-            dueDate: invoiceData.bankInformations.dueDate || '',
-
-            fobText: 'FOB',
-            freightText: 'Freight',
-            inspectionText: `Inspection [${invoiceData.paymentDetails.inspectionName || ''}]`,
-            fobAmount: Math.round(Number(invoiceData.paymentDetails.fobPrice)),
-            freightAmount: Math.round(Number(invoiceData.paymentDetails.freightPrice)),
-            inspectionAmount: Math.round(Number(invoiceData.paymentDetails.inspectionPrice)),
-
-
-            usedVehicle: `Used Vehicle`,
-            carName: invoiceData.carData.carName || '',
-            chassisNumber: invoiceData.carData.chassisNumber || '',
-            color: invoiceData.carData.exteriorColor || '',
-            displacement: `${Number(invoiceData.carData.engineDisplacement || 0).toLocaleString('en-US')} cc`,
-            mileage: `${Number(invoiceData.carData.mileage || 0).toLocaleString('en-US')} km`,
-            fuel: invoiceData.carData.fuel || '',
-            transmission: invoiceData.carData.transmission || '',
-            notes: `${invoiceData.paymentDetails.incoterms || ''} ${invoiceData.discharge.port || ''}`,
-        };
-
-        try {
-            const response = await axios.post('http://localhost:4000/generate-excel', formData, {
-                responseType: 'blob', // Important for handling the binary Excel file
-            });
-
-            // Create a Blob from the PDF Stream
-            const file = new Blob([response.data], {
-                type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-            });
-
-            // Build a URL from the file
-            const fileURL = URL.createObjectURL(file);
-
-            // Open the URL on new Window
-            window.open(fileURL);
-        } catch (error) {
-            console.error('Error generating Excel:', error);
-        }
-    };
-
     return (
         <> {invoiceData && Object.keys(invoiceData).length > 0 &&
 
@@ -9445,155 +9431,6 @@ const PreviewInvoice = () => {
                                         </View>}
 
 
-
-                                    {/* <View style={{ position: 'absolute', left: 260 * widthScaleFactor, top: 335 * heightScaleFactor }}>
-
-                                        <View style={{ flexDirection: 'row' }}>
-                                            {vehicleImageUri ? (
-                                                <NativeImage
-                                                    source={{ uri: vehicleImageUri }}
-                                                    style={{
-                                                        width: 99 * widthScaleFactor,
-                                                        height: 70 * heightScaleFactor,
-                                                        resizeMode: 'stretch',
-                                                    }}
-                                                />
-                                            ) : (
-                                                <View
-                                                    style={{
-                                                        width: 99 * widthScaleFactor,
-                                                        height: 70 * heightScaleFactor,
-                                                        backgroundColor: '#e0e0e0',
-                                                        marginRight: 12,
-                                                    }}
-                                                />
-                                            )}
-                                            <View style={{ flex: 1, top: -2 * heightScaleFactor, marginLeft: 5 * widthScaleFactor, height: 59 * heightScaleFactor }}>
-                                                <Text style={{ fontWeight: 'bold', fontSize: 14 * widthScaleFactor, lineHeight: 16 * widthScaleFactor }}>
-                                                    {`${invoiceData.carData.carName}`}
-                                                </Text>
-                                                <Text style={{ fontWeight: 'bold', fontSize: 12 * widthScaleFactor, lineHeight: 14 * widthScaleFactor }}>
-                                                    {`Reference No.: `}
-                                                    <Text style={{ fontWeight: 'normal', fontSize: 12 * widthScaleFactor }}>
-                                                        {`${invoiceData.carData.referenceNumber}`}
-                                                    </Text>
-                                                </Text>
-
-                                                <Text style={{ fontWeight: 'bold', fontSize: 12 * widthScaleFactor, lineHeight: 14 * widthScaleFactor }}>
-                                                    {`Year/Month: `}
-                                                    <Text style={{ fontWeight: 'normal', fontSize: 12 * widthScaleFactor }}>
-                                                        {`${invoiceData.carData.regYear}/${invoiceData.carData.regMonth}`}
-                                                    </Text>
-                                                </Text>
-
-                                                <Text style={{ fontWeight: 'bold', fontSize: 12 * widthScaleFactor, lineHeight: 14 * widthScaleFactor }}>
-                                                    {`Mileage: `}
-                                                    <Text style={{ fontWeight: 'normal', fontSize: 12 * widthScaleFactor }}>
-                                                        {`${Number(invoiceData.carData.mileage).toLocaleString('en-US')} km`}
-                                                    </Text>
-                                                </Text>
-
-                                                <Text style={{ fontWeight: 'bold', fontSize: 12 * widthScaleFactor, lineHeight: 14 * widthScaleFactor }}>
-                                                    {`Chassis No.: `}
-                                                    <Text style={{ fontWeight: 'normal', fontSize: 12 * widthScaleFactor }}>
-                                                        {`${invoiceData.carData.chassisNumber}`}
-                                                    </Text>
-                                                </Text>
-                                            </View>
-
-                                        </View>
-
-
-                                    </View>
-
-                                    <View style={{ position: 'absolute', left: 260 * widthScaleFactor, top: 410 * heightScaleFactor, flexDirection: 'row', width: 495 * widthScaleFactor, }}>
-                                        <View style={{ flex: 1 }}>
-
-                                            <Text style={{ fontWeight: 'bold', fontSize: 12 * widthScaleFactor, lineHeight: 14 * widthScaleFactor }}>
-                                                {`Model Code: `}
-                                                <Text style={{ fontWeight: 'normal', fontSize: 12 * widthScaleFactor }}>
-                                                    {`${invoiceData.carData.modelCode}`}
-                                                </Text>
-                                            </Text>
-
-                                            <Text style={{ fontWeight: 'bold', fontSize: 12 * widthScaleFactor, lineHeight: 14 * widthScaleFactor }}>
-                                                {`Fuel: `}
-                                                <Text style={{ fontWeight: 'normal', fontSize: 12 * widthScaleFactor }}>
-                                                    {`${invoiceData.carData.fuel}`}
-                                                </Text>
-                                            </Text>
-
-                                            <Text style={{ fontWeight: 'bold', fontSize: 12 * widthScaleFactor, lineHeight: 14 * widthScaleFactor }}>
-                                                {`Transmission: `}
-                                                <Text style={{ fontWeight: 'normal', fontSize: 12 * widthScaleFactor }}>
-                                                    {`${invoiceData.carData.transmission}`}
-                                                </Text>
-                                            </Text>
-
-                                            <Text style={{ fontWeight: 'bold', fontSize: 12 * widthScaleFactor, lineHeight: 14 * widthScaleFactor }}>
-                                                {`Steering: `}
-                                                <Text style={{ fontWeight: 'normal', fontSize: 12 * widthScaleFactor }}>
-                                                    {`${invoiceData.carData.steering}`}
-                                                </Text>
-                                            </Text>
-
-                                            <Text style={{ fontWeight: 'bold', fontSize: 12 * widthScaleFactor, lineHeight: 14 * widthScaleFactor }}>
-                                                {`Displacement: `}
-                                                <Text style={{ fontWeight: 'normal', fontSize: 12 * widthScaleFactor }}>
-                                                    {`${Number(invoiceData.carData.engineDisplacement).toLocaleString('en-US')} cc`}
-                                                </Text>
-                                            </Text>
-                                        </View>
-
-                                        <View style={{ flex: 1 }}>
-
-                                            <Text style={{ fontWeight: 'bold', fontSize: 12 * widthScaleFactor, lineHeight: 14 * widthScaleFactor }}>
-                                                {`Doors: `}
-                                                <Text style={{ fontWeight: 'normal', fontSize: 12 * widthScaleFactor }}>
-                                                    {`${invoiceData.carData.doors ? invoiceData.carData.doors : 'N/A'}`}
-                                                </Text>
-                                            </Text>
-
-                                            <Text style={{ fontWeight: 'bold', fontSize: 12 * widthScaleFactor, lineHeight: 14 * widthScaleFactor }}>
-                                                {`Drive Type: `}
-                                                <Text style={{ fontWeight: 'normal', fontSize: 12 * widthScaleFactor }}>
-                                                    {`${invoiceData.carData.driveType ? invoiceData.carData.driveType : 'N/A'}`}
-                                                </Text>
-                                            </Text>
-
-                                            <Text style={{ fontWeight: 'bold', fontSize: 12 * widthScaleFactor, lineHeight: 14 * widthScaleFactor }}>
-                                                {`Exterior Color: `}
-                                                <Text style={{ fontWeight: 'normal', fontSize: 12 * widthScaleFactor }}>
-                                                    {`${invoiceData.carData.exteriorColor}`}
-                                                </Text>
-                                            </Text>
-
-                                            <Text style={{ fontWeight: 'bold', fontSize: 12 * widthScaleFactor, lineHeight: 14 * widthScaleFactor }}>
-                                                {`Number of Seats: `}
-                                                <Text style={{ fontWeight: 'normal', fontSize: 12 * widthScaleFactor }}>
-                                                    {`${invoiceData.carData.numberOfSeats ? invoiceData.carData.numberOfSeats : 'N/A'}`}
-                                                </Text>
-                                            </Text>
-
-                                            <Text style={{ fontWeight: 'bold', fontSize: 12 * widthScaleFactor, lineHeight: 14 * widthScaleFactor }}>
-                                                {`Body Type: `}
-                                                <Text style={{ fontWeight: 'normal', fontSize: 12 * widthScaleFactor }}>
-                                                    {`${invoiceData.carData.bodyType}`}
-                                                </Text>
-                                            </Text>
-                                        </View>
-
-                                    </View>
-
-                                    <View style={{ position: 'absolute', left: 260 * widthScaleFactor, top: 484 * heightScaleFactor, width: 495 * widthScaleFactor, }}>
-                                        <Text style={{ fontWeight: 'bold', fontSize: 12 * widthScaleFactor, lineHeight: 14 * widthScaleFactor, marginBottom: 3 * heightScaleFactor, }}>
-                                            {`Features: `}
-                                        </Text>
-
-                                        <InvoiceFeatures widthScaleFactor={widthScaleFactor} heightScaleFactor={heightScaleFactor} />
-
-                                    </View> */}
-
                                     <View style={{
                                         position: 'absolute',
                                         left: 38 * widthScaleFactor,
@@ -9697,7 +9534,7 @@ const PreviewInvoice = () => {
                                                         marginBottom: 3 * heightScaleFactor,
                                                         alignSelf: 'center',
                                                     }}>
-                                                    {`$${Math.round(Number(invoiceData.paymentDetails.fobPrice)).toLocaleString('en-US', { useGrouping: true })}`}
+                                                    {`${convertedCurrency(Math.round(Number(invoiceData.paymentDetails.fobPrice)))}`}
                                                 </Text>
                                             </View>
 
@@ -9735,7 +9572,7 @@ const PreviewInvoice = () => {
                                                         marginBottom: 3 * heightScaleFactor,
                                                         alignSelf: 'center',
                                                     }}>
-                                                    {`$${Math.round(Number(invoiceData.paymentDetails.freightPrice)).toLocaleString('en-US', { useGrouping: true })}`}
+                                                    {`${convertedCurrency(Math.round(Number(invoiceData.paymentDetails.freightPrice)))}`}
                                                 </Text>
                                             </View>
 
@@ -9828,7 +9665,7 @@ const PreviewInvoice = () => {
                                                         marginBottom: 3 * heightScaleFactor,
                                                         alignSelf: 'center',
                                                     }}>
-                                                    {invoiceData.paymentDetails.inspectionIsChecked ? `$${Number(invoiceData.paymentDetails.inspectionPrice).toLocaleString('en-US', { useGrouping: true }).split('.')[0]}` : ' '}
+                                                    {invoiceData.paymentDetails.inspectionIsChecked ? `${convertedCurrency(Number(invoiceData.paymentDetails.inspectionPrice).toLocaleString('en-US', { useGrouping: true })).split('.')[0]}` : ' '}
                                                 </Text>}
 
                                                 {invoiceData.paymentDetails.inspectionIsChecked && invoiceData.paymentDetails.incoterms == "CIF" &&
@@ -9840,7 +9677,7 @@ const PreviewInvoice = () => {
                                                             marginBottom: 3 * heightScaleFactor,
                                                             alignSelf: 'center',
                                                         }}>
-                                                        {invoiceData.paymentDetails.inspectionIsChecked ? `$${Number(invoiceData.paymentDetails.inspectionPrice).toLocaleString('en-US', { useGrouping: true }).split('.')[0]}` : ' '}
+                                                        {invoiceData.paymentDetails.inspectionIsChecked ? `${convertedCurrency(Number(invoiceData.paymentDetails.inspectionPrice).toLocaleString('en-US', { useGrouping: true })).split('.')[0]}` : ' '}
                                                         <Text
                                                             style={{
                                                                 fontWeight: 400,
@@ -9848,7 +9685,7 @@ const PreviewInvoice = () => {
                                                                 lineHeight: 14 * widthScaleFactor,
                                                                 marginBottom: 3 * heightScaleFactor,
                                                             }}>
-                                                            {invoiceData.paymentDetails.incoterms === "CIF" ? ` + $${Number(invoiceData.paymentDetails.insurancePrice).toLocaleString('en-US', { useGrouping: true }).split('.')[0]}` : ' '}
+                                                            {invoiceData.paymentDetails.incoterms === "CIF" ? ` + ${convertedCurrency(Number(invoiceData.paymentDetails.insurancePrice).toLocaleString('en-US', { useGrouping: true })).split('.')[0]}` : ' '}
                                                         </Text>
                                                     </Text>
 
@@ -9864,7 +9701,7 @@ const PreviewInvoice = () => {
                                                             alignSelf: 'center',
 
                                                         }}>
-                                                        {invoiceData.paymentDetails.incoterms == "CIF" ? `$${Number(invoiceData.paymentDetails.insurancePrice).toLocaleString('en-US', { useGrouping: true }).split('.')[0]}` : ' '}
+                                                        {invoiceData.paymentDetails.incoterms == "CIF" ? `${convertedCurrency(Number(invoiceData.paymentDetails.insurancePrice).toLocaleString('en-US', { useGrouping: true })).split('.')[0]}` : ' '}
                                                     </Text>
                                                 }
 
@@ -10091,7 +9928,7 @@ const PreviewInvoice = () => {
                                                                 color: '#00720B',
                                                                 marginLeft: 5 * widthScaleFactor,
                                                             }}>
-                                                                {`$${invoiceData.paymentDetails.totalAmount}`}
+                                                                {`${convertedCurrency(Number(invoiceData.paymentDetails.totalAmount.replace(/,/g, '')))}`}
                                                             </Text>
                                                         </Text>
 
