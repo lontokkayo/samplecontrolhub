@@ -8084,22 +8084,94 @@ const PreviewInvoice = () => {
         reader.readAsBinaryString(file);
     };
 
+    const valueCurrency = 10;
+
     const convertedCurrency = (baseValue) => {
+
+
         if (invoiceData.selectedCurrencyExchange == 'None' || !invoiceData.selectedCurrencyExchange) {
             return `$${Math.round(Number(baseValue)).toLocaleString('en-US', { useGrouping: true })}`
         }
 
         if (invoiceData.selectedCurrencyExchange == 'EURO') {
-            return `€${(Math.round(Number(baseValue) * Number(invoiceData.currency.usdToEur))).toLocaleString('en-US', { useGrouping: true })}`;
+
+            return `€${(Math.round(Number(baseValue) * Number(invoiceData.currency.usdToEur) + (valueCurrency * Number(invoiceData.currency.usdToEur)))).toLocaleString('en-US', { useGrouping: true })}`;
         }
         if (invoiceData.selectedCurrencyExchange == 'AUD') {
-            return `A$${(Math.round(Number(baseValue) * Number(invoiceData.currency.usdToAud))).toLocaleString('en-US', { useGrouping: true })}`;
+            return `A$${(Math.round(Number(baseValue) * Number(invoiceData.currency.usdToAud) + (valueCurrency * Number(invoiceData.currency.usdToAud)))).toLocaleString('en-US', { useGrouping: true })}`;
         }
         if (invoiceData.selectedCurrencyExchange == 'GBP') {
-            return `£${(Math.round(Number(baseValue) * Number(invoiceData.currency.usdToGbp))).toLocaleString('en-US', { useGrouping: true })}`;
+            return `£${(Math.round(Number(baseValue) * Number(invoiceData.currency.usdToGbp) + (valueCurrency * Number(invoiceData.currency.usdToGbp)))).toLocaleString('en-US', { useGrouping: true })}`;
         }
         if (invoiceData.selectedCurrencyExchange == 'CAD') {
-            return `C$${(Math.round(Number(baseValue) * Number(invoiceData.currency.usdToCad))).toLocaleString('en-US', { useGrouping: true })}`;
+            return `C$${(Math.round(Number(baseValue) * Number(invoiceData.currency.usdToCad) + (valueCurrency * Number(invoiceData.currency.usdToCad)))).toLocaleString('en-US', { useGrouping: true })}`;
+        }
+    }
+
+    const totalPriceCalculated = () => {
+
+        const totalAdditionalPrice = invoiceData.paymentDetails.additionalPrice.reduce((total, price) => {
+            const converted = convertedCurrency(Number(price)); // Convert each price using your currency conversion function
+            const numericPart = converted.replace(/[^0-9.]/g, ''); // Remove non-numeric characters, assuming decimal numbers
+            return total + parseFloat(numericPart); // Add the numeric value to the total
+        }, 0);
+
+        const totalEur = Number(invoiceData.paymentDetails.fobPrice) * Number(invoiceData.currency.usdToEur)
+            + (valueCurrency * Number(invoiceData.currency.usdToEur))
+            + Number(invoiceData.paymentDetails.freightPrice) * Number(invoiceData.currency.usdToEur)
+            + (valueCurrency * Number(invoiceData.currency.usdToEur))
+            + (invoiceData.paymentDetails.inspectionIsChecked
+                ? (Number(invoiceData.paymentDetails.inspectionPrice) * Number(invoiceData.currency.usdToEur)
+                    + (valueCurrency * Number(invoiceData.currency.usdToEur)))
+                : 0)
+            + totalAdditionalPrice;
+
+        const totalAud = Number(invoiceData.paymentDetails.fobPrice) * Number(invoiceData.currency.usdToAud)
+            + (valueCurrency * Number(invoiceData.currency.usdToAud))
+            + Number(invoiceData.paymentDetails.freightPrice) * Number(invoiceData.currency.usdToAud)
+            + (valueCurrency * Number(invoiceData.currency.usdToAud))
+            + (invoiceData.paymentDetails.inspectionIsChecked
+                ? (Number(invoiceData.paymentDetails.inspectionPrice) * Number(invoiceData.currency.usdToAud)
+                    + (valueCurrency * Number(invoiceData.currency.usdToAud)))
+                : 0)
+            + totalAdditionalPrice;
+
+        const totalGbp = Number(invoiceData.paymentDetails.fobPrice) * Number(invoiceData.currency.usdToGbp)
+            + (valueCurrency * Number(invoiceData.currency.usdToGbp))
+            + Number(invoiceData.paymentDetails.freightPrice) * Number(invoiceData.currency.usdToGbp)
+            + (valueCurrency * Number(invoiceData.currency.usdToGbp))
+            + (invoiceData.paymentDetails.inspectionIsChecked
+                ? (Number(invoiceData.paymentDetails.inspectionPrice) * Number(invoiceData.currency.usdToGbp)
+                    + (valueCurrency * Number(invoiceData.currency.usdToGbp)))
+                : 0)
+            + totalAdditionalPrice;
+
+        const totalCad = Number(invoiceData.paymentDetails.fobPrice) * Number(invoiceData.currency.usdToCad)
+            + (valueCurrency * Number(invoiceData.currency.usdToCad))
+            + Number(invoiceData.paymentDetails.freightPrice) * Number(invoiceData.currency.usdToCad)
+            + (valueCurrency * Number(invoiceData.currency.usdToCad))
+            + (invoiceData.paymentDetails.inspectionIsChecked
+                ? (Number(invoiceData.paymentDetails.inspectionPrice) * Number(invoiceData.currency.usdToCad)
+                    + (valueCurrency * Number(invoiceData.currency.usdToCad)))
+                : 0)
+            + totalAdditionalPrice;
+
+        if (invoiceData.selectedCurrencyExchange == 'None' || !invoiceData.selectedCurrencyExchange) {
+
+            return `$${invoiceData.paymentDetails.totalPrice}`
+        }
+
+        if (invoiceData.selectedCurrencyExchange == 'EURO') {
+            return `€${Math.round(totalEur).toLocaleString('en-US', { useGrouping: true })}`;
+        }
+        if (invoiceData.selectedCurrencyExchange == 'AUD') {
+            return `A$${Math.round(totalAud).toLocaleString('en-US', { useGrouping: true })}`;
+        }
+        if (invoiceData.selectedCurrencyExchange == 'GBP') {
+            return `£${Math.round(totalGbp).toLocaleString('en-US', { useGrouping: true })}`;
+        }
+        if (invoiceData.selectedCurrencyExchange == 'CAD') {
+            return `C$${Math.round(totalCad).toLocaleString('en-US', { useGrouping: true })}`;
         }
     }
 
@@ -9746,14 +9818,10 @@ const PreviewInvoice = () => {
                                                         alignSelf: 'center',
                                                     }}>
                                                     {invoiceData.paymentDetails.additionalPrice && invoiceData.paymentDetails.additionalPrice.length > 0
-                                                        ? invoiceData.paymentDetails.additionalPrice.map(price =>
-                                                            `$${parseFloat(price).toLocaleString('en-US', {
-                                                                style: 'currency',
-                                                                currency: 'USD',
-                                                                minimumFractionDigits: 0,
-                                                                maximumFractionDigits: 0
-                                                            }).slice(1)}`
-                                                        ).join(' + ')
+                                                        ? invoiceData.paymentDetails.additionalPrice.map(price => {
+                                                            const converted = convertedCurrency(Number(price));
+                                                            return converted;
+                                                        }).join(' + ')
                                                         : ' '}
                                                 </Text>
                                             </View>
@@ -9928,7 +9996,7 @@ const PreviewInvoice = () => {
                                                                 color: '#00720B',
                                                                 marginLeft: 5 * widthScaleFactor,
                                                             }}>
-                                                                {`${convertedCurrency(Number(invoiceData.paymentDetails.totalAmount.replace(/,/g, '')))}`}
+                                                                {`${totalPriceCalculated()}`}
                                                             </Text>
                                                         </Text>
 
