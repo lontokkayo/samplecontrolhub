@@ -1705,7 +1705,7 @@ const ChatInputText = () => {
                         style={({ pressed }) => [
                             {
                                 padding: 10,
-                                top: 20,
+                                top: 5,
                                 right: 10,
                                 position: 'absolute',
                                 borderRadius: 20,
@@ -13224,7 +13224,7 @@ export default function ChatMessages() {
     useEffect(() => {
         // globalImageUrl = '';
         // navigate(`/devadmin/chat-messages/#`);
-        console.log(encryptDataAPI('rmj-marc'));
+        // console.log(encryptDataAPI('rmj-marc'));
 
         const updateWidth = () => {
             const newWidth = Dimensions.get('window').width;

@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Button, View, Text } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { Button, View, Text, FlatList } from 'react-native';
 import Papa from 'papaparse';
 import Encoding from 'encoding-japanese';
 
@@ -88,6 +88,7 @@ const data = [
 
 const ParseCSV = () => {
     const [csvData, setCsvData] = useState([]);
+    const [data, setData] = useState([]);
 
     const handleFileChange = async (event) => {
         const file = event.target.files[0];
@@ -228,6 +229,184 @@ const ParseCSV = () => {
 
     }
 
+
+    // useEffect(async () => {
+    //     try {
+    //         await fetch('http://localhost:7000');
+    //         // await fetch('http://rmj-api.duckdns.org:7000');
+    //         // const jsonData = await response.json();
+    //         // setData(jsonData);
+    //     } catch (error) {
+    //         console.error('Error fetching data: ', error);
+    //     }
+    // }, []);
+
+
+    const sendData = async () => {
+        // const response = await fetch('http://rmj-api.duckdns.org:7000', {
+        const response = await fetch('http://localhost:7000/', {
+            method: 'POST',
+            headers: {
+                // 'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                // "tokenkey": "0iXRkSCDfNwO",
+                action_cd: "update",
+                stock_id: "179924",
+                status: "Sold",
+                reference_no: "Y2023080140A-21",
+                m_as_maker_id: "59",
+                m_as_model_id: "1343",
+                grade_name: "116i 右ﾊﾝﾄﾞﾙ",
+                model_code: "GH-UF16",
+                frame_number: "WBAUF12060PZ31920",
+                model_number: "15016",
+                devision_number: "0001",
+                registration_year: "2006",
+                registration_month: "08",
+                manufacture_year: "",
+                manufacture_month: "",
+                m_as_bodytype_id: "5",
+                m_bodystyle_sub_id: "",
+                length: "4240",
+                width: "1750",
+                height: "1430",
+                displacement: "1600",
+                mileage_odometer_cd: "0",
+                mileage: "73255",
+                m_as_fueltype_id: "1",
+                m_as_transmission_id: "1",
+                m_as_steering_id: "2",
+                m_as_drivetype_id: "2",
+                number_of_passengers: "5",
+                door_cnt: "5",
+                exterior_color_cd: "22",
+                interior_color_cd: "",
+                option_cds: "[1,2,3,4,6,9,10,11,18,19,20,21,22,23,25,26,30,31,32,41]",
+                condition_cd: "0",
+                accident_flg: "0",
+                sales_person_charge_id: "42",
+                storage_yard_cd: "4",
+                site_sales_pr_text: "",
+                fob_ask_flg: "0",
+                fob_regular_price: "120000",
+                fob_price: "120000",
+                display_site_cds: "[RMJ,RMZ]",
+                tcv_flg: "1",
+                m_tcv_maker_id: "23",
+                m_tcv_model_id: "5355",
+                memo: "取・ﾅﾋﾞ取・ﾘﾓｺﾝ・ＳＤ　仕⼊れ︓￥60000",
+                stock_no: "2023080140",
+                stock_price: "60000",
+                car_condition_file: "179924-vehicle_state.jpg"
+            })
+        });
+
+        if (response.ok) {
+            let responseData;
+            responseData = await response.json();
+            console.log('Success:', responseData);
+
+        } else {
+            console.log('HTTP-Error:', response.status);
+            try {
+                const errorResponse = await response.text();
+                console.log('Error response:', errorResponse);
+            } catch (error) {
+                console.log('Error reading error response:', error);
+            }
+        }
+    };
+
+
+
+    const YOUR_SERVER_ENDPOINT = 'http://rmj-api.duckdns.org:7000';
+
+    const callApiR02 = async (json_data, msg, exec_time) => {
+        try {
+            const data_post = JSON.parse(json_data); // Assuming json_data is a valid JSON string
+
+            const response = await fetch(YOUR_SERVER_ENDPOINT, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                data: json_data, // sending raw JSON string
+            });
+
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+
+            const data = await response.json(); // Assuming the server responds with JSON
+
+            // Check if 'ret_text' is undefined before calling replace()
+            let ret_text = data.ret_text ? data.ret_text.replace(/\n/g, '\n') : 'No return text provided';
+            let ret = data.ret === true ? 'Success\n' : 'Error\n';
+
+            return ret + ret_text;
+
+        } catch (error) {
+            console.error('API call failed:', error);
+            return 'Error: ' + error.message; // In a real app, you might want to update state with this message
+        }
+    };
+
+    const jsonData = JSON.stringify({
+        // "tokenkey": "0iXRkSCDfNwO",
+        action_cd: "update",
+        stock_id: "179924",
+        status: "Sold",
+        reference_no: "Y2023080140A-21",
+        m_as_maker_id: "59",
+        m_as_model_id: "1343",
+        grade_name: "116i 右ﾊﾝﾄﾞﾙ",
+        model_code: "GH-UF16",
+        frame_number: "WBAUF12060PZ31920",
+        model_number: "15016",
+        devision_number: "0001",
+        registration_year: "2006",
+        registration_month: "08",
+        manufacture_year: "",
+        manufacture_month: "",
+        m_as_bodytype_id: "5",
+        m_bodystyle_sub_id: "",
+        length: "4240",
+        width: "1750",
+        height: "1430",
+        displacement: "1600",
+        mileage_odometer_cd: "0",
+        mileage: "73255",
+        m_as_fueltype_id: "1",
+        m_as_transmission_id: "1",
+        m_as_steering_id: "2",
+        m_as_drivetype_id: "2",
+        number_of_passengers: "5",
+        door_cnt: "5",
+        exterior_color_cd: "22",
+        interior_color_cd: "",
+        option_cds: "[1,2,3,4,6,9,10,11,18,19,20,21,22,23,25,26,30,31,32,41]",
+        condition_cd: "0",
+        accident_flg: "0",
+        sales_person_charge_id: "42",
+        storage_yard_cd: "4",
+        site_sales_pr_text: "",
+        fob_ask_flg: "0",
+        fob_regular_price: "120000",
+        fob_price: "120000",
+        display_site_cds: "[RMJ,RMZ]",
+        tcv_flg: "1",
+        m_tcv_maker_id: "23",
+        m_tcv_model_id: "5355",
+        memo: "取・ﾅﾋﾞ取・ﾘﾓｺﾝ・ＳＤ　仕⼊れ︓￥60000",
+        stock_no: "2023080140",
+        stock_price: "60000",
+        car_condition_file: "179924-vehicle_state.jpg"
+    })
+
+    const handleCallApi = async () => {
+        const result = await callApiR02(jsonData, '...', '...');
+    }
     return (
 
 
@@ -238,6 +417,7 @@ const ParseCSV = () => {
                 onChange={handleFileChange}
                 style={{ marginBottom: 20 }}
             />
+
             <View>
                 {csvData.map((row, index) => (
                     <Text key={index}>
@@ -248,11 +428,28 @@ const ParseCSV = () => {
 
             <Button
                 style={{ width: 100 }}
-                onPress={handlePressUpdate}
+                // onPress={handlePressUpdate}
+                onPress={sendData}
+            // onPress={handleCallApi}
             >
-                Press to update
+                <Text>Press to update</Text>
             </Button>
+
+            <View>
+                <FlatList
+                    data={data}
+                    keyExtractor={(item, index) => index.toString()}
+                    renderItem={({ item }) => (
+                        <View>
+                            <Text>{item.columnName}</Text> {/* Replace columnName with actual data column name */}
+                        </View>
+                    )}
+                />
+            </View>
         </View>
+
+
+
     );
 };
 
