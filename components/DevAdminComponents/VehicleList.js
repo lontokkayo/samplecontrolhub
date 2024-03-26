@@ -4729,12 +4729,10 @@ export default function VehicleList() {
             borderBottomColor={'cyan.500'}
           >
 
-
             <SideDrawer
               selectedScreen={selectedScreen} />
 
             <Box w={screenWidth <= 960 ? 0 : 850} h={[10, 10, 10, 10]} marginBottom={1.5} marginTop={1.5} paddingLeft={5}>
-
               <FastImage
                 source={{
                   uri: 'https://firebasestorage.googleapis.com/v0/b/samplermj.appspot.com/o/C-HUB%20Logos%2FC-HUB%20LOGO%20FULL.png?alt=media&token=79ed34a5-f960-4154-b4e8-897b0f3248d4',
@@ -4744,27 +4742,11 @@ export default function VehicleList() {
                 style={styles.image} />
             </Box>
 
-            {screenWidth <= 960 && <MobileViewDrawer
-              selectedScreen={selectedScreen} />}
-
-            <Box w={screenWidth <= 960 ? 120 : 0} h={screenWidth <= 960 ? 6 : 10} marginBottom={1.5} marginTop={1.5} marginLeft={[3, 3, 3, 10]}>
-
-              <FastImage
-                source={{
-                  uri: 'https://firebasestorage.googleapis.com/v0/b/samplermj.appspot.com/o/C-HUB%20Logos%2FC-HUB%20LOGO%20HALF.png?alt=media&token=7ce6aef2-0527-40c7-b1ce-e47079e144df',
-                  priority: FastImage.priority.high,
-                }}
-                resizeMode={FastImage.resizeMode.stretch}
-                style={styles.image} />
-            </Box>
-
-
             <View style={{ alignItems: 'center', flex: 1 }}>
               <QRCodeScanner />
             </View>
 
             <NamePopover name={name} handleSignOut={handleSignOut} />
-
 
           </Box>
 

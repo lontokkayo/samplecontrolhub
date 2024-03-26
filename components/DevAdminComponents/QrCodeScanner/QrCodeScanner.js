@@ -237,7 +237,6 @@ const QRCodeScanner = () => {
                 <View style={{ position: 'absolute', right: 121 * smallWidthScaleFactor, top: 34 * smallHeightScaleFactor }}>
                     {/* Invoice Number */}
                     <Text style={{ fontWeight: 750, fontSize: 14 * smallWidthScaleFactor }}>{`Invoice No. RMJ-${invoiceData.id}`}</Text>
-
                 </View>
                 <View style={{ position: 'absolute', right: 121 * smallWidthScaleFactor, top: 49 * smallHeightScaleFactor, flexDirection: 'row' }}>
                     {/* Issuing Date */}

@@ -2428,7 +2428,7 @@ const ChatList = ({ unreadButtonValue, activeButtonValue, }) => {
                 let stockIdPart = parts[1];
                 let emailPart = parts[parts.length - 1];
 
-
+                globalCustomerId = emailPart;
                 // console.log(decryptedChatId);
 
                 if (!emailPart) {
@@ -7958,7 +7958,6 @@ const PreviewInvoice = () => {
     };
 
 
-
     if (invoiceData && Object.keys(invoiceData).length > 0) {
         const issuingDateString = invoiceData.bankInformations.issuingDate;
         const dueDateString = invoiceData.bankInformations.dueDate;
@@ -13050,7 +13049,7 @@ const ChatMessageBox = ({ activeButtonValue, userEmail }) => {
 
                             <View style={{
                                 position: 'absolute',
-                                left: -60,
+                                left: isGlobalCustomerSender ? '100%' : -60,
                                 top: '50%',
                                 bottom: '50%',
                                 flexDirection: isGlobalCustomerSender ? 'row' : 'row-reverse',
@@ -13264,6 +13263,7 @@ export default function ChatMessages() {
                 console.error('Error fetching IP data:', error);
             }
         };
+
         const collectionRef = collection(projectExtensionFirestore, 'chats'); // Replace with your collection name
         const unrepliedQuery = query(
             collectionRef,
