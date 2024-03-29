@@ -4867,7 +4867,7 @@ const createHmacSha256Hash = (data, secretKey) => {
 };
 
 
-const ConfirmPaymentModalContent = () => {
+const InputPaymentModalContent = () => {
     const dispatch = useDispatch();
     const invoiceData = useSelector((state) => state.invoiceData);
     const selectedChatData = useSelector((state) => state.selectedChatData);
@@ -4913,6 +4913,25 @@ const ConfirmPaymentModalContent = () => {
         inputAmountRef.current.value = filteredText;
     }
 
+
+    const CurrencySymbol = () => {
+        switch (selectedChatData.selectedCurrencyExchange) {
+            case 'USD':
+                return '$';
+
+            case 'EURO':
+                return '€';
+
+            case 'AUD':
+                return 'A$';
+
+            case 'GBP':
+                return '£';
+
+            case 'CAD':
+                return 'C$';
+        }
+    }
 
     const fullPaymentMessage = async () => {
         const response = await axios.get('https://worldtimeapi.org/api/timezone/Asia/Tokyo');
@@ -5323,7 +5342,7 @@ Real Motor Japan`,
 
             <View style={{ marginLeft: 5, }}>
 
-                <Text style={{ fontWefight: 700, fontSize: 14, }}>Total Paid:</Text>
+                <Text style={{ fontWeight: 700, fontSize: 14, }}>Total Paid:</Text>
 
                 <Progress w="90%" shadow={2} value={Number(totalValue)} max={totalAmountNumber} _filledTrack={{
                     bg: "lime.500"
@@ -5356,7 +5375,7 @@ Real Motor Japan`,
 
                 <View style={{ flexDirection: 'row', alignItems: 'center', }}>
 
-                    <Text style={{ fontWeight: 700, fontSize: 18, }}>$</Text>
+                    <Text style={{ fontWeight: 700, fontSize: 18, }}>{CurrencySymbol()}</Text>
 
                     <TextInput
                         ref={inputAmountRef}
@@ -10981,7 +11000,7 @@ const TransactionModal = () => {
                     }
 
                     {transactionModalContentValue == 3 &&
-                        <ConfirmPaymentModalContent />
+                        <InputPaymentModalContent />
                     }
                 </Modal.Content>
             }
@@ -11620,7 +11639,66 @@ const ChatMessageHeader = () => {
 
     }, [activeChatId]);
 
+    const CurrencySymbol = (value) => {
+        switch (value) {
+            case 'USD':
+                return '$ USD';
 
+            case 'EURO':
+                return '€ EURO';
+
+            case 'AUD':
+                return 'A$ AUD';
+
+            case 'GBP':
+                return '£ GBP';
+
+            case 'CAD':
+                return 'C$ CAD';
+        }
+    }
+
+
+
+    const UpdateCurrency = async (currencyValue) => {
+
+        const oldSelectedCurrency = selectedChatData.selectedCurrencyExchange ? selectedChatData.selectedCurrencyExchange : '$ USD';
+
+        const response = await axios.get('https://worldtimeapi.org/api/timezone/Asia/Tokyo');
+        const { datetime } = response.data;
+        const formattedTime = moment(datetime).format('YYYY/MM/DD [at] HH:mm:ss.SSS');
+        const year = moment(datetime).format('YYYY');
+        const month = moment(datetime).format('MM');
+        const monthWithDay = moment(datetime).format('MM/DD');
+        const date = moment(datetime).format('YYYY/MM/DD');
+        const day = moment(datetime).format('DD');
+        const time = moment(datetime).format('HH:mm');
+        const timeWithMinutesSeconds = moment(datetime).format('HH:mm:ss');
+
+        const email = projectControlAuth.currentUser ? projectControlAuth.currentUser.email : '';
+
+        if (oldSelectedCurrency !== currencyValue) {
+
+            await addDoc(collection(projectExtensionFirestore, 'chats', selectedChatData.id, 'messages'), {
+                text: `Transaction currency has been changed from ${CurrencySymbol(oldSelectedCurrency)} to ${CurrencySymbol(currencyValue)}`,
+                sender: email,
+                timestamp: formattedTime, // Using the fetched timestamp
+                ip: ip, // IP Address
+                ipCountry: ipCountry // Country of the IP Address
+            });
+
+            await updateDoc(doc(projectExtensionFirestore, 'chats', selectedChatData.id), {
+                selectedCurrencyExchange: currencyValue,
+                lastMessage: `Transaction currency has been changed from ${CurrencySymbol(oldSelectedCurrency)} to ${CurrencySymbol(currencyValue)}`,
+                lastMessageDate: formattedTime,
+                customerRead: false,
+                read: true,
+                readBy: [email],
+            });
+
+        }
+
+    }
 
     const CurrencyPopover = () => {
 
@@ -11633,38 +11711,62 @@ const ChatMessageHeader = () => {
             { label: 'C$ CAD', value: 'CAD' },
         ];
 
+
+
+
+
         return (
             <Box>
                 <Popover
                     trigger={(triggerProps) => {
                         return (
-                            <NativePressable {...triggerProps} bg="#FAFAFA">
-                                <Text>{selectedCurrencyExchange}</Text>
+                            <NativePressable {...triggerProps}
+                                marginLeft={'5px'}
+                                width="70px"
+                                bg="#303030"
+                                _hover={{
+                                    bg: '#595959',
+                                }}
+                                borderColor={'#D9D9D9'}
+                                borderWidth={1}
+                                borderRadius={'5px'}
+                                flexDirection={'row'}
+                            >
+                                <Text style={{ marginLeft: 1, textAlign: 'center ', color: '#E4DCAC', fontWeight: 'bold', }}>{CurrencySymbol(selectedCurrencyExchange)}</Text>
+
+                                <View
+                                    style={{
+                                        alignSelf: 'center',
+                                        marginLeft: 9,
+                                    }}>
+                                    <FontAwesome name='caret-down' size='12' color='#E4DCAC' />
+                                </View>
                             </NativePressable>
                         );
                     }}
                 >
-                    <Popover.Content width="auto">
-                        <Popover.Body>
+                    <Popover.Content width="70px">
+                        <Box backgroundColor={'#303030'}>
                             <VStack space={1}>
                                 {currencies.map((currency) => (
                                     <NativePressable
                                         key={currency.value}
                                         onPress={() => {
                                             setSelectedCurrencyExchange(currency.value);
+                                            UpdateCurrency(currency.value)
                                             // Perform additional logic if necessary, e.g., updating global state
                                         }}
                                         _hover={{
-                                            bg: 'teal.600',
+                                            bg: '#595959',
                                         }}
                                     >
-                                        <Text fontSize="sm">
+                                        <Text fontSize="sm" textAlign={'center'} color='#E4DCAC' fontWeight={'bold'}>
                                             {currency.label}
                                         </Text>
                                     </NativePressable>
                                 ))}
                             </VStack>
-                        </Popover.Body>
+                        </Box>
                     </Popover.Content>
                 </Popover>
             </Box>
@@ -11758,7 +11860,6 @@ const ChatMessageHeader = () => {
                 </View>
 
             </View>
-
             <View style={{ alignSelf: 'center', justifyContent: 'center', paddingLeft: 15, }}>
 
                 <View style={{ flexDirection: 'row', }}>
@@ -11774,7 +11875,7 @@ const ChatMessageHeader = () => {
                                     0)
                         ).toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`})
                     </Text>
-                    {/* <CurrencyPopover /> */}
+                    {!selectedChatData.isCancelled && <CurrencyPopover />}
                 </View>
 
                 <View style={{ flexDirection: 'row', }}>
