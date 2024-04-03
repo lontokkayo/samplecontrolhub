@@ -407,8 +407,8 @@ const ParseCSV = () => {
     const handleCallApi = async () => {
         const result = await callApiR02(jsonData, '...', '...');
     }
-    return (
 
+    return (
 
         <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
             <input
@@ -447,7 +447,6 @@ const ParseCSV = () => {
                 />
             </View>
         </View>
-
 
 
     );

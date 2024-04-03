@@ -4719,8 +4719,7 @@ export default function AddVehicle() {
       buyerVariable.text == "" ||
       salesVariable.text == "" ||
       driveTypeVariable.text == "" ||
-      bodyTypeVariable.text == "" ||
-      stockStatusVariable.text == "";
+      bodyTypeVariable.text == ""
 
     const inputIsEmpty = inputStockIDNumber.current?.value == "" || inputRefNum.current?.value == "" ||
       inputChassis.current?.value == "" ||
@@ -4744,7 +4743,6 @@ export default function AddVehicle() {
       inputDimensionHeight.current?.value == 0 ||
       inputDimensionCubicMeters.current?.value == 0 ||
       inputWeight.current?.value == "" ||
-      inputWeight.current?.value == 0 ||
       inputCarName.current?.value == "";
 
     // const inputExceedLength = input;
@@ -4775,16 +4773,6 @@ export default function AddVehicle() {
       if (bodyTypeVariable.text == "") {
         selectBodyTypeBoxRef.current.scrollIntoView({ behavior: 'smooth' });
         setBodyTypeError('danger.400');
-      }
-
-      if (stockStatusVariable.text == "") {
-        selectStockStatusBoxRef.current.scrollIntoView({ behavior: 'smooth' });
-        setStockStatusError('danger.400');
-      }
-
-      if (inputWeight.current?.value == "" || inputWeight.current?.value == 0) {
-        inputWeight.current.scrollIntoView({ behavior: 'smooth' });
-        setWeightError('danger.400');
       }
 
       if (driveTypeVariable.text == "") {
@@ -5564,10 +5552,6 @@ export default function AddVehicle() {
   };
 
 
-
-
-
-
   const handleSignOut = () => {
 
     signOut(projectControlAuth).then(() => {
@@ -5581,8 +5565,6 @@ export default function AddVehicle() {
 
 
   }
-
-
 
 
   // const showDrawerIcon = useBreakpointValue([true, true, true, false]);
@@ -5694,8 +5676,6 @@ export default function AddVehicle() {
     const newText = textAreaAddPortCode.current?.value?.toUpperCase();
     textAreaAddPortCode.current?.setNativeProps({ text: newText });
     // Remove any non-numeric characters
-
-
   };
 
   const handleAddSalesTextChange = () => {
@@ -5801,23 +5781,21 @@ export default function AddVehicle() {
     inputChassis.current?.setNativeProps({ text: newText });
 
   };
+
   const handleInputModelCodeChange = () => {
     const newText = inputModelCode.current?.value?.toUpperCase();
     inputModelCode.current?.setNativeProps({ text: newText });
 
   };
+
   const handleInputEngineCodeChange = () => {
     const newText = inputEngineCode.current?.value?.toUpperCase();
     inputEngineCode.current?.setNativeProps({ text: newText });
-
   };
-
-
 
   const handleInputEngineDisChange = (text) => {
     // Remove any non-numeric characters
     const numericValue = text.replace(/[^0-9]/g, '');
-
 
     // Limit the numeric value to a maximum of 4 characters
     const truncatedValue = numericValue.slice(0, 5);
@@ -7782,7 +7760,7 @@ export default function AddVehicle() {
                               </Box>
                             </Box>
                             <Box flexDir={'row'} borderBottomColor={'white'} borderBottomWidth={'1'} bgColor={'#8096D7'} >
-                              <Box flexDir={'row'} alignSelf={'center'} flex={1} alignItems={'flex-start'}><Text color={'white'} fontSize={[14, 14, 12, 12, 16, 18]}> Weight</Text><Text color={'#D96437'} fontSize={[14, 14, 12, 12, 16, 18]}> *</Text></Box>
+                              <Box flexDir={'row'} alignSelf={'center'} flex={1} alignItems={'flex-start'}><Text color={'white'} fontSize={[14, 14, 12, 12, 16, 18]}> Weight</Text></Box>
                               <Box bgColor={'white'} flex={1} borderColor={weightError} borderWidth={1}><InputGroup><Input defaultValue="" ref={inputWeight} keyboardType="numeric" onChangeText={handleInputWeightChange} flex={1} placeholder=" Weight" /><InputRightAddon children={"kg"} /></InputGroup></Box>
                             </Box>
 
@@ -7893,7 +7871,7 @@ export default function AddVehicle() {
 
 
                             <Box flexDir={'row'} borderTopColor={'white'} borderTopWidth={'1'} bgColor={'#8096D7'} >
-                              <Box bgColor={'#8096D7'} flex={1} flexDir={'row'} ><Text color={'white'} alignSelf={'center'} fontSize={[14, 14, 12, 12, 16, 18]}> Stock Status</Text><Text color={'#D96437'} fontSize={[14, 14, 12, 12, 16, 18]}> *</Text>
+                              <Box bgColor={'#8096D7'} flex={1} flexDir={'row'} ><Text color={'white'} alignSelf={'center'} fontSize={[14, 14, 12, 12, 16, 18]}> Stock Status</Text>
 
                               </Box>
                               <Box ref={selectStockStatusBoxRef} bgColor={'white'} flex={1} borderColor={stockStatusError} borderWidth={1}>
