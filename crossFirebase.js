@@ -34,10 +34,6 @@ const firebaseConfigControl = {
   measurementId: REACT_NATIVE_FIREBASE_CONTROL_MEASUREMENT_ID,
 };
 
-
-
-
-
 // Configuration for Firebase project 2
 const firebaseConfigExtension = {
   // Replace with your project 2 configuration
@@ -49,13 +45,7 @@ const firebaseConfigExtension = {
   appId: REACT_NATIVE_FIREBASE_EXTENSION_APP_ID,
   measurementId: REACT_NATIVE_FIREBASE_EXTENSION_MEASUREMENT_ID,
 
-
 };
-
-
-
-
-
 
 // Initialize Firebase for project 1
 export const projectControlFirebase = initializeApp(firebaseConfigControl);
