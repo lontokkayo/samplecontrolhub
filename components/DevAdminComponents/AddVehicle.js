@@ -1,3 +1,8 @@
+/* The above code is a JavaScript code snippet that imports various components and libraries from the
+NativeBase framework and React Native for building mobile applications. It also includes imports for
+icons from different icon libraries like AntDesign, FontAwesome, Ionicons, etc. Additionally, it
+imports functions and utilities from Firebase for authentication, Firestore database operations, and
+storage. */
 import {
   Box,
   Button,
