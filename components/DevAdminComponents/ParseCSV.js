@@ -408,6 +408,55 @@ const ParseCSV = () => {
         const result = await callApiR02(jsonData, '...', '...');
     }
 
+    const appendDataToCSV = async () => {
+        try {
+            const response = await fetch('https://rmj-api.duckdns.org/modifyCsv/append-csv-sales-info', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    username: 'jackall',
+                    password: 'U2FsdGVkX18WCFA/fjC/fB6DMhtOOIL/xeVF2tD2b7c=',
+                    data: { id: '2023090267', stock_system_id: '177521' }, // Adjust based on your CSV structure
+                }),
+            });
+
+            if (response.ok) {
+                console.log('Success', 'Data appended successfully to CSV.');
+            } else {
+                console.log('Error', 'Failed to append data to CSV.');
+            }
+        } catch (error) {
+            console.error(error);
+            console.log('Error', 'An error occurred.');
+        }
+    };
+
+    const handleClearCsv = async () => {
+        try {
+            const response = await fetch('https://rmj-api.duckdns.org/modifyCsv/reset-csv-sales-info', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    username: 'jackall',
+                    password: 'U2FsdGVkX18WCFA/fjC/fB6DMhtOOIL/xeVF2tD2b7c='
+                }),
+            });
+
+            if (response.ok) {
+                console.log('Success', 'CSV contents have been cleared.');
+            } else {
+                console.log('Error', 'Failed to clear CSV contents.');
+            }
+        } catch (error) {
+            console.error(error);
+            console.log('Error', 'An error occurred.');
+        }
+    };
+
     return (
 
         <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
@@ -432,8 +481,18 @@ const ParseCSV = () => {
                 onPress={sendData}
             // onPress={handleCallApi}
             >
-                <Text>Press to update</Text>
+
             </Button>
+
+            <Button title="Append Data to CSV" onPress={appendDataToCSV} >
+                <Text>Append Data to CSV</Text>
+            </Button>
+
+
+            <Button title="Reset CSV" onPress={handleClearCsv} >
+                <Text>Reset CSV</Text>
+            </Button>
+
 
             <View>
                 <FlatList
