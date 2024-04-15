@@ -433,6 +433,31 @@ const ParseCSV = () => {
         }
     };
 
+
+    const appendClientsDataToCSV = async () => {
+        try {
+            const response = await fetch('https://rmj-api.duckdns.org/modifyCsv/append-csv-clients', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    username: 'jackall',
+                    password: 'U2FsdGVkX18WCFA/fjC/fB6DMhtOOIL/xeVF2tD2b7c=',
+                    data: { id: '24000001', client_name: 'Marc Van' }, // Adjust based on your CSV structure
+                }),
+            });
+
+            if (response.ok) {
+                console.log('Success', 'Data appended successfully to CSV.');
+            } else {
+                console.log('Error', 'Failed to append data to CSV.');
+            }
+        } catch (error) {
+            console.error(error);
+            console.log('Error', 'An error occurred.');
+        }
+    };
     const handleClearCsv = async () => {
         try {
             const response = await fetch('https://rmj-api.duckdns.org/modifyCsv/reset-csv-sales-info', {
@@ -456,6 +481,31 @@ const ParseCSV = () => {
             console.log('Error', 'An error occurred.');
         }
     };
+
+    const handleClearClientsCsv = async () => {
+        try {
+            const response = await fetch('https://rmj-api.duckdns.org/modifyCsv/reset-csv-clients', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    username: 'jackall',
+                    password: 'U2FsdGVkX18WCFA/fjC/fB6DMhtOOIL/xeVF2tD2b7c='
+                }),
+            });
+
+            if (response.ok) {
+                console.log('Success', 'CSV contents have been cleared.');
+            } else {
+                console.log('Error', 'Failed to clear CSV contents.');
+            }
+        } catch (error) {
+            console.error(error);
+            console.log('Error', 'An error occurred.');
+        }
+    };
+
 
     return (
 
@@ -484,15 +534,15 @@ const ParseCSV = () => {
 
             </Button>
 
-            <Button title="Append Data to CSV" onPress={appendDataToCSV} >
-                <Text>Append Data to CSV</Text>
-            </Button>
+            <Button title="Append Data to CSV" onPress={appendDataToCSV} />
+
+            <Button title="Append Clients Data to CSV" onPress={appendClientsDataToCSV} />
 
 
-            <Button title="Reset CSV" onPress={handleClearCsv} >
-                <Text>Reset CSV</Text>
-            </Button>
 
+            <Button title="Reset CSV" onPress={handleClearCsv}/>
+
+            <Button title="Reset Clients CSV" onPress={handleClearClientsCsv}/>
 
             <View>
                 <FlatList

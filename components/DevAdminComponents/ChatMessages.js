@@ -4867,6 +4867,77 @@ const createHmacSha256Hash = (data, secretKey) => {
 };
 
 
+const appendSalesInfoDataToCSV = async ({
+    id,
+    stock_system_id,
+    sales_date,
+    fob,
+    freight,
+    insurance,
+    inspection,
+    cost_name1,
+    cost1,
+    cost_name2,
+    cost2,
+    cost_name3,
+    cost3,
+    cost_name4,
+    cost4,
+    cost_name5,
+    cost5,
+    coupon_discount,
+    price_discount,
+    subtotal,
+    clients,
+}) => {
+    try {
+        const response = await fetch('https://rmj-api.duckdns.org/modifyCsv/append-csv-sales-info', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                username: 'jackall',
+                password: 'U2FsdGVkX18WCFA/fjC/fB6DMhtOOIL/xeVF2tD2b7c=',
+                data: {
+                    id: id,
+                    stock_system_id: stock_system_id,
+                    sales_date: sales_date,
+                    fob: fob,
+                    freight: freight,
+                    insurance: insurance,
+                    inspection: inspection,
+                    cost_name1: cost_name1,
+                    cost1: cost1,
+                    cost_name2: cost_name2,
+                    cost2: cost2,
+                    cost_name3: cost_name3,
+                    cost3: cost3,
+                    cost_name4: cost_name4,
+                    cost4: cost4,
+                    cost_name5: cost_name5,
+                    cost5: cost5,
+                    coupon_discount: coupon_discount,
+                    price_discount: price_discount,
+                    subtotal: subtotal,
+                    clients: clients,
+                }, // Adjust based on your CSV structure
+            }),
+        });
+
+        if (response.ok) {
+            console.log('Success', 'Data appended successfully to CSV.');
+        } else {
+            console.log('Error', 'Failed to append data to CSV.');
+        }
+    } catch (error) {
+        console.error(error);
+        console.log('Error', 'An error occurred.');
+    }
+};
+
+
+
 const InputPaymentModalContent = () => {
     const dispatch = useDispatch();
     const invoiceData = useSelector((state) => state.invoiceData);
@@ -5147,6 +5218,8 @@ Real Motor Japan`,
         }
     }
 
+
+
     const confirmPayment = async () => {
         setIsConfirmLoading(true);
 
@@ -5156,7 +5229,7 @@ Real Motor Japan`,
         const response = await axios.get('https://worldtimeapi.org/api/timezone/Asia/Tokyo');
         const { datetime } = response.data;
         const formattedTime = moment(datetime).format('YYYY/MM/DD [at] HH:mm:ss.SSS');
-
+        const formattedSalesDate = moment(datetime).format('YYYY/MM/DD');
         const newPayments = [
             { value: inputAmountRef.current.value, date: formattedTime },
         ];
@@ -5175,6 +5248,41 @@ Real Motor Japan`,
             return;
         }
 
+
+        const prepareSalesData = () => {
+            // Initial data from the function call
+            let salesData = {
+                id: selectedChatData.carData.stockID,
+                stock_system_id: selectedChatData.carData.jackall_id,
+                sales_date: formattedSalesDate,
+                fob: invoiceData.paymentDetails.fobPrice,
+                freight: invoiceData.paymentDetails.freightPrice,
+                insurance: 0,
+                inspection: invoiceData.paymentDetails.inspectionIsChecked ? invoiceData.paymentDetails.inspectionPrice : 0,
+                coupon_discount: 0,
+                price_discount: 0,
+                subtotal: parseFloat(invoiceData.paymentDetails.totalAmount.replace(/,/g, '')),
+                clients: selectedCustomerData.j_id
+            };
+
+            // Map additional names and prices to cost_name and cost fields
+            invoiceData.paymentDetails.additionalName.forEach((name, index) => {
+                const price = invoiceData.paymentDetails.additionalPrice[index] || 0;
+                salesData[`cost_name${index + 1}`] = name;
+                salesData[`cost${index + 1}`] = price;
+            });
+
+            // Fill remaining cost_name and cost fields with default values if they haven't been set
+            for (let i = invoiceData.paymentDetails.additionalName.length + 1; i <= 5; i++) {
+                salesData[`cost_name${i}`] = 0;
+                salesData[`cost${i}`] = 0;
+            }
+
+            return salesData;
+        };
+
+        const salesDataToSubmit = prepareSalesData();
+
         try {
             if (!inputAmount.startsWith('-')) {
                 // First, execute paymentMessage
@@ -5184,6 +5292,7 @@ Real Motor Japan`,
                 if (numericInputAmount >= amountNeeded) {
                     // Once paymentMessage is successful, execute fullPaymentMessage
                     await fullPaymentMessage();
+                    await appendSalesInfoDataToCSV(salesDataToSubmit);
                     await delay(10); //10ms delay
 
                     if (numericInputAmount > amountNeeded) {
@@ -8105,25 +8214,43 @@ const PreviewInvoice = () => {
 
     const valueCurrency = 0.5;
 
-    const convertedCurrency = (baseValue) => {
 
-        if (invoiceData.selectedCurrencyExchange == 'None' || !invoiceData.selectedCurrencyExchange) {
+    const freightCalculation = ((selectedChatData.m3 ? selectedChatData.m3 :
+        (selectedChatData.carData && selectedChatData.carData.dimensionCubicMeters ?
+            selectedChatData.carData.dimensionCubicMeters : 0)) *
+        Number(selectedChatData.freightPrice));
+
+    const totalPriceCalculation = (selectedChatData.fobPrice ? selectedChatData.fobPrice :
+        (selectedChatData.carData && selectedChatData.carData.fobPrice ?
+            selectedChatData.carData.fobPrice : 0) *
+        (selectedChatData.jpyToUsd ? selectedChatData.jpyToUsd :
+            (selectedChatData.currency && selectedChatData.currency.jpyToUsd ?
+                selectedChatData.currency.jpyToUsd : 0))) + freightCalculation;
+
+
+
+    const convertedCurrency = (baseValue) => {
+        if (invoiceData.selectedCurrencyExchange == 'None' || !invoiceData.selectedCurrencyExchange || invoiceData.selectedCurrencyExchange == 'USD') {
             return `$${Number(baseValue).toFixed(2).toLocaleString('en-US', { useGrouping: true })}`
         }
         if (invoiceData.selectedCurrencyExchange == 'EURO') {
-            return `€${((Number(baseValue) * Number(invoiceData.currency.usdToJpy) + (Number(baseValue) * valueCurrency)) * Number(invoiceData.currency.jpyToEur)).toFixed(2).toLocaleString('en-US', { useGrouping: true })}`;
+            const euroValue = Number(baseValue) * Number(selectedChatData.currency.usdToJpy) + Number(baseValue) * Number(valueCurrency);
+            return `€${(euroValue * Number(selectedChatData.currency.jpyToEur)).toFixed(2).toLocaleString('en-US', { useGrouping: true })}`;
         }
         if (invoiceData.selectedCurrencyExchange == 'AUD') {
-            return `A$${((Number(baseValue) * Number(invoiceData.currency.usdToJpy) + (Number(baseValue) * valueCurrency)) * Number(invoiceData.currency.jpyToAud)).toFixed(2).toLocaleString('en-US', { useGrouping: true })}`;
+            const audValue = Number(baseValue) * Number(selectedChatData.currency.usdToJpy) + Number(baseValue) * Number(valueCurrency);
+            return `A$${(audValue * Number(selectedChatData.currency.jpyToAud)).toFixed(2).toLocaleString('en-US', { useGrouping: true })}`;
         }
         if (invoiceData.selectedCurrencyExchange == 'GBP') {
-            return `£${((Number(baseValue) * Number(invoiceData.currency.usdToJpy) + (Number(baseValue) * valueCurrency)) * Number(invoiceData.currency.jpyToGbp)).toFixed(2).toLocaleString('en-US', { useGrouping: true })}`;
+            const gbpValue = Number(baseValue) * Number(selectedChatData.currency.usdToJpy) + Number(baseValue) * Number(valueCurrency);
+            return `£${(gbpValue * Number(selectedChatData.currency.jpyToGbp)).toFixed(2).toLocaleString('en-US', { useGrouping: true })}`;
         }
         if (invoiceData.selectedCurrencyExchange == 'CAD') {
-            return `C$${((Number(baseValue) * Number(invoiceData.currency.usdToJpy) + (Number(baseValue) * valueCurrency)) * Number(invoiceData.currency.cadToJpy)).toFixed(2).toLocaleString('en-US', { useGrouping: true })}`;
+            const cadValue = Number(baseValue) * Number(selectedChatData.currency.usdToJpy) + Number(baseValue) * Number(valueCurrency);
+            return `C$${(cadValue * Number(selectedChatData.currency.cadToJpy)).toFixed(2).toLocaleString('en-US', { useGrouping: true })}`;
         }
-
     }
+
 
     const totalPriceCalculated = () => {
 
@@ -8184,7 +8311,7 @@ const PreviewInvoice = () => {
             * Number(invoiceData.currency.usdToJpy))
             * Number(invoiceData.currency.cadToJpy);
 
-        if (invoiceData.selectedCurrencyExchange == 'None' || !invoiceData.selectedCurrencyExchange) {
+        if (invoiceData.selectedCurrencyExchange == 'None' || !invoiceData.selectedCurrencyExchange || invoiceData.selectedCurrencyExchange == 'USD') {
             return `$${Math.round(totalUsd).toLocaleString('en-US', { useGrouping: true })}`;
         }
 
@@ -8972,7 +9099,7 @@ const PreviewInvoice = () => {
                                             color: '#00720B',
                                             marginLeft: 5 * smallWidthScaleFactor,
                                         }}>
-                                            {`$${invoiceData.paymentDetails.totalAmount}`}
+                                            {`$${convertedCurrency()}`}
                                         </Text>
                                     </Text>
 
@@ -11686,6 +11813,11 @@ const ChatMessageHeader = () => {
                 ip: ip, // IP Address
                 ipCountry: ipCountry // Country of the IP Address
             });
+
+            await setDoc(doc(projectExtensionFirestore, 'IssuedInvoice', selectedChatData.invoiceNumber), {
+                selectedCurrencyExchange: currencyValue,
+            }, { merge: true });
+
 
             await updateDoc(doc(projectExtensionFirestore, 'chats', selectedChatData.id), {
                 selectedCurrencyExchange: currencyValue,
