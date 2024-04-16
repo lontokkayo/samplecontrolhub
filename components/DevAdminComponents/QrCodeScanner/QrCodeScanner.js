@@ -181,7 +181,7 @@ const QRCodeScanner = () => {
     const widthScaleFactor = newWidth / originalWidth;
     const heightScaleFactor = newHeight / originalHeight;
 
-    const valueCurrency = 0;
+    const valueCurrency = 0.5;
 
     const convertedCurrency = (baseValue) => {
         if (invoiceData.selectedCurrencyExchange == 'None' || !invoiceData.selectedCurrencyExchange || invoiceData.selectedCurrencyExchange == 'USD') {
