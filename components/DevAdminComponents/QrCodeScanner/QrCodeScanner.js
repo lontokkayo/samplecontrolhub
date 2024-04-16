@@ -181,6 +181,107 @@ const QRCodeScanner = () => {
     const widthScaleFactor = newWidth / originalWidth;
     const heightScaleFactor = newHeight / originalHeight;
 
+    const valueCurrency = 0;
+
+    const convertedCurrency = (baseValue) => {
+        if (invoiceData.selectedCurrencyExchange == 'None' || !invoiceData.selectedCurrencyExchange || invoiceData.selectedCurrencyExchange == 'USD') {
+            return `$${Number(baseValue).toFixed(2).toLocaleString('en-US', { useGrouping: true })}`
+        }
+        if (invoiceData.selectedCurrencyExchange == 'EURO') {
+            const euroValue = Number(baseValue) * Number(invoiceData.currency.usdToJpy) + Number(baseValue) * Number(valueCurrency);
+            return `€${(euroValue * Number(invoiceData.currency.jpyToEur)).toFixed(2).toLocaleString('en-US', { useGrouping: true })}`;
+        }
+        if (invoiceData.selectedCurrencyExchange == 'AUD') {
+            const audValue = Number(baseValue) * Number(invoiceData.currency.usdToJpy) + Number(baseValue) * Number(valueCurrency);
+            return `A$${(audValue * Number(invoiceData.currency.jpyToAud)).toFixed(2).toLocaleString('en-US', { useGrouping: true })}`;
+        }
+        if (invoiceData.selectedCurrencyExchange == 'GBP') {
+            const gbpValue = Number(baseValue) * Number(invoiceData.currency.usdToJpy) + Number(baseValue) * Number(valueCurrency);
+            return `£${(gbpValue * Number(invoiceData.currency.jpyToGbp)).toFixed(2).toLocaleString('en-US', { useGrouping: true })}`;
+        }
+        if (invoiceData.selectedCurrencyExchange == 'CAD') {
+            const cadValue = Number(baseValue) * Number(invoiceData.currency.usdToJpy) + Number(baseValue) * Number(valueCurrency);
+            return `C$${(cadValue * Number(invoiceData.currency.cadToJpy)).toFixed(2).toLocaleString('en-US', { useGrouping: true })}`;
+        }
+    }
+
+    const totalPriceCalculated = () => {
+
+        const totalAdditionalPrice = invoiceData.paymentDetails.additionalPrice.reduce((total, price) => {
+            const converted = Number(price); // Convert each price using your currency conversion function
+            const numericPart = price.replace(/[^0-9.]/g, ''); // Remove non-numeric characters, assuming decimal numbers
+            return total + parseFloat(numericPart); // Add the numeric value to the total
+        }, 0);
+
+        const totalUsd = ((Number(invoiceData.paymentDetails.fobPrice)
+            + Number(invoiceData.paymentDetails.freightPrice)
+            + (invoiceData.paymentDetails.inspectionIsChecked
+                ? (Number(invoiceData.paymentDetails.inspectionPrice))
+                : 0) + totalAdditionalPrice))
+            // * Number(invoiceData.currency.jpyToEur)
+            ;
+
+
+        const totalEur = ((Number(invoiceData.paymentDetails.fobPrice)
+            + Number(invoiceData.paymentDetails.freightPrice)
+            + (invoiceData.paymentDetails.inspectionIsChecked
+                ? (Number(invoiceData.paymentDetails.inspectionPrice))
+                : 0) + totalAdditionalPrice)
+            * Number(invoiceData.currency.usdToEur));
+
+
+        // const totalEur = Number(invoiceData.paymentDetails.fobPrice) * Number(invoiceData.currency.usdToEur)
+        //     + (valueCurrency * Number(invoiceData.currency.usdToEur))
+        //     + Number(invoiceData.paymentDetails.freightPrice) * Number(invoiceData.currency.usdToEur)
+        //     + (valueCurrency * Number(invoiceData.currency.usdToEur))
+        //     + (invoiceData.paymentDetails.inspectionIsChecked
+        //         ? (Number(invoiceData.paymentDetails.inspectionPrice) * Number(invoiceData.currency.usdToEur)
+        //             + (valueCurrency * Number(invoiceData.currency.usdToEur)))
+        //         : 0)
+        //     + totalAdditionalPrice;
+
+        const totalAud = ((Number(invoiceData.paymentDetails.fobPrice)
+            + Number(invoiceData.paymentDetails.freightPrice)
+            + (invoiceData.paymentDetails.inspectionIsChecked
+                ? (Number(invoiceData.paymentDetails.inspectionPrice))
+                : 0) + totalAdditionalPrice)
+            * Number(invoiceData.currency.usdToJpy))
+            * Number(invoiceData.currency.jpyToAud);
+
+        const totalGbp = ((Number(invoiceData.paymentDetails.fobPrice)
+            + Number(invoiceData.paymentDetails.freightPrice)
+            + (invoiceData.paymentDetails.inspectionIsChecked
+                ? (Number(invoiceData.paymentDetails.inspectionPrice))
+                : 0) + totalAdditionalPrice)
+            * Number(invoiceData.currency.usdToJpy))
+            * Number(invoiceData.currency.jpyToGbp);
+
+        const totalCad = ((Number(invoiceData.paymentDetails.fobPrice)
+            + Number(invoiceData.paymentDetails.freightPrice)
+            + (invoiceData.paymentDetails.inspectionIsChecked
+                ? (Number(invoiceData.paymentDetails.inspectionPrice))
+                : 0) + totalAdditionalPrice)
+            * Number(invoiceData.currency.usdToJpy))
+            * Number(invoiceData.currency.cadToJpy);
+
+        if (invoiceData.selectedCurrencyExchange == 'None' || !invoiceData.selectedCurrencyExchange || invoiceData.selectedCurrencyExchange == 'USD') {
+            return `$${Math.round(totalUsd).toLocaleString('en-US', { useGrouping: true })}`;
+        }
+
+        if (invoiceData.selectedCurrencyExchange == 'EURO') {
+            return `€${Math.round(totalEur).toLocaleString('en-US', { useGrouping: true })}`;
+        }
+        if (invoiceData.selectedCurrencyExchange == 'AUD') {
+            return `A$${Math.round(totalAud).toLocaleString('en-US', { useGrouping: true })}`;
+        }
+        if (invoiceData.selectedCurrencyExchange == 'GBP') {
+            return `£${Math.round(totalGbp).toLocaleString('en-US', { useGrouping: true })}`;
+        }
+        if (invoiceData.selectedCurrencyExchange == 'CAD') {
+            return `C$${Math.round(totalCad).toLocaleString('en-US', { useGrouping: true })}`;
+        }
+    }
+
     const PreviewInvoice = () => {
 
         return (
@@ -531,7 +632,7 @@ const QRCodeScanner = () => {
                                     marginBottom: 3 * smallHeightScaleFactor,
                                     alignSelf: 'center',
                                 }}>
-                                {`$${Math.round(Number(invoiceData.paymentDetails.fobPrice)).toLocaleString('en-US', { useGrouping: true })}`}
+                                {`${convertedCurrency(Math.round(Number(invoiceData.paymentDetails.fobPrice)))}`}
                             </Text>
                         </View>
 
@@ -569,7 +670,7 @@ const QRCodeScanner = () => {
                                     marginBottom: 3 * smallHeightScaleFactor,
                                     alignSelf: 'center',
                                 }}>
-                                {`$${Math.round(Number(invoiceData.paymentDetails.freightPrice)).toLocaleString('en-US', { useGrouping: true })}`}
+                                {`${convertedCurrency(Math.round(Number(invoiceData.paymentDetails.freightPrice)))}`}
                             </Text>
                         </View>
 
@@ -662,7 +763,7 @@ const QRCodeScanner = () => {
                                     marginBottom: 3 * smallHeightScaleFactor,
                                     alignSelf: 'center',
                                 }}>
-                                {invoiceData.paymentDetails.inspectionIsChecked ? `$${Number(invoiceData.paymentDetails.inspectionPrice).toLocaleString('en-US', { useGrouping: true }).split('.')[0]}` : ' '}
+                                {invoiceData.paymentDetails.inspectionIsChecked ? `${convertedCurrency(Number(invoiceData.paymentDetails.inspectionPrice).toLocaleString('en-US', { useGrouping: true })).split('.')[0]}` : ' '}
                             </Text>}
 
                             {invoiceData.paymentDetails.inspectionIsChecked && invoiceData.paymentDetails.incoterms == "CIF" &&
@@ -674,7 +775,7 @@ const QRCodeScanner = () => {
                                         marginBottom: 3 * smallHeightScaleFactor,
                                         alignSelf: 'center',
                                     }}>
-                                    {invoiceData.paymentDetails.inspectionIsChecked ? `$${Number(invoiceData.paymentDetails.inspectionPrice).toLocaleString('en-US', { useGrouping: true }).split('.')[0]}` : ' '}
+                                    {invoiceData.paymentDetails.inspectionIsChecked ? `${convertedCurrency(Number(invoiceData.paymentDetails.inspectionPrice).toLocaleString('en-US', { useGrouping: true })).split('.')[0]}` : ' '}
                                     <Text
                                         style={{
                                             fontWeight: 400,
@@ -682,7 +783,7 @@ const QRCodeScanner = () => {
                                             lineHeight: 14 * smallWidthScaleFactor,
                                             marginBottom: 3 * smallHeightScaleFactor,
                                         }}>
-                                        {invoiceData.paymentDetails.incoterms === "CIF" ? ` + $${Number(invoiceData.paymentDetails.insurancePrice).toLocaleString('en-US', { useGrouping: true }).split('.')[0]}` : ' '}
+                                        {invoiceData.paymentDetails.incoterms === "CIF" ? ` + ${convertedCurrency(Number(invoiceData.paymentDetails.insurancePrice).toLocaleString('en-US', { useGrouping: true })).split('.')[0]}` : ' '}
                                     </Text>
                                 </Text>
 
@@ -698,7 +799,7 @@ const QRCodeScanner = () => {
                                         alignSelf: 'center',
 
                                     }}>
-                                    {invoiceData.paymentDetails.incoterms == "CIF" ? `$${Number(invoiceData.paymentDetails.insurancePrice).toLocaleString('en-US', { useGrouping: true }).split('.')[0]}` : ' '}
+                                    {invoiceData.paymentDetails.incoterms == "CIF" ? `${convertedCurrency(Number(invoiceData.paymentDetails.insurancePrice).toLocaleString('en-US', { useGrouping: true })).split('.')[0]}` : ' '}
                                 </Text>
                             }
 
@@ -743,14 +844,10 @@ const QRCodeScanner = () => {
                                     alignSelf: 'center',
                                 }}>
                                 {invoiceData.paymentDetails.additionalPrice && invoiceData.paymentDetails.additionalPrice.length > 0
-                                    ? invoiceData.paymentDetails.additionalPrice.map(price =>
-                                        `$${parseFloat(price).toLocaleString('en-US', {
-                                            style: 'currency',
-                                            currency: 'USD',
-                                            minimumFractionDigits: 0,
-                                            maximumFractionDigits: 0
-                                        }).slice(1)}`
-                                    ).join(' + ')
+                                    ? invoiceData.paymentDetails.additionalPrice.map(price => {
+                                        const converted = convertedCurrency(Number(price));
+                                        return converted;
+                                    }).join(' + ')
                                     : ' '}
                             </Text>
                         </View>
@@ -925,7 +1022,7 @@ const QRCodeScanner = () => {
                                             color: '#00720B',
                                             marginLeft: 5 * smallWidthScaleFactor,
                                         }}>
-                                            {`$${invoiceData.paymentDetails.totalAmount}`}
+                                            {`${totalPriceCalculated()}`}
                                         </Text>
                                     </Text>
 

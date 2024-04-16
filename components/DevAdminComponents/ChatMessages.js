@@ -8705,7 +8705,7 @@ const PreviewInvoice = () => {
                                     marginBottom: 3 * smallHeightScaleFactor,
                                     alignSelf: 'center',
                                 }}>
-                                {`$${Math.round(Number(invoiceData.paymentDetails.fobPrice)).toLocaleString('en-US', { useGrouping: true })}`}
+                                {`${convertedCurrency(Math.round(Number(invoiceData.paymentDetails.fobPrice)))}`}
                             </Text>
                         </View>
 
@@ -8743,7 +8743,7 @@ const PreviewInvoice = () => {
                                     marginBottom: 3 * smallHeightScaleFactor,
                                     alignSelf: 'center',
                                 }}>
-                                {`$${Math.round(Number(invoiceData.paymentDetails.freightPrice)).toLocaleString('en-US', { useGrouping: true })}`}
+                                {`${convertedCurrency(Math.round(Number(invoiceData.paymentDetails.freightPrice)))}`}
                             </Text>
                         </View>
 
@@ -8836,7 +8836,7 @@ const PreviewInvoice = () => {
                                     marginBottom: 3 * smallHeightScaleFactor,
                                     alignSelf: 'center',
                                 }}>
-                                {invoiceData.paymentDetails.inspectionIsChecked ? `$${Number(invoiceData.paymentDetails.inspectionPrice).toLocaleString('en-US', { useGrouping: true }).split('.')[0]}` : ' '}
+                                {invoiceData.paymentDetails.inspectionIsChecked ? `${convertedCurrency(Number(invoiceData.paymentDetails.inspectionPrice).toLocaleString('en-US', { useGrouping: true })).split('.')[0]}` : ' '}
                             </Text>}
 
                             {invoiceData.paymentDetails.inspectionIsChecked && invoiceData.paymentDetails.incoterms == "CIF" &&
@@ -8848,7 +8848,7 @@ const PreviewInvoice = () => {
                                         marginBottom: 3 * smallHeightScaleFactor,
                                         alignSelf: 'center',
                                     }}>
-                                    {invoiceData.paymentDetails.inspectionIsChecked ? `$${Number(invoiceData.paymentDetails.inspectionPrice).toLocaleString('en-US', { useGrouping: true }).split('.')[0]}` : ' '}
+                                    {invoiceData.paymentDetails.inspectionIsChecked ? `${convertedCurrency(Number(invoiceData.paymentDetails.inspectionPrice).toLocaleString('en-US', { useGrouping: true })).split('.')[0]}` : ' '}
                                     <Text
                                         style={{
                                             fontWeight: 400,
@@ -8856,7 +8856,7 @@ const PreviewInvoice = () => {
                                             lineHeight: 14 * smallWidthScaleFactor,
                                             marginBottom: 3 * smallHeightScaleFactor,
                                         }}>
-                                        {invoiceData.paymentDetails.incoterms === "CIF" ? ` + $${Number(invoiceData.paymentDetails.insurancePrice).toLocaleString('en-US', { useGrouping: true }).split('.')[0]}` : ' '}
+                                        {invoiceData.paymentDetails.incoterms === "CIF" ? ` + ${convertedCurrency(Number(invoiceData.paymentDetails.insurancePrice).toLocaleString('en-US', { useGrouping: true })).split('.')[0]}` : ' '}
                                     </Text>
                                 </Text>
 
@@ -8872,7 +8872,7 @@ const PreviewInvoice = () => {
                                         alignSelf: 'center',
 
                                     }}>
-                                    {invoiceData.paymentDetails.incoterms == "CIF" ? `$${Number(invoiceData.paymentDetails.insurancePrice).toLocaleString('en-US', { useGrouping: true }).split('.')[0]}` : ' '}
+                                    {invoiceData.paymentDetails.incoterms == "CIF" ? `${convertedCurrency(Number(invoiceData.paymentDetails.insurancePrice).toLocaleString('en-US', { useGrouping: true })).split('.')[0]}` : ' '}
                                 </Text>
                             }
 
@@ -8917,14 +8917,10 @@ const PreviewInvoice = () => {
                                     alignSelf: 'center',
                                 }}>
                                 {invoiceData.paymentDetails.additionalPrice && invoiceData.paymentDetails.additionalPrice.length > 0
-                                    ? invoiceData.paymentDetails.additionalPrice.map(price =>
-                                        `$${parseFloat(price).toLocaleString('en-US', {
-                                            style: 'currency',
-                                            currency: 'USD',
-                                            minimumFractionDigits: 0,
-                                            maximumFractionDigits: 0
-                                        }).slice(1)}`
-                                    ).join(' + ')
+                                    ? invoiceData.paymentDetails.additionalPrice.map(price => {
+                                        const converted = convertedCurrency(Number(price));
+                                        return converted;
+                                    }).join(' + ')
                                     : ' '}
                             </Text>
                         </View>
@@ -9099,7 +9095,7 @@ const PreviewInvoice = () => {
                                             color: '#00720B',
                                             marginLeft: 5 * smallWidthScaleFactor,
                                         }}>
-                                            {`$${convertedCurrency()}`}
+                                            {`${totalPriceCalculated()}`}
                                         </Text>
                                     </Text>
 
