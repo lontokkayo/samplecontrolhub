@@ -3354,25 +3354,51 @@ const PaymentDetails = () => {
 
 
     const convertedCurrency = (baseValue) => {
-        if (invoiceData.selectedCurrencyExchange == 'None' || !invoiceData.selectedCurrencyExchange || invoiceData.selectedCurrencyExchange == 'USD') {
-            return `${Number(baseValue).toFixed(2).toLocaleString('en-US', { useGrouping: true })}`
+        if (invoiceData && Object.keys(invoiceData).length > 0) {
+            if (invoiceData.selectedCurrencyExchange == 'None' || !invoiceData.selectedCurrencyExchange || invoiceData.selectedCurrencyExchange == 'USD') {
+                return `${Number(baseValue).toFixed(2).toLocaleString('en-US', { useGrouping: true })}`
+            }
+            if (invoiceData.selectedCurrencyExchange == 'EURO') {
+                const euroValue = Number(baseValue) * Number(selectedChatData.currency.usdToEur) + Number(baseValue) * Number(valueCurrency);
+                return `${(euroValue).toFixed(2).toLocaleString('en-US', { useGrouping: true })}`;
+            }
+            if (invoiceData.selectedCurrencyExchange == 'AUD') {
+                const audValue = Number(baseValue) * Number(selectedChatData.currency.usdToAud) + Number(baseValue) * Number(valueCurrency);
+                return `${(audValue).toFixed(2).toLocaleString('en-US', { useGrouping: true })}`;
+            }
+            if (invoiceData.selectedCurrencyExchange == 'GBP') {
+                const gbpValue = Number(baseValue) * Number(selectedChatData.currency.usdToGbp) + Number(baseValue) * Number(valueCurrency);
+                return `${(gbpValue).toFixed(2).toLocaleString('en-US', { useGrouping: true })}`;
+            }
+            if (invoiceData.selectedCurrencyExchange == 'CAD') {
+                const cadValue = Number(baseValue) * Number(selectedChatData.currency.usdToCad) + Number(baseValue) * Number(valueCurrency);
+                return `${(cadValue).toFixed(2).toLocaleString('en-US', { useGrouping: true })}`;
+            }
         }
-        if (invoiceData.selectedCurrencyExchange == 'EURO') {
-            const euroValue = Number(baseValue) * Number(selectedChatData.currency.usdToEur) + Number(baseValue) * Number(valueCurrency);
-            return `${(euroValue).toFixed(2).toLocaleString('en-US', { useGrouping: true })}`;
+
+        else {
+            if (selectedChatData.selectedCurrencyExchange == 'None' || !selectedChatData.selectedCurrencyExchange || selectedChatData.selectedCurrencyExchange == 'USD') {
+                return `${Number(baseValue).toFixed(2).toLocaleString('en-US', { useGrouping: true })}`
+            }
+            if (selectedChatData.selectedCurrencyExchange == 'EURO') {
+                const euroValue = Number(baseValue) * Number(selectedChatData.currency.usdToEur) + Number(baseValue) * Number(valueCurrency);
+                return `${(euroValue).toFixed(2).toLocaleString('en-US', { useGrouping: true })}`;
+            }
+            if (selectedChatData.selectedCurrencyExchange == 'AUD') {
+                const audValue = Number(baseValue) * Number(selectedChatData.currency.usdToAud) + Number(baseValue) * Number(valueCurrency);
+                return `${(audValue).toFixed(2).toLocaleString('en-US', { useGrouping: true })}`;
+            }
+            if (selectedChatData.selectedCurrencyExchange == 'GBP') {
+                const gbpValue = Number(baseValue) * Number(selectedChatData.currency.usdToGbp) + Number(baseValue) * Number(valueCurrency);
+                return `${(gbpValue).toFixed(2).toLocaleString('en-US', { useGrouping: true })}`;
+            }
+            if (selectedChatData.selectedCurrencyExchange == 'CAD') {
+                const cadValue = Number(baseValue) * Number(selectedChatData.currency.usdToCad) + Number(baseValue) * Number(valueCurrency);
+                return `${(cadValue).toFixed(2).toLocaleString('en-US', { useGrouping: true })}`;
+            }
+
         }
-        if (invoiceData.selectedCurrencyExchange == 'AUD') {
-            const audValue = Number(baseValue) * Number(selectedChatData.currency.usdToAud) + Number(baseValue) * Number(valueCurrency);
-            return `${(audValue).toFixed(2).toLocaleString('en-US', { useGrouping: true })}`;
-        }
-        if (invoiceData.selectedCurrencyExchange == 'GBP') {
-            const gbpValue = Number(baseValue) * Number(selectedChatData.currency.usdToGBP) + Number(baseValue) * Number(valueCurrency);
-            return `${(gbpValue).toFixed(2).toLocaleString('en-US', { useGrouping: true })}`;
-        }
-        if (invoiceData.selectedCurrencyExchange == 'CAD') {
-            const cadValue = Number(baseValue) * Number(selectedChatData.currency.usdToCad) + Number(baseValue) * Number(valueCurrency);
-            return `${(cadValue).toFixed(2).toLocaleString('en-US', { useGrouping: true })}`;
-        }
+
     }
 
     const calculateTotalAmount = () => {
@@ -3381,10 +3407,11 @@ const PaymentDetails = () => {
         const inspection = safelyParseNumber(inspectionInput.current?.value);
         const insurance = safelyParseNumber(insuranceInput.current?.value);
 
-        const additionalPricesTotal = globalAdditionalPriceArray.reduce((sum, value) => sum + safelyParseNumber(value), 0);
+        const additionalPricesTotal = globalAdditionalPriceArray.reduce((sum, value) => sum + safelyParseNumber(convertedCurrency(value)), 0);
 
+        const incotermsCondition = globalInvoiceVariable.paymentDetails.incoterms == 'CIF' ? insurance : 0;
         // const total = Math.round(fobPrice + freight + inspection + (warrantyIsChecked ? warrantyPrice : 0) + insurance + additionalPricesTotal).toLocaleString();
-        const total = Math.round(fobPrice + freight + inspection + insurance + additionalPricesTotal).toLocaleString();
+        const total = Math.round(fobPrice + freight + inspection + incotermsCondition + additionalPricesTotal).toLocaleString();
         setTotalAmountCalculated(total);
         globalInvoiceVariable.paymentDetails.totalAmount = total;
     };
@@ -3392,20 +3419,22 @@ const PaymentDetails = () => {
     useEffect(() => {
 
         additionalNameRef.current.value = invoiceData && Object.keys(invoiceData).length > 0 && invoiceData.paymentDetails.additionalName ? invoiceData.paymentDetails.additionalName.join('\n') : '';
-        additionalPriceRef.current.value = invoiceData && Object.keys(invoiceData).length > 0 && invoiceData.paymentDetails.additionalPrice ? invoiceData.paymentDetails.additionalPrice.join('\n') : '';
+        additionalPriceRef.current.value = invoiceData && Object.keys(invoiceData).length > 0 && invoiceData.paymentDetails.additionalPrice
+            ? invoiceData.paymentDetails.additionalPrice.map(price => convertedCurrency(price)).join('\n')
+            : '';
 
         globalInvoiceVariable.selectedCurrencyExchange = invoiceData && Object.keys(invoiceData).length > 0 && invoiceData.selectedCurrencyExchange !== 'None' && invoiceData.selectedCurrencyExchange ? invoiceData.selectedCurrencyExchange : 'None';
 
         globalInvoiceVariable.paymentDetails.incoterms = invoiceData && Object.keys(invoiceData).length > 0 && invoiceData.paymentDetails.incoterms ? invoiceData.paymentDetails.incoterms : selectedIncoterms;
         globalInvoiceVariable.paymentDetails.inspectionIsChecked = invoiceData && Object.keys(invoiceData).length > 0 && invoiceData.paymentDetails.inspectionIsChecked ? invoiceData.paymentDetails.inspectionIsChecked : inspectionIsChecked;
         globalInvoiceVariable.paymentDetails.inspectionName = invoiceData && Object.keys(invoiceData).length > 0 && invoiceData.paymentDetails.inspectionName ? invoiceData.paymentDetails.inspectionName : inspectionName;
-        globalInvoiceVariable.paymentDetails.inspectionPrice = invoiceData && Object.keys(invoiceData).length > 0 && invoiceData.paymentDetails.inspectionPrice ? invoiceData.paymentDetails.inspectionPrice : inspectionIsChecked ? 300 : 0;
+        globalInvoiceVariable.paymentDetails.inspectionPrice = convertedCurrency(invoiceData && Object.keys(invoiceData).length > 0 && invoiceData.paymentDetails.inspectionPrice ? invoiceData.paymentDetails.inspectionPrice : inspectionIsChecked ? 300 : 0);
         globalInvoiceVariable.paymentDetails.warrantyIsCheck = invoiceData && Object.keys(invoiceData).length > 0 && invoiceData.paymentDetails.warrantyIsCheck ? invoiceData.paymentDetails.warrantyIsCheck : warrantyIsChecked;
         // globalInvoiceVariable.paymentDetails.warrantyPrice = invoiceData && Object.keys(invoiceData).length > 0 && invoiceData.paymentDetails.warrantyPrice ? invoiceData.paymentDetails.warrantyPrice : warrantyIsChecked ? warrantyPrice : 0;
-        globalInvoiceVariable.paymentDetails.fobPrice = invoiceData && Object.keys(invoiceData).length > 0 && invoiceData.paymentDetails.fobPrice ? invoiceData.paymentDetails.fobPrice : fobPriceInput.current?.value;
-        globalInvoiceVariable.paymentDetails.freightPrice = invoiceData && Object.keys(invoiceData).length > 0 && invoiceData.paymentDetails.freightPrice ? invoiceData.paymentDetails.freightPrice : freightInput.current?.value;
-        globalInvoiceVariable.paymentDetails.insurancePrice = invoiceData && Object.keys(invoiceData).length > 0 && invoiceData.paymentDetails.insurancePrice ? invoiceData.paymentDetails.insurancePrice : selectedIncoterms == 'CIF' ? insuranceInput.current?.value : 0;
-        globalInvoiceVariable.paymentDetails.additionalPrice = invoiceData && Object.keys(invoiceData).length > 0 && invoiceData.paymentDetails.additionalPrice ? invoiceData.paymentDetails.additionalPrice : [];
+        globalInvoiceVariable.paymentDetails.fobPrice = convertedCurrency(invoiceData && Object.keys(invoiceData).length > 0 && invoiceData.paymentDetails.fobPrice ? invoiceData.paymentDetails.fobPrice : fobPriceInput.current?.value);
+        globalInvoiceVariable.paymentDetails.freightPrice = convertedCurrency(invoiceData && Object.keys(invoiceData).length > 0 && invoiceData.paymentDetails.freightPrice ? invoiceData.paymentDetails.freightPrice : freightInput.current?.value);
+        globalInvoiceVariable.paymentDetails.insurancePrice = convertedCurrency(invoiceData && Object.keys(invoiceData).length > 0 && invoiceData.paymentDetails.insurancePrice ? invoiceData.paymentDetails.insurancePrice : selectedIncoterms == 'CIF' ? insuranceInput.current?.value : 0);
+        globalInvoiceVariable.paymentDetails.additionalPrice = convertedCurrency(invoiceData && Object.keys(invoiceData).length > 0 && invoiceData.paymentDetails.additionalPrice ? invoiceData.paymentDetails.additionalPrice : []);
         globalInvoiceVariable.paymentDetails.additionalName = invoiceData && Object.keys(invoiceData).length > 0 && invoiceData.paymentDetails.additionalName ? invoiceData.paymentDetails.additionalName : [];
         globalAdditionalPriceArray = invoiceData && Object.keys(invoiceData).length > 0 && invoiceData.paymentDetails.additionalPrice ? invoiceData.paymentDetails.additionalPrice : [];
 
@@ -3415,15 +3444,15 @@ const PaymentDetails = () => {
 
     useEffect(() => {
 
-        inspectionInput.current.value = invoiceData && Object.keys(invoiceData).length > 0 && invoiceData.paymentDetails.inspectionPrice && invoiceData.paymentDetails.inspectionPrice == true ? invoiceData.paymentDetails.inspectionPrice : inspectionIsChecked ? 300 : 0;
+        inspectionInput.current.value = convertedCurrency(invoiceData && Object.keys(invoiceData).length > 0 && invoiceData.paymentDetails.inspectionPrice && invoiceData.paymentDetails.inspectionPrice == true ? invoiceData.paymentDetails.inspectionPrice : inspectionIsChecked ? 300 : 0);
         calculateTotalAmount();
 
     }, [inspectionIsChecked]);
 
     useEffect(() => {
 
-        insuranceInput.current.value = invoiceData && Object.keys(invoiceData).length > 0 && invoiceData.paymentDetails.insurancePrice && invoiceData.paymentDetails.incoterms == 'CIF' ? invoiceData.paymentDetails.insurancePrice : selectedIncoterms == 'CIF' ? 50 : 0;
-        freightInput.current.value = invoiceData && Object.keys(invoiceData).length > 0 && invoiceData.paymentDetails.freightPrice ? invoiceData.paymentDetails.freightPrice : selectedIncoterms == 'FOB' ? 0 : freightCalculation;
+        insuranceInput.current.value = convertedCurrency(invoiceData && Object.keys(invoiceData).length > 0 && invoiceData.paymentDetails.insurancePrice && invoiceData.paymentDetails.incoterms == 'CIF' ? invoiceData.paymentDetails.insurancePrice : selectedIncoterms == 'CIF' ? 50 : 0);
+        freightInput.current.value = convertedCurrency(invoiceData && Object.keys(invoiceData).length > 0 && invoiceData.paymentDetails.freightPrice ? invoiceData.paymentDetails.freightPrice : selectedIncoterms == 'FOB' ? 0 : freightCalculation);
 
         calculateTotalAmount();
 
@@ -3541,8 +3570,8 @@ const PaymentDetails = () => {
                         onValueChange={(value) => {
                             setSelectedIncoterms(value)
                             globalInvoiceVariable.paymentDetails.incoterms = value;
-                            if(value == 'CIF'){
-                            globalInvoiceVariable.paymentDetails.insurancePrice = insurancePrice;
+                            if (value == 'CIF') {
+                                globalInvoiceVariable.paymentDetails.insurancePrice = insurancePrice;
                             }
                         }
                         }
@@ -3608,7 +3637,7 @@ const PaymentDetails = () => {
                     <TextInput
                         onChangeText={handleFobPriceInputChangeText}
                         ref={fobPriceInput}
-                        defaultValue={invoiceData && Object.keys(invoiceData).length > 0 ? invoiceData.paymentDetails.fobPrice : selectedIncoterms == 'FOB' ? 0 : fobPriceDollars}
+                        defaultValue={convertedCurrency(invoiceData && Object.keys(invoiceData).length > 0 ? invoiceData.paymentDetails.fobPrice : selectedIncoterms == 'FOB' ? 0 : fobPriceDollars)}
                         placeholderTextColor='#9B9E9F'
                         placeholder='FOB Price'
                         style={{ flex: 1, height: 25, margin: 2, padding: 1, borderRadius: 2, borderWidth: 1, borderColor: '#D9D9D9', outlineStyle: 'none', }}
@@ -3654,7 +3683,7 @@ const PaymentDetails = () => {
                     <TextInput
                         onChangeText={handleInsuranceInputChangeText}
                         ref={insuranceInput}
-                        defaultValue={50}
+                        defaultValue={convertedCurrency(insurancePrice)}
                         placeholderTextColor='#9B9E9F'
                         placeholder={`Insurance`}
                         style={{ flex: 1, height: 25, margin: 2, padding: 1, borderRadius: 2, borderWidth: 1, borderColor: '#D9D9D9', outlineStyle: 'none', }}
@@ -5629,7 +5658,6 @@ const IssueProformaInvoiceModalContent = () => {
                 ipCountry: ipCountry // Country of the IP Address
             });
 
-
             // Updating the main chat document with the latest message details
             await updateDoc(doc(projectExtensionFirestore, 'chats', selectedChatData.id), {
                 lastMessageSender: email,
@@ -5645,6 +5673,24 @@ const IssueProformaInvoiceModalContent = () => {
         }
     }
 
+
+    const parseDollars = (baseValue) => {
+        if (selectedChatData.selectedCurrencyExchange == 'None' || selectedChatData.selectedCurrencyExchange == 'USD' || !selectedChatData.selectedCurrencyExchange) {
+            return `$${Math.round(Number(baseValue)).toLocaleString('en-US', { useGrouping: true })}`
+        }
+        if (selectedChatData.selectedCurrencyExchange == 'EURO') {
+            return `€${(Math.round((Number(baseValue) * Number(selectedChatData.currency.usdToEur)))).toLocaleString('en-US', { useGrouping: true })}`;
+        }
+        if (selectedChatData.selectedCurrencyExchange == 'AUD') {
+            return `A$${(Math.round((Number(baseValue) * Number(selectedChatData.currency.usdToAud)))).toLocaleString('en-US', { useGrouping: true })}`;
+        }
+        if (selectedChatData.selectedCurrencyExchange == 'GBP') {
+            return `£${(Math.round((Number(baseValue) * Number(selectedChatData.currency.usdToGbp)))).toLocaleString('en-US', { useGrouping: true })}`;
+        }
+        if (selectedChatData.selectedCurrencyExchange == 'CAD') {
+            return `C$${(Math.round((Number(baseValue) * Number(selectedChatData.currency.usdToCad)))).toLocaleString('en-US', { useGrouping: true })}`;
+        }
+    }
 
 
     const confirmInvoice = async () => {
@@ -6406,7 +6452,7 @@ const GenerateCustomInvoice = () => {
             return `A$${(audValue).toFixed(2).toLocaleString('en-US', { useGrouping: true })}`;
         }
         if (invoiceData.selectedCurrencyExchange == 'GBP') {
-            const gbpValue = Number(baseValue) * Number(selectedChatData.currency.usdToGBP) + Number(baseValue) * Number(valueCurrency);
+            const gbpValue = Number(baseValue) * Number(selectedChatData.currency.usdToGbp) + Number(baseValue) * Number(valueCurrency);
             return `£${(gbpValue).toFixed(2).toLocaleString('en-US', { useGrouping: true })}`;
         }
         if (invoiceData.selectedCurrencyExchange == 'CAD') {
@@ -6862,7 +6908,11 @@ const GenerateCustomInvoice = () => {
             + Number(invoiceData.paymentDetails.freightPrice)
             + (invoiceData.paymentDetails.inspectionIsChecked
                 ? (Number(invoiceData.paymentDetails.inspectionPrice))
-                : 0) + totalAdditionalPrice))
+                : 0)
+            + (invoiceData.paymentDetails.incoterms == 'CIF'
+                ? Number(invoiceData.paymentDetails.insurancePrice)
+                : 0)
+            + totalAdditionalPrice))
             // * Number(invoiceData.currency.jpyToEur)
             ;
 
@@ -6871,7 +6921,11 @@ const GenerateCustomInvoice = () => {
             + Number(invoiceData.paymentDetails.freightPrice)
             + (invoiceData.paymentDetails.inspectionIsChecked
                 ? (Number(invoiceData.paymentDetails.inspectionPrice))
-                : 0) + totalAdditionalPrice)
+                : 0)
+            + (invoiceData.paymentDetails.incoterms == 'CIF'
+                ? Number(invoiceData.paymentDetails.insurancePrice)
+                : 0)
+            + totalAdditionalPrice)
             * Number(invoiceData.currency.usdToEur)
         );
 
@@ -6890,7 +6944,11 @@ const GenerateCustomInvoice = () => {
             + Number(invoiceData.paymentDetails.freightPrice)
             + (invoiceData.paymentDetails.inspectionIsChecked
                 ? (Number(invoiceData.paymentDetails.inspectionPrice))
-                : 0) + totalAdditionalPrice)
+                : 0)
+            + (invoiceData.paymentDetails.incoterms == 'CIF'
+                ? Number(invoiceData.paymentDetails.insurancePrice)
+                : 0)
+            + totalAdditionalPrice)
             * Number(invoiceData.currency.usdToJpy))
             * Number(invoiceData.currency.jpyToAud);
 
@@ -6898,7 +6956,11 @@ const GenerateCustomInvoice = () => {
             + Number(invoiceData.paymentDetails.freightPrice)
             + (invoiceData.paymentDetails.inspectionIsChecked
                 ? (Number(invoiceData.paymentDetails.inspectionPrice))
-                : 0) + totalAdditionalPrice)
+                : 0)
+            + (invoiceData.paymentDetails.incoterms == 'CIF'
+                ? Number(invoiceData.paymentDetails.insurancePrice)
+                : 0)
+            + totalAdditionalPrice)
             * Number(invoiceData.currency.usdToJpy))
             * Number(invoiceData.currency.jpyToGbp);
 
@@ -6906,7 +6968,11 @@ const GenerateCustomInvoice = () => {
             + Number(invoiceData.paymentDetails.freightPrice)
             + (invoiceData.paymentDetails.inspectionIsChecked
                 ? (Number(invoiceData.paymentDetails.inspectionPrice))
-                : 0) + totalAdditionalPrice)
+                : 0)
+            + (invoiceData.paymentDetails.incoterms == 'CIF'
+                ? Number(invoiceData.paymentDetails.insurancePrice)
+                : 0)
+            + totalAdditionalPrice)
             * Number(invoiceData.currency.usdToJpy))
             * Number(invoiceData.currency.cadToJpy);
 
@@ -8560,7 +8626,7 @@ const PreviewInvoice = () => {
             return `A$${(audValue).toFixed(2).toLocaleString('en-US', { useGrouping: true })}`;
         }
         if (invoiceData.selectedCurrencyExchange == 'GBP') {
-            const gbpValue = Number(baseValue) * Number(selectedChatData.currency.usdToGBP) + Number(baseValue) * Number(valueCurrency);
+            const gbpValue = Number(baseValue) * Number(selectedChatData.currency.usdToGbp) + Number(baseValue) * Number(valueCurrency);
             return `£${(gbpValue).toFixed(2).toLocaleString('en-US', { useGrouping: true })}`;
         }
         if (invoiceData.selectedCurrencyExchange == 'CAD') {
@@ -8581,7 +8647,11 @@ const PreviewInvoice = () => {
             + Number(invoiceData.paymentDetails.freightPrice)
             + (invoiceData.paymentDetails.inspectionIsChecked
                 ? (Number(invoiceData.paymentDetails.inspectionPrice))
-                : 0) + totalAdditionalPrice))
+                : 0)
+            + (invoiceData.paymentDetails.incoterms == 'CIF'
+                ? Number(invoiceData.paymentDetails.insurancePrice)
+                : 0)
+            + totalAdditionalPrice))
             // * Number(invoiceData.currency.jpyToEur)
             ;
 
@@ -8590,7 +8660,11 @@ const PreviewInvoice = () => {
             + Number(invoiceData.paymentDetails.freightPrice)
             + (invoiceData.paymentDetails.inspectionIsChecked
                 ? (Number(invoiceData.paymentDetails.inspectionPrice))
-                : 0) + totalAdditionalPrice)
+                : 0)
+            + (invoiceData.paymentDetails.incoterms == 'CIF'
+                ? Number(invoiceData.paymentDetails.insurancePrice)
+                : 0)
+            + totalAdditionalPrice)
             * Number(invoiceData.currency.usdToEur));
 
 
@@ -8608,7 +8682,11 @@ const PreviewInvoice = () => {
             + Number(invoiceData.paymentDetails.freightPrice)
             + (invoiceData.paymentDetails.inspectionIsChecked
                 ? (Number(invoiceData.paymentDetails.inspectionPrice))
-                : 0) + totalAdditionalPrice)
+                : 0)
+            + (invoiceData.paymentDetails.incoterms == 'CIF'
+                ? Number(invoiceData.paymentDetails.insurancePrice)
+                : 0)
+            + totalAdditionalPrice)
             * Number(invoiceData.currency.usdToJpy))
             * Number(invoiceData.currency.jpyToAud);
 
@@ -8616,7 +8694,11 @@ const PreviewInvoice = () => {
             + Number(invoiceData.paymentDetails.freightPrice)
             + (invoiceData.paymentDetails.inspectionIsChecked
                 ? (Number(invoiceData.paymentDetails.inspectionPrice))
-                : 0) + totalAdditionalPrice)
+                : 0)
+            + (invoiceData.paymentDetails.incoterms == 'CIF'
+                ? Number(invoiceData.paymentDetails.insurancePrice)
+                : 0)
+            + totalAdditionalPrice)
             * Number(invoiceData.currency.usdToJpy))
             * Number(invoiceData.currency.jpyToGbp);
 
@@ -8624,7 +8706,11 @@ const PreviewInvoice = () => {
             + Number(invoiceData.paymentDetails.freightPrice)
             + (invoiceData.paymentDetails.inspectionIsChecked
                 ? (Number(invoiceData.paymentDetails.inspectionPrice))
-                : 0) + totalAdditionalPrice)
+                : 0)
+            + (invoiceData.paymentDetails.incoterms == 'CIF'
+                ? Number(invoiceData.paymentDetails.insurancePrice)
+                : 0)
+            + totalAdditionalPrice)
             * Number(invoiceData.currency.usdToJpy))
             * Number(invoiceData.currency.cadToJpy);
 
@@ -12182,7 +12268,7 @@ const ChatMessageHeader = () => {
             return total + parseFloat(numericPart); // Add the numeric value to the total
         }, 0);
 
-        const baseTotal = fobPrice + freightPrice + inspectionPrice + totalAdditionalPrice;
+        const baseTotal = fobPrice + freightPrice + inspectionPrice + totalAdditionalPrice + (invoiceData?.paymentDetails?.incoterms == 'CIF' ? Number(invoiceData.paymentDetails.insurancePrice) : 0);
 
         // Calculating total in different currencies
         const totalUsd = baseTotal;
@@ -12485,7 +12571,7 @@ const ChatMessageHeader = () => {
                                     {!selectedChatData.isCancelled && <View style={{ flexDirection: 'row' }}>
                                         <Text style={{ fontWeight: 700, fontSize: 18 }}>Final Price: </Text>
                                         <Text selectable style={{ fontWeight: 700, fontSize: 18, color: "#FF0000", textAlign: 'right' }}>
-                                            {totalPriceCalculated()}
+                                            {(totalPriceCalculated())}
                                         </Text>
                                         <Text selectable style={{ fontWeight: 400, fontSize: 12, color: "#8D7777", paddingTop: 4, marginLeft: 2 }}>
                                             ({`¥${(invoiceData && invoiceData.paymentDetails && invoiceData.paymentDetails.totalAmount && selectedChatData && selectedChatData.currency && selectedChatData.currency.jpyToUsd ? (Number(invoiceData.paymentDetails.totalAmount.replace(/,/g, '')) / Number(selectedChatData.currency.jpyToUsd)) : 0).toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`})

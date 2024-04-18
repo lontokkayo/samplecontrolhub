@@ -217,7 +217,11 @@ const QRCodeScanner = () => {
             + Number(invoiceData.paymentDetails.freightPrice)
             + (invoiceData.paymentDetails.inspectionIsChecked
                 ? (Number(invoiceData.paymentDetails.inspectionPrice))
-                : 0) + totalAdditionalPrice))
+                : 0)
+            + (invoiceData.paymentDetails.incoterms == 'CIF'
+                ? Number(invoiceData.paymentDetails.insurancePrice)
+                : 0)
+            + totalAdditionalPrice))
             // * Number(invoiceData.currency.jpyToEur)
             ;
 
@@ -226,7 +230,11 @@ const QRCodeScanner = () => {
             + Number(invoiceData.paymentDetails.freightPrice)
             + (invoiceData.paymentDetails.inspectionIsChecked
                 ? (Number(invoiceData.paymentDetails.inspectionPrice))
-                : 0) + totalAdditionalPrice)
+                : 0)
+            + (invoiceData.paymentDetails.incoterms == 'CIF'
+                ? Number(invoiceData.paymentDetails.insurancePrice)
+                : 0)
+            + totalAdditionalPrice)
             * Number(invoiceData.currency.usdToEur));
 
 
@@ -244,7 +252,11 @@ const QRCodeScanner = () => {
             + Number(invoiceData.paymentDetails.freightPrice)
             + (invoiceData.paymentDetails.inspectionIsChecked
                 ? (Number(invoiceData.paymentDetails.inspectionPrice))
-                : 0) + totalAdditionalPrice)
+                : 0)
+            + (invoiceData.paymentDetails.incoterms == 'CIF'
+                ? Number(invoiceData.paymentDetails.insurancePrice)
+                : 0)
+            + totalAdditionalPrice)
             * Number(invoiceData.currency.usdToJpy))
             * Number(invoiceData.currency.jpyToAud);
 
@@ -252,7 +264,11 @@ const QRCodeScanner = () => {
             + Number(invoiceData.paymentDetails.freightPrice)
             + (invoiceData.paymentDetails.inspectionIsChecked
                 ? (Number(invoiceData.paymentDetails.inspectionPrice))
-                : 0) + totalAdditionalPrice)
+                : 0)
+            + (invoiceData.paymentDetails.incoterms == 'CIF'
+                ? Number(invoiceData.paymentDetails.insurancePrice)
+                : 0)
+            + totalAdditionalPrice)
             * Number(invoiceData.currency.usdToJpy))
             * Number(invoiceData.currency.jpyToGbp);
 
@@ -260,7 +276,11 @@ const QRCodeScanner = () => {
             + Number(invoiceData.paymentDetails.freightPrice)
             + (invoiceData.paymentDetails.inspectionIsChecked
                 ? (Number(invoiceData.paymentDetails.inspectionPrice))
-                : 0) + totalAdditionalPrice)
+                : 0)
+            + (invoiceData.paymentDetails.incoterms == 'CIF'
+                ? Number(invoiceData.paymentDetails.insurancePrice)
+                : 0)
+            + totalAdditionalPrice)
             * Number(invoiceData.currency.usdToJpy))
             * Number(invoiceData.currency.cadToJpy);
 
