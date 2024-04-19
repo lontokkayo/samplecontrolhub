@@ -11,6 +11,16 @@ let email = '';
 
 
 // =============================== Chat Messages ========================================
+const messageTextInputHeightSlice = createSlice({
+  name: 'messageTextInputHeight',
+  initialState: 50,
+  reducers: {
+    setMessageTextInputHeight: (state, action) => {
+      return action.payload
+    },
+  },
+})
+
 
 const messageTextInputValueSlice = createSlice({
   name: 'messageTextInputValue',
@@ -867,6 +877,7 @@ const deleteImageVisibleSlice = createSlice({
 });
 
 // =============================== Chat Messages ========================================
+export const { setMessageTextInputHeight } = messageTextInputHeightSlice.actions
 export const { setMessageTextInputValue } = messageTextInputValueSlice.actions
 export const { setCustomInvoiceVisible } = customInvoiceVisibleSlice.actions
 export const { setSelectedVehicleData } = selectedVehicleDataSlice.actions
@@ -971,7 +982,8 @@ export const { setModelData } = modelDataSlice.actions
 const store = configureStore({
   reducer: {
 
-    // =============================== Chat Messages ======================================== 
+    // =============================== Chat Messages ========================================     
+    messageTextInputHeight: messageTextInputHeightSlice.reducer,
     customInvoiceVisible: customInvoiceVisibleSlice.reducer,
     messageTextInputValue: messageTextInputValueSlice.reducer,
     selectedVehicleData: selectedVehicleDataSlice.reducer,

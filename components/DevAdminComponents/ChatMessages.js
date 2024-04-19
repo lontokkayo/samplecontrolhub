@@ -131,6 +131,7 @@ import {
     setSelectedVehicleData,
     setMessageTextInputValue,
     setCustomInvoiceVisible,
+    setMessageTextInputHeight,
 } from './redux/store';
 // import { TextInput } from 'react-native-gesture-handler';
 import { nanoid } from 'nanoid';
@@ -153,6 +154,9 @@ import { saveAs } from 'file-saver';
 
 import QRCodeScanner from './QrCodeScanner/QrCodeScanner';
 const valueCurrency = 0;
+const valueInspectionPrice = 300;
+const valueInsurancePrice = 50;
+
 // import { CollectionGroup } from 'firebase-admin/firestore';
 const { width } = Dimensions.get('window');
 let selectedScreen = 'CHAT MESSAGES'
@@ -1085,6 +1089,7 @@ const FileDisplay = ({ file, onRemove }) => {
 
 const MessageTextInput = ({ handleSendMessage, textInputRef }) => {
     const [inputHeight, setInputHeight] = useState(50);
+    const messageTextInputHeight = useSelector((state) => state.messageTextInputHeight)
     const screenWidth = Dimensions.get('window').width;
     const messageTextInputValue = useSelector((state) => state.messageTextInputValue)
     const dispatch = useDispatch();
@@ -1095,14 +1100,15 @@ const MessageTextInput = ({ handleSendMessage, textInputRef }) => {
         target.style.height = '0px'; // Reset height to recalculate
         const updatedHeight = Math.max(50, Math.min(200, target.scrollHeight));
         target.style.height = `${updatedHeight}px`; // Set to new calculated height
-        setInputHeight(updatedHeight);
+
+        dispatch(setMessageTextInputHeight(updatedHeight));
 
     };
 
     const handleContentSizeChange = (event) => {
         const { width, height } = event.nativeEvent.contentSize;
         const updatedHeight = Math.max(50, Math.min(200, height));
-        setInputHeight(updatedHeight); // Set to new calculated height
+        dispatch(setMessageTextInputHeight(updatedHeight)); // Set to new calculated height
     };
 
     const handleKeyPress = (e) => {
@@ -1141,7 +1147,7 @@ const MessageTextInput = ({ handleSendMessage, textInputRef }) => {
                 width: '100%',
                 minHeight: 50,
                 maxHeight: 200,
-                height: inputHeight,
+                height: messageTextInputHeight,
                 alignSelf: 'center',
                 padding: 10,
                 overflow: 'auto',
@@ -1172,15 +1178,6 @@ const ChatInputText = () => {
     const [inputValue, setInputValue] = useState(''); // Add state for input value
     const messageTextInputValue = useSelector((state) => state.messageTextInputValue)
     const dispatch = useDispatch();
-    const handleContentSizeChange = (event) => {
-        const target = event.target;
-        // Temporarily reset height to ensure scrollHeight reflects current content
-        target.style.height = '0px'; // Reset height to recalculate
-        const updatedHeight = Math.max(50, Math.min(200, target.scrollHeight));
-        target.style.height = `${updatedHeight}px`; // Set to new calculated height
-        setInputHeight(updatedHeight);
-
-    };
 
     const removeImage = () => {
         setImageUri(null);
@@ -1552,6 +1549,7 @@ const ChatInputText = () => {
         dispatch(setMessageTextInputValue(''));
         textInputRef.current.clear();
         textInputRef.current.focus();
+        dispatch(setMessageTextInputHeight(50));
 
         if (inputValue !== '') {
             const email = projectControlAuth.currentUser ? projectControlAuth.currentUser.email : '';
@@ -1587,6 +1585,12 @@ const ChatInputText = () => {
         }
 
     };
+    const handleContentSizeChange = (event) => {
+        const { width, height } = event.nativeEvent.contentSize;
+        const updatedHeight = Math.max(50, Math.min(200, height));
+        setInputHeight(updatedHeight); // Set to new calculated height
+    };
+
 
     const screenWidth = Dimensions.get('window').width;
 
@@ -1611,15 +1615,19 @@ const ChatInputText = () => {
 
         if (imageUri !== null) {
             addImageMessage();
+
         }
         if (fileUri !== null) {
             addFileMessage();
         }
         else {
             addMessage();
+
         }
 
     }
+
+
 
     return (
 
@@ -3428,7 +3436,7 @@ const PaymentDetails = () => {
         globalInvoiceVariable.paymentDetails.incoterms = invoiceData && Object.keys(invoiceData).length > 0 && invoiceData.paymentDetails.incoterms ? invoiceData.paymentDetails.incoterms : selectedIncoterms;
         globalInvoiceVariable.paymentDetails.inspectionIsChecked = invoiceData && Object.keys(invoiceData).length > 0 && invoiceData.paymentDetails.inspectionIsChecked ? invoiceData.paymentDetails.inspectionIsChecked : inspectionIsChecked;
         globalInvoiceVariable.paymentDetails.inspectionName = invoiceData && Object.keys(invoiceData).length > 0 && invoiceData.paymentDetails.inspectionName ? invoiceData.paymentDetails.inspectionName : inspectionName;
-        globalInvoiceVariable.paymentDetails.inspectionPrice = convertedCurrency(invoiceData && Object.keys(invoiceData).length > 0 && invoiceData.paymentDetails.inspectionPrice ? invoiceData.paymentDetails.inspectionPrice : inspectionIsChecked ? 300 : 0);
+        globalInvoiceVariable.paymentDetails.inspectionPrice = convertedCurrency(invoiceData && Object.keys(invoiceData).length > 0 && invoiceData.paymentDetails.inspectionPrice ? invoiceData.paymentDetails.inspectionPrice : inspectionIsChecked ? valueInspectionPrice : 0);
         globalInvoiceVariable.paymentDetails.warrantyIsCheck = invoiceData && Object.keys(invoiceData).length > 0 && invoiceData.paymentDetails.warrantyIsCheck ? invoiceData.paymentDetails.warrantyIsCheck : warrantyIsChecked;
         // globalInvoiceVariable.paymentDetails.warrantyPrice = invoiceData && Object.keys(invoiceData).length > 0 && invoiceData.paymentDetails.warrantyPrice ? invoiceData.paymentDetails.warrantyPrice : warrantyIsChecked ? warrantyPrice : 0;
         globalInvoiceVariable.paymentDetails.fobPrice = convertedCurrency(invoiceData && Object.keys(invoiceData).length > 0 && invoiceData.paymentDetails.fobPrice ? invoiceData.paymentDetails.fobPrice : fobPriceInput.current?.value);
@@ -3444,14 +3452,14 @@ const PaymentDetails = () => {
 
     useEffect(() => {
 
-        inspectionInput.current.value = convertedCurrency(invoiceData && Object.keys(invoiceData).length > 0 && invoiceData.paymentDetails.inspectionPrice && invoiceData.paymentDetails.inspectionPrice == true ? invoiceData.paymentDetails.inspectionPrice : inspectionIsChecked ? 300 : 0);
+        inspectionInput.current.value = convertedCurrency(invoiceData && Object.keys(invoiceData).length > 0 && invoiceData.paymentDetails.inspectionPrice && invoiceData.paymentDetails.inspectionPrice == true ? invoiceData.paymentDetails.inspectionPrice : inspectionIsChecked ? valueInspectionPrice : 0);
         calculateTotalAmount();
 
     }, [inspectionIsChecked]);
 
     useEffect(() => {
 
-        insuranceInput.current.value = convertedCurrency(invoiceData && Object.keys(invoiceData).length > 0 && invoiceData.paymentDetails.insurancePrice && invoiceData.paymentDetails.incoterms == 'CIF' ? invoiceData.paymentDetails.insurancePrice : selectedIncoterms == 'CIF' ? 50 : 0);
+        insuranceInput.current.value = convertedCurrency(invoiceData && Object.keys(invoiceData).length > 0 && invoiceData.paymentDetails.insurancePrice && invoiceData.paymentDetails.incoterms == 'CIF' ? invoiceData.paymentDetails.insurancePrice : selectedIncoterms == 'CIF' ? valueInsurancePrice : 0);
         freightInput.current.value = convertedCurrency(invoiceData && Object.keys(invoiceData).length > 0 && invoiceData.paymentDetails.freightPrice ? invoiceData.paymentDetails.freightPrice : selectedIncoterms == 'FOB' ? 0 : freightCalculation);
 
         calculateTotalAmount();
@@ -5307,14 +5315,14 @@ Real Motor Japan`,
         const docRefCustomer = doc(projectExtensionFirestore, 'accounts', selectedChatData.participants.customer);
         const response = await axios.get('https://worldtimeapi.org/api/timezone/Asia/Tokyo');
         const { datetime } = response.data;
-        const formattedTime = moment(datetime).format('YYYY/MM/DD [at] HH:mm:ss.SSS');
+        const formattedDate = moment(datetime).format('DD MMMM YYYY');
         const formattedSalesDate = moment(datetime).format('YYYY/MM/DD');
         const newPayments = [
-            { value: inputAmountRef.current.value, date: formattedTime },
+            { value: inputAmountRef.current.value, date: formattedDate },
         ];
 
         const newPaymentsAccount = [
-            { value: inputAmountRef.current.value, date: formattedTime, vehicleRef: selectedChatData.carData.referenceNumber, vehicleName: selectedChatData.carData.carName, },
+            { value: inputAmountRef.current.value, date: formattedDate, vehicleRef: selectedChatData.carData.referenceNumber, vehicleName: selectedChatData.carData.carName, },
         ];
 
         const inputAmount = inputAmountRef.current.value;
@@ -5365,7 +5373,7 @@ Real Motor Japan`,
         try {
             if (!inputAmount.startsWith('-')) {
                 // First, execute paymentMessage
-                await paymentMessage(formattedInputAmount, formattedTime);
+                await paymentMessage(formattedInputAmount, formattedDate);
                 await delay(10); //10ms delay
 
                 if (numericInputAmount >= amountNeeded) {
@@ -5449,7 +5457,8 @@ Real Motor Japan`,
         hours = hours % 12;
         hours = hours ? hours : 12; // the hour '0' should be '12'
 
-        return `${year} ${month} ${day} at ${hours}:${minutes}${ampm}`;
+        // return `${year} ${month} ${day} at ${hours}:${minutes}${ampm}`;
+        return `${year} ${month} ${day}`;
     }
 
     const PaymentHistoryModal = ({ historyModalVisible, handleHistoryModalClose, payments }) => {
@@ -5632,7 +5641,6 @@ const IssueProformaInvoiceModalContent = () => {
     const secretKey = CRYPTO_KEY.toString();
 
 
-
     const invoiceMessage = async () => {
         const response = await axios.get('https://worldtimeapi.org/api/timezone/Asia/Tokyo');
         const { datetime } = response.data;
@@ -5675,22 +5683,47 @@ const IssueProformaInvoiceModalContent = () => {
 
 
     const parseDollars = (baseValue) => {
-        if (selectedChatData.selectedCurrencyExchange == 'None' || selectedChatData.selectedCurrencyExchange == 'USD' || !selectedChatData.selectedCurrencyExchange) {
-            return `$${Math.round(Number(baseValue)).toLocaleString('en-US', { useGrouping: true })}`
+
+        if (invoiceData && Object.keys(invoiceData).length > 0) {
+            if (invoiceData.selectedCurrencyExchange == 'None' || invoiceData.selectedCurrencyExchange == 'USD' || !invoiceData.selectedCurrencyExchange) {
+                return `${Math.round(Number(baseValue))}`
+            }
+            if (invoiceData.selectedCurrencyExchange == 'EURO') {
+                return `${(Math.round((Number(baseValue) * Number(invoiceData.currency.eurToUsd))))}`;
+            }
+            if (invoiceData.selectedCurrencyExchange == 'AUD') {
+                return `${(Math.round((Number(baseValue) * Number(invoiceData.currency.audToUsd))))}`;
+            }
+            if (invoiceData.selectedCurrencyExchange == 'GBP') {
+                return `${(Math.round((Number(baseValue) * Number(invoiceData.currency.gbpToUsd))))}`;
+            }
+            if (invoiceData.selectedCurrencyExchange == 'CAD') {
+                return `${(Math.round((Number(baseValue) * Number(invoiceData.currency.cadToUsd))))}`;
+            }
         }
-        if (selectedChatData.selectedCurrencyExchange == 'EURO') {
-            return `€${(Math.round((Number(baseValue) * Number(selectedChatData.currency.usdToEur)))).toLocaleString('en-US', { useGrouping: true })}`;
+
+        else {
+            if (selectedChatData.selectedCurrencyExchange == 'None' || selectedChatData.selectedCurrencyExchange == 'USD' || !selectedChatData.selectedCurrencyExchange) {
+                return `${Math.round(Number(baseValue))}`
+            }
+            if (selectedChatData.selectedCurrencyExchange == 'EURO') {
+                return `${(Math.round((Number(baseValue) * Number(selectedChatData.currency.eurToUsd))))}`;
+            }
+            if (selectedChatData.selectedCurrencyExchange == 'AUD') {
+                return `${(Math.round((Number(baseValue) * Number(selectedChatData.currency.audToUsd))))}`;
+            }
+            if (selectedChatData.selectedCurrencyExchange == 'GBP') {
+                return `${(Math.round((Number(baseValue) * Number(selectedChatData.currency.gbpToUsd))))}`;
+            }
+            if (selectedChatData.selectedCurrencyExchange == 'CAD') {
+                return `${(Math.round((Number(baseValue) * Number(selectedChatData.currency.cadToUsd))))}`;
+            }
         }
-        if (selectedChatData.selectedCurrencyExchange == 'AUD') {
-            return `A$${(Math.round((Number(baseValue) * Number(selectedChatData.currency.usdToAud)))).toLocaleString('en-US', { useGrouping: true })}`;
-        }
-        if (selectedChatData.selectedCurrencyExchange == 'GBP') {
-            return `£${(Math.round((Number(baseValue) * Number(selectedChatData.currency.usdToGbp)))).toLocaleString('en-US', { useGrouping: true })}`;
-        }
-        if (selectedChatData.selectedCurrencyExchange == 'CAD') {
-            return `C$${(Math.round((Number(baseValue) * Number(selectedChatData.currency.usdToCad)))).toLocaleString('en-US', { useGrouping: true })}`;
-        }
+
+
     }
+    
+    console.log(parseDollars(Number(globalInvoiceVariable.paymentDetails.fobPrice)));
 
 
     const confirmInvoice = async () => {
@@ -5727,6 +5760,16 @@ const IssueProformaInvoiceModalContent = () => {
 
                 await setDoc(updateDocRef, {
                     ...globalInvoiceVariable,
+                    paymentDetails: {
+                        additionalPrice: Array.isArray(globalInvoiceVariable?.paymentDetails?.additionalPrice)
+                            ? globalInvoiceVariable.paymentDetails.additionalPrice.map(price => parseDollars(price))
+                            : [],
+                        fobPrice: parseDollars(Number(globalInvoiceVariable.paymentDetails.fobPrice)),
+                        freightPrice: parseDollars(Number(globalInvoiceVariable.paymentDetails.freightPrice)),
+                        inspectionPrice: parseDollars(Number(globalInvoiceVariable.paymentDetails.inspectionPrice)),
+                        insurancePrice: parseDollars(Number(globalInvoiceVariable.paymentDetails.insurancePrice)),
+                        totalAmount: (parseDollars(Number(globalInvoiceVariable.paymentDetails.totalAmount.replace(/,/g, '')))).toLocaleString('en-US', { useGrouping: true }),
+                    },
                     isCancelled: false,
                     customerEmail: selectedCustomerData.textEmail,
                     chatId: selectedChatData.id,
@@ -5751,6 +5794,16 @@ const IssueProformaInvoiceModalContent = () => {
 
                 await setDoc(docRef, {
                     ...globalInvoiceVariable,
+                    paymentDetails: {
+                        additionalPrice: Array.isArray(globalInvoiceVariable?.paymentDetails?.additionalPrice)
+                            ? globalInvoiceVariable.paymentDetails.additionalPrice.map(price => parseDollars(price))
+                            : [],
+                        fobPrice: parseDollars(Number(globalInvoiceVariable.paymentDetails.fobPrice)),
+                        freightPrice: parseDollars(Number(globalInvoiceVariable.paymentDetails.freightPrice)),
+                        inspectionPrice: parseDollars(Number(globalInvoiceVariable.paymentDetails.inspectionPrice)),
+                        insurancePrice: parseDollars(Number(globalInvoiceVariable.paymentDetails.insurancePrice)),
+                        totalAmount: (parseDollars(Number(globalInvoiceVariable.paymentDetails.totalAmount.replace(/,/g, '')))).toLocaleString('en-US', { useGrouping: true }),
+                    },
                     isCancelled: false,
                     customerEmail: selectedCustomerData.textEmail,
                     chatId: selectedChatData.id,
@@ -6441,23 +6494,23 @@ const GenerateCustomInvoice = () => {
     // }
     const convertedCurrencyCustomInvoice = (baseValue) => {
         if (invoiceData.selectedCurrencyExchange == 'None' || !invoiceData.selectedCurrencyExchange || invoiceData.selectedCurrencyExchange == 'USD') {
-            return `$${Number(baseValue).toFixed(2).toLocaleString('en-US', { useGrouping: true })}`
+            return `${Number(baseValue).toFixed(2).toLocaleString('en-US', { useGrouping: true })}`
         }
         if (invoiceData.selectedCurrencyExchange == 'EURO') {
             const euroValue = Number(baseValue) * Number(selectedChatData.currency.usdToEur) + Number(baseValue) * Number(valueCurrency);
-            return `€${(euroValue).toFixed(2).toLocaleString('en-US', { useGrouping: true })}`;
+            return `${(euroValue).toFixed(2).toLocaleString('en-US', { useGrouping: true })}`;
         }
         if (invoiceData.selectedCurrencyExchange == 'AUD') {
             const audValue = Number(baseValue) * Number(selectedChatData.currency.usdToAud) + Number(baseValue) * Number(valueCurrency);
-            return `A$${(audValue).toFixed(2).toLocaleString('en-US', { useGrouping: true })}`;
+            return `${(audValue).toFixed(2).toLocaleString('en-US', { useGrouping: true })}`;
         }
         if (invoiceData.selectedCurrencyExchange == 'GBP') {
             const gbpValue = Number(baseValue) * Number(selectedChatData.currency.usdToGbp) + Number(baseValue) * Number(valueCurrency);
-            return `£${(gbpValue).toFixed(2).toLocaleString('en-US', { useGrouping: true })}`;
+            return `${(gbpValue).toFixed(2).toLocaleString('en-US', { useGrouping: true })}`;
         }
         if (invoiceData.selectedCurrencyExchange == 'CAD') {
             const cadValue = Number(baseValue) * Number(selectedChatData.currency.usdToCad) + Number(baseValue) * Number(valueCurrency);
-            return `C$${(cadValue).toFixed(2).toLocaleString('en-US', { useGrouping: true })}`;
+            return `${(cadValue).toFixed(2).toLocaleString('en-US', { useGrouping: true })}`;
         }
     }
 
@@ -11832,7 +11885,9 @@ const PaymentHistoryModal = () => {
         hours = hours % 12;
         hours = hours ? hours : 12; // the hour '0' should be '12'
 
-        return `${year} ${month} ${day} at ${hours}:${minutes}${ampm}`;
+        // return `${year} ${month} ${day} at ${hours}:${minutes}${ampm}`;
+        return `${year} ${month} ${day}`;
+
     }
 
     const isCloseToBottom = ({ layoutMeasurement, contentOffset, contentSize }) => {
@@ -12157,12 +12212,18 @@ const ChatMessageHeader = () => {
             selectedChatData.carData.dimensionCubicMeters : 0)) *
         Number(selectedChatData.freightPrice));
 
+    const inspectionPriceCondition = (selectedChatData.inspection === true ? Number(valueInspectionPrice) : 0);
+    const insurancePriceCondition = (selectedChatData.insurance === true ? Number(valueInsurancePrice) : 0);
+
     const totalPriceCalculation = (selectedChatData.fobPrice ? selectedChatData.fobPrice :
         (selectedChatData.carData && selectedChatData.carData.fobPrice ?
             selectedChatData.carData.fobPrice : 0) *
         (selectedChatData.jpyToUsd ? selectedChatData.jpyToUsd :
             (selectedChatData.currency && selectedChatData.currency.jpyToUsd ?
-                selectedChatData.currency.jpyToUsd : 0))) + freightCalculation;
+                selectedChatData.currency.jpyToUsd : 0)))
+        + freightCalculation
+        + inspectionPriceCondition
+        + insurancePriceCondition;
 
     const fobPriceDollars = (selectedChatData.fobPrice ? selectedChatData.fobPrice :
         (selectedChatData.carData && selectedChatData.carData.fobPrice ?
@@ -12224,7 +12285,7 @@ const ChatMessageHeader = () => {
         if (oldSelectedCurrency !== currencyValue) {
 
             await addDoc(collection(projectExtensionFirestore, 'chats', selectedChatData.id, 'messages'), {
-                text: `Transaction currency has been changed from ${CurrencySymbol(oldSelectedCurrency)} to ${CurrencySymbol(currencyValue)}`,
+                text: `Transaction currency has been changed to ${CurrencySymbol(currencyValue)}`,
                 sender: email,
                 timestamp: formattedTime, // Using the fetched timestamp
                 ip: ip, // IP Address
@@ -12240,7 +12301,7 @@ const ChatMessageHeader = () => {
 
             await updateDoc(doc(projectExtensionFirestore, 'chats', selectedChatData.id), {
                 selectedCurrencyExchange: currencyValue,
-                lastMessage: `Transaction currency has been changed from ${CurrencySymbol(oldSelectedCurrency)} to ${CurrencySymbol(currencyValue)}`,
+                lastMessage: `Transaction currency has been changed to ${CurrencySymbol(currencyValue)}`,
                 lastMessageDate: formattedTime,
                 customerRead: false,
                 read: true,
