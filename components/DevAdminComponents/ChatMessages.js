@@ -3439,8 +3439,8 @@ const PaymentDetails = () => {
         globalInvoiceVariable.paymentDetails.inspectionPrice = convertedCurrency(invoiceData && Object.keys(invoiceData).length > 0 && invoiceData.paymentDetails.inspectionPrice ? invoiceData.paymentDetails.inspectionPrice : inspectionIsChecked ? valueInspectionPrice : 0);
         globalInvoiceVariable.paymentDetails.warrantyIsCheck = invoiceData && Object.keys(invoiceData).length > 0 && invoiceData.paymentDetails.warrantyIsCheck ? invoiceData.paymentDetails.warrantyIsCheck : warrantyIsChecked;
         // globalInvoiceVariable.paymentDetails.warrantyPrice = invoiceData && Object.keys(invoiceData).length > 0 && invoiceData.paymentDetails.warrantyPrice ? invoiceData.paymentDetails.warrantyPrice : warrantyIsChecked ? warrantyPrice : 0;
-        globalInvoiceVariable.paymentDetails.fobPrice = convertedCurrency(invoiceData && Object.keys(invoiceData).length > 0 && invoiceData.paymentDetails.fobPrice ? invoiceData.paymentDetails.fobPrice : fobPriceInput.current?.value);
-        globalInvoiceVariable.paymentDetails.freightPrice = convertedCurrency(invoiceData && Object.keys(invoiceData).length > 0 && invoiceData.paymentDetails.freightPrice ? invoiceData.paymentDetails.freightPrice : freightInput.current?.value);
+        globalInvoiceVariable.paymentDetails.fobPrice = convertedCurrency(invoiceData && Object.keys(invoiceData).length > 0 && invoiceData.paymentDetails.fobPrice ? invoiceData.paymentDetails.fobPrice : fobPriceDollars);
+        globalInvoiceVariable.paymentDetails.freightPrice = convertedCurrency(invoiceData && Object.keys(invoiceData).length > 0 && invoiceData.paymentDetails.freightPrice ? invoiceData.paymentDetails.freightPrice : freightCalculation);
         globalInvoiceVariable.paymentDetails.insurancePrice = convertedCurrency(invoiceData && Object.keys(invoiceData).length > 0 && invoiceData.paymentDetails.insurancePrice ? invoiceData.paymentDetails.insurancePrice : selectedIncoterms == 'CIF' ? insuranceInput.current?.value : 0);
         globalInvoiceVariable.paymentDetails.additionalPrice = convertedCurrency(invoiceData && Object.keys(invoiceData).length > 0 && invoiceData.paymentDetails.additionalPrice ? invoiceData.paymentDetails.additionalPrice : []);
         globalInvoiceVariable.paymentDetails.additionalName = invoiceData && Object.keys(invoiceData).length > 0 && invoiceData.paymentDetails.additionalName ? invoiceData.paymentDetails.additionalName : [];
@@ -5686,44 +5686,41 @@ const IssueProformaInvoiceModalContent = () => {
 
         if (invoiceData && Object.keys(invoiceData).length > 0) {
             if (invoiceData.selectedCurrencyExchange == 'None' || invoiceData.selectedCurrencyExchange == 'USD' || !invoiceData.selectedCurrencyExchange) {
-                return `${Math.round(Number(baseValue))}`
+                return `${Number(baseValue).toFixed(2)}`;
             }
             if (invoiceData.selectedCurrencyExchange == 'EURO') {
-                return `${(Math.round((Number(baseValue) * Number(invoiceData.currency.eurToUsd))))}`;
+                return `${(Number(baseValue) * Number(invoiceData.currency.eurToUsd)).toFixed(2)}`;
             }
             if (invoiceData.selectedCurrencyExchange == 'AUD') {
-                return `${(Math.round((Number(baseValue) * Number(invoiceData.currency.audToUsd))))}`;
+                return `${(Number(baseValue) * Number(invoiceData.currency.audToUsd)).toFixed(2)}`;
             }
             if (invoiceData.selectedCurrencyExchange == 'GBP') {
-                return `${(Math.round((Number(baseValue) * Number(invoiceData.currency.gbpToUsd))))}`;
+                return `${(Number(baseValue) * Number(invoiceData.currency.gbpToUsd)).toFixed(2)}`;
             }
             if (invoiceData.selectedCurrencyExchange == 'CAD') {
-                return `${(Math.round((Number(baseValue) * Number(invoiceData.currency.cadToUsd))))}`;
+                return `${(Number(baseValue) * Number(invoiceData.currency.cadToUsd)).toFixed(2)}`;
             }
-        }
-
-        else {
+        } else {
             if (selectedChatData.selectedCurrencyExchange == 'None' || selectedChatData.selectedCurrencyExchange == 'USD' || !selectedChatData.selectedCurrencyExchange) {
-                return `${Math.round(Number(baseValue))}`
+                return `${Number(baseValue).toFixed(2)}`;
             }
             if (selectedChatData.selectedCurrencyExchange == 'EURO') {
-                return `${(Math.round((Number(baseValue) * Number(selectedChatData.currency.eurToUsd))))}`;
+                return `${(Number(baseValue) * Number(selectedChatData.currency.eurToUsd)).toFixed(2)}`;
             }
             if (selectedChatData.selectedCurrencyExchange == 'AUD') {
-                return `${(Math.round((Number(baseValue) * Number(selectedChatData.currency.audToUsd))))}`;
+                return `${(Number(baseValue) * Number(selectedChatData.currency.audToUsd)).toFixed(2)}`;
             }
             if (selectedChatData.selectedCurrencyExchange == 'GBP') {
-                return `${(Math.round((Number(baseValue) * Number(selectedChatData.currency.gbpToUsd))))}`;
+                return `${(Number(baseValue) * Number(selectedChatData.currency.gbpToUsd)).toFixed(2)}`;
             }
             if (selectedChatData.selectedCurrencyExchange == 'CAD') {
-                return `${(Math.round((Number(baseValue) * Number(selectedChatData.currency.cadToUsd))))}`;
+                return `${(Number(baseValue) * Number(selectedChatData.currency.cadToUsd)).toFixed(2)}`;
             }
         }
+        // Fallback in case no conditions are met
+        return `${Number(baseValue).toFixed(2)}`;
+    };
 
-
-    }
-    
-    console.log(parseDollars(Number(globalInvoiceVariable.paymentDetails.fobPrice)));
 
 
     const confirmInvoice = async () => {
@@ -12340,17 +12337,17 @@ const ChatMessageHeader = () => {
 
         switch (invoiceData?.selectedCurrencyExchange) {
             case 'EURO':
-                return `€${Math.round(totalEur).toLocaleString('en-US', { useGrouping: true })}`;
+                return `€${Math.round(Number(totalEur)).toLocaleString('en-US', { useGrouping: true })}`;
             case 'AUD':
-                return `A$${Math.round(totalAud).toLocaleString('en-US', { useGrouping: true })}`;
+                return `A$${Math.round(Number(totalAud)).toLocaleString('en-US', { useGrouping: true })}`;
             case 'GBP':
-                return `£${Math.round(totalGbp).toLocaleString('en-US', { useGrouping: true })}`;
+                return `£${Math.round(Number(totalGbp)).toLocaleString('en-US', { useGrouping: true })}`;
             case 'CAD':
-                return `C$${Math.round(totalCad).toLocaleString('en-US', { useGrouping: true })}`;
+                return `C$${Math.round(Number(totalCad)).toLocaleString('en-US', { useGrouping: true })}`;
             case 'None':
             case 'USD':
             default:
-                return `$${Math.round(totalUsd).toLocaleString('en-US', { useGrouping: true })}`;
+                return `$${Math.round(Number(totalUsd)).toLocaleString('en-US', { useGrouping: true })}`;
         }
     }
 
@@ -12591,7 +12588,6 @@ const ChatMessageHeader = () => {
                             <View style={{ flexDirection: 'row' }}>
                                 <Text style={{ fontWeight: 700, fontSize: 18 }}>Final Price: </Text>
                                 <Text selectable style={{ fontWeight: 700, fontSize: 18, color: "#FF0000", textAlign: 'right' }}>
-                                    {/* {totalPriceCalculated()} */}
                                     {convertedCurrency(selectedChatData?.paymentDetails?.totalAmount || 0)}
                                 </Text>
                                 <Text selectable style={{ fontWeight: 400, fontSize: 12, color: "#8D7777", paddingTop: 4, marginLeft: 2 }}>
