@@ -285,20 +285,20 @@ const QRCodeScanner = () => {
             * Number(invoiceData.currency.cadToJpy);
 
         if (invoiceData.selectedCurrencyExchange == 'None' || !invoiceData.selectedCurrencyExchange || invoiceData.selectedCurrencyExchange == 'USD') {
-            return `$${Math.round(totalUsd).toLocaleString('en-US', { useGrouping: true })}`;
+            return `$${(totalUsd).toLocaleString('en-US', { useGrouping: true })}`;
         }
 
         if (invoiceData.selectedCurrencyExchange == 'EURO') {
-            return `€${Math.round(totalEur).toLocaleString('en-US', { useGrouping: true })}`;
+            return `€${(totalEur).toLocaleString('en-US', { useGrouping: true })}`;
         }
         if (invoiceData.selectedCurrencyExchange == 'AUD') {
-            return `A$${Math.round(totalAud).toLocaleString('en-US', { useGrouping: true })}`;
+            return `A$${(totalAud).toLocaleString('en-US', { useGrouping: true })}`;
         }
         if (invoiceData.selectedCurrencyExchange == 'GBP') {
-            return `£${Math.round(totalGbp).toLocaleString('en-US', { useGrouping: true })}`;
+            return `£${(totalGbp).toLocaleString('en-US', { useGrouping: true })}`;
         }
         if (invoiceData.selectedCurrencyExchange == 'CAD') {
-            return `C$${Math.round(totalCad).toLocaleString('en-US', { useGrouping: true })}`;
+            return `C$${(totalCad).toLocaleString('en-US', { useGrouping: true })}`;
         }
     }
 

@@ -12652,7 +12652,7 @@ const ChatMessageHeader = () => {
                             <View style={{ flexDirection: 'row' }}>
                                 <Text style={{ fontWeight: 700, fontSize: 18 }}>Final Price: </Text>
                                 <Text selectable style={{ fontWeight: 700, fontSize: 18, color: "#FF0000", textAlign: 'right' }}>
-                                    {convertedCurrency(selectedChatData?.paymentDetails?.totalAmount || 0)}
+                                    {totalPriceCalculated()}
                                 </Text>
                                 <Text selectable style={{ fontWeight: 400, fontSize: 12, color: "#8D7777", paddingTop: 4, marginLeft: 2 }}>
                                     ({`¥${(invoiceData && invoiceData.paymentDetails && invoiceData.paymentDetails.totalAmount && selectedChatData && selectedChatData.currency && selectedChatData.currency.jpyToUsd ? (Number(invoiceData.paymentDetails.totalAmount.replace(/,/g, '')) / Number(selectedChatData.currency.jpyToUsd)) : 0).toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`})
