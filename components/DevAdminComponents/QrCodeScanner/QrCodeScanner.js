@@ -257,8 +257,7 @@ const QRCodeScanner = () => {
                 ? Number(invoiceData.paymentDetails.insurancePrice)
                 : 0)
             + totalAdditionalPrice)
-            * Number(invoiceData.currency.usdToJpy))
-            * Number(invoiceData.currency.jpyToAud);
+            * Number(invoiceData.currency.usdToAud))
 
         const totalGbp = ((Number(invoiceData.paymentDetails.fobPrice)
             + Number(invoiceData.paymentDetails.freightPrice)
@@ -269,8 +268,7 @@ const QRCodeScanner = () => {
                 ? Number(invoiceData.paymentDetails.insurancePrice)
                 : 0)
             + totalAdditionalPrice)
-            * Number(invoiceData.currency.usdToJpy))
-            * Number(invoiceData.currency.jpyToGbp);
+            * Number(invoiceData.currency.usdToGbp))
 
         const totalCad = ((Number(invoiceData.paymentDetails.fobPrice)
             + Number(invoiceData.paymentDetails.freightPrice)
@@ -281,13 +279,11 @@ const QRCodeScanner = () => {
                 ? Number(invoiceData.paymentDetails.insurancePrice)
                 : 0)
             + totalAdditionalPrice)
-            * Number(invoiceData.currency.usdToJpy))
-            * Number(invoiceData.currency.cadToJpy);
+            * Number(invoiceData.currency.usdToCad))
 
         if (invoiceData.selectedCurrencyExchange == 'None' || !invoiceData.selectedCurrencyExchange || invoiceData.selectedCurrencyExchange == 'USD') {
             return `$${(totalUsd).toLocaleString('en-US', { useGrouping: true })}`;
         }
-
         if (invoiceData.selectedCurrencyExchange == 'EURO') {
             return `€${(totalEur).toLocaleString('en-US', { useGrouping: true })}`;
         }
@@ -300,6 +296,7 @@ const QRCodeScanner = () => {
         if (invoiceData.selectedCurrencyExchange == 'CAD') {
             return `C$${(totalCad).toLocaleString('en-US', { useGrouping: true })}`;
         }
+
     }
 
     const PreviewInvoice = () => {
