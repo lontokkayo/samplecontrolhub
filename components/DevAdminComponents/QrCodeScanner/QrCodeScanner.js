@@ -188,20 +188,20 @@ const QRCodeScanner = () => {
             return `$${Number(baseValue).toFixed(2).toLocaleString('en-US', { useGrouping: true })}`
         }
         if (invoiceData.selectedCurrencyExchange == 'EURO') {
-            const euroValue = Number(baseValue) * Number(invoiceData.currency.usdToJpy) + Number(baseValue) * Number(valueCurrency);
-            return `€${(euroValue * Number(invoiceData.currency.jpyToEur)).toFixed(2).toLocaleString('en-US', { useGrouping: true })}`;
+            const euroValue = Number(baseValue) * Number(invoiceData.currency.usdToEur);
+            return `€${(euroValue).toFixed(2).toLocaleString('en-US', { useGrouping: true })}`;
         }
         if (invoiceData.selectedCurrencyExchange == 'AUD') {
-            const audValue = Number(baseValue) * Number(invoiceData.currency.usdToJpy) + Number(baseValue) * Number(valueCurrency);
-            return `A$${(audValue * Number(invoiceData.currency.jpyToAud)).toFixed(2).toLocaleString('en-US', { useGrouping: true })}`;
+            const audValue = Number(baseValue) * Number(invoiceData.currency.usdToAud);
+            return `A$${(audValue).toFixed(2).toLocaleString('en-US', { useGrouping: true })}`;
         }
         if (invoiceData.selectedCurrencyExchange == 'GBP') {
-            const gbpValue = Number(baseValue) * Number(invoiceData.currency.usdToJpy) + Number(baseValue) * Number(valueCurrency);
-            return `£${(gbpValue * Number(invoiceData.currency.jpyToGbp)).toFixed(2).toLocaleString('en-US', { useGrouping: true })}`;
+            const gbpValue = Number(baseValue) * Number(invoiceData.currency.usdToGbp);
+            return `£${(gbpValue).toFixed(2).toLocaleString('en-US', { useGrouping: true })}`;
         }
         if (invoiceData.selectedCurrencyExchange == 'CAD') {
-            const cadValue = Number(baseValue) * Number(invoiceData.currency.usdToJpy) + Number(baseValue) * Number(valueCurrency);
-            return `C$${(cadValue * Number(invoiceData.currency.cadToJpy)).toFixed(2).toLocaleString('en-US', { useGrouping: true })}`;
+            const cadValue = Number(baseValue) * Number(invoiceData.currency.usdToCad);
+            return `C$${(cadValue).toFixed(2).toLocaleString('en-US', { useGrouping: true })}`;
         }
     }
 
@@ -282,19 +282,20 @@ const QRCodeScanner = () => {
             * Number(invoiceData.currency.usdToCad))
 
         if (invoiceData.selectedCurrencyExchange == 'None' || !invoiceData.selectedCurrencyExchange || invoiceData.selectedCurrencyExchange == 'USD') {
-            return `$${(totalUsd).toFixed(0).toLocaleString('en-US', { useGrouping: true })}`;
+            return `$${Math.round(totalUsd).toLocaleString('en-US', { useGrouping: true })}`;
         }
+
         if (invoiceData.selectedCurrencyExchange == 'EURO') {
-            return `€${(totalEur).toFixed(0).toLocaleString('en-US', { useGrouping: true })}`;
+            return `€${Math.round(totalEur).toLocaleString('en-US', { useGrouping: true })}`;
         }
         if (invoiceData.selectedCurrencyExchange == 'AUD') {
-            return `A$${(totalAud).toFixed(0).toLocaleString('en-US', { useGrouping: true })}`;
+            return `A$${Math.round(totalAud).toLocaleString('en-US', { useGrouping: true })}`;
         }
         if (invoiceData.selectedCurrencyExchange == 'GBP') {
-            return `£${(totalGbp).toFixed(0).toLocaleString('en-US', { useGrouping: true })}`;
+            return `£${Math.round(totalGbp).toLocaleString('en-US', { useGrouping: true })}`;
         }
         if (invoiceData.selectedCurrencyExchange == 'CAD') {
-            return `C$${(totalCad).toFixed(0).toLocaleString('en-US', { useGrouping: true })}`;
+            return `C$${Math.round(totalCad).toLocaleString('en-US', { useGrouping: true })}`;
         }
 
     }
@@ -687,7 +688,7 @@ const QRCodeScanner = () => {
                                     marginBottom: 3 * smallHeightScaleFactor,
                                     alignSelf: 'center',
                                 }}>
-                                {`${convertedCurrency((Number(invoiceData.paymentDetails.freightPrice)))}`}
+                                {`${convertedCurrency(Number(invoiceData.paymentDetails.freightPrice))}`}
                             </Text>
                         </View>
 
