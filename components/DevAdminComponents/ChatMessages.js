@@ -1564,7 +1564,6 @@ const ChatInputText = () => {
                     ipCountry: ipCountry // Country of the IP Address
                 });
 
-
                 // Updating the main chat document with the latest message details
                 await updateDoc(doc(projectExtensionFirestore, 'chats', selectedChatData.id), {
                     lastMessageSender: email,
@@ -3562,20 +3561,21 @@ const PaymentDetails = () => {
     const SelectedCurrencyRate = () => {
 
         if (selectedChatData.selectedCurrencyExchange == 'None' || !selectedChatData.selectedCurrencyExchange || selectedChatData.selectedCurrencyExchange == 'USD') {
-            return `${Number(selectedChatData.currency.usdToJpy)}`
+            return `JPY to USD ${Number(selectedChatData.currency.jpyToUsd).toFixed(6)}\nUSD to JPY ${Number(selectedChatData.currency.usdToJpy).toFixed(2)}`
         }
         if (selectedChatData.selectedCurrencyExchange == 'EURO') {
-            return `${(selectedChatData.currency.eurToJpy)}`;
+            return `JPY to EURO ${Number(selectedChatData.currency.jpyToEur).toFixed(6)}\nUSD to EURO ${Number(selectedChatData.currency.usdToEur).toFixed(2)}`;
         }
         if (selectedChatData.selectedCurrencyExchange == 'AUD') {
-            return `${(selectedChatData.currency.audToJpy)}`;
+            return `JPY to AUD ${Number(selectedChatData.currency.jpyToAud).toFixed(6)}\nUSD to AUD ${Number(selectedChatData.currency.usdToAud).toFixed(2)}`;
         }
         if (selectedChatData.selectedCurrencyExchange == 'GBP') {
-            return `${(selectedChatData.currency.gbpToJpy)}`;
+            return `JPY to GBP ${Number(selectedChatData.currency.jpyToGbp).toFixed(6)}\nUSD to GBP ${Number(selectedChatData.currency.usdToGbp).toFixed(2)}`;
         }
         if (selectedChatData.selectedCurrencyExchange == 'CAD') {
-            return `${(selectedChatData.currency.jpyToCad)}`;
+            return `JPY to CAD${Number(selectedChatData.currency.cadToJpy).toFixed(6)}\nUSD to CAD ${Number(selectedChatData.currency.usdToCad).toFixed(2)}`;
         }
+
     }
 
     return (
@@ -3620,7 +3620,7 @@ const PaymentDetails = () => {
                     <Text style={{ fontWeight: 700, margin: 3, }}>Rate: </Text>
                     <Text style={{ fontWeight: 700, margin: 3, color: '#16A34A', }}>
                         {selectedChatData.currency && selectedChatData.currency.usdToJpy
-                            ? Number(SelectedCurrencyRate()).toFixed(2) : '0.00'}
+                            ? SelectedCurrencyRate() : '0.00'}
                     </Text>
                 </View>
 
@@ -11751,12 +11751,14 @@ const TransactionList = ({ displayedTransactions, handleChatPress, selectedCusto
                         </View>
                         <View>
                             <Text style={{ fontSize: 14, fontWeight: 'bold', color: 'black', marginBottom: 5 }}>
-                                <Text style={{ color: '#0A78BE' }} selectable={false}>
+                                <Text style={{ color: '#0A78BE' }} selectable={false} numberOfLines={1} ellipsizeMode='tail'>
                                     {transaction.carName}
                                 </Text>
                             </Text>
                             <Text style={{ fontSize: 14, fontWeight: 'bold', color: 'black', marginBottom: 5 }}>
-                                <Text style={{ color: '#333' }} selectable={false}>{transaction.referenceNumber}</Text>
+                                <Text style={{ color: '#333' }} selectable={false} numberOfLines={1} ellipsizeMode='tail'>
+                                    {transaction.referenceNumber}
+                                </Text>
                             </Text>
                         </View>
                     </Pressable>
