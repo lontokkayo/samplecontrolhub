@@ -282,19 +282,19 @@ const QRCodeScanner = () => {
             * Number(invoiceData.currency.usdToCad))
 
         if (invoiceData.selectedCurrencyExchange == 'None' || !invoiceData.selectedCurrencyExchange || invoiceData.selectedCurrencyExchange == 'USD') {
-            return `$${(totalUsd).toLocaleString('en-US', { useGrouping: true })}`;
+            return `$${(totalUsd).toFixed(0).toLocaleString('en-US', { useGrouping: true })}`;
         }
         if (invoiceData.selectedCurrencyExchange == 'EURO') {
-            return `€${(totalEur).toLocaleString('en-US', { useGrouping: true })}`;
+            return `€${(totalEur).toFixed(0).toLocaleString('en-US', { useGrouping: true })}`;
         }
         if (invoiceData.selectedCurrencyExchange == 'AUD') {
-            return `A$${(totalAud).toLocaleString('en-US', { useGrouping: true })}`;
+            return `A$${(totalAud).toFixed(0).toLocaleString('en-US', { useGrouping: true })}`;
         }
         if (invoiceData.selectedCurrencyExchange == 'GBP') {
-            return `£${(totalGbp).toLocaleString('en-US', { useGrouping: true })}`;
+            return `£${(totalGbp).toFixed(0).toLocaleString('en-US', { useGrouping: true })}`;
         }
         if (invoiceData.selectedCurrencyExchange == 'CAD') {
-            return `C$${(totalCad).toLocaleString('en-US', { useGrouping: true })}`;
+            return `C$${(totalCad).toFixed(0).toLocaleString('en-US', { useGrouping: true })}`;
         }
 
     }
@@ -649,7 +649,7 @@ const QRCodeScanner = () => {
                                     marginBottom: 3 * smallHeightScaleFactor,
                                     alignSelf: 'center',
                                 }}>
-                                {`${convertedCurrency(Math.round(Number(invoiceData.paymentDetails.fobPrice)))}`}
+                                {`${convertedCurrency((Number(invoiceData.paymentDetails.fobPrice)))}`}
                             </Text>
                         </View>
 
@@ -687,7 +687,7 @@ const QRCodeScanner = () => {
                                     marginBottom: 3 * smallHeightScaleFactor,
                                     alignSelf: 'center',
                                 }}>
-                                {`${convertedCurrency(Math.round(Number(invoiceData.paymentDetails.freightPrice)))}`}
+                                {`${convertedCurrency((Number(invoiceData.paymentDetails.freightPrice)))}`}
                             </Text>
                         </View>
 
