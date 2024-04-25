@@ -5084,32 +5084,142 @@ const InputPaymentModalContent = () => {
         inputAmountRef.current.value = filteredText;
     };
 
-
+    const totalValue = selectedChatData.payments
+        ? selectedChatData.payments.reduce((sum, payment) => {
+            const value = Number(payment.value);
+            return sum + (isNaN(value) ? 0 : value);
+        }, 0)
+        : 0;
 
     const handleCompletePaymentPress = () => {
-        const filteredText = invoiceData.paymentDetails.totalAmount.replace(/[^0-9.]/g, '').replace(/(\..*)\./g, '$1') - totalValue;
+        const filteredText = totalPriceCalculated().replace(/[^0-9.]/g, '').replace(/(\..*)\./g, '$1').replace(/,/g, '') - totalValue;
         inputAmountRef.current.value = filteredText;
     }
 
+
+    const totalPriceCalculated = () => {
+        // Safely access deeply nested properties using optional chaining and provide default values
+        const additionalPrices = invoiceData?.paymentDetails?.additionalPrice || [];
+        const fobPrice = Number(invoiceData?.paymentDetails?.fobPrice || 0);
+        const freightPrice = Number(invoiceData?.paymentDetails?.freightPrice || 0);
+        const inspectionPrice = invoiceData?.paymentDetails?.inspectionIsChecked ? Number(invoiceData.paymentDetails.inspectionPrice || 0) : 0;
+        const usdToEur = Number(invoiceData?.currency?.usdToEur || 1);
+        const usdToJpy = Number(invoiceData?.currency?.usdToJpy || 1);
+        const jpyToAud = Number(invoiceData?.currency?.jpyToAud || 1);
+        const jpyToGbp = Number(invoiceData?.currency?.jpyToGbp || 1);
+        const cadToJpy = Number(invoiceData?.currency?.cadToJpy || 1);
+
+        const totalAdditionalPrice = additionalPrices.reduce((total, price) => {
+            const numericPart = price.replace(/[^0-9.]/g, ''); // Remove non-numeric characters, assuming decimal numbers
+            return total + parseFloat(numericPart); // Add the numeric value to the total
+        }, 0);
+
+        const baseTotal = fobPrice + freightPrice + inspectionPrice + totalAdditionalPrice + (invoiceData?.paymentDetails?.incoterms == 'CIF' ? Number(invoiceData.paymentDetails.insurancePrice) : 0);
+
+        // Calculating total in different currencies
+        const totalUsd = baseTotal;
+        const totalEur = baseTotal * usdToEur;
+        const totalAud = baseTotal * usdToJpy * jpyToAud;
+        const totalGbp = baseTotal * usdToJpy * jpyToGbp;
+        const totalCad = baseTotal * usdToJpy * cadToJpy;
+
+        switch (invoiceData?.selectedCurrencyExchange) {
+            case 'EURO':
+                return `${Math.round(Number(totalEur))}`;
+            case 'AUD':
+                return `${Math.round(Number(totalAud))}`;
+            case 'GBP':
+                return `${Math.round(Number(totalGbp))}`;
+            case 'CAD':
+                return `${Math.round(Number(totalCad))}`;
+            case 'None':
+            case 'USD':
+            default:
+                return `${Math.round(Number(totalUsd))}`;
+        }
+    }
+
+
+    const parseDollars = (baseValue) => {
+
+        if (invoiceData && Object.keys(invoiceData).length > 0) {
+            if (invoiceData.selectedCurrencyExchange == 'None' || invoiceData.selectedCurrencyExchange == 'USD' || !invoiceData.selectedCurrencyExchange) {
+                return `${Number(baseValue).toFixed(6)}`;
+            }
+            if (invoiceData.selectedCurrencyExchange == 'EURO') {
+                return `${(Number(baseValue) * Number(invoiceData.currency.eurToUsd)).toFixed(6)}`;
+            }
+            if (invoiceData.selectedCurrencyExchange == 'AUD') {
+                return `${(Number(baseValue) * Number(invoiceData.currency.audToUsd)).toFixed(6)}`;
+            }
+            if (invoiceData.selectedCurrencyExchange == 'GBP') {
+                return `${(Number(baseValue) * Number(invoiceData.currency.gbpToUsd)).toFixed(6)}`;
+            }
+            if (invoiceData.selectedCurrencyExchange == 'CAD') {
+                return `${(Number(baseValue) * Number(invoiceData.currency.cadToUsd)).toFixed(6)}`;
+            }
+        } else {
+            if (selectedChatData.selectedCurrencyExchange == 'None' || selectedChatData.selectedCurrencyExchange == 'USD' || !selectedChatData.selectedCurrencyExchange) {
+                return `${Number(baseValue).toFixed(6)}`;
+            }
+            if (selectedChatData.selectedCurrencyExchange == 'EURO') {
+                return `${(Number(baseValue) * Number(selectedChatData.currency.eurToUsd)).toFixed(6)}`;
+            }
+            if (selectedChatData.selectedCurrencyExchange == 'AUD') {
+                return `${(Number(baseValue) * Number(selectedChatData.currency.audToUsd)).toFixed(6)}`;
+            }
+            if (selectedChatData.selectedCurrencyExchange == 'GBP') {
+                return `${(Number(baseValue) * Number(selectedChatData.currency.gbpToUsd)).toFixed(6)}`;
+            }
+            if (selectedChatData.selectedCurrencyExchange == 'CAD') {
+                return `${(Number(baseValue) * Number(selectedChatData.currency.cadToUsd)).toFixed(6)}`;
+            }
+        }
+        // Fallback in case no conditions are met
+        return `${Number(baseValue).toFixed(6)}`;
+    };
+
+
+    const convertedCurrency = (baseValue) => {
+        const numberFormatOptions = {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2,
+            useGrouping: true
+        };
+        if (selectedChatData.selectedCurrencyExchange == 'None' || selectedChatData.selectedCurrencyExchange == 'USD' || !selectedChatData.selectedCurrencyExchange) {
+            return `${Number(baseValue).toLocaleString('en-US', numberFormatOptions)}`;
+        }
+        if (selectedChatData.selectedCurrencyExchange == 'EURO') {
+            return `${(Number(baseValue) * Number(selectedChatData.currency.usdToEur)).toLocaleString('en-US', numberFormatOptions)}`;
+        }
+        if (selectedChatData.selectedCurrencyExchange == 'AUD') {
+            return `${(Number(baseValue) * Number(selectedChatData.currency.usdToAud)).toLocaleString('en-US', numberFormatOptions)}`;
+        }
+        if (selectedChatData.selectedCurrencyExchange == 'GBP') {
+            return `${(Number(baseValue) * Number(selectedChatData.currency.usdToGbp)).toLocaleString('en-US', numberFormatOptions)}`;
+        }
+        if (selectedChatData.selectedCurrencyExchange == 'CAD') {
+            return `${(Number(baseValue) * Number(selectedChatData.currency.usdToCad)).toLocaleString('en-US', numberFormatOptions)}`;
+        }
+    }
 
     const CurrencySymbol = () => {
         switch (selectedChatData.selectedCurrencyExchange) {
             case 'USD':
                 return '$';
-
             case 'EURO':
                 return '€';
-
             case 'AUD':
                 return 'A$';
-
             case 'GBP':
                 return '£';
-
             case 'CAD':
                 return 'C$';
+            default:
+                return '$';
         }
     }
+
 
     const fullPaymentMessage = async () => {
         const response = await axios.get('https://worldtimeapi.org/api/timezone/Asia/Tokyo');
@@ -5204,7 +5314,7 @@ We're writing to inform you about your account with us at Real Motor Japan.
                 
 You have an extra overbalance in your account.
 
-Amount: $${amount}
+Amount: ${CurrencySymbol()}${amount}
                 
 Feel free to contact us if you have any questions. We're here to help.
                 
@@ -5229,7 +5339,7 @@ We're writing to inform you about your account with us at Real Motor Japan.
                                 
 You have an extra overbalance in your account.
                 
-Amount: $${amount}
+Amount: ${CurrencySymbol()}${amount}
                                 
 Feel free to contact us if you have any questions. We're here to help.
                                 
@@ -5273,7 +5383,7 @@ Your prompt and efficient transaction is greatly appreciated! 🎉
 
 🔍 Payment Details:
 
-Amount: $${amount}
+Amount: ${CurrencySymbol()}${amount}
 Transaction Date: ${transactionDate}
 
 Your account and services are now fully up-to-date. If you have any further questions or require assistance, feel free to reach out.
@@ -5304,7 +5414,7 @@ Your prompt and efficient transaction is greatly appreciated! 🎉
 
 🔍 Payment Details:
 
-Amount: $${amount}
+Amount: ${CurrencySymbol()}${amount}
 Transaction Date: ${transactionDate}
 
 Your account and services are now fully up-to-date. If you have any further questions or require assistance, feel free to reach out.
@@ -5330,7 +5440,7 @@ Real Motor Japan`,
     const confirmPayment = async () => {
         setIsConfirmLoading(true);
 
-        const amountNeeded = invoiceData.paymentDetails.totalAmount ? invoiceData.paymentDetails.totalAmount.replace(/[^0-9.]/g, '').replace(/(\..*)\./g, '$1') - totalValue : '';
+        const amountNeeded = convertedCurrency(invoiceData.paymentDetails.totalAmount ? totalPriceCalculated() - totalValue : 0);
         const docRef = doc(projectExtensionFirestore, 'chats', selectedChatData.id);
         const docRefCustomer = doc(projectExtensionFirestore, 'accounts', selectedChatData.participants.customer);
         const response = await axios.get('https://worldtimeapi.org/api/timezone/Asia/Tokyo');
@@ -5338,16 +5448,22 @@ Real Motor Japan`,
         const formattedDate = moment(datetime).format('DD MMMM YYYY');
         const formattedSalesDate = moment(datetime).format('YYYY/MM/DD');
         const newPayments = [
-            { value: inputAmountRef.current.value, date: formattedDate },
+            { value: parseDollars(inputAmountRef.current.value), date: formattedDate },
         ];
 
         const newPaymentsAccount = [
-            { value: inputAmountRef.current.value, date: formattedDate, vehicleRef: selectedChatData.carData.referenceNumber, vehicleName: selectedChatData.carData.carName, },
+            { value: parseDollars(inputAmountRef.current.value), date: formattedDate, vehicleRef: selectedChatData.carData.referenceNumber, vehicleName: selectedChatData.carData.carName, },
         ];
 
+        const inputAmountFormatOptions = {
+            minimumFractionDigits: 0,
+            maximumFractionDigits: 0,
+            useGrouping: true
+        };
+
         const inputAmount = inputAmountRef.current.value;
-        const numericInputAmount = Number(inputAmount);
-        const formattedInputAmount = numericInputAmount.toLocaleString();
+        const numericInputAmount = Number(inputAmount).toFixed(2);
+        const formattedInputAmount = Number(numericInputAmount).toLocaleString('en-US', inputAmountFormatOptions);
         const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
 
         if (inputAmount === '' || inputAmount === '0') {
@@ -5543,15 +5659,10 @@ Real Motor Japan`,
         );
     };
 
-    const totalValue = selectedChatData.payments
-        ? selectedChatData.payments.reduce((sum, payment) => {
-            const value = Number(payment.value);
-            return sum + (isNaN(value) ? 0 : value);
-        }, 0)
-        : 0;
 
-    const isTotalValueGreater = Number(totalValue) < Number(invoiceData.paymentDetails.totalAmount.replace(/[^0-9.]/g, '').replace(/(\..*)\./g, '$1'));
-    const displayedAmount = isTotalValueGreater ? Number(totalValue).toLocaleString() : invoiceData.paymentDetails.totalAmount;
+
+    const isTotalValueGreater = Number(totalValue) < Number(totalPriceCalculated().replace(/[^0-9.]/g, '').replace(/(\..*)\./g, '$1'));
+    const displayedAmount = isTotalValueGreater ? Number(totalValue).toLocaleString() : totalPriceCalculated();
 
     return (
 
@@ -5565,9 +5676,9 @@ Real Motor Japan`,
                     bg: "lime.500"
                 }} />
 
-                <Text style={{ fontWeight: 700, fontSize: 14, color: '#FF0000', }}>${displayedAmount}
+                <Text style={{ fontWeight: 700, fontSize: 14, color: '#FF0000', }}>{`${CurrencySymbol()}${convertedCurrency((displayedAmount).replace(/,/g, ''))}`}
                     <Text style={{ fontWeight: 700, fontSize: 14, color: '#8D7777', }}> out of </Text>
-                    <Text style={{ fontWeight: 700, fontSize: 14, color: '#16A34A', }}>{`$${invoiceData.paymentDetails.totalAmount}`}</Text>
+                    <Text style={{ fontWeight: 700, fontSize: 14, color: '#16A34A', }}>{`${CurrencySymbol()}${convertedCurrency((totalPriceCalculated()).replace(/,/g, ''))}`}</Text>
                 </Text>
 
             </View>
@@ -5779,9 +5890,6 @@ const IssueProformaInvoiceModalContent = () => {
                     ...globalInvoiceVariable,
                     paymentDetails: {
                         ...globalInvoiceVariable.paymentDetails,
-                        additionalPrice: Array.isArray(globalInvoiceVariable?.paymentDetails?.additionalPrice)
-                            ? globalInvoiceVariable.paymentDetails.additionalPrice.map(price => parseDollars(price))
-                            : [],
                         fobPrice: parseDollars(Number(globalInvoiceVariable.paymentDetails.fobPrice)),
                         freightPrice: parseDollars(Number(globalInvoiceVariable.paymentDetails.freightPrice)),
                         inspectionPrice: parseDollars(Number(globalInvoiceVariable.paymentDetails.inspectionPrice)),
@@ -5815,9 +5923,6 @@ const IssueProformaInvoiceModalContent = () => {
                     ...globalInvoiceVariable,
                     paymentDetails: {
                         ...globalInvoiceVariable.paymentDetails,
-                        additionalPrice: Array.isArray(globalInvoiceVariable?.paymentDetails?.additionalPrice)
-                            ? globalInvoiceVariable.paymentDetails.additionalPrice.map(price => parseDollars(price))
-                            : [],
                         fobPrice: parseDollars(Number(globalInvoiceVariable.paymentDetails.fobPrice)),
                         freightPrice: parseDollars(Number(globalInvoiceVariable.paymentDetails.freightPrice)),
                         inspectionPrice: parseDollars(Number(globalInvoiceVariable.paymentDetails.inspectionPrice)),
@@ -10404,7 +10509,7 @@ const PreviewInvoice = () => {
                                                         marginBottom: 3 * heightScaleFactor,
                                                         alignSelf: 'center',
                                                     }}>
-                                                    {invoiceData.paymentDetails.inspectionIsChecked ? `${convertedCurrency(Number(invoiceData.paymentDetails.inspectionPrice).toLocaleString('en-US', { useGrouping: true })).split('.')[0]}` : ' '}
+                                                    {invoiceData.paymentDetails.inspectionIsChecked ? `${convertedCurrency(Number(invoiceData.paymentDetails.inspectionPrice))}` : ' '}
                                                 </Text>}
 
                                                 {invoiceData.paymentDetails.inspectionIsChecked && invoiceData.paymentDetails.incoterms == "CIF" &&
@@ -10416,7 +10521,7 @@ const PreviewInvoice = () => {
                                                             marginBottom: 3 * heightScaleFactor,
                                                             alignSelf: 'center',
                                                         }}>
-                                                        {invoiceData.paymentDetails.inspectionIsChecked ? `${convertedCurrency(Number(invoiceData.paymentDetails.inspectionPrice).toLocaleString('en-US', { useGrouping: true })).split('.')[0]}` : ' '}
+                                                        {invoiceData.paymentDetails.inspectionIsChecked ? `${convertedCurrency(Number(invoiceData.paymentDetails.inspectionPrice))}` : ' '}
                                                         <Text
                                                             style={{
                                                                 fontWeight: 400,
@@ -10424,7 +10529,7 @@ const PreviewInvoice = () => {
                                                                 lineHeight: 14 * widthScaleFactor,
                                                                 marginBottom: 3 * heightScaleFactor,
                                                             }}>
-                                                            {invoiceData.paymentDetails.incoterms === "CIF" ? ` + ${convertedCurrency(Number(invoiceData.paymentDetails.insurancePrice).toLocaleString('en-US', { useGrouping: true })).split('.')[0]}` : ' '}
+                                                            {invoiceData.paymentDetails.incoterms === "CIF" ? ` + ${convertedCurrency(Number(invoiceData.paymentDetails.insurancePrice))}` : ' '}
                                                         </Text>
                                                     </Text>
 
@@ -10440,7 +10545,7 @@ const PreviewInvoice = () => {
                                                             alignSelf: 'center',
 
                                                         }}>
-                                                        {invoiceData.paymentDetails.incoterms == "CIF" ? `${convertedCurrency(Number(invoiceData.paymentDetails.insurancePrice).toLocaleString('en-US', { useGrouping: true })).split('.')[0]}` : ' '}
+                                                        {invoiceData.paymentDetails.incoterms == "CIF" ? `${convertedCurrency(Number(invoiceData.paymentDetails.insurancePrice))}` : ' '}
                                                     </Text>
                                                 }
 
