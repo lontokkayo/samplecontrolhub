@@ -5084,18 +5084,37 @@ const InputPaymentModalContent = () => {
         inputAmountRef.current.value = filteredText;
     };
 
+
+    const convertedCurrency = (baseValue) => {
+        const numberFormatOptions = {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2,
+            useGrouping: true
+        };
+        if (selectedChatData.selectedCurrencyExchange == 'None' || selectedChatData.selectedCurrencyExchange == 'USD' || !selectedChatData.selectedCurrencyExchange) {
+            return `${Number(baseValue).toLocaleString('en-US', numberFormatOptions)}`;
+        }
+        if (selectedChatData.selectedCurrencyExchange == 'EURO') {
+            return `${(Number(baseValue) * Number(selectedChatData.currency.usdToEur)).toLocaleString('en-US', numberFormatOptions)}`;
+        }
+        if (selectedChatData.selectedCurrencyExchange == 'AUD') {
+            return `${(Number(baseValue) * Number(selectedChatData.currency.usdToAud)).toLocaleString('en-US', numberFormatOptions)}`;
+        }
+        if (selectedChatData.selectedCurrencyExchange == 'GBP') {
+            return `${(Number(baseValue) * Number(selectedChatData.currency.usdToGbp)).toLocaleString('en-US', numberFormatOptions)}`;
+        }
+        if (selectedChatData.selectedCurrencyExchange == 'CAD') {
+            return `${(Number(baseValue) * Number(selectedChatData.currency.usdToCad)).toLocaleString('en-US', numberFormatOptions)}`;
+        }
+    }
+
+
     const totalValue = selectedChatData.payments
         ? selectedChatData.payments.reduce((sum, payment) => {
             const value = Number(payment.value);
-            return sum + (isNaN(value) ? 0 : value);
+            return Number(sum + (isNaN(value) ? 0 : value));
         }, 0)
         : 0;
-
-    const handleCompletePaymentPress = () => {
-        const filteredText = totalPriceCalculated().replace(/[^0-9.]/g, '').replace(/(\..*)\./g, '$1').replace(/,/g, '') - totalValue;
-        inputAmountRef.current.value = filteredText;
-    }
-
 
     const totalPriceCalculated = () => {
         // Safely access deeply nested properties using optional chaining and provide default values
@@ -5108,6 +5127,8 @@ const InputPaymentModalContent = () => {
         const jpyToAud = Number(invoiceData?.currency?.jpyToAud || 1);
         const jpyToGbp = Number(invoiceData?.currency?.jpyToGbp || 1);
         const cadToJpy = Number(invoiceData?.currency?.cadToJpy || 1);
+
+
 
         const totalAdditionalPrice = additionalPrices.reduce((total, price) => {
             const numericPart = price.replace(/[^0-9.]/g, ''); // Remove non-numeric characters, assuming decimal numbers
@@ -5138,6 +5159,12 @@ const InputPaymentModalContent = () => {
                 return `${Math.round(Number(totalUsd))}`;
         }
     }
+
+    const handleCompletePaymentPress = () => {
+        const filteredText = totalPriceCalculated().replace(/[^0-9.]/g, '').replace(/(\..*)\./g, '$1').replace(/,/g, '') - convertedCurrency(Number(totalValue)).replace(/,/g, '');
+        inputAmountRef.current.value = filteredText;
+    }
+
 
 
     const parseDollars = (baseValue) => {
@@ -5179,29 +5206,6 @@ const InputPaymentModalContent = () => {
         return `${Number(baseValue).toFixed(6)}`;
     };
 
-
-    const convertedCurrency = (baseValue) => {
-        const numberFormatOptions = {
-            minimumFractionDigits: 2,
-            maximumFractionDigits: 2,
-            useGrouping: true
-        };
-        if (selectedChatData.selectedCurrencyExchange == 'None' || selectedChatData.selectedCurrencyExchange == 'USD' || !selectedChatData.selectedCurrencyExchange) {
-            return `${Number(baseValue).toLocaleString('en-US', numberFormatOptions)}`;
-        }
-        if (selectedChatData.selectedCurrencyExchange == 'EURO') {
-            return `${(Number(baseValue) * Number(selectedChatData.currency.usdToEur)).toLocaleString('en-US', numberFormatOptions)}`;
-        }
-        if (selectedChatData.selectedCurrencyExchange == 'AUD') {
-            return `${(Number(baseValue) * Number(selectedChatData.currency.usdToAud)).toLocaleString('en-US', numberFormatOptions)}`;
-        }
-        if (selectedChatData.selectedCurrencyExchange == 'GBP') {
-            return `${(Number(baseValue) * Number(selectedChatData.currency.usdToGbp)).toLocaleString('en-US', numberFormatOptions)}`;
-        }
-        if (selectedChatData.selectedCurrencyExchange == 'CAD') {
-            return `${(Number(baseValue) * Number(selectedChatData.currency.usdToCad)).toLocaleString('en-US', numberFormatOptions)}`;
-        }
-    }
 
     const CurrencySymbol = () => {
         switch (selectedChatData.selectedCurrencyExchange) {
@@ -5437,16 +5441,20 @@ Real Motor Japan`,
 
 
 
+
+    console.log(Number(invoiceData.paymentDetails.totalAmount ? Number(totalPriceCalculated().replace(/,/g, '')).toFixed(2) - convertedCurrency(Number(totalValue)).replace(/,/g, '') : 0));
+
     const confirmPayment = async () => {
         setIsConfirmLoading(true);
 
-        const amountNeeded = convertedCurrency(invoiceData.paymentDetails.totalAmount ? totalPriceCalculated() - totalValue : 0);
+        const amountNeeded = Number(invoiceData.paymentDetails.totalAmount ? Number(totalPriceCalculated().replace(/,/g, '')).toFixed(2) - convertedCurrency(Number(totalValue)).replace(/,/g, '') : 0);
         const docRef = doc(projectExtensionFirestore, 'chats', selectedChatData.id);
         const docRefCustomer = doc(projectExtensionFirestore, 'accounts', selectedChatData.participants.customer);
         const response = await axios.get('https://worldtimeapi.org/api/timezone/Asia/Tokyo');
         const { datetime } = response.data;
         const formattedDate = moment(datetime).format('DD MMMM YYYY');
         const formattedSalesDate = moment(datetime).format('YYYY/MM/DD');
+
         const newPayments = [
             { value: parseDollars(inputAmountRef.current.value), date: formattedDate },
         ];
@@ -5456,13 +5464,13 @@ Real Motor Japan`,
         ];
 
         const inputAmountFormatOptions = {
-            minimumFractionDigits: 0,
-            maximumFractionDigits: 0,
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2,
             useGrouping: true
         };
 
         const inputAmount = inputAmountRef.current.value;
-        const numericInputAmount = Number(inputAmount).toFixed(2);
+        const numericInputAmount = Number(inputAmount);
         const formattedInputAmount = Number(numericInputAmount).toLocaleString('en-US', inputAmountFormatOptions);
         const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
 
@@ -5523,10 +5531,10 @@ Real Motor Japan`,
                         const overBalance = numericInputAmount - amountNeeded;
 
                         if (overBalance > 0) {
-                            await overBalanceMessage(selectedCustomerData.overBalance ? selectedCustomerData.overBalance + overBalance : '');
+                            await overBalanceMessage(selectedCustomerData.overBalance ? convertedCurrency(Number(selectedCustomerData.overBalance)) + overBalance : '');
                             await delay(10); //10ms delay
                             await updateDoc(docRefCustomer, {
-                                overBalance: increment(overBalance),
+                                overBalance: increment(parseDollars(overBalance)),
                             });
 
                         }
@@ -5678,7 +5686,12 @@ Real Motor Japan`,
 
                 <Text style={{ fontWeight: 700, fontSize: 14, color: '#FF0000', }}>{`${CurrencySymbol()}${convertedCurrency((displayedAmount).replace(/,/g, ''))}`}
                     <Text style={{ fontWeight: 700, fontSize: 14, color: '#8D7777', }}> out of </Text>
-                    <Text style={{ fontWeight: 700, fontSize: 14, color: '#16A34A', }}>{`${CurrencySymbol()}${convertedCurrency((totalPriceCalculated()).replace(/,/g, ''))}`}</Text>
+                    <Text style={{ fontWeight: 700, fontSize: 14, color: '#16A34A', }}>
+                        {`${CurrencySymbol()}${Number(totalPriceCalculated()).toLocaleString('en-US', {
+                            minimumFractionDigits: 2,
+                            maximumFractionDigits: 2
+                        })}`}
+                    </Text>
                 </Text>
 
             </View>
