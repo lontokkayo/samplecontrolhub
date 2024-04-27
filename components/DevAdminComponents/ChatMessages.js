@@ -5442,7 +5442,6 @@ Real Motor Japan`,
 
 
 
-    console.log(Number(invoiceData.paymentDetails.totalAmount ? Number(totalPriceCalculated().replace(/,/g, '')).toFixed(2) - convertedCurrency(Number(totalValue)).replace(/,/g, '') : 0));
 
     const confirmPayment = async () => {
         setIsConfirmLoading(true);
