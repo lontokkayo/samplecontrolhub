@@ -5171,39 +5171,39 @@ const InputPaymentModalContent = () => {
 
         if (invoiceData && Object.keys(invoiceData).length > 0) {
             if (invoiceData.selectedCurrencyExchange == 'None' || invoiceData.selectedCurrencyExchange == 'USD' || !invoiceData.selectedCurrencyExchange) {
-                return `${Number(baseValue).toFixed(6)}`;
+                return `${Number(baseValue).toFixed(2)}`;
             }
             if (invoiceData.selectedCurrencyExchange == 'EURO') {
-                return `${(Number(baseValue) * Number(invoiceData.currency.eurToUsd)).toFixed(6)}`;
+                return `${(Number(baseValue) * Number(invoiceData.currency.eurToUsd)).toFixed(2)}`;
             }
             if (invoiceData.selectedCurrencyExchange == 'AUD') {
-                return `${(Number(baseValue) * Number(invoiceData.currency.audToUsd)).toFixed(6)}`;
+                return `${(Number(baseValue) * Number(invoiceData.currency.audToUsd)).toFixed(2)}`;
             }
             if (invoiceData.selectedCurrencyExchange == 'GBP') {
-                return `${(Number(baseValue) * Number(invoiceData.currency.gbpToUsd)).toFixed(6)}`;
+                return `${(Number(baseValue) * Number(invoiceData.currency.gbpToUsd)).toFixed(2)}`;
             }
             if (invoiceData.selectedCurrencyExchange == 'CAD') {
-                return `${(Number(baseValue) * Number(invoiceData.currency.cadToUsd)).toFixed(6)}`;
+                return `${(Number(baseValue) * Number(invoiceData.currency.cadToUsd)).toFixed(2)}`;
             }
         } else {
             if (selectedChatData.selectedCurrencyExchange == 'None' || selectedChatData.selectedCurrencyExchange == 'USD' || !selectedChatData.selectedCurrencyExchange) {
-                return `${Number(baseValue).toFixed(6)}`;
+                return `${Number(baseValue).toFixed(2)}`;
             }
             if (selectedChatData.selectedCurrencyExchange == 'EURO') {
-                return `${(Number(baseValue) * Number(selectedChatData.currency.eurToUsd)).toFixed(6)}`;
+                return `${(Number(baseValue) * Number(selectedChatData.currency.eurToUsd)).toFixed(2)}`;
             }
             if (selectedChatData.selectedCurrencyExchange == 'AUD') {
-                return `${(Number(baseValue) * Number(selectedChatData.currency.audToUsd)).toFixed(6)}`;
+                return `${(Number(baseValue) * Number(selectedChatData.currency.audToUsd)).toFixed(2)}`;
             }
             if (selectedChatData.selectedCurrencyExchange == 'GBP') {
-                return `${(Number(baseValue) * Number(selectedChatData.currency.gbpToUsd)).toFixed(6)}`;
+                return `${(Number(baseValue) * Number(selectedChatData.currency.gbpToUsd)).toFixed(2)}`;
             }
             if (selectedChatData.selectedCurrencyExchange == 'CAD') {
-                return `${(Number(baseValue) * Number(selectedChatData.currency.cadToUsd)).toFixed(6)}`;
+                return `${(Number(baseValue) * Number(selectedChatData.currency.cadToUsd)).toFixed(2)}`;
             }
         }
         // Fallback in case no conditions are met
-        return `${Number(baseValue).toFixed(6)}`;
+        return `${Number(baseValue).toFixed(2)}`;
     };
 
 
@@ -5305,6 +5305,7 @@ Real Motor Japan`,
         const time = moment(datetime).format('HH:mm');
         const timeWithMinutesSeconds = moment(datetime).format('HH:mm:ss');
 
+
         const email = projectControlAuth.currentUser ? projectControlAuth.currentUser.email : '';
 
         try {
@@ -5318,7 +5319,7 @@ We're writing to inform you about your account with us at Real Motor Japan.
                 
 You have an extra overbalance in your account.
 
-Amount: ${CurrencySymbol()}${amount}
+Amount: $${amount}
                 
 Feel free to contact us if you have any questions. We're here to help.
                 
@@ -5343,7 +5344,7 @@ We're writing to inform you about your account with us at Real Motor Japan.
                                 
 You have an extra overbalance in your account.
                 
-Amount: ${CurrencySymbol()}${amount}
+Amount: $${amount}
                                 
 Feel free to contact us if you have any questions. We're here to help.
                                 
@@ -5528,13 +5529,15 @@ Real Motor Japan`,
                     if (numericInputAmount > amountNeeded) {
                         // Calculate overbalance and execute overBalanceMessage
                         const overBalance = numericInputAmount - amountNeeded;
-
+                        const formattedOverbalanceAmount = Number(Number(selectedCustomerData.overBalance) + Number(parseDollars(overBalance))).toLocaleString('en-US', inputAmountFormatOptions);
                         if (overBalance > 0) {
-                            await overBalanceMessage(selectedCustomerData.overBalance ? convertedCurrency(Number(selectedCustomerData.overBalance)) + overBalance : '');
-                            await delay(10); //10ms delay
+
+                            // Call the function to handle the message with the formatted total                            
                             await updateDoc(docRefCustomer, {
                                 overBalance: increment(parseDollars(overBalance)),
                             });
+                            await delay(10); //10ms delay
+                            await overBalanceMessage(formattedOverbalanceAmount);
 
                         }
 
@@ -12277,7 +12280,11 @@ const CustomerProfileModal = () => {
                             <View style={{ flex: 1, alignItems: 'center', }}>
 
                                 <Text style={{ fontWeight: 'bold', fontSize: screenWidth < mobileViewBreakpoint ? 20 : 24, color: '#009922', textAlign: 'center', }} selectable>
-                                    {`$${(totalPaymentValue).toLocaleString('en-US')}`}
+                                    {`$${(totalPaymentValue).toLocaleString('en-US', {
+                                        minimumFractionDigits: 2,
+                                        maximumFractionDigits: 2,
+                                        useGrouping: true
+                                    })}`}
                                 </Text>
 
                                 <Text style={{ fontWeight: 'bold', fontSize: screenWidth < mobileViewBreakpoint ? 12 : 16, color: '#5E4343', textAlign: 'center', }}>
@@ -12286,12 +12293,15 @@ const CustomerProfileModal = () => {
 
                                 <PaymentHistoryModal />
 
-
                             </View>
 
                             <View style={{ flex: 1, alignItems: 'center', }}>
                                 <Text style={{ fontWeight: 'bold', fontSize: screenWidth < mobileViewBreakpoint ? 20 : 24, color: '#990000', textAlign: 'center', }} selectable>
-                                    {`$${selectedCustomerData.overBalance ? Number(selectedCustomerData.overBalance).toLocaleString('en-US') : 0}`}
+                                    {`$${selectedCustomerData.overBalance ? Number(selectedCustomerData.overBalance).toLocaleString('en-US', {
+                                        minimumFractionDigits: 2,
+                                        maximumFractionDigits: 2,
+                                        useGrouping: true
+                                    }) : 0}`}
                                 </Text>
                                 <Text style={{ fontWeight: 'bold', fontSize: screenWidth < mobileViewBreakpoint ? 12 : 16, color: '#5E4343', textAlign: 'center', }}>
                                     {`Overbalance`}
