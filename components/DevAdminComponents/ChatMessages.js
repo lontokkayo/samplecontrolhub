@@ -12295,6 +12295,7 @@ const CustomerProfileModal = () => {
 
                             </View>
 
+
                             <View style={{ flex: 1, alignItems: 'center', }}>
                                 <Text style={{ fontWeight: 'bold', fontSize: screenWidth < mobileViewBreakpoint ? 20 : 24, color: '#990000', textAlign: 'center', }} selectable>
                                     {`$${selectedCustomerData.overBalance ? Number(selectedCustomerData.overBalance).toLocaleString('en-US', {

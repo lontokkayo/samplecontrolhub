@@ -3,7 +3,11 @@
     "experiments": {
       "baseUrl": "/expo-gh-pages"
     },
-    "platforms": ["ios", "android", "web"],
+    "platforms": [
+      "ios",
+      "android",
+      "web"
+    ],
     "name": "samplecontrolhub",
     "slug": "samplecontrolhub",
     "version": "1.0.0",
@@ -29,10 +33,14 @@
     },
     "web": {
       "favicon": "./assets/favicon.png"
-      
     },
-    "build": { "babel": { "include": [ "@ui-kitten/components" ] } }
-    ,
+    "build": {
+      "babel": {
+        "include": [
+          "@ui-kitten/components"
+        ]
+      }
+    },
     "extra": {
       "eas": {
         "projectId": "fcdbf583-1433-47d3-884b-97c62a794bbb"
