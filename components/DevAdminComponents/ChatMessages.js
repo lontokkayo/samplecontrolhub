@@ -3441,7 +3441,7 @@ const PaymentDetails = () => {
         globalInvoiceVariable.paymentDetails.fobPrice = convertedCurrency(invoiceData && Object.keys(invoiceData).length > 0 && invoiceData.paymentDetails.fobPrice ? invoiceData.paymentDetails.fobPrice : fobPriceDollars);
         globalInvoiceVariable.paymentDetails.freightPrice = convertedCurrency(invoiceData && Object.keys(invoiceData).length > 0 && invoiceData.paymentDetails.freightPrice ? invoiceData.paymentDetails.freightPrice : freightCalculation);
         globalInvoiceVariable.paymentDetails.insurancePrice = convertedCurrency(invoiceData && Object.keys(invoiceData).length > 0 && invoiceData.paymentDetails.insurancePrice ? invoiceData.paymentDetails.insurancePrice : selectedIncoterms == 'CIF' ? insuranceInput.current?.value : 0);
-        globalInvoiceVariable.paymentDetails.additionalPrice = convertedCurrency(invoiceData && Object.keys(invoiceData).length > 0 && invoiceData.paymentDetails.additionalPrice ? invoiceData.paymentDetails.additionalPrice : []);
+        globalInvoiceVariable.paymentDetails.additionalPrice = invoiceData && Object.keys(invoiceData).length > 0 && invoiceData.paymentDetails.additionalPrice ? invoiceData.paymentDetails.additionalPrice : [];
         globalInvoiceVariable.paymentDetails.additionalName = invoiceData && Object.keys(invoiceData).length > 0 && invoiceData.paymentDetails.additionalName ? invoiceData.paymentDetails.additionalName : [];
         globalAdditionalPriceArray = invoiceData && Object.keys(invoiceData).length > 0 && invoiceData.paymentDetails.additionalPrice ? invoiceData.paymentDetails.additionalPrice : [];
 
