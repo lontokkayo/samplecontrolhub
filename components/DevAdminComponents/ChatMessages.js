@@ -3430,6 +3430,7 @@ const PaymentDetails = () => {
             ? invoiceData.paymentDetails.additionalPrice.map(price => Number(convertedCurrency(price)).toFixed(2)).join('\n')
             : '';
 
+
         globalInvoiceVariable.selectedCurrencyExchange = invoiceData && Object.keys(invoiceData).length > 0 && invoiceData.selectedCurrencyExchange !== 'None' && invoiceData.selectedCurrencyExchange ? invoiceData.selectedCurrencyExchange : 'None';
 
         globalInvoiceVariable.paymentDetails.incoterms = invoiceData && Object.keys(invoiceData).length > 0 && invoiceData.paymentDetails.incoterms ? invoiceData.paymentDetails.incoterms : selectedIncoterms;
