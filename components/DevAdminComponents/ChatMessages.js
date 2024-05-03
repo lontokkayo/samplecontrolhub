@@ -6413,6 +6413,41 @@ const ProfitCalculator = () => {
 
     }, [totalSCCAmount]);
 
+
+    const CurrencySymbol = () => {
+        switch (selectedChatData.selectedCurrencyExchange) {
+            case 'USD':
+                return '$';
+            case 'EURO':
+                return '€';
+            case 'AUD':
+                return 'A$';
+            case 'GBP':
+                return '£';
+            case 'CAD':
+                return 'C$';
+            default:
+                return '$';
+        }
+    }
+
+    const CurrencyName = () => {
+        switch (selectedChatData.selectedCurrencyExchange) {
+            case 'USD':
+                return '$ USD';
+            case 'EURO':
+                return '€ EUR';
+            case 'AUD':
+                return 'A$ AUD';
+            case 'GBP':
+                return '£ GBP';
+            case 'CAD':
+                return 'C$ CAD';
+            default:
+                return '$';
+        }
+    }
+
     return (
 
         <>
@@ -6472,6 +6507,19 @@ const ProfitCalculator = () => {
                             </View>
 
 
+                            {selectedChatData.selectedCurrencyExchange !== 'USD' && <View style={{ marginBottom: 10, borderWidth: 1, borderColor: '#DADDE1', borderRadius: 5, marginRight: 3, padding: 3, backgroundColor: 'white', }}>
+                                <Text style={{ fontWeight: 'bold', marginVertical: 5, fontSize: 20, }}>Profit ({CurrencyName()}):</Text>
+                                <Text selectable style={{
+                                    fontWeight: '700', fontSize: 18,
+                                    color: Number(totalProfitAmountDollars) < 0 ? '#FF0000' : '#0772AD',
+                                }}>
+                                    {`${CurrencySymbol()}${Math.round(convertedCurrency(Number(totalProfitAmountDollars))).toLocaleString('en-US',)}`}
+                                </Text>
+                            </View>}
+
+
+
+
 
                             <View style={{ marginBottom: 10, borderWidth: 1, borderColor: '#DADDE1', borderRadius: 5, marginRight: 3, padding: 3, backgroundColor: 'white', }}>
                                 <Text style={{ fontWeight: 'bold', marginVertical: 5, fontSize: 20, }}>Profit (Percentage):</Text>
@@ -6482,28 +6530,43 @@ const ProfitCalculator = () => {
                                     {`${Number(((totalProfitAmountDollars * selectedChatData.currency.usdToJpy) / purchasedPrice) * 100).toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}%`}
                                 </Text>
                             </View>
-
-                            <View style={{ marginBottom: 10, borderWidth: 1, borderColor: '#DADDE1', borderRadius: 5, marginRight: 3, padding: 3, backgroundColor: '#6E7A83', }}>
-                                <Text style={{ fontWeight: 'bold', marginVertical: 5, fontSize: 20, color: 'white', }}>Price to calculate:</Text>
-                                <TextInput
-                                    onChangeText={handleInputPriceChangeText}
-                                    defaultValue={defaultInputPrice}
-                                    ref={inputPriceRef}
-                                    placeholderTextColor='#9B9E9F' placeholder='Input Price'
-                                    style={{
-                                        backgroundColor: 'white',
-                                        height: 25,
-                                        margin: 2,
-                                        padding: 1,
-                                        borderRadius: 4,
-                                        borderWidth: 1,
-                                        borderColor: 'white',
-                                        outlineStyle: 'none',
-                                        fontSize: 18,
-                                        fontWeight: '700',
-                                    }}
-                                />
+                            <View style={{ marginBottom: 10, borderWidth: 1, borderColor: '#DADDE1', borderRadius: 5, marginRight: 3, padding: 3, backgroundColor: '#6E7A83' }}>
+                                <Text style={{ fontWeight: 'bold', marginVertical: 5, fontSize: 20, color: 'white' }}>
+                                    Price to calculate:
+                                </Text>
+                                <View style={{ flexDirection: 'row', alignItems: 'center', }}>
+                                    <Text style={{
+                                        fontWeight: 'bold',
+                                        marginRight: 5, // provides spacing between the Text and TextInput
+                                        fontSize: 20,
+                                        color: 'white',
+                                    }}>
+                                        {CurrencySymbol()}
+                                    </Text>
+                                    <TextInput
+                                        onChangeText={handleInputPriceChangeText}
+                                        defaultValue={defaultInputPrice}
+                                        ref={inputPriceRef}
+                                        placeholder="Input Price"
+                                        placeholderTextColor="#9B9E9F"
+                                        style={{
+                                            backgroundColor: 'white',
+                                            height: 40,
+                                            flex: 1, // uses flex grow and flex shrink
+                                            flexShrink: 1, // allows the text input to shrink if needed
+                                            width: 100,
+                                            paddingHorizontal: 10,
+                                            borderRadius: 4,
+                                            borderWidth: 1,
+                                            borderColor: 'white',
+                                            fontSize: 18,
+                                            fontWeight: '700',
+                                        }}
+                                    />
+                                </View>
                             </View>
+
+
 
                         </View>
 

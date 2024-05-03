@@ -4719,11 +4719,11 @@ export default function AddVehicle() {
       // steeringVariable.text == "" ||
       // transmissionVariable.text == "" ||
       // exteriorColorVariable.text == "" ||
-      fuelVariable.text == "" 
-      ||portVariable.text == "" 
-      || buyerVariable.text == "" 
-      || salesVariable.text == "" 
-      || driveTypeVariable.text == "" 
+      fuelVariable.text == ""
+      || portVariable.text == ""
+      || buyerVariable.text == ""
+      || salesVariable.text == ""
+      || driveTypeVariable.text == ""
       || bodyTypeVariable.text == ""
       ;
 
@@ -5006,110 +5006,110 @@ export default function AddVehicle() {
         memo: inputCarMemo.current?.value,
 
         comfort: {
-          ComfortAiCoFr: featuresState.ComfortAiCoFr,
-          ComfortAiCoRe: featuresState.ComfortAiCoRe,
-          ComfortAMFMRa: featuresState.ComfortAMFMRa,
-          ComfortAMFMSt: featuresState.ComfortAMFMSt,
-          ComfortCDPl: featuresState.ComfortCDPl,
-          ComfortCDCh: featuresState.ComfortCDCh,
-          ComfortCrSpCo: featuresState.ComfortCrSpCo,
-          ComfortDiSp: featuresState.ComfortDiSp,
-          ComfortDVDPl: featuresState.ComfortDVDPl,
-          ComfortHDD: featuresState.ComfortHDD,
-          ComfortNaSyGPS: featuresState.ComfortNaSyGPS,
-          ComfortPoSt: featuresState.ComfortPoSt,
-          ComfortPrAuSy: featuresState.ComfortPrAuSy,
-          ComfortReKeSy: featuresState.ComfortReKeSy,
-          ComfortTiStWh: featuresState.ComfortTiStWh,
+          ComfortAiCoFr: featuresState.ComfortAiCoFr  || false,
+          ComfortAiCoRe: featuresState.ComfortAiCoRe  || false,
+          ComfortAMFMRa: featuresState.ComfortAMFMRa || false,
+          ComfortAMFMSt: featuresState.ComfortAMFMSt  || false,
+          ComfortCDPl: featuresState.ComfortCDPl  || false,
+          ComfortCDCh: featuresState.ComfortCDCh  || false,
+          ComfortCrSpCo: featuresState.ComfortCrSpCo  || false,
+          ComfortDiSp: featuresState.ComfortDiSp  || false,
+          ComfortDVDPl: featuresState.ComfortDVDPl  || false,
+          ComfortHDD: featuresState.ComfortHDD  || false,
+          ComfortNaSyGPS: featuresState.ComfortNaSyGPS  || false,
+          ComfortPoSt: featuresState.ComfortPoSt  || false,
+          ComfortPrAuSy: featuresState.ComfortPrAuSy  || false,
+          ComfortReKeSy: featuresState.ComfortReKeSy  || false,
+          ComfortTiStWh: featuresState.ComfortTiStWh  || false,
         },
 
-        ComfortAiCoFr: featuresState.ComfortAiCoFr,
-        ComfortAiCoRe: featuresState.ComfortAiCoRe,
-        ComfortAMFMRa: featuresState.ComfortAMFMRa,
-        ComfortAMFMSt: featuresState.ComfortAMFMSt,
-        ComfortCDPl: featuresState.ComfortCDPl,
-        ComfortCDCh: featuresState.ComfortCDCh,
-        ComfortCrSpCo: featuresState.ComfortCrSpCo,
-        ComfortDiSp: featuresState.ComfortDiSp,
-        ComfortDVDPl: featuresState.ComfortDVDPl,
-        ComfortHDD: featuresState.ComfortHDD,
-        ComfortNaSyGPS: featuresState.ComfortNaSyGPS,
-        ComfortPoSt: featuresState.ComfortPoSt,
-        ComfortPrAuSy: featuresState.ComfortPrAuSy,
-        ComfortReKeSy: featuresState.ComfortReKeSy,
-        ComfortTiStWh: featuresState.ComfortTiStWh,
+        ComfortAiCoFr: featuresState.ComfortAiCoFr || false,
+        ComfortAiCoRe: featuresState.ComfortAiCoRe || false,
+        ComfortAMFMRa: featuresState.ComfortAMFMRa || false,
+        ComfortAMFMSt: featuresState.ComfortAMFMSt || false,
+        ComfortCDPl: featuresState.ComfortCDPl || false,
+        ComfortCDCh: featuresState.ComfortCDCh || false,
+        ComfortCrSpCo: featuresState.ComfortCrSpCo || false,
+        ComfortDiSp: featuresState.ComfortDiSp || false,
+        ComfortDVDPl: featuresState.ComfortDVDPl || false,
+        ComfortHDD: featuresState.ComfortHDD || false,
+        ComfortNaSyGPS: featuresState.ComfortNaSyGPS || false,
+        ComfortPoSt: featuresState.ComfortPoSt || false,
+        ComfortPrAuSy: featuresState.ComfortPrAuSy || false,
+        ComfortReKeSy: featuresState.ComfortReKeSy || false,
+        ComfortTiStWh: featuresState.ComfortTiStWh || false,
 
         fobPrice: inputFobJpy.current.value.replace(/,/g, ''),
 
         safetySystem: {
-          SafetySystemAnBrSy: featuresState.SafetySystemAnBrSy,
-          SafetySystemDrAi: featuresState.SafetySystemDrAi,
-          SafetySystemPaAi: featuresState.SafetySystemPaAi,
-          SafetySystemSiAi: featuresState.SafetySystemSiAi,
+          SafetySystemAnBrSy: featuresState.SafetySystemAnBrSy || false,
+          SafetySystemDrAi: featuresState.SafetySystemDrAi || false,
+          SafetySystemPaAi: featuresState.SafetySystemPaAi || false,
+          SafetySystemSiAi: featuresState.SafetySystemSiAi || false,
 
         },
 
-        SafetySystemAnBrSy: featuresState.SafetySystemAnBrSy,
-        SafetySystemDrAi: featuresState.SafetySystemDrAi,
-        SafetySystemPaAi: featuresState.SafetySystemPaAi,
-        SafetySystemSiAi: featuresState.SafetySystemSiAi,
+        SafetySystemAnBrSy: featuresState.SafetySystemAnBrSy || false,
+        SafetySystemDrAi: featuresState.SafetySystemDrAi || false,
+        SafetySystemPaAi: featuresState.SafetySystemPaAi || false,
+        SafetySystemSiAi: featuresState.SafetySystemSiAi || false,
 
         interior: {
-          InteriorLeSe: featuresState.InteriorLeSe,
-          InteriorPoDoLo: featuresState.InteriorPoDoLo,
-          InteriorPoMi: featuresState.InteriorPoMi,
-          InteriorPoSe: featuresState.InteriorPoSe,
-          InteriorPoWi: featuresState.InteriorPoWi,
-          InteriorReWiDe: featuresState.InteriorReWiDe,
-          InteriorReWiWi: featuresState.InteriorReWiWi,
-          InteriorThRoSe: featuresState.InteriorThRoSe,
-          InteriorTiGl: featuresState.InteriorTiGl,
+          InteriorLeSe: featuresState.InteriorLeSe || false,
+          InteriorPoDoLo: featuresState.InteriorPoDoLo || false,
+          InteriorPoMi: featuresState.InteriorPoMi || false,
+          InteriorPoSe: featuresState.InteriorPoS || false,
+          InteriorPoWi: featuresState.InteriorPoWi || false,
+          InteriorReWiDe: featuresState.InteriorReWiDe || false,
+          InteriorReWiWi: featuresState.InteriorReWiWi || false,
+          InteriorThRoSe: featuresState.InteriorThRoSe || false,
+          InteriorTiGl: featuresState.InteriorTiGl || false,
         },
 
-        InteriorLeSe: featuresState.InteriorLeSe,
-        InteriorPoDoLo: featuresState.InteriorPoDoLo,
-        InteriorPoMi: featuresState.InteriorPoMi,
-        InteriorPoSe: featuresState.InteriorPoSe,
-        InteriorPoWi: featuresState.InteriorPoWi,
-        InteriorReWiDe: featuresState.InteriorReWiDe,
-        InteriorReWiWi: featuresState.InteriorReWiWi,
-        InteriorThRoSe: featuresState.InteriorThRoSe,
-        InteriorTiGl: featuresState.InteriorTiGl,
+        InteriorLeSe: featuresState.InteriorLeSe || false,
+        InteriorPoDoLo: featuresState.InteriorPoDoLo || false,
+        InteriorPoMi: featuresState.InteriorPoMi || false,
+        InteriorPoSe: featuresState.InteriorPoSe || false,
+        InteriorPoWi: featuresState.InteriorPoWi || false,
+        InteriorReWiDe: featuresState.InteriorReWiDe || false,
+        InteriorReWiWi: featuresState.InteriorReWiWi || false,
+        InteriorThRoSe: featuresState.InteriorThRoSe || false,
+        InteriorTiGl: featuresState.InteriorTiGl || false,
 
         exterior: {
-          ExteriorAlWh: featuresState.ExteriorAlWh,
-          ExteriorPoSlDo: featuresState.ExteriorPoSlDo,
-          ExteriorSuRo: featuresState.ExteriorSuRo,
+          ExteriorAlWh: featuresState.ExteriorAlWh || false,
+          ExteriorPoSlDo: featuresState.ExteriorPoSlDo || false,
+          ExteriorSuRo: featuresState.ExteriorSuRo || false,
         },
-        ExteriorAlWh: featuresState.ExteriorAlWh,
-        ExteriorPoSlDo: featuresState.ExteriorPoSlDo,
-        ExteriorSuRo: featuresState.ExteriorSuRo,
+        ExteriorAlWh: featuresState.ExteriorAlWh || false,
+        ExteriorPoSlDo: featuresState.ExteriorPoSlDo || false,
+        ExteriorSuRo: featuresState.ExteriorSuRo || false,
 
         sellingPoints: {
-          SellingPointsCuWh: featuresState.SellingPointsCuWh,
-          SellingPointsFuLo: featuresState.SellingPointsFuLo,
-          SellingPointsMaHiAv: featuresState.SellingPointsMaHiAv,
-          SellingPointsBrNeTi: featuresState.SellingPointsBrNeTi,
-          SellingPointsNoAcHi: featuresState.SellingPointsNoAcHi,
-          SellingPointsNoSmPrOw: featuresState.SellingPointsNoSmPrOw,
-          SellingPointsOnOwHi: featuresState.SellingPointsOnOwHi,
-          SellingPointsPeRaTi: featuresState.SellingPointsPeRaTi,
-          SellingPointsReBo: featuresState.SellingPointsReBo,
-          SellingPointsTuEn: featuresState.SellingPointsTuEn,
-          SellingPointsUpAuSy: featuresState.SellingPointsUpAuSy,
+          SellingPointsCuWh: featuresState.SellingPointsCuWh || false,
+          SellingPointsFuLo: featuresState.SellingPointsFuLo || false,
+          SellingPointsMaHiAv: featuresState.SellingPointsMaHiAv || false,
+          SellingPointsBrNeTi: featuresState.SellingPointsBrNeTi || false,
+          SellingPointsNoAcHi: featuresState.SellingPointsNoAcHi || false,
+          SellingPointsNoSmPrOw: featuresState.SellingPointsNoSmPrOw || false,
+          SellingPointsOnOwHi: featuresState.SellingPointsOnOwHi || false,
+          SellingPointsPeRaTi: featuresState.SellingPointsPeRaTi || false,
+          SellingPointsReBo: featuresState.SellingPointsReBo || false,
+          SellingPointsTuEn: featuresState.SellingPointsTuEn || false,
+          SellingPointsUpAuSy: featuresState.SellingPointsUpAuSy || false,
         },
 
-        SellingPointsCuWh: featuresState.SellingPointsCuWh,
-        SellingPointsFuLo: featuresState.SellingPointsFuLo,
-        SellingPointsMaHiAv: featuresState.SellingPointsMaHiAv,
-        SellingPointsBrNeTi: featuresState.SellingPointsBrNeTi,
-        SellingPointsNoAcHi: featuresState.SellingPointsNoAcHi,
-        SellingPointsNoSmPrOw: featuresState.SellingPointsNoSmPrOw,
-        SellingPointsOnOwHi: featuresState.SellingPointsOnOwHi,
-        SellingPointsPeRaTi: featuresState.SellingPointsPeRaTi,
-        SellingPointsReBo: featuresState.SellingPointsReBo,
-        SellingPointsTuEn: featuresState.SellingPointsTuEn,
-        SellingPointsUpAuSy: featuresState.SellingPointsUpAuSy,
+        SellingPointsCuWh: featuresState.SellingPointsCuWh || false,
+        SellingPointsFuLo: featuresState.SellingPointsFuLo || false,
+        SellingPointsMaHiAv: featuresState.SellingPointsMaHiAv || false,
+        SellingPointsBrNeTi: featuresState.SellingPointsBrNeTi || false,
+        SellingPointsNoAcHi: featuresState.SellingPointsNoAcHi || false,
+        SellingPointsNoSmPrOw: featuresState.SellingPointsNoSmPrOw || false,
+        SellingPointsOnOwHi: featuresState.SellingPointsOnOwHi || false,
+        SellingPointsPeRaTi: featuresState.SellingPointsPeRaTi || false,
+        SellingPointsReBo: featuresState.SellingPointsReBo || false,
+        SellingPointsTuEn: featuresState.SellingPointsTuEn || false,
+        SellingPointsUpAuSy: featuresState.SellingPointsUpAuSy || false,
 
 
         // Add more fields as needed
@@ -5131,7 +5131,7 @@ export default function AddVehicle() {
               dispatch(setLoadingModalVisible(false));
               dispatch(setIsUpdateSuccessModalOpen(true));
 
-              
+
               try {
                 // Check if the document exists
                 const docSnapshot = await getDoc(docRef);
