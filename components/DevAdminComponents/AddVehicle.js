@@ -5131,6 +5131,7 @@ export default function AddVehicle() {
               dispatch(setLoadingModalVisible(false));
               dispatch(setIsUpdateSuccessModalOpen(true));
 
+              
               try {
                 // Check if the document exists
                 const docSnapshot = await getDoc(docRef);
