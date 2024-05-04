@@ -5450,6 +5450,7 @@ Real Motor Japan`,
 
         const amountNeeded = Number(invoiceData.paymentDetails.totalAmount ? Number(totalPriceCalculated().replace(/,/g, '')).toFixed(2) - convertedCurrency(Number(totalValue)).replace(/,/g, '') : 0);
         const docRef = doc(projectExtensionFirestore, 'chats', selectedChatData.id);
+        const docRefInvoice = doc(projectExtensionFirestore, 'IssuedInvoice', selectedChatData.invoiceNumber);
         const docRefCustomer = doc(projectExtensionFirestore, 'accounts', selectedChatData.participants.customer);
         const response = await axios.get('https://worldtimeapi.org/api/timezone/Asia/Tokyo');
         const { datetime } = response.data;
@@ -5549,6 +5550,10 @@ Real Motor Japan`,
                     await updateDoc(docRef, {
                         'stepIndicator.value': 4,
                         'stepIndicator.status': 'Payment Confirmed',
+                    });
+
+                    await updateDoc(docRefInvoice, {
+                        fullyPaid: true,
                     });
 
                 } else {
@@ -5912,6 +5917,7 @@ const IssueProformaInvoiceModalContent = () => {
                         insurancePrice: parseDollars(Number(globalInvoiceVariable.paymentDetails.insurancePrice)),
                         totalAmount: (parseDollars(Number(globalInvoiceVariable.paymentDetails.totalAmount.replace(/,/g, '')))).toLocaleString('en-US', { useGrouping: true }),
                     },
+                    fullyPaid: false,
                     isCancelled: false,
                     customerEmail: selectedCustomerData.textEmail,
                     chatId: selectedChatData.id,
@@ -5945,6 +5951,7 @@ const IssueProformaInvoiceModalContent = () => {
                         insurancePrice: parseDollars(Number(globalInvoiceVariable.paymentDetails.insurancePrice)),
                         totalAmount: (parseDollars(Number(globalInvoiceVariable.paymentDetails.totalAmount.replace(/,/g, '')))).toLocaleString('en-US', { useGrouping: true }),
                     },
+                    fullyPaid: false,
                     isCancelled: false,
                     customerEmail: selectedCustomerData.textEmail,
                     chatId: selectedChatData.id,
@@ -8982,28 +8989,6 @@ const PreviewInvoice = () => {
             (selectedChatData.currency && selectedChatData.currency.jpyToUsd ?
                 selectedChatData.currency.jpyToUsd : 0))) + freightCalculation;
 
-
-    // const convertedCurrency = (baseValue) => {
-    //     if (invoiceData.selectedCurrencyExchange == 'None' || !invoiceData.selectedCurrencyExchange || invoiceData.selectedCurrencyExchange == 'USD') {
-    //         return `$${Number(baseValue).toFixed(2).toLocaleString('en-US', { useGrouping: true })}`
-    //     }
-    //     if (invoiceData.selectedCurrencyExchange == 'EURO') {
-    //         const euroValue = Number(baseValue) * Number(selectedChatData.currency.usdToJpy) + Number(baseValue) * Number(valueCurrency);
-    //         return `€${(euroValue * Number(selectedChatData.currency.jpyToEur)).toFixed(2).toLocaleString('en-US', { useGrouping: true })}`;
-    //     }
-    //     if (invoiceData.selectedCurrencyExchange == 'AUD') {
-    //         const audValue = Number(baseValue) * Number(selectedChatData.currency.usdToJpy) + Number(baseValue) * Number(valueCurrency);
-    //         return `A$${(audValue * Number(selectedChatData.currency.jpyToAud)).toFixed(2).toLocaleString('en-US', { useGrouping: true })}`;
-    //     }
-    //     if (invoiceData.selectedCurrencyExchange == 'GBP') {
-    //         const gbpValue = Number(baseValue) * Number(selectedChatData.currency.usdToJpy) + Number(baseValue) * Number(valueCurrency);
-    //         return `£${(gbpValue * Number(selectedChatData.currency.jpyToGbp)).toFixed(2).toLocaleString('en-US', { useGrouping: true })}`;
-    //     }
-    //     if (invoiceData.selectedCurrencyExchange == 'CAD') {
-    //         const cadValue = Number(baseValue) * Number(selectedChatData.currency.usdToJpy) + Number(baseValue) * Number(valueCurrency);
-    //         return `C$${(cadValue * Number(selectedChatData.currency.cadToJpy)).toFixed(2).toLocaleString('en-US', { useGrouping: true })}`;
-    //     }
-    // }
     const convertedCurrency = (baseValue) => {
         if (invoiceData.selectedCurrencyExchange == 'None' || !invoiceData.selectedCurrencyExchange || invoiceData.selectedCurrencyExchange == 'USD') {
             return `$${Number(baseValue).toFixed(2).toLocaleString('en-US', { useGrouping: true })}`
