@@ -63,7 +63,7 @@ import { setLoginName } from './redux/store';
 import MobileViewDrawer from './SideDrawer/MobileViewDrawer';
 import SideDrawer from './SideDrawer/SideDrawer';
 import { LineChart, BarChart } from 'react-native-chart-kit';
-import { VictoryBar, VictoryChart, VictoryAxis, VictoryTheme } from 'victory';
+import { VictoryBar, VictoryChart, VictoryAxis, VictoryTheme, VictoryLabel } from 'victory';
 import {
     OPEN_EXCHANGE_API_KEY
 } from '@env';
@@ -816,54 +816,111 @@ const CurrencyConverterComponent = () => {
 };
 
 
-const MyBarChart = () => {
-    const dataValues = [
-        { day: 1, value: 30 },
-        { day: 2, value: 45 },
-        // ... add data for each day of the month
-        { day: 31, value: 60 }
-    ];
+
+const fetchPaidStatsData = async (yearMonth) => {
+    try {
+        const documentRef = doc(projectExtensionFirestore, "PaidStats", yearMonth);
+        const documentSnapshot = await getDoc(documentRef);
+        const data = documentSnapshot.data();
+
+        // Initialize an empty array of 31 objects
+        const days = Array.from({ length: 31 }, (_, index) => ({
+            day: String(index + 1).padStart(2, "0"),
+            count: 0
+        }));
+
+        // Update the days with the counts from Firestore
+        Object.keys(data).forEach(day => {
+            const index = Number(day) - 1;
+            days[index].count = data[day].length;
+        });
+
+        return days;
+    } catch (error) {
+        console.error("Error fetching data from Firestore:", error);
+        return Array.from({ length: 31 }, (_, index) => ({
+            day: String(index + 1).padStart(2, "0"),
+            count: 0
+        }));
+    }
+};
+
+
+
+
+const fetchYearMonth = async () => {
+    try {
+        const response = await axios.get('https://worldtimeapi.org/api/timezone/Asia/Tokyo');
+        const { datetime } = response.data;
+        const yearMonth = moment(datetime).format('YYYY-MM');
+        return yearMonth;
+    } catch (error) {
+        console.error("Error fetching year and month:", error);
+    }
+};
+
+
+
+const StatsChart = () => {
+
+    const [data, setData] = useState([]);
+    const [yearMonth, setYearMonth] = useState("2024-05");
+
+    useEffect(() => {
+        (async () => {
+            const yearMonth = await fetchYearMonth();
+            setYearMonth(yearMonth);
+            const result = await fetchPaidStatsData(yearMonth);
+            setData(result);
+            console.log(yearMonth);
+        })();
+    }, []);
 
     return (
-        <ScrollView style={{ flex: 1, margin: 5, borderRadius: 5, }}>
+        <View style={{
+            flex: 1,
+            borderWidth: 1,
+            borderColor: '#FFF', // Border color
+            backgroundColor: '#FFF', // Background color
+            marginHorizontal: 5,
+            borderRadius: 5,
+        }}>
             <VictoryChart
+                width={1000}
                 theme={VictoryTheme.material}
-                domainPadding={10}
-                style={{
-                    parent: {
-                        backgroundColor: "#FFF", // White background
-                    }
-                }}
+                domainPadding={{ x: 20 }} // Adjust domain padding for proper fit
             >
+                <VictoryBar
+                    data={data}
+                    x="day"
+                    y="count"
+                    style={{
+                        data: {
+                            fill: "rgba(6, 66, 244, 0.5)",
+                            cornerRadius: { top: 5, bottom: 0 }, // Round the top corners
+                        },
+                        labels: { fontSize: 12, fill: "#0642F4", } // Label color
+                    }}
+                    labels={({ datum }) => `${datum.count == 0 ? '' : datum.count}`} // Display earnings as labels
+                    labelComponent={<VictoryLabel dy={-10} />} // Adjust label position
+                />
                 <VictoryAxis
                     style={{
-                        axis: { stroke: "#757575" }, // Style for the axis itself
-                        ticks: { stroke: "grey", size: 5 }, // Style for axis ticks
-                        tickLabels: { fontSize: 10, padding: 5, fill: "grey" } // Style for the labels
+                        grid: {
+                            stroke: "none" // Remove grid
+                        }
                     }}
                 />
                 <VictoryAxis
                     dependentAxis
                     style={{
-                        axis: { stroke: "#757575" },
-                        ticks: { stroke: "grey", size: 5 },
-                        tickLabels: { fontSize: 10, padding: 5, fill: "grey" }
-                    }}
-                />
-                <VictoryBar
-                    data={dataValues}
-                    x="day"
-                    y="value"
-                    style={{
-                        data: {
-                            fill: ({ datum }) => datum.value > 50 ? "#4178BE" : "#5AA9E6", // Blue shades for bars
-                            width: 8 // Width of each bar
+                        grid: {
+                            stroke: "none" // Remove grid
                         }
                     }}
-                    barRatio={0.8} // Adjusts the width of the bars
                 />
             </VictoryChart>
-        </ScrollView>
+        </View>
     );
 };
 
@@ -1239,10 +1296,10 @@ export default function Logs() {
 
 
 
-                        <Box flex={1}>
+                        <View style={{ flex: 1, }} >
                             <CurrencyConverterComponent />
-                            <MyBarChart />
-                        </Box>
+                            <StatsChart />
+                        </View>
 
 
 
