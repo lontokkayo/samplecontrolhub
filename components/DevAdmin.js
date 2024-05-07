@@ -196,6 +196,11 @@ export default function DevAdmin() {
       }}
     >
       <Drawer.Screen
+        name="LOGS"
+        children={LogsComponent}
+        options={{ unmountOnBlur: true }}
+      />
+      <Drawer.Screen
         name="CHAT MESSAGES"
         children={ChatMessagesComponent}
         options={{ unmountOnBlur: true }}
@@ -210,11 +215,7 @@ export default function DevAdmin() {
         children={AddVehicleComponent}
         options={{ unmountOnBlur: true }}
       />
-      <Drawer.Screen
-        name="LOGS"
-        children={LogsComponent}
-        options={{ unmountOnBlur: true }}
-      />
+
       <Drawer.Screen
         name="VEHICLE LIST"
         children={VehicleListComponent}
