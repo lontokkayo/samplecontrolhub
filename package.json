@@ -168,7 +168,7 @@
     "rnw-dropzone": "^0.0.0-development",
     "setimmediate": "^1.0.5",
     "tamagui": "^1.29.3",
-    "victory-native": "^36.6.12",
+    "victory-native": "^36.9.2",
     "watermarkjs": "^2.1.1",
     "xlsx": "^0.18.5"
   },
