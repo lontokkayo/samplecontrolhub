@@ -29,7 +29,9 @@ import {
     Modal,
     Divider,
     IconButton,
-    Popover
+    Popover,
+    Select,
+    CheckIcon
 } from "native-base";
 import { DataTable } from 'react-native-paper';
 import {
@@ -67,6 +69,8 @@ import { VictoryBar, VictoryChart, VictoryAxis, VictoryTheme, VictoryLabel } fro
 import {
     OPEN_EXCHANGE_API_KEY
 } from '@env';
+import { format, parseISO, subMonths } from "date-fns";
+
 const { width, height } = Dimensions.get('window');
 
 const firestore = getFirestore();
@@ -817,11 +821,11 @@ const CurrencyConverterComponent = () => {
 
 
 
-const fetchPaidStatsData = async (yearMonth) => {
+const fetchPaidStatsData = async (yearMonth, type) => {
     try {
-        const documentRef = doc(projectExtensionFirestore, "PaidStats", yearMonth);
+        const documentRef = doc(projectExtensionFirestore, "PaidStats", `${yearMonth}`);
         const documentSnapshot = await getDoc(documentRef);
-        const data = documentSnapshot.data();
+        const data = documentSnapshot.data() || {};
 
         // Initialize an empty array of 31 objects
         const days = Array.from({ length: 31 }, (_, index) => ({
@@ -845,50 +849,151 @@ const fetchPaidStatsData = async (yearMonth) => {
     }
 };
 
-
-
-
-const fetchYearMonth = async () => {
+const fetchCurrentDate = async () => {
     try {
-        const response = await axios.get('https://worldtimeapi.org/api/timezone/Asia/Tokyo');
+        const response = await axios.get("https://worldtimeapi.org/api/timezone/Asia/Tokyo");
         const { datetime } = response.data;
-        const yearMonth = moment(datetime).format('YYYY-MM');
-        return yearMonth;
+        return datetime.slice(0, 7); // Extracts YYYY-MM
     } catch (error) {
-        console.error("Error fetching year and month:", error);
+        console.error("Error fetching current date:", error);
+        return new Date().toISOString().slice(0, 7); // Fallback to local time if API fails
     }
 };
 
-
+const calculateTotal = (data) => {
+    return data.reduce((sum, { count }) => sum + count, 0);
+}
 
 const StatsChart = () => {
-
     const [data, setData] = useState([]);
-    const [yearMonth, setYearMonth] = useState("2024-05");
+    const [yearMonth, setYearMonth] = useState("");
+    const [type, setType] = useState("Offer");
+    const [period, setPeriod] = useState("Daily");
+    const [currentTotal, setCurrentTotal] = useState(0);
+    const [previousTotal, setPreviousTotal] = useState(0);
+    const [currentMonthName, setCurrentMonthName] = useState("");
+    const [previousMonthName, setPreviousMonthName] = useState("");
 
     useEffect(() => {
         (async () => {
-            const yearMonth = await fetchYearMonth();
-            setYearMonth(yearMonth);
-            const result = await fetchPaidStatsData(yearMonth);
-            setData(result);
-            console.log(yearMonth);
-        })();
-    }, []);
+            const currentDate = await fetchCurrentDate();
+            setYearMonth(currentDate);
+            const currentData = await fetchPaidStatsData(currentDate, type);
+            const previousDate = format(subMonths(parseISO(`${currentDate}-01`), 1), "yyyy-MM");
+            const previousData = await fetchPaidStatsData(previousDate, type);
 
+            setData(currentData);
+            setCurrentTotal(calculateTotal(currentData));
+            setPreviousTotal(calculateTotal(previousData));
+            setCurrentMonthName(format(parseISO(`${currentDate}-01`), "MMMM"));
+            setPreviousMonthName(format(parseISO(`${previousDate}-01`), "MMMM"));
+        })();
+    }, [type, period]);
+
+    const currentYear = parseInt(yearMonth.slice(0, 4), 10);
+    const currentMonth = parseInt(yearMonth.slice(5, 7), 10);
     return (
-        <View style={{
-            flex: 1,
-            borderWidth: 1,
-            borderColor: '#FFF', // Border color
-            backgroundColor: '#FFF', // Background color
-            marginHorizontal: 5,
-            borderRadius: 5,
-        }}>
+        <Box
+            flex={1}
+            borderWidth={1}
+            borderColor="#FFF"
+            backgroundColor="#FFF"
+            marginBottom={'5px'}
+            marginLeft={'5px'}
+            marginRight={'5px'}
+            borderRadius={5}
+            padding={3}
+        >
+            <HStack space={4} mb={3} justifyContent="center">
+                <Box
+                    padding={2}
+                    backgroundColor="orange.100"
+                    borderRadius={5}
+                    alignItems="center"
+                >
+                    <Text style={{ fontSize: 14, color: "orange.800", fontWeight: "bold" }}>{`${previousMonthName}: ${previousTotal}`}</Text>
+                </Box>
+                <Box
+                    padding={2}
+                    backgroundColor="blue.100"
+                    borderRadius={5}
+                    alignItems="center"
+                >
+                    <Text style={{ fontSize: 14, color: "teal.800", fontWeight: "bold" }}>{`${currentMonthName}: ${currentTotal}`}</Text>
+                </Box>
+
+            </HStack>
+
+
+            <HStack space={4}>
+                <Box>
+                    <Text>Period</Text>
+                    <Select
+                        selectedValue={period}
+                        minWidth={120}
+                        accessibilityLabel="Select Period"
+                        placeholder="Select Period"
+                        _selectedItem={{
+                            bg: "teal.600",
+                            endIcon: <CheckIcon size="5" />
+                        }}
+                        mt={1}
+                        onValueChange={((value) => setPeriod(value))}
+                    >
+                        <Select.Item label="Daily" value="Daily" />
+                        <Select.Item label="Weekly" value="Weekly" />
+                        <Select.Item label="Monthly" value="Monthly" />
+                    </Select>
+                </Box>
+                <Box>
+                    <Text>Type</Text>
+                    <Select
+                        selectedValue={type}
+                        minWidth={120}
+                        accessibilityLabel="Select Type"
+                        placeholder="Select Type"
+                        _selectedItem={{
+                            bg: "teal.600",
+                            endIcon: <CheckIcon size="5" />
+                        }}
+                        mt={1}
+                        onValueChange={(value) => setType(value)}
+                    >
+                        <Select.Item label="Offer" value="Offer" />
+                        <Select.Item label="Orders" value="Orders" />
+                        <Select.Item label="Payment" value="Payment" />
+                    </Select>
+                </Box>
+                <Box>
+                    <Text>Year-Month</Text>
+                    <Select
+                        selectedValue={yearMonth}
+                        minWidth={120}
+                        accessibilityLabel="Select Year-Month"
+                        placeholder="Select Year-Month"
+                        _selectedItem={{
+                            bg: "teal.600",
+                            endIcon: <CheckIcon size="5" />
+                        }}
+                        mt={1}
+                        onValueChange={(value) => setYearMonth(value)}
+                    >
+                        {Array.from({ length: currentMonth }, (_, i) => {
+                            const month = String(currentMonth - i).padStart(2, "0");
+                            return (
+                                <Select.Item key={month} label={`${currentYear}-${month}`} value={`${currentYear}-${month}`} />
+                            );
+                        })}
+                    </Select>
+                </Box>
+
+
+            </HStack>
+
             <VictoryChart
                 width={1000}
                 theme={VictoryTheme.material}
-                domainPadding={{ x: 20 }} // Adjust domain padding for proper fit
+                domainPadding={{ x: 20 }}
             >
                 <VictoryBar
                     data={data}
@@ -899,9 +1004,9 @@ const StatsChart = () => {
                             fill: "rgba(6, 66, 244, 0.5)",
                             cornerRadius: { top: 5, bottom: 0 }, // Round the top corners
                         },
-                        labels: { fontSize: 12, fill: "#0642F4", } // Label color
+                        labels: { fontSize: 12, fill: "#0642F4" } // Label color
                     }}
-                    labels={({ datum }) => `${datum.count == 0 ? '' : datum.count}`} // Display earnings as labels
+                    labels={({ datum }) => `${datum.count === 0 ? '' : datum.count}`} // Display earnings as labels
                     labelComponent={<VictoryLabel dy={-10} />} // Adjust label position
                 />
                 <VictoryAxis
@@ -920,15 +1025,15 @@ const StatsChart = () => {
                     }}
                 />
             </VictoryChart>
-        </View>
+        </Box>
     );
 };
-
 
 export default function Logs() {
     const [email, setEmail] = useState('');
     const [name, setName] = useState('');
     const loginName = useSelector((state) => state.loginName);
+    const [screenWidth, setScreenWidth] = useState(Dimensions.get('window').width);
 
     // const navigation = useNavigation();
     const navigate = useNavigate();
@@ -956,7 +1061,6 @@ export default function Logs() {
     const searchInput = useRef(null);
     const searchInputValue = searchInput.current?.value;
 
-    const screenWidth = Dimensions.get('window').width;
 
     const dispatch = useDispatch();
 
@@ -965,6 +1069,15 @@ export default function Logs() {
 
 
     useEffect(() => {
+
+        const updateWidth = () => {
+            const newWidth = Dimensions.get('window').width;
+            setScreenWidth(newWidth); // Update the screenWidth state
+        };
+
+        // Add event listener for window resize
+        Dimensions.addEventListener('change', updateWidth);
+
         const fetchData = async () => {
             try {
                 const q = query(collection(db, 'logs'), orderBy('timestamp', 'desc'));
@@ -1325,6 +1438,5 @@ export default function Logs() {
         </NativeBaseProvider>
     );
 }
-
 
 
