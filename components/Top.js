@@ -346,7 +346,7 @@ export default function Top({ navigation }) {
     // </StackNavigator.Navigator>
     <NativeBaseProvider>
       <Routes>
-        <Route path="*" element={<Navigate to="chat-messages" replace />} />
+        <Route path="*" element={<Navigate to="logs" replace />} />
         <Route path="parse-csv" element={<ParseCSV />} />
         <Route path="chat-messages" element={<ChatMessages />} />
         <Route path="chat-messages/:chatId" element={<ChatMessages />} />
