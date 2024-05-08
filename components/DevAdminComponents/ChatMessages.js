@@ -5051,6 +5051,7 @@ const InputPaymentModalContent = () => {
     const invoiceData = useSelector((state) => state.invoiceData);
     const selectedChatData = useSelector((state) => state.selectedChatData);
     const selectedCustomerData = useSelector((state) => state.selectedCustomerData);
+    const carImageUrl = useSelector((state) => state.carImageUrl);
 
 
     const [historyModalVisible, setHistoryModalVisible] = useState(false);
@@ -5443,7 +5444,38 @@ Real Motor Japan`,
 
 
 
+    const addOrUpdatePaidStats = async () => {
+        try {
+            const response = await axios.get('https://worldtimeapi.org/api/timezone/Asia/Tokyo');
+            const datetime = response.data.datetime; // ISO 8601 format: YYYY-MM-DDTHH:mm:ss.ssssss±hh:mm
+            const year = datetime.slice(0, 4);
+            const month = datetime.slice(5, 7);
+            const day = datetime.slice(8, 10);
 
+            const docId = `${year}-${month}`; // YYYY-MM
+            const dayField = day; // 01-31
+            const docRef = doc(projectExtensionFirestore, 'PaidStats', docId);
+
+            try {
+                const newData = {
+                    carName: selectedChatData.carData.carName,
+                    customerEmail: selectedCustomerData.textEmail,
+                    imageUrl: carImageUrl,
+                    referenceNumber: selectedChatData.carData.stockID,
+                };
+
+                await setDoc(docRef, {
+                    [dayField]: arrayUnion(newData)
+                }, { merge: true });
+                console.log(`Data added/updated in document ${docId} for day ${dayField}`);
+            } catch (error) {
+                console.error("Error adding/updating data: ", error);
+            }
+
+        } catch (error) {
+
+        }
+    }
 
     const confirmPayment = async () => {
         setIsConfirmLoading(true);
@@ -5527,7 +5559,7 @@ Real Motor Japan`,
                     await fullPaymentMessage();
                     await appendSalesInfoDataToCSV(salesDataToSubmit);
                     await delay(10); //10ms delay
-
+                    await addOrUpdatePaidStats();
                     if (numericInputAmount > amountNeeded) {
                         // Calculate overbalance and execute overBalanceMessage
                         const overBalance = numericInputAmount - amountNeeded;
