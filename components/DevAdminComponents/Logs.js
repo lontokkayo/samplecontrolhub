@@ -821,22 +821,36 @@ const CurrencyConverterComponent = () => {
 
 
 
+const fetchCurrentDate = async () => {
+    try {
+        const response = await axios.get("https://worldtimeapi.org/api/timezone/Asia/Tokyo");
+        const { datetime } = response.data;
+        return datetime.slice(0, 7); // Extracts YYYY-MM
+    } catch (error) {
+        console.error("Error fetching current date:", error);
+        return new Date().toISOString().slice(0, 7); // Fallback to local time if API fails
+    }
+};
+
+// Fetch stats data based on type
 const fetchStatsData = async (yearMonth, type) => {
     try {
+        // Mock of documentRef, should be your Firestore reference
         const documentRef = doc(projectExtensionFirestore, `${type}`, `${yearMonth}`);
         const documentSnapshot = await getDoc(documentRef);
+        // const documentSnapshot = { data: () => ({ '01': [120], '02': [150], '03': [90] }) }; // Mock response
         const data = documentSnapshot.data() || {};
 
-        // Initialize an empty array of 31 objects
         const days = Array.from({ length: 31 }, (_, index) => ({
             value: String(index + 1).padStart(2, "0"),
             count: 0
         }));
 
-        // Update the days with the counts from Firestore
         Object.keys(data).forEach(day => {
             const index = Number(day) - 1;
-            days[index].count = data[day].length;
+            if (index >= 0 && index < days.length) {
+                days[index].count = data[day].length;  // Assuming data[day] is an array
+            }
         });
 
         return days;
@@ -849,27 +863,57 @@ const fetchStatsData = async (yearMonth, type) => {
     }
 };
 
-
-
-const calculateTotal = (data) => {
-    return data.reduce((sum, { count }) => sum + count, 0);
-}
-
-const fetchCurrentDate = async () => {
-    try {
-        const response = await axios.get("https://worldtimeapi.org/api/timezone/Asia/Tokyo");
-        const { datetime } = response.data;
-        return datetime.slice(0, 7); // Extracts YYYY-MM
-    } catch (error) {
-        console.error("Error fetching current date:", error);
-        return new Date().toISOString().slice(0, 7); // Fallback to local time if API fails
+// Process data based on the period
+const processData = (data, period) => {
+    if (period === "Daily") {
+        return data; // Assuming daily data doesn't need aggregation
+    } else if (period === "Weekly") {
+        // Assuming data has daily counts and needs to be aggregated into weeks
+        const weeks = Array.from({ length: 5 }, () => ({ value: '', count: 0 }));
+        data.forEach((day, index) => {
+            const weekIndex = Math.floor(index / 7); // Divide the month into 5 weeks approximately
+            if (weekIndex < weeks.length) {
+                weeks[weekIndex].value = `Week ${weekIndex + 1}`;
+                weeks[weekIndex].count += day.count;
+            }
+        });
+        return weeks;
+    } else if (period === "Monthly") {
+        // Assuming data is structured per month, each array element corresponds to a month's data
+        const months = Array.from({ length: 12 }, (_, i) => ({ value: `${(i + 1).toString().padStart(2, '0')}`, count: 0 }));
+        data.forEach((monthData, index) => {
+            if (index < months.length) {
+                months[index].value = `${(index + 1).toString().padStart(2, '0')}`; // Ensure month labels are "01", "02", etc.
+                months[index].count = monthData.count; // Assign count from the data, assuming data is pre-aggregated by month
+            }
+        });
+        return months;
     }
 };
-const TypeAndPeriodSelectors = ({ period, setPeriod, type, setType, yearMonth, setYearMonth, }) => {
 
-    const currentDate = new Date();  // Assuming this is refreshed or set elsewhere
+// Calculate total from data
+const calculateTotal = (data) => {
+    return data.reduce((sum, { count }) => sum + count, 0);
+};
+
+const fetchDataBasedOnType = async (date, type) => {
+    switch (type) {
+        case "Offer":
+            return fetchStatsData(date, 'OfferStats');
+        case "Orders":
+            return fetchStatsData(date, 'OrderStats');
+        case "Payment":
+            return fetchStatsData(date, 'PaidStats');
+        default:
+            return [];
+    }
+};
+
+// Type and Period selectors component
+const TypeAndPeriodSelectors = ({ period, setPeriod, type, setType, yearMonth, setYearMonth }) => {
+    const currentDate = new Date();
     const currentYear = currentDate.getFullYear();
-    const currentMonth = currentDate.getMonth() + 1; // getMonth() is 0-indexed, so add 1
+    const currentMonth = currentDate.getMonth() + 1;
 
     const yearMonthOptions = Array.from({ length: 13 }, (_, i) => {
         const date = subMonths(currentDate, i);
@@ -941,7 +985,7 @@ const TypeAndPeriodSelectors = ({ period, setPeriod, type, setType, yearMonth, s
     );
 };
 
-
+// StatsChart component
 const StatsChart = () => {
     const [data, setData] = useState([]);
     const [yearMonth, setYearMonth] = useState("");
@@ -954,41 +998,28 @@ const StatsChart = () => {
 
     useEffect(() => {
         const fetchData = async () => {
-            try {
-                // If yearMonth is empty initially, fetch current date first
-                const effectiveDate = yearMonth || await fetchCurrentDate();
-                if (!yearMonth) {
-                    setYearMonth(effectiveDate);  // Update yearMonth state if it's not set
-                }
-                const currentData = await fetchDataBasedOnType(effectiveDate, type);
-                const previousDate = format(subMonths(parseISO(`${effectiveDate}-01`), 1), "yyyy-MM");
-                const previousData = await fetchDataBasedOnType(previousDate, type);
-
-                setData(currentData);
-                setCurrentTotal(calculateTotal(currentData));
-                setPreviousTotal(calculateTotal(previousData));
-                setCurrentMonthName(format(parseISO(`${effectiveDate}-01`), "MMMM"));
-                setPreviousMonthName(format(parseISO(`${previousDate}-01`), "MMMM"));
-            } catch (error) {
-                console.error("Failed to fetch or process data:", error);
+            const effectiveDate = yearMonth || await fetchCurrentDate();
+            if (!yearMonth) {
+                setYearMonth(effectiveDate); // Initialize yearMonth if not set
             }
+            const currentData = await fetchDataBasedOnType(effectiveDate, type); // Ensure fetchStatsData handles type correctly
+            const processedData = processData(currentData, period);
+            const currentTotal = calculateTotal(processedData);
+
+            const previousDate = format(subMonths(parseISO(`${effectiveDate}-01`), 1), "yyyy-MM");
+            const previousData = await fetchDataBasedOnType(previousDate, type);
+            const processedPreviousData = processData(previousData, period);
+            const previousTotal = calculateTotal(processedPreviousData);
+
+            setData(processedData);
+            setCurrentTotal(currentTotal);
+            setPreviousTotal(previousTotal);
+            setCurrentMonthName(format(parseISO(`${effectiveDate}-01`), "MMMM"));
+            setPreviousMonthName(format(parseISO(`${previousDate}-01`), "MMMM"));
         };
 
         fetchData();
-    }, [yearMonth, type]);
-
-    const fetchDataBasedOnType = async (date, type) => {
-        switch (type) {
-            case "Offer":
-                return fetchStatsData(date, 'OfferStats');
-            case "Orders":
-                return fetchStatsData(date, 'OrderStats');
-            case "Payment":
-                return fetchStatsData(date, 'PaidStats');
-            default:
-                return [];
-        }
-    };
+    }, [yearMonth, type, period]); // Dependencies to trigger re-fetching and re-processing
 
     return (
         <Box flex={1} borderWidth={1} borderColor="#FFF" backgroundColor="#FFF" marginBottom={'5px'} marginLeft={'5px'} marginRight={'5px'} borderRadius={5} padding={3}>
@@ -1000,21 +1031,15 @@ const StatsChart = () => {
                     <Text style={{ fontSize: 14, color: "teal.800", fontWeight: "bold" }}>{`${currentMonthName}: ${currentTotal}`}</Text>
                 </Box>
             </HStack>
-            {/* Period and Type Selectors */}
-            <HStack space={4}>
-                <TypeAndPeriodSelectors
-                    period={period}
-                    setPeriod={setPeriod}
-                    type={type}
-                    setType={setType}
-                    yearMonth={yearMonth}
-                    setYearMonth={setYearMonth}
-                    currentYear={parseInt(yearMonth.slice(0, 4), 10)}
-                    currentMonth={parseInt(yearMonth.slice(5, 7), 10)}
-                />
-            </HStack>
-            {/* VictoryChart Visualization */}
-            <VictoryChart width={1000} theme={VictoryTheme.material} domainPadding={{ x: 20 }}>
+            <TypeAndPeriodSelectors
+                period={period}
+                setPeriod={setPeriod}
+                type={type}
+                setType={setType}
+                yearMonth={yearMonth}
+                setYearMonth={setYearMonth}
+            />
+            <VictoryChart width={1000} theme={VictoryTheme.material} domainPadding={{ x: period == 'Weekly' ? 40 : 20 }}>
                 <VictoryBar
                     data={data}
                     x="value"
@@ -1036,6 +1061,7 @@ const StatsChart = () => {
         </Box>
     );
 };
+
 
 export default function Logs() {
     const [email, setEmail] = useState('');
