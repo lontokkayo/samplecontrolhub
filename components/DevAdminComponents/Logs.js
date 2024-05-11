@@ -913,14 +913,22 @@ const fetchDataBasedOnType = async (date, type) => {
 const TypeAndPeriodSelectors = ({ period, setPeriod, type, setType, yearMonth, setYearMonth }) => {
     const currentDate = new Date();
     const currentYear = currentDate.getFullYear();
-    const currentMonth = currentDate.getMonth() + 1;
 
-    const yearMonthOptions = Array.from({ length: 13 }, (_, i) => {
-        const date = subMonths(currentDate, i);
-        const year = date.getFullYear();
-        const month = (date.getMonth() + 1).toString().padStart(2, '0');
-        return { label: `${year}-${month}`, value: `${year}-${month}` };
-    });
+    // Generate options based on the period selection
+    let yearMonthOptions;
+    if (period === "Monthly") {
+        yearMonthOptions = Array.from({ length: currentYear - 2013 + 1 }, (_, i) => {
+            const year = currentYear - i;
+            return { label: `${year}`, value: `${year}` };
+        });
+    } else {
+        yearMonthOptions = Array.from({ length: 13 }, (_, i) => {
+            const date = subMonths(currentDate, i);
+            const year = date.getFullYear();
+            const month = (date.getMonth() + 1).toString().padStart(2, '0');
+            return { label: `${year}-${month}`, value: `${year}-${month}` };
+        });
+    }
 
     return (
         <HStack space={3}>
@@ -936,7 +944,15 @@ const TypeAndPeriodSelectors = ({ period, setPeriod, type, setType, yearMonth, s
                         endIcon: <CheckIcon size="5" />
                     }}
                     mt={1}
-                    onValueChange={(value) => setPeriod(value)}
+                    onValueChange={(value) => {
+                        setPeriod(value);
+                        // Update yearMonth when switching periods; set to currentYear if "Monthly" is selected
+                        if (value === "Monthly") {
+                            setYearMonth(currentYear.toString());  // Default to currentYear when "Monthly" is selected
+                        } else {
+                            setYearMonth('');  // Clear the selection otherwise
+                        }
+                    }}
                 >
                     <Select.Item label="Daily" value="Daily" />
                     <Select.Item label="Weekly" value="Weekly" />
@@ -963,12 +979,12 @@ const TypeAndPeriodSelectors = ({ period, setPeriod, type, setType, yearMonth, s
                 </Select>
             </Box>
             <Box>
-                <Text>Year-Month</Text>
+                <Text>{period === "Monthly" ? "Year" : "Year-Month"}</Text>
                 <Select
                     selectedValue={yearMonth}
                     minWidth={120}
-                    accessibilityLabel="Select Year-Month"
-                    placeholder="Select Year-Month"
+                    accessibilityLabel={`Select ${period === "Monthly" ? "Year" : "Year-Month"}`}
+                    placeholder={`Select ${period === "Monthly" ? "Year" : "Year-Month"}`}
                     _selectedItem={{
                         bg: "teal.600",
                         endIcon: <CheckIcon size="5" />
