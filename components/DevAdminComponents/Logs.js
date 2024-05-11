@@ -29,7 +29,9 @@ import {
     Modal,
     Divider,
     IconButton,
-    Popover
+    Popover,
+    Select,
+    CheckIcon
 } from "native-base";
 import { DataTable } from 'react-native-paper';
 import {
@@ -67,6 +69,8 @@ import { VictoryBar, VictoryChart, VictoryAxis, VictoryTheme, VictoryLabel } fro
 import {
     OPEN_EXCHANGE_API_KEY
 } from '@env';
+import { format, parseISO, subMonths } from "date-fns";
+
 const { width, height } = Dimensions.get('window');
 
 const firestore = getFirestore();
@@ -817,110 +821,290 @@ const CurrencyConverterComponent = () => {
 
 
 
-const fetchPaidStatsData = async (yearMonth) => {
+const fetchCurrentDate = async () => {
     try {
-        const documentRef = doc(projectExtensionFirestore, "PaidStats", yearMonth);
-        const documentSnapshot = await getDoc(documentRef);
-        const data = documentSnapshot.data();
+        const response = await axios.get("https://worldtimeapi.org/api/timezone/Asia/Tokyo");
+        const { datetime } = response.data;
+        return datetime.slice(0, 7); // Extracts YYYY-MM
+    } catch (error) {
+        console.error("Error fetching current date:", error);
+        return new Date().toISOString().slice(0, 7); // Fallback to local time if API fails
+    }
+};
 
-        // Initialize an empty array of 31 objects
-        const days = Array.from({ length: 31 }, (_, index) => ({
-            day: String(index + 1).padStart(2, "0"),
-            count: 0
-        }));
+// Fetch stats data based on type
+const fetchStatsData = async (yearMonth, type, period) => {
+    try {
+        if (period === "Monthly") {
+            // Handle fetching monthly data for the entire year
+            const year = yearMonth.split("-")[0]; // Extract the year
+            const monthlyData = Array.from({ length: 12 }, (_, index) => ({
+                value: `${year}-${(index + 1).toString().padStart(2, '0')}`, // Format: "YYYY-MM"
+                count: 0
+            }));
 
-        // Update the days with the counts from Firestore
-        Object.keys(data).forEach(day => {
-            const index = Number(day) - 1;
-            days[index].count = data[day].length;
-        });
+            // Example: Fetch each month's data
+            await Promise.all(monthlyData.map(async (month, index) => {
+                const documentRef = doc(projectExtensionFirestore, `${type}`, month.value);
+                const documentSnapshot = await getDoc(documentRef);
+                if (documentSnapshot.exists()) {
+                    const data = documentSnapshot.data() || {};
+                    month.count = Object.values(data).reduce((acc, cur) => acc + cur.length, 0); // Aggregate counts
+                }
+            }));
 
-        return days;
+            return monthlyData;
+        } else {
+            // Existing logic for daily data
+            const documentRef = doc(projectExtensionFirestore, `${type}`, `${yearMonth}`);
+            const documentSnapshot = await getDoc(documentRef);
+            const data = documentSnapshot.data() || {};
+
+            const days = Array.from({ length: 31 }, (_, index) => ({
+                value: String(index + 1).padStart(2, "0"),
+                count: 0
+            }));
+
+            Object.keys(data).forEach(day => {
+                const index = Number(day) - 1;
+                if (index >= 0 && index < days.length) {
+                    days[index].count = data[day].length;  // Assuming data[day] is an array
+                }
+            });
+
+            return days;
+        }
     } catch (error) {
         console.error("Error fetching data from Firestore:", error);
-        return Array.from({ length: 31 }, (_, index) => ({
-            day: String(index + 1).padStart(2, "0"),
-            count: 0
-        }));
+        if (period === "Monthly") {
+            return Array.from({ length: 12 }, (_, index) => ({
+                value: `${yearMonth.split("-")[0]}-${(index + 1).toString().padStart(2, '0')}`,
+                count: 0
+            }));
+        } else {
+            return Array.from({ length: 31 }, (_, index) => ({
+                value: String(index + 1).padStart(2, "0"),
+                count: 0
+            }));
+        }
     }
 };
 
-
-
-
-const fetchYearMonth = async () => {
-    try {
-        const response = await axios.get('https://worldtimeapi.org/api/timezone/Asia/Tokyo');
-        const { datetime } = response.data;
-        const yearMonth = moment(datetime).format('YYYY-MM');
-        return yearMonth;
-    } catch (error) {
-        console.error("Error fetching year and month:", error);
+// Process data based on the period
+const processData = (data, period) => {
+    if (period === "Daily") {
+        return data; // Assuming daily data doesn't need aggregation
+    } else if (period === "Weekly") {
+        // Assuming data has daily counts and needs to be aggregated into weeks
+        const weeks = Array.from({ length: 5 }, () => ({ value: '', count: 0 }));
+        data.forEach((day, index) => {
+            const weekIndex = Math.floor(index / 7); // Divide the month into 5 weeks approximately
+            if (weekIndex < weeks.length) {
+                weeks[weekIndex].value = `Week ${weekIndex + 1}`;
+                weeks[weekIndex].count += day.count;
+            }
+        });
+        return weeks;
+    } else if (period === "Monthly") {
+        // Assuming data is structured per month, each array element corresponds to a month's data
+        const months = Array.from({ length: 12 }, (_, i) => ({ value: `${(i + 1).toString().padStart(2, '0')}`, count: 0 }));
+        data.forEach((monthData, index) => {
+            if (index < months.length) {
+                months[index].value = `${(index + 1).toString().padStart(2, '0')}`; // Ensure month labels are "01", "02", etc.
+                months[index].count = monthData.count; // Assign count from the data, assuming data is pre-aggregated by month
+            }
+        });
+        return months;
     }
 };
 
+// Calculate total from data
+const calculateTotal = (data) => {
+    return data.reduce((sum, { count }) => sum + count, 0);
+};
 
+const fetchDataBasedOnType = async (date, type, period) => {
+    switch (type) {
+        case "Offer":
+            return fetchStatsData(date, 'OfferStats', period);
+        case "Orders":
+            return fetchStatsData(date, 'OrderStats', period);
+        case "Payment":
+            return fetchStatsData(date, 'PaidStats', period);
+        default:
+            return [];
+    }
+};
 
-const StatsChart = () => {
+// Type and Period selectors component
+const TypeAndPeriodSelectors = ({ period, setPeriod, type, setType, yearMonth, setYearMonth }) => {
+    const currentDate = new Date();
+    const currentYear = currentDate.getFullYear();
 
-    const [data, setData] = useState([]);
-    const [yearMonth, setYearMonth] = useState("2024-05");
-
-    useEffect(() => {
-        (async () => {
-            const yearMonth = await fetchYearMonth();
-            setYearMonth(yearMonth);
-            const result = await fetchPaidStatsData(yearMonth);
-            setData(result);
-            console.log(yearMonth);
-        })();
-    }, []);
+    // Generate options based on the period selection
+    let yearMonthOptions;
+    if (period === "Monthly") {
+        yearMonthOptions = Array.from({ length: currentYear - 2013 + 1 }, (_, i) => {
+            const year = currentYear - i;
+            return { label: `${year}`, value: `${year}` };
+        });
+    } else {
+        yearMonthOptions = Array.from({ length: 13 }, (_, i) => {
+            const date = subMonths(currentDate, i);
+            const year = date.getFullYear();
+            const month = (date.getMonth() + 1).toString().padStart(2, '0');
+            return { label: `${year}-${month}`, value: `${year}-${month}` };
+        });
+    }
 
     return (
-        <View style={{
-            flex: 1,
-            borderWidth: 1,
-            borderColor: '#FFF', // Border color
-            backgroundColor: '#FFF', // Background color
-            marginHorizontal: 5,
-            borderRadius: 5,
-        }}>
-            <VictoryChart
-                width={1000}
-                theme={VictoryTheme.material}
-                domainPadding={{ x: 20 }} // Adjust domain padding for proper fit
-            >
+        <HStack space={3}>
+            <Box>
+                <Text>Period</Text>
+                <Select
+                    selectedValue={period}
+                    minWidth={120}
+                    accessibilityLabel="Select Period"
+                    placeholder="Select Period"
+                    _selectedItem={{
+                        bg: "teal.600",
+                        endIcon: <CheckIcon size="5" />
+                    }}
+                    mt={1}
+                    onValueChange={(value) => {
+                        setPeriod(value);
+                        // Update yearMonth when switching periods; set to currentYear if "Monthly" is selected
+                        if (value === "Monthly") {
+                            setYearMonth(currentYear.toString());  // Default to currentYear when "Monthly" is selected
+                        } else {
+                            setYearMonth('');  // Clear the selection otherwise
+                        }
+                    }}
+                >
+                    <Select.Item label="Daily" value="Daily" />
+                    <Select.Item label="Weekly" value="Weekly" />
+                    <Select.Item label="Monthly" value="Monthly" />
+                </Select>
+            </Box>
+            <Box>
+                <Text>Type</Text>
+                <Select
+                    selectedValue={type}
+                    minWidth={120}
+                    accessibilityLabel="Select Type"
+                    placeholder="Select Type"
+                    _selectedItem={{
+                        bg: "teal.600",
+                        endIcon: <CheckIcon size="5" />
+                    }}
+                    mt={1}
+                    onValueChange={(value) => setType(value)}
+                >
+                    <Select.Item label="Offer" value="Offer" />
+                    <Select.Item label="Orders" value="Orders" />
+                    <Select.Item label="Payment" value="Payment" />
+                </Select>
+            </Box>
+            <Box>
+                <Text>{period === "Monthly" ? "Year" : "Year-Month"}</Text>
+                <Select
+                    selectedValue={yearMonth}
+                    minWidth={120}
+                    accessibilityLabel={`Select ${period === "Monthly" ? "Year" : "Year-Month"}`}
+                    placeholder={`Select ${period === "Monthly" ? "Year" : "Year-Month"}`}
+                    _selectedItem={{
+                        bg: "teal.600",
+                        endIcon: <CheckIcon size="5" />
+                    }}
+                    mt={1}
+                    onValueChange={(value) => setYearMonth(value)}
+                >
+                    {yearMonthOptions.map(option => (
+                        <Select.Item key={option.value} label={option.label} value={option.value} />
+                    ))}
+                </Select>
+            </Box>
+        </HStack>
+    );
+};
+
+// StatsChart component
+const StatsChart = () => {
+    const [data, setData] = useState([]);
+    const [yearMonth, setYearMonth] = useState("");
+    const [type, setType] = useState("Offer");
+    const [period, setPeriod] = useState("Daily");
+    const [currentTotal, setCurrentTotal] = useState(0);
+    const [previousTotal, setPreviousTotal] = useState(0);
+    const [currentMonthName, setCurrentMonthName] = useState("");
+    const [previousMonthName, setPreviousMonthName] = useState("");
+
+    useEffect(() => {
+        const fetchData = async () => {
+            const effectiveDate = yearMonth || await fetchCurrentDate();
+            if (!yearMonth) {
+                setYearMonth(effectiveDate); // Initialize yearMonth if not set
+            }
+            const currentData = await fetchDataBasedOnType(effectiveDate, type, period); // Ensure fetchStatsData handles type correctly
+            const processedData = processData(currentData, period);
+            const currentTotal = calculateTotal(processedData);
+
+            const previousDate = format(subMonths(parseISO(`${effectiveDate}-01`), 1), "yyyy-MM");
+            const previousData = await fetchDataBasedOnType(previousDate, type, period);
+            const processedPreviousData = processData(previousData, period);
+            const previousTotal = calculateTotal(processedPreviousData);
+
+            setData(processedData);
+            setCurrentTotal(currentTotal);
+            setPreviousTotal(previousTotal);
+            if (period !== 'Monthly') {
+                setCurrentMonthName(format(parseISO(`${effectiveDate}-01`), "MMMM"));
+                setPreviousMonthName(format(parseISO(`${previousDate}-01`), "MMMM"));
+            }
+
+        };
+
+        fetchData();
+    }, [yearMonth, type, period]); // Dependencies to trigger re-fetching and re-processing
+
+    return (
+        <Box flex={1} borderWidth={1} borderColor="#FFF" backgroundColor="#FFF" marginBottom={'5px'} marginLeft={'5px'} marginRight={'5px'} borderRadius={5} padding={3}>
+            <HStack space={4} mb={3} justifyContent="center">
+                <Box padding={2} backgroundColor="orange.100" borderRadius={5} alignItems="center">
+                    <Text style={{ fontSize: 14, color: "orange.800", fontWeight: "bold" }}>{`${previousMonthName}: ${previousTotal}`}</Text>
+                </Box>
+                <Box padding={2} backgroundColor="blue.100" borderRadius={5} alignItems="center">
+                    <Text style={{ fontSize: 14, color: "teal.800", fontWeight: "bold" }}>{`${currentMonthName}: ${currentTotal}`}</Text>
+                </Box>
+            </HStack>
+            <TypeAndPeriodSelectors
+                period={period}
+                setPeriod={setPeriod}
+                type={type}
+                setType={setType}
+                yearMonth={yearMonth}
+                setYearMonth={setYearMonth}
+            />
+            <VictoryChart width={1000} theme={VictoryTheme.material} domainPadding={{ x: period == 'Weekly' ? 40 : 20 }}>
                 <VictoryBar
                     data={data}
-                    x="day"
+                    x="value"
                     y="count"
                     style={{
-                        data: {
-                            fill: "rgba(6, 66, 244, 0.5)",
-                            cornerRadius: { top: 5, bottom: 0 }, // Round the top corners
-                        },
-                        labels: { fontSize: 12, fill: "#0642F4", } // Label color
+                        data: { fill: "rgba(6, 66, 244, 0.5)", cornerRadius: { top: 5, bottom: 0 } },
+                        labels: { fontSize: 12, fill: "#0642F4" }
                     }}
-                    labels={({ datum }) => `${datum.count == 0 ? '' : datum.count}`} // Display earnings as labels
-                    labelComponent={<VictoryLabel dy={-10} />} // Adjust label position
+                    labels={({ datum }) => `${datum.count === 0 ? '' : datum.count}`}
+                    labelComponent={<VictoryLabel dy={-10} />}
                 />
-                <VictoryAxis
-                    style={{
-                        grid: {
-                            stroke: "none" // Remove grid
-                        }
-                    }}
-                />
+                <VictoryAxis style={{ grid: { stroke: "none" } }} />
                 <VictoryAxis
                     dependentAxis
-                    style={{
-                        grid: {
-                            stroke: "none" // Remove grid
-                        }
-                    }}
+                    style={{ grid: { stroke: "none" } }}
+                    tickFormat={(tick) => `${Math.round(tick)}`}  // Format ticks as whole numbers
                 />
             </VictoryChart>
-        </View>
+        </Box>
     );
 };
 
@@ -929,6 +1113,7 @@ export default function Logs() {
     const [email, setEmail] = useState('');
     const [name, setName] = useState('');
     const loginName = useSelector((state) => state.loginName);
+    const [screenWidth, setScreenWidth] = useState(Dimensions.get('window').width);
 
     // const navigation = useNavigation();
     const navigate = useNavigate();
@@ -956,7 +1141,6 @@ export default function Logs() {
     const searchInput = useRef(null);
     const searchInputValue = searchInput.current?.value;
 
-    const screenWidth = Dimensions.get('window').width;
 
     const dispatch = useDispatch();
 
@@ -965,6 +1149,15 @@ export default function Logs() {
 
 
     useEffect(() => {
+
+        const updateWidth = () => {
+            const newWidth = Dimensions.get('window').width;
+            setScreenWidth(newWidth); // Update the screenWidth state
+        };
+
+        // Add event listener for window resize
+        Dimensions.addEventListener('change', updateWidth);
+
         const fetchData = async () => {
             try {
                 const q = query(collection(db, 'logs'), orderBy('timestamp', 'desc'));
@@ -1325,6 +1518,5 @@ export default function Logs() {
         </NativeBaseProvider>
     );
 }
-
 
 
