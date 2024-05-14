@@ -556,6 +556,15 @@ const accountListDataSlice = createSlice({
 
 // =============================== Logs ======================================== 
 
+const selectedLogsButtonSlice = createSlice({
+  name: 'selectedLogsButton',
+  initialState: 'stats',
+  reducers: {
+    setSelectedLogsButton: (state, action) => {
+      return action.payload
+    },
+  },
+})
 
 const logsDataSlice = createSlice({
   name: 'logsData',
@@ -877,6 +886,7 @@ const deleteImageVisibleSlice = createSlice({
 });
 
 // =============================== Chat Messages ========================================
+export const { setSelectedLogsButton } = selectedLogsButtonSlice.actions
 export const { setMessageTextInputHeight } = messageTextInputHeightSlice.actions
 export const { setMessageTextInputValue } = messageTextInputValueSlice.actions
 export const { setCustomInvoiceVisible } = customInvoiceVisibleSlice.actions
@@ -982,7 +992,8 @@ export const { setModelData } = modelDataSlice.actions
 const store = configureStore({
   reducer: {
 
-    // =============================== Chat Messages ========================================     
+    // =============================== Chat Messages ========================================
+    selectedLogsButton: selectedLogsButtonSlice.reducer,
     messageTextInputHeight: messageTextInputHeightSlice.reducer,
     customInvoiceVisible: customInvoiceVisibleSlice.reducer,
     messageTextInputValue: messageTextInputValueSlice.reducer,

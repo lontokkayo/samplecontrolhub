@@ -1832,7 +1832,7 @@ const StockIDAndMakeAndModel = ({
               const collectionRef = doc(projectExtensionFirestore, 'Model', data.make);
               const docSnapshot = await getDoc(collectionRef);
               if (docSnapshot.exists()) {
-                selectModelRef.current.selectIndex(globalModelDataVariable.indexOf(modelVariable.text));
+                selectModelRef.current.selectIndex(globalModelDataVariable.indexOf(modelVariable.text.toUpperCase()));
               }
             } catch (error) {
               console.error('Error fetching models data from Firebase: ', error);
@@ -1854,7 +1854,7 @@ const StockIDAndMakeAndModel = ({
           handleSetBordersWhite();
           fetchDataAndSelectIndex();
           selectStockStatus.current.selectIndex(stockStatusData.indexOf(data.stockStatus));
-          selectMakeRef.current.selectIndex(makeData.indexOf(data.make));
+          selectMakeRef.current.selectIndex(makeData.indexOf(data.make.toUpperCase()));
           // selectRegYear.current.selectIndex(globalRegYearDataVariable.indexOf(data.regYear));
           selectRegYear.current.selectIndex(globalRegYearDataVariable.indexOf(parseInt(data.regYear, 10)));
           selectRegMonth.current.selectIndex(monthNumbers.indexOf(data.regMonth));
@@ -1979,8 +1979,8 @@ const StockIDAndMakeAndModel = ({
           resetKey++;
 
           stockStatusVariable.text = data.stockStatus ? data.stockStatus : "";
-          makeVariable.text = data.make ? data.make : "";
-          modelVariable.text = data.model ? data.model : "";
+          makeVariable.text = data.make ? data.make.toUpperCase() : "";
+          modelVariable.text = data.model ? data.model.toUpperCase() : "";
           regYearVariable.text = data.regYear ? data.regYear : "";
           regMonthVariable.text = data.regMonth ? data.regMonth : "";
           portVariable.text = data.port ? data.port : "";
@@ -2042,7 +2042,7 @@ const StockIDAndMakeAndModel = ({
   const handleSuccessModalClose = useCallback(() => {
     setIsSuccessOpen(false);
 
-    selectModelRef.current.selectIndex(globalModelDataVariable.indexOf(modelVariable.text));
+    selectModelRef.current.selectIndex(globalModelDataVariable.indexOf(modelVariable.text.toUpperCase()));
     // console.log(globalModelDataVariable.indexOf(makeVariable.text));
 
 
@@ -2134,7 +2134,7 @@ const StockIDAndMakeAndModel = ({
               leftIcon={<Icon as={<MaterialIcons name="search" />} size={5} color="white" />}
               onPress={() => {
                 handleSearchPress()
-                selectModelRef.current.selectIndex(globalModelDataVariable.indexOf(modelVariable.text));
+                selectModelRef.current.selectIndex(globalModelDataVariable.indexOf(modelVariable.text.toUpperCase()));
               }}>Search</Button>
           }
         />

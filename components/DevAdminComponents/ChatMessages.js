@@ -5051,6 +5051,8 @@ const InputPaymentModalContent = () => {
     const invoiceData = useSelector((state) => state.invoiceData);
     const selectedChatData = useSelector((state) => state.selectedChatData);
     const selectedCustomerData = useSelector((state) => state.selectedCustomerData);
+    const selectedVehicleData = useSelector((state) => state.selectedVehicleData);
+
     const carImageUrl = useSelector((state) => state.carImageUrl);
 
 
@@ -5062,7 +5064,6 @@ const InputPaymentModalContent = () => {
     const totalAmountNumber = parseFloat(totalAmountString.replace(/,/g, ''));
 
     const inputAmountRef = useRef(null);
-
     const handleHistoryModalOpen = () => {
         setHistoryModalVisible(true);
 
@@ -5461,7 +5462,9 @@ Real Motor Japan`,
                     carName: selectedChatData.carData.carName,
                     customerEmail: selectedCustomerData.textEmail,
                     imageUrl: carImageUrl,
-                    referenceNumber: selectedChatData.carData.stockID,
+                    stockId: selectedChatData.carData.stockID,
+                    referenceNumber: selectedChatData.carData.referenceNumber,
+
                 };
 
                 await setDoc(docRef, {
@@ -5473,7 +5476,7 @@ Real Motor Japan`,
             }
 
         } catch (error) {
-
+            console.error(error);
         }
     }
 
@@ -5517,8 +5520,8 @@ Real Motor Japan`,
         const prepareSalesData = () => {
             // Initial data from the function call
             let salesData = {
-                id: selectedChatData.carData.stockID,
-                stock_system_id: selectedChatData.carData.jackall_id,
+                id: selectedVehicleData.jackall_id,
+                stock_system_id: selectedChatData.carData.stockID,
                 sales_date: formattedSalesDate,
                 fob: invoiceData.paymentDetails.fobPrice,
                 freight: invoiceData.paymentDetails.freightPrice,

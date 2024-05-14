@@ -61,7 +61,7 @@ import moment from 'moment';
 import { bg } from 'date-fns/locale';
 import FastImage from 'react-native-fast-image-web-support';
 import { useSelector, useDispatch } from 'react-redux';
-import { setLoginName } from './redux/store';
+import { setLoginName, setSelectedLogsButton } from './redux/store';
 import MobileViewDrawer from './SideDrawer/MobileViewDrawer';
 import SideDrawer from './SideDrawer/SideDrawer';
 import { LineChart, BarChart } from 'react-native-chart-kit';
@@ -95,7 +95,7 @@ import { useNavigate } from 'react-router-dom';
 import QRCodeScanner from './QrCodeScanner/QrCodeScanner';
 
 let selectedScreen = 'LOGS'
-
+let defaultSelectedButton = 'stats'
 
 
 
@@ -194,6 +194,8 @@ const LogsTable = () => {
             dispatch(setLogsData(logsDatabaseData));
             setLastVisible(documents.docs[documents.docs.length - 1]);
             setFirstVisible(documents.docs[0]);
+            dispatch(setLoadingModalVisible(false));
+
         });
         return () => unsubscribe();
 
@@ -505,7 +507,7 @@ const LogsTable = () => {
                 </View>
             ))}
 
-            <View style={{ flexDirection: 'row', width: screenWidth < 960 ? '90%' : '30%', alignSelf: 'center', }}>
+            <View style={{ flexDirection: 'row', width: screenWidth <= 960 ? '100%' : '30%', alignSelf: 'center', backgroundColor: '#A6BCFE', }}>
 
                 <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
                     <TouchableOpacity
@@ -563,6 +565,7 @@ const addLogToCollection = async (data) => {
 };
 
 const CurrencyConverterComponent = () => {
+    const dispatch = useDispatch();
     const [isLoading, setIsLoading] = useState(false);
     const [isYesLoading, setIsYesLoading] = useState(false);
     const [successModalVisible, setSuccessModalVisible] = useState(false);
@@ -576,13 +579,17 @@ const CurrencyConverterComponent = () => {
     const screenWidth = Dimensions.get('window').width;
 
     useEffect(() => {
+
+
         const unsubscribe = onSnapshot(
             doc(projectExtensionFirestore, 'currency', 'currency'),
             (snapshot) => {
                 const data = snapshot.data();
                 setTodayCurrency(data?.todayCurrency);
                 setTimestampCurrency(data?.timestampCurrency);
+                dispatch(setLoadingModalVisible(false));
             }
+
         );
 
         return () => unsubscribe();
@@ -756,14 +763,15 @@ const CurrencyConverterComponent = () => {
     return (
         <>
             <Box
-                flex={1}
                 borderWidth={1}
                 borderColor="gray.200"
                 borderRadius={4}
                 overflow="hidden"
                 margin={1}
                 alignItems={'center'}
-                bg="#F5F5F5">
+                bg="#F5F5F5"
+                style={{ width: screenWidth <= 960 ? '98%' : 700, height: 400, alignSelf: 'center', }}
+            >
                 <Image
                     source={require('../../assets/currency_background.jpg')}
                     alt="Background Image"
@@ -833,33 +841,60 @@ const fetchCurrentDate = async () => {
 };
 
 // Fetch stats data based on type
-const fetchStatsData = async (yearMonth, type) => {
+const fetchStatsData = async (yearMonth, type, period) => {
     try {
-        // Mock of documentRef, should be your Firestore reference
-        const documentRef = doc(projectExtensionFirestore, `${type}`, `${yearMonth}`);
-        const documentSnapshot = await getDoc(documentRef);
-        // const documentSnapshot = { data: () => ({ '01': [120], '02': [150], '03': [90] }) }; // Mock response
-        const data = documentSnapshot.data() || {};
+        if (period === "Monthly") {
+            // Handle fetching monthly data for the entire year
+            const year = yearMonth.split("-")[0]; // Extract the year
+            const monthlyData = Array.from({ length: 12 }, (_, index) => ({
+                value: `${year}-${(index + 1).toString().padStart(2, '0')}`, // Format: "YYYY-MM"
+                count: 0
+            }));
 
-        const days = Array.from({ length: 31 }, (_, index) => ({
-            value: String(index + 1).padStart(2, "0"),
-            count: 0
-        }));
+            // Example: Fetch each month's data
+            await Promise.all(monthlyData.map(async (month, index) => {
+                const documentRef = doc(projectExtensionFirestore, `${type}`, month.value);
+                const documentSnapshot = await getDoc(documentRef);
+                if (documentSnapshot.exists()) {
+                    const data = documentSnapshot.data() || {};
+                    month.count = Object.values(data).reduce((acc, cur) => acc + cur.length, 0); // Aggregate counts
+                }
+            }));
 
-        Object.keys(data).forEach(day => {
-            const index = Number(day) - 1;
-            if (index >= 0 && index < days.length) {
-                days[index].count = data[day].length;  // Assuming data[day] is an array
-            }
-        });
+            return monthlyData;
+        } else {
+            // Existing logic for daily data
+            const documentRef = doc(projectExtensionFirestore, `${type}`, `${yearMonth}`);
+            const documentSnapshot = await getDoc(documentRef);
+            const data = documentSnapshot.data() || {};
 
-        return days;
+            const days = Array.from({ length: 31 }, (_, index) => ({
+                value: String(index + 1).padStart(2, "0"),
+                count: 0
+            }));
+
+            Object.keys(data).forEach(day => {
+                const index = Number(day) - 1;
+                if (index >= 0 && index < days.length) {
+                    days[index].count = data[day].length;  // Assuming data[day] is an array
+                }
+            });
+
+            return days;
+        }
     } catch (error) {
         console.error("Error fetching data from Firestore:", error);
-        return Array.from({ length: 31 }, (_, index) => ({
-            value: String(index + 1).padStart(2, "0"),
-            count: 0
-        }));
+        if (period === "Monthly") {
+            return Array.from({ length: 12 }, (_, index) => ({
+                value: `${yearMonth.split("-")[0]}-${(index + 1).toString().padStart(2, '0')}`,
+                count: 0
+            }));
+        } else {
+            return Array.from({ length: 31 }, (_, index) => ({
+                value: String(index + 1).padStart(2, "0"),
+                count: 0
+            }));
+        }
     }
 };
 
@@ -896,14 +931,14 @@ const calculateTotal = (data) => {
     return data.reduce((sum, { count }) => sum + count, 0);
 };
 
-const fetchDataBasedOnType = async (date, type) => {
+const fetchDataBasedOnType = async (date, type, period) => {
     switch (type) {
         case "Offer":
-            return fetchStatsData(date, 'OfferStats');
+            return fetchStatsData(date, 'OfferStats', period);
         case "Orders":
-            return fetchStatsData(date, 'OrderStats');
+            return fetchStatsData(date, 'OrderStats', period);
         case "Payment":
-            return fetchStatsData(date, 'PaidStats');
+            return fetchStatsData(date, 'PaidStats', period);
         default:
             return [];
     }
@@ -913,6 +948,7 @@ const fetchDataBasedOnType = async (date, type) => {
 const TypeAndPeriodSelectors = ({ period, setPeriod, type, setType, yearMonth, setYearMonth }) => {
     const currentDate = new Date();
     const currentYear = currentDate.getFullYear();
+    const screenWidth = Dimensions.get('window').width;
 
     // Generate options based on the period selection
     let yearMonthOptions;
@@ -931,8 +967,8 @@ const TypeAndPeriodSelectors = ({ period, setPeriod, type, setType, yearMonth, s
     }
 
     return (
-        <HStack space={3}>
-            <Box>
+        <Box flexDirection={screenWidth <= 960 ? 'column' : 'row'} space={3}>
+            <Box marginX={'10px'}>
                 <Text>Period</Text>
                 <Select
                     selectedValue={period}
@@ -959,7 +995,7 @@ const TypeAndPeriodSelectors = ({ period, setPeriod, type, setType, yearMonth, s
                     <Select.Item label="Monthly" value="Monthly" />
                 </Select>
             </Box>
-            <Box>
+            <Box marginX={'10px'}>
                 <Text>Type</Text>
                 <Select
                     selectedValue={type}
@@ -978,7 +1014,7 @@ const TypeAndPeriodSelectors = ({ period, setPeriod, type, setType, yearMonth, s
                     <Select.Item label="Payment" value="Payment" />
                 </Select>
             </Box>
-            <Box>
+            <Box marginX={'10px'}>
                 <Text>{period === "Monthly" ? "Year" : "Year-Month"}</Text>
                 <Select
                     selectedValue={yearMonth}
@@ -997,7 +1033,7 @@ const TypeAndPeriodSelectors = ({ period, setPeriod, type, setType, yearMonth, s
                     ))}
                 </Select>
             </Box>
-        </HStack>
+        </Box>
     );
 };
 
@@ -1011,73 +1047,309 @@ const StatsChart = () => {
     const [previousTotal, setPreviousTotal] = useState(0);
     const [currentMonthName, setCurrentMonthName] = useState("");
     const [previousMonthName, setPreviousMonthName] = useState("");
-
+    const screenWidth = Dimensions.get('window').width;
+    const dispatch = useDispatch();
     useEffect(() => {
         const fetchData = async () => {
             const effectiveDate = yearMonth || await fetchCurrentDate();
             if (!yearMonth) {
                 setYearMonth(effectiveDate); // Initialize yearMonth if not set
             }
-            const currentData = await fetchDataBasedOnType(effectiveDate, type); // Ensure fetchStatsData handles type correctly
+            const currentData = await fetchDataBasedOnType(effectiveDate, type, period); // Ensure fetchStatsData handles type correctly
             const processedData = processData(currentData, period);
             const currentTotal = calculateTotal(processedData);
 
             const previousDate = format(subMonths(parseISO(`${effectiveDate}-01`), 1), "yyyy-MM");
-            const previousData = await fetchDataBasedOnType(previousDate, type);
+            const previousData = await fetchDataBasedOnType(previousDate, type, period);
             const processedPreviousData = processData(previousData, period);
             const previousTotal = calculateTotal(processedPreviousData);
 
             setData(processedData);
             setCurrentTotal(currentTotal);
             setPreviousTotal(previousTotal);
-            setCurrentMonthName(format(parseISO(`${effectiveDate}-01`), "MMMM"));
-            setPreviousMonthName(format(parseISO(`${previousDate}-01`), "MMMM"));
+            if (period !== 'Monthly') {
+                setCurrentMonthName(format(parseISO(`${effectiveDate}-01`), "MMMM"));
+                setPreviousMonthName(format(parseISO(`${previousDate}-01`), "MMMM"));
+            }
+
         };
 
         fetchData();
+        dispatch(setLoadingModalVisible(false));
     }, [yearMonth, type, period]); // Dependencies to trigger re-fetching and re-processing
 
+    const counts = data.map(d => d.count).filter(count => count !== 0);
+    const minCount = Math.min(...counts);
+    const maxCount = Math.max(...counts);
+
+    const MobileViewChart = () => {
+        const maxValue = Math.max(...data.map(d => d.value));
+
+        return (
+            <Box
+                flex={1}
+                borderWidth={1}
+                borderColor="#FFF"
+                backgroundColor="#FFF"
+                marginBottom={screenWidth <= 960 ? '1px' : '5px'}
+                marginLeft={screenWidth <= 960 ? '1px' : '5px'}
+                marginRight={screenWidth <= 960 ? '1px' : '5px'}
+                borderRadius={5}
+                padding={2}
+            >
+                <HStack space={4} mb={3} justifyContent="center">
+                    <Box padding={2} backgroundColor="orange.100" borderRadius={5} alignItems="center">
+                        <Text style={{ fontSize: 14, color: "orange.800", fontWeight: "bold" }}>{`${previousMonthName}: ${previousTotal}`}</Text>
+                    </Box>
+                    <Box padding={2} backgroundColor="blue.100" borderRadius={5} alignItems="center">
+                        <Text style={{ fontSize: 14, color: "teal.800", fontWeight: "bold" }}>{`${currentMonthName}: ${currentTotal}`}</Text>
+                    </Box>
+                </HStack>
+                <TypeAndPeriodSelectors
+                    period={period}
+                    setPeriod={setPeriod}
+                    type={type}
+                    setType={setType}
+                    yearMonth={yearMonth}
+                    setYearMonth={setYearMonth}
+                />
+                <VictoryChart
+                    width={1000}
+                    height={1500}  // Increased height for more space
+                    theme={VictoryTheme.material}
+                    domainPadding={{ y: period === 'Weekly' ? 60 : 40 }}
+                >
+                    <VictoryAxis
+                        style={{ grid: { stroke: "#F3F3F3", strokeDasharray: "none" } }}  // Solid grid lines
+                        tickFormat={(tick) => `${Math.round(tick)}`}  // Format ticks as whole numbers
+                        domain={[0, maxValue]}  // Adjust domain to start at 0
+                    />
+                    <VictoryAxis
+                        dependentAxis
+                        style={{ grid: { stroke: "#F3F3F3", strokeDasharray: "none" } }}  // Solid grid lines
+                        tickFormat={(tick) => tick}  // Format ticks as whole numbers
+                        domain={[1, 0]}  // Reverse the domain to put 1 on top
+                    />
+
+                    <VictoryBar
+                        data={data}
+                        x="value"
+                        y="count"
+                        horizontal={true}
+                        cornerRadius={8}
+                        style={{
+                            data: {
+                                fill: ({ datum }) => {
+                                    if (minCount === maxCount) return "#16A34A";
+                                    if (datum.count === minCount) return "#FF0000";
+                                    if (datum.count === maxCount) return "#16A34A";
+                                    return "rgba(6, 66, 244, 1)";
+                                }
+                            },
+                            labels: {
+                                fontSize: 20, fill: ({ datum }) => {
+                                    if (minCount === maxCount) return "#16A34A";
+                                    if (datum.count === minCount) return "#FF0000";
+                                    if (datum.count === maxCount) return "#16A34A";
+                                    return "rgba(6, 66, 244, 1)";
+                                }
+                            }
+                        }}
+                        labels={({ datum }) => `${datum.count === 0 ? '' : datum.count}`}
+                        labelComponent={<VictoryLabel dx={10} />}
+                    />
+
+                </VictoryChart>
+            </Box>
+        );
+    };
+
+
+    const DesktopViewChart = () => {
+
+
+        return (
+            <Box
+                flex={1}
+                borderWidth={1}
+                borderColor="#FFF"
+                backgroundColor="#FFF"
+                marginBottom={screenWidth <= 960 ? '1px' : '5px'}
+                marginLeft={screenWidth <= 960 ? '1px' : '5px'}
+                marginRight={screenWidth <= 960 ? '1px' : '5px'}
+                borderRadius={5}
+                padding={screenWidth <= 960 ? 2 : 5}
+            >
+                <HStack space={4} mb={3} justifyContent="center">
+                    <Box padding={2} backgroundColor="orange.100" borderRadius={5} alignItems="center">
+                        <Text style={{ fontSize: 14, color: "orange.800", fontWeight: "bold" }}>{`${previousMonthName}: ${previousTotal}`}</Text>
+                    </Box>
+                    <Box padding={2} backgroundColor="blue.100" borderRadius={5} alignItems="center">
+                        <Text style={{ fontSize: 14, color: "teal.800", fontWeight: "bold" }}>{`${currentMonthName}: ${currentTotal}`}</Text>
+                    </Box>
+                </HStack>
+                <TypeAndPeriodSelectors
+                    period={period}
+                    setPeriod={setPeriod}
+                    type={type}
+                    setType={setType}
+                    yearMonth={yearMonth}
+                    setYearMonth={setYearMonth}
+                />
+                <VictoryChart
+                    width={1000}
+                    theme={VictoryTheme.material}
+                    domainPadding={{ x: period === 'Weekly' ? 40 : 20 }}
+                >
+                    <VictoryAxis
+                        style={{ grid: { stroke: "#F3F3F3", strokeDasharray: "none" } }}  // Solid grid lines
+                    />
+                    <VictoryAxis
+                        dependentAxis
+                        style={{ grid: { stroke: "#F3F3F3", strokeDasharray: "none" } }}  // Solid grid lines
+                        tickFormat={(tick) => `${Math.round(tick)}`}  // Format ticks as whole numbers
+                    />
+                    <VictoryBar
+                        data={data}
+                        x="value"
+                        y="count"
+                        cornerRadius={7}
+                        style={{
+                            data: {
+                                fill: ({ datum }) => {
+                                    if (minCount === maxCount) return "#16A34A";
+                                    if (datum.count === minCount) return "#FF0000";
+                                    if (datum.count === maxCount) return "#16A34A";
+                                    return "rgba(6, 66, 244, 1)";
+                                }
+                            },
+                            labels: {
+                                fontSize: 12, fill: ({ datum }) => {
+                                    if (minCount === maxCount) return "#16A34A";
+                                    if (datum.count === minCount) return "#FF0000";
+                                    if (datum.count === maxCount) return "#16A34A";
+                                    return "rgba(6, 66, 244, 1)";
+                                }
+                            }
+                        }}
+                        labels={({ datum }) => `${datum.count === 0 ? '' : datum.count}`}
+                        labelComponent={<VictoryLabel dy={-10} />}
+                    />
+                </VictoryChart>
+            </Box>
+        );
+    }
+
     return (
-        <Box flex={1} borderWidth={1} borderColor="#FFF" backgroundColor="#FFF" marginBottom={'5px'} marginLeft={'5px'} marginRight={'5px'} borderRadius={5} padding={3}>
-            <HStack space={4} mb={3} justifyContent="center">
-                <Box padding={2} backgroundColor="orange.100" borderRadius={5} alignItems="center">
-                    <Text style={{ fontSize: 14, color: "orange.800", fontWeight: "bold" }}>{`${previousMonthName}: ${previousTotal}`}</Text>
-                </Box>
-                <Box padding={2} backgroundColor="blue.100" borderRadius={5} alignItems="center">
-                    <Text style={{ fontSize: 14, color: "teal.800", fontWeight: "bold" }}>{`${currentMonthName}: ${currentTotal}`}</Text>
-                </Box>
-            </HStack>
-            <TypeAndPeriodSelectors
-                period={period}
-                setPeriod={setPeriod}
-                type={type}
-                setType={setType}
-                yearMonth={yearMonth}
-                setYearMonth={setYearMonth}
-            />
-            <VictoryChart width={1000} theme={VictoryTheme.material} domainPadding={{ x: period == 'Weekly' ? 40 : 20 }}>
-                <VictoryBar
-                    data={data}
-                    x="value"
-                    y="count"
-                    style={{
-                        data: { fill: "rgba(6, 66, 244, 0.5)", cornerRadius: { top: 5, bottom: 0 } },
-                        labels: { fontSize: 12, fill: "#0642F4" }
-                    }}
-                    labels={({ datum }) => `${datum.count === 0 ? '' : datum.count}`}
-                    labelComponent={<VictoryLabel dy={-10} />}
-                />
-                <VictoryAxis style={{ grid: { stroke: "none" } }} />
-                <VictoryAxis
-                    dependentAxis
-                    style={{ grid: { stroke: "none" } }}
-                    tickFormat={(tick) => `${Math.round(tick)}`}  // Format ticks as whole numbers
-                />
-            </VictoryChart>
-        </Box>
+        <>
+            {screenWidth <= 960 ? <MobileViewChart /> : <DesktopViewChart />}
+        </>
     );
 };
 
+
+
+const LogsNavigation = () => {
+
+    const screenWidth = Dimensions.get('window').width;
+
+    const dispatch = useDispatch();
+    const [selectedButtonState, setSelectedButtonState] = useState(defaultSelectedButton);
+
+
+    const handlePress = (button) => {
+        if (button !== selectedButtonState) {
+            dispatch(setLoadingModalVisible(true));
+        }
+        dispatch(setSelectedLogsButton(button));
+        setSelectedButtonState(button);
+    };
+
+    return (
+        <View style={{ flexDirection: 'row', justifyContent: 'center', alignItems: 'center', width: screenWidth >= 960 ? '50%' : '90%' }}>
+
+            <TouchableOpacity
+                onPress={() => handlePress('stats')}
+                style={{
+                    borderRadius: 5,
+                    flex: 1,
+                    padding: 10,
+                    margin: 10,
+                    borderWidth: 1,
+                    borderColor: 'white',
+                    backgroundColor: selectedButtonState === 'stats' ? '#0642F4' : 'transparent',
+                    flexDirection: 'row',
+                }}
+            >
+                <Ionicons
+                    name="stats-chart" // The icon name from MaterialIcons
+                    size={20} // Set the size of the icon
+                    color={selectedButtonState === 'stats' ? 'white' : 'black'} // Set the color based on active state
+                />
+                <Text style={{ color: selectedButtonState === 'stats' ? 'white' : 'black', fontWeight: 'bold', marginLeft: 5, }}>Stats</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+                onPress={() => handlePress('logs')}
+                style={{
+                    borderRadius: 5,
+                    flex: 1,
+                    padding: 10,
+                    margin: 10,
+                    borderWidth: 1,
+                    borderColor: 'white',
+                    backgroundColor: selectedButtonState === 'logs' ? '#0642F4' : 'transparent',
+                    flexDirection: 'row',
+                }}
+            >
+                <MaterialIcons
+                    name="history" // The icon name from MaterialIcons
+                    size={20} // Set the size of the icon
+                    color={selectedButtonState === 'logs' ? 'white' : 'black'} // Set the color based on active state
+                />
+                <Text style={{ color: selectedButtonState === 'logs' ? 'white' : 'black', fontWeight: 'bold', marginLeft: 5, }}>Logs</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+                onPress={() => handlePress('currency')}
+                style={{
+                    borderRadius: 5,
+                    flex: 1,
+                    padding: 10,
+                    margin: 10,
+                    borderWidth: 1,
+                    borderColor: 'white',
+                    backgroundColor: selectedButtonState === 'currency' ? '#0642F4' : 'transparent',
+                    flexDirection: 'row',
+                }}
+            >
+                <Ionicons
+                    name="logo-yen"
+                    size={20} // Set the size of the icon
+                    color={selectedButtonState === 'currency' ? 'white' : 'black'} // Set the color based on active state
+                />
+                <Text style={{ color: selectedButtonState === 'currency' ? 'white' : 'black', fontWeight: 'bold', marginLeft: 5, }}>Currency</Text>
+            </TouchableOpacity>
+
+        </View>
+    );
+}
+
+
+const NavigatePage = () => {
+    const selectedLogsButton = useSelector((state) => state.selectedLogsButton);
+    const screenWidth = Dimensions.get('window').width;
+
+    if (selectedLogsButton === 'stats') {
+        return <View style={{ flex: screenWidth <= 960 ? null : 1, }}><StatsChart /></View>;
+    }
+    if (selectedLogsButton === 'logs') {
+        return <View style={{ flex: 1, }}><LogsTable /></View>;
+    }
+    if (selectedLogsButton === 'currency') {
+        return <View><CurrencyConverterComponent /></View>;
+    }
+};
 
 export default function Logs() {
     const [email, setEmail] = useState('');
@@ -1429,7 +1701,7 @@ export default function Logs() {
                     {showDrawerIcon && <MobileViewDrawer
                         selectedScreen={selectedScreen} />} */}
 
-                    <Box w={[150, 200, 250, 0]} h={[6, 8, 10, 10]} marginBottom={1.5} marginTop={1.5} marginLeft={[3, 3, 3, 10]} >
+                    {/* <Box w={[150, 200, 250, 0]} h={[6, 8, 10, 10]} marginBottom={1.5} marginTop={1.5} marginLeft={[3, 3, 3, 10]} >
                         <FastImage
                             source={{
                                 uri: 'https://firebasestorage.googleapis.com/v0/b/samplermj.appspot.com/o/C-HUB%20Logos%2FC-HUB%20LOGO%20HALF.png?alt=media&token=7ce6aef2-0527-40c7-b1ce-e47079e144df',
@@ -1438,7 +1710,7 @@ export default function Logs() {
                             resizeMode={FastImage.resizeMode.stretch}
                             style={styles.image}
                         />
-                    </Box>
+                    </Box> */}
 
 
                     <View style={{ alignItems: 'center', flex: 1 }}>
@@ -1450,43 +1722,20 @@ export default function Logs() {
                 </Box>
 
                 {/* Content */}
-                <Box flex={[1]} flexDirection="row" >
+
+                <View style={{ flex: 1, }}>
+
+                    <LogsNavigation />
 
 
-                    {/* Main Content */}
-                    <Box flex={1} flexGrow={1} minHeight={0} flexDirection={screenWidth <= 960 ? 'column' : 'row'}>
-                        {/* Main Content Content */}
+                    <NavigatePage />
 
 
+                </View>
 
-                        <View style={{ flex: 1, }} >
-                            <CurrencyConverterComponent />
-                            <StatsChart />
-                        </View>
-
-
-
-                        <Box flex={1} height={'100%'}>
-                            <ScrollView flex={1}>
-                                <LogsTable />
-                            </ScrollView>
-
-
-                        </Box>
-
-
-
-
-
-
-
-
-                    </Box>
-                </Box>
             </Box>
             <LoadingModal />
         </NativeBaseProvider>
     );
 }
-
 
