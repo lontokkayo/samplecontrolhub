@@ -1,10 +1,10 @@
 import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
-import { View, TouchableOpacity, StyleSheet, Dimensions, TextInput, Keyboard } from 'react-native';
+import { View, TouchableOpacity, StyleSheet, Dimensions, TextInput, Keyboard, Pressable, } from 'react-native';
 import {
     Input,
     Icon,
     Stack,
-    Pressable,
+
     Center,
     PresenceTransition,
     NativeBaseProvider,
@@ -31,7 +31,8 @@ import {
     IconButton,
     Popover,
     Select,
-    CheckIcon
+    CheckIcon,
+    FlatList
 } from "native-base";
 import { DataTable } from 'react-native-paper';
 import {
@@ -61,15 +62,19 @@ import moment from 'moment';
 import { bg } from 'date-fns/locale';
 import FastImage from 'react-native-fast-image-web-support';
 import { useSelector, useDispatch } from 'react-redux';
-import { setLoginName, setSelectedLogsButton } from './redux/store';
+import { setLoginName, setSelectedLogsButton, setStatsData, setLogsData, setLoadingModalVisible, setStatsModalVisible } from './redux/store';
 import MobileViewDrawer from './SideDrawer/MobileViewDrawer';
 import SideDrawer from './SideDrawer/SideDrawer';
 import { LineChart, BarChart } from 'react-native-chart-kit';
-import { VictoryBar, VictoryChart, VictoryAxis, VictoryTheme, VictoryLabel } from 'victory';
+import { VictoryBar, VictoryChart, VictoryAxis, VictoryTheme, VictoryLabel, VictoryVoronoiContainer } from 'victory';
 import {
     OPEN_EXCHANGE_API_KEY
 } from '@env';
 import { format, parseISO, subMonths } from "date-fns";
+import Svg, { Rect } from 'react-native-svg';
+
+import { AES } from 'crypto-js';
+import { CRYPTO_KEY, CRYPTO_KEY_API } from '@env';
 
 const { width, height } = Dimensions.get('window');
 
@@ -87,16 +92,14 @@ const getEmailOfCurrentUser = () => {
 
 // const Drawer = createDrawerNavigator();
 
-import {
-    setLogsData,
-    setLoadingModalVisible,
-} from './redux/store';
+
 import { useNavigate } from 'react-router-dom';
 import QRCodeScanner from './QrCodeScanner/QrCodeScanner';
 
 let selectedScreen = 'LOGS'
 let defaultSelectedButton = 'stats'
-
+let globalCustomerId;
+let globalChatId;
 
 
 
@@ -841,24 +844,39 @@ const fetchCurrentDate = async () => {
 };
 
 // Fetch stats data based on type
+// Fetch stats data based on type
 const fetchStatsData = async (yearMonth, type, period) => {
     try {
         if (period === "Monthly") {
             // Handle fetching monthly data for the entire year
             const year = yearMonth.split("-")[0]; // Extract the year
-            const monthlyData = Array.from({ length: 12 }, (_, index) => ({
-                value: `${year}-${(index + 1).toString().padStart(2, '0')}`, // Format: "YYYY-MM"
-                count: 0
-            }));
-
-            // Example: Fetch each month's data
-            await Promise.all(monthlyData.map(async (month, index) => {
-                const documentRef = doc(projectExtensionFirestore, `${type}`, month.value);
+            const monthlyData = await Promise.all(Array.from({ length: 12 }, async (_, index) => {
+                const monthValue = `${year}-${(index + 1).toString().padStart(2, '0')}`; // Format: "YYYY-MM"
+                const documentRef = doc(projectExtensionFirestore, `${type}`, monthValue);
                 const documentSnapshot = await getDoc(documentRef);
+
+                let count = 0;
+                let data = [];
+
                 if (documentSnapshot.exists()) {
-                    const data = documentSnapshot.data() || {};
-                    month.count = Object.values(data).reduce((acc, cur) => acc + cur.length, 0); // Aggregate counts
+                    const docData = documentSnapshot.data() || {};
+                    count = Object.values(docData).reduce((acc, cur) => acc + cur.length, 0); // Aggregate counts
+
+                    // Fetch data for each field (assuming each field contains an array of items)
+                    const fieldPromises = Object.keys(docData).map(async (field) => {
+                        const fieldData = docData[field];
+                        // Example: Adjust the way fieldData is fetched or processed if necessary
+                        return { [field]: fieldData };
+                    });
+
+                    data = await Promise.all(fieldPromises);
                 }
+
+                return {
+                    value: monthValue,
+                    count,
+                    data
+                };
             }));
 
             return monthlyData;
@@ -866,19 +884,32 @@ const fetchStatsData = async (yearMonth, type, period) => {
             // Existing logic for daily data
             const documentRef = doc(projectExtensionFirestore, `${type}`, `${yearMonth}`);
             const documentSnapshot = await getDoc(documentRef);
-            const data = documentSnapshot.data() || {};
+            const docData = documentSnapshot.data() || {};
 
-            const days = Array.from({ length: 31 }, (_, index) => ({
-                value: String(index + 1).padStart(2, "0"),
-                count: 0
-            }));
+            const days = await Promise.all(Array.from({ length: 31 }, async (_, index) => {
+                const dayValue = String(index + 1).padStart(2, "0");
+                let count = 0;
+                let data = [];
 
-            Object.keys(data).forEach(day => {
-                const index = Number(day) - 1;
-                if (index >= 0 && index < days.length) {
-                    days[index].count = data[day].length;  // Assuming data[day] is an array
+                if (docData[dayValue]) {
+                    const dayData = docData[dayValue];
+                    count = dayData.length;  // Assuming dayData is an array
+
+                    // Fetch data for each field (assuming each field contains an array of items)
+                    const fieldPromises = dayData.map(async (item) => {
+                        // Example: Adjust the way item is fetched or processed if necessary
+                        return item;
+                    });
+
+                    data = await Promise.all(fieldPromises);
                 }
-            });
+
+                return {
+                    value: dayValue,
+                    count,
+                    data
+                };
+            }));
 
             return days;
         }
@@ -887,39 +918,48 @@ const fetchStatsData = async (yearMonth, type, period) => {
         if (period === "Monthly") {
             return Array.from({ length: 12 }, (_, index) => ({
                 value: `${yearMonth.split("-")[0]}-${(index + 1).toString().padStart(2, '0')}`,
-                count: 0
+                count: 0,
+                data: []
             }));
         } else {
             return Array.from({ length: 31 }, (_, index) => ({
                 value: String(index + 1).padStart(2, "0"),
-                count: 0
+                count: 0,
+                data: []
             }));
         }
     }
 };
-
 // Process data based on the period
 const processData = (data, period) => {
     if (period === "Daily") {
         return data; // Assuming daily data doesn't need aggregation
     } else if (period === "Weekly") {
         // Assuming data has daily counts and needs to be aggregated into weeks
-        const weeks = Array.from({ length: 5 }, () => ({ value: '', count: 0 }));
+        const weeks = Array.from({ length: 5 }, () => ({ value: '', count: 0, data: [] }));
         data.forEach((day, index) => {
             const weekIndex = Math.floor(index / 7); // Divide the month into 5 weeks approximately
             if (weekIndex < weeks.length) {
                 weeks[weekIndex].value = `Week ${weekIndex + 1}`;
                 weeks[weekIndex].count += day.count;
+                weeks[weekIndex].data = weeks[weekIndex].data.concat(day.data);
             }
         });
         return weeks;
     } else if (period === "Monthly") {
         // Assuming data is structured per month, each array element corresponds to a month's data
-        const months = Array.from({ length: 12 }, (_, i) => ({ value: `${(i + 1).toString().padStart(2, '0')}`, count: 0 }));
+        const months = Array.from({ length: 12 }, (_, i) => ({ value: `${(i + 1).toString().padStart(2, '0')}`, count: 0, data: [] }));
         data.forEach((monthData, index) => {
             if (index < months.length) {
                 months[index].value = `${(index + 1).toString().padStart(2, '0')}`; // Ensure month labels are "01", "02", etc.
                 months[index].count = monthData.count; // Assign count from the data, assuming data is pre-aggregated by month
+                monthData.data.forEach(day => {
+                    // Sort the keys to ensure data is processed in the correct order of days
+                    Object.keys(day).sort((a, b) => parseInt(a, 10) - parseInt(b, 10)).forEach(dayKey => {
+                        const dayEntries = day[dayKey];
+                        months[index].data = months[index].data.concat(dayEntries);
+                    });
+                });
             }
         });
         return months;
@@ -1037,7 +1077,257 @@ const TypeAndPeriodSelectors = ({ period, setPeriod, type, setType, yearMonth, s
     );
 };
 
+const encryptData = (data) => {
+    try {
+        const secretKey = CRYPTO_KEY.toString();
+        return AES.encrypt(data, secretKey).toString();
+    } catch (error) {
+        console.error("Error encrypting data:", error);
+        // useNavigate(`/devadmin/chat-messages`);
+
+        // Handle the encryption error or return a fallback
+        return null; // or handle it in another appropriate way
+    }
+};
+
+const handleChatPressNewTab = async (chatId) => {
+    const encryptedChatId = encryptData(chatId);
+    const encodedChatId = encodeURIComponent(encryptedChatId); // URL-encode the encrypted data
+
+    // Assuming chatId is already properly encoded and needs no further encoding
+    const path = `/top/chat-messages/${encodedChatId}`;
+    // Construct the URL for hash-based routing
+    const baseUrl = window.location.origin + window.location.pathname;
+    const fullPath = `${baseUrl}#${path}`;
+    window.open(fullPath, '_blank');
+
+    // dispatch(setActiveChatId(chatId));
+
+    // globalCustomerId = customerId;
+    globalChatId = chatId;
+
+    console.log(fullPath)
+};
+
+const renderModalContent = () => {
+    const [displayedTransactions, setDisplayedTransactions] = useState([]);
+    const [loadingMore, setLoadingMore] = useState(false);
+    const [hoveredIndex, setHoveredIndex] = useState(null);
+    const statsData = useSelector((state) => state.statsData);
+
+    useEffect(() => {
+        if (statsData && statsData.length > 0) {
+            setDisplayedTransactions(statsData.slice(-5)); // Show the last 5 transactions
+        }
+    }, [statsData]);
+
+    const loadMorePayments = () => {
+        if (loadingMore) return; // Prevent multiple loads
+
+        const remainingItems = statsData.length - displayedTransactions.length;
+        const nextItemsCount = remainingItems >= 5 ? 5 : remainingItems;
+        const nextItems = statsData.slice(statsData.length - displayedTransactions.length - nextItemsCount, statsData.length - displayedTransactions.length);
+
+        if (nextItems.length === 0) return; // Stop loading if no new data
+
+        setLoadingMore(true);
+
+        setTimeout(() => { // Simulate network request
+            setDisplayedTransactions((prevTransactions) => [...nextItems, ...prevTransactions]); // Prepend new items
+            setLoadingMore(false);
+        }, 500); // Adjust the timeout as needed
+    };
+
+    const isCloseToBottom = ({ layoutMeasurement, contentOffset, contentSize }) => {
+        return layoutMeasurement.height + contentOffset.y >= contentSize.height - 20;
+    };
+
+    return (
+
+        <ScrollView
+            style={{ flex: 1, paddingHorizontal: 5, maxHeight: 500 }}
+            onScroll={({ nativeEvent }) => {
+                if (isCloseToBottom(nativeEvent)) {
+                    loadMorePayments();
+                }
+            }}
+            scrollEventThrottle={400} // Adjust as needed
+        >
+            {displayedTransactions.slice().reverse().map((item, index) => {
+                const isHovered = hoveredIndex === index;
+
+                return (
+                    <Pressable
+                        key={index}
+                        onPress={() => handleChatPressNewTab(`chat_${item.stockId}_${item.customerEmail}`)}
+                        onMouseEnter={() => setHoveredIndex(index)}
+                        onMouseLeave={() => setHoveredIndex(null)}
+                        style={{
+                            marginBottom: 15,
+                            backgroundColor: isHovered ? '#F2F2F2' : '#FFFFFF',
+                            borderRadius: 10,
+                            shadowColor: '#000',
+                            shadowOffset: { width: 0, height: 2 },
+                            shadowOpacity: 0.1,
+                            shadowRadius: 2,
+                            elevation: 3,
+                            padding: 5,
+                            borderBottomWidth: 1,
+                            borderBottomColor: '#eee',
+                            flexDirection: 'row',
+                            alignItems: 'center',
+                        }}
+                    >
+                        <View>
+                            <FastImage
+                                source={{ uri: item.imageUrl, priority: FastImage.priority.normal }}
+                                style={{
+                                    width: 60,
+                                    height: 60,
+                                    borderRadius: 30,
+                                    alignSelf: 'center',
+                                    margin: 10,
+                                }}
+                                resizeMode={FastImage.resizeMode.stretch}
+                            />
+                        </View>
+                        <VStack>
+                            <Text fontSize="14" fontWeight="bold" color="black" mb={1}>
+                                <Text color="#0029A3" isTruncated>{item.customerName}</Text>
+                            </Text>
+                            <Text fontSize="14" fontWeight="bold" color="black" mb={1}>
+                                <Text color="#0A78BE" isTruncated>{item.carName}</Text>
+                            </Text>
+                            <Text fontSize="14" fontWeight="bold" color="black" mb={1}>
+                                <Text color="#333" isTruncated>{item.referenceNumber}</Text>
+                            </Text>
+                        </VStack>
+                    </Pressable>
+                );
+            })}
+
+            <View style={{ height: 20 }}>
+                {loadingMore && <Spinner size='sm' color="#7B9CFF" />}
+            </View>
+        </ScrollView>
+    );
+};
+
+const StatsModalComponent = () => {
+    const dispatch = useDispatch();
+    const statsModalVisible = useSelector((state) => state.statsModalVisible);
+
+    return (
+
+        <Modal isOpen={statsModalVisible} onClose={() => dispatch(setStatsModalVisible(false))} useRNModal>
+            <Modal.Content>
+                <Modal.CloseButton />
+                <Modal.Header style={{ backgroundColor: 'white', textAlign: 'center', fontSize: 18, fontWeight: 'bold', color: '#333' }}>
+                    Transactions
+                </Modal.Header>
+                <Modal.Body>
+                    {renderModalContent()}
+                </Modal.Body>
+            </Modal.Content>
+        </Modal>
+    )
+}
+
 // StatsChart component
+
+
+
+
+
+
+const DesktopChart = ({ data, period, minCount, maxCount, }) => {
+    const dispatch = useDispatch();
+    const [hoveredBarIndex, setHoveredBarIndex] = useState(null);
+
+
+    const handleBarPress = (datum) => {
+
+        dispatch(setStatsData(datum.data))
+        dispatch(setStatsModalVisible(true));
+        console.log(datum);
+    };
+
+    return (
+        <VictoryChart
+            width={1000}
+            theme={VictoryTheme.material}
+            domainPadding={{ x: period === 'Weekly' ? 40 : 20 }}
+
+        >
+            <VictoryAxis
+                style={{ grid: { stroke: "#F3F3F3", strokeDasharray: "none" } }}  // Solid grid lines
+            />
+            <VictoryAxis
+                dependentAxis
+                style={{ grid: { stroke: "#F3F3F3", strokeDasharray: "none" } }}  // Solid grid lines
+                tickFormat={(tick) => `${Math.round(tick)}`}  // Format ticks as whole numbers
+            />
+            <VictoryBar
+                data={data}
+                x="value"
+                y="count"
+                cornerRadius={7}
+                style={{
+                    data: {
+                        fill: ({ datum, index }) => {
+                            if (index === hoveredBarIndex) {
+                                if (minCount === maxCount) return "#19b954 ";
+                                if (datum.count === minCount) return "#FF9494";
+                                if (datum.count === maxCount) return "#19b954";
+                                return "#698DF8";
+                            }; // Change color on hover
+                            if (minCount === maxCount) return "#16A34A";
+                            if (datum.count === minCount) return "#FF0000";
+                            if (datum.count === maxCount) return "#16A34A";
+                            return "rgba(6, 66, 244, 1)";
+                        },
+                        cursor: "pointer"  // Change cursor to hand
+                    },
+                    labels: {
+                        fontSize: 12,
+                        fill: ({ datum, index }) => {
+                            if (index === hoveredBarIndex) {
+                                if (minCount === maxCount) return "#19b954 ";
+                                if (datum.count === minCount) return "#FF9494";
+                                if (datum.count === maxCount) return "#19b954";
+                                return "#698DF8";
+                            };
+                            if (minCount === maxCount) return "#16A34A";
+                            if (datum.count === minCount) return "#FF0000";
+                            if (datum.count === maxCount) return "#16A34A";
+                            return "rgba(6, 66, 244, 1)";
+                        }
+                    }
+                }}
+                labels={({ datum }) => `${datum.count === 0 ? '' : datum.count}`}
+                labelComponent={<VictoryLabel dy={-10} />}
+                events={[
+                    {
+                        target: "data",
+                        eventHandlers: {
+                            onClick: (evt, clickedProps) => {
+                                handleBarPress(clickedProps.datum);
+                            },
+                            onMouseOver: (evt, targetProps) => {
+                                setHoveredBarIndex(targetProps.index);
+                            },
+                            onMouseOut: () => {
+                                setHoveredBarIndex(null);
+                            }
+                        }
+                    }
+                ]}
+            />
+        </VictoryChart>
+    );
+};
+
+
 const StatsChart = () => {
     const [data, setData] = useState([]);
     const [yearMonth, setYearMonth] = useState("");
@@ -1049,6 +1339,7 @@ const StatsChart = () => {
     const [previousMonthName, setPreviousMonthName] = useState("");
     const screenWidth = Dimensions.get('window').width;
     const dispatch = useDispatch();
+
     useEffect(() => {
         const fetchData = async () => {
             const effectiveDate = yearMonth || await fetchCurrentDate();
@@ -1065,6 +1356,7 @@ const StatsChart = () => {
             const previousTotal = calculateTotal(processedPreviousData);
 
             setData(processedData);
+            console.log(processedData);
             setCurrentTotal(currentTotal);
             setPreviousTotal(previousTotal);
             if (period !== 'Monthly') {
@@ -1081,6 +1373,12 @@ const StatsChart = () => {
     const counts = data.map(d => d.count).filter(count => count !== 0);
     const minCount = Math.min(...counts);
     const maxCount = Math.max(...counts);
+
+
+
+
+
+
 
     const MobileViewChart = () => {
         const maxValue = Math.max(...data.map(d => d.value));
@@ -1169,80 +1467,46 @@ const StatsChart = () => {
 
 
         return (
-            <Box
-                flex={1}
-                borderWidth={1}
-                borderColor="#FFF"
-                backgroundColor="#FFF"
-                marginBottom={screenWidth <= 960 ? '1px' : '5px'}
-                marginLeft={screenWidth <= 960 ? '1px' : '5px'}
-                marginRight={screenWidth <= 960 ? '1px' : '5px'}
-                borderRadius={5}
-                padding={screenWidth <= 960 ? 2 : 5}
-            >
-                <HStack space={4} mb={3} justifyContent="center">
-                    <Box padding={2} backgroundColor="orange.100" borderRadius={5} alignItems="center">
-                        <Text style={{ fontSize: 14, color: "orange.800", fontWeight: "bold" }}>{`${previousMonthName}: ${previousTotal}`}</Text>
-                    </Box>
-                    <Box padding={2} backgroundColor="blue.100" borderRadius={5} alignItems="center">
-                        <Text style={{ fontSize: 14, color: "teal.800", fontWeight: "bold" }}>{`${currentMonthName}: ${currentTotal}`}</Text>
-                    </Box>
-                </HStack>
-                <TypeAndPeriodSelectors
-                    period={period}
-                    setPeriod={setPeriod}
-                    type={type}
-                    setType={setType}
-                    yearMonth={yearMonth}
-                    setYearMonth={setYearMonth}
-                />
-                <VictoryChart
-                    width={1000}
-                    theme={VictoryTheme.material}
-                    domainPadding={{ x: period === 'Weekly' ? 40 : 20 }}
+            <>
+                <Box
+                    flex={1}
+                    borderWidth={1}
+                    borderColor="#FFF"
+                    backgroundColor="#FFF"
+                    marginBottom={screenWidth <= 960 ? '1px' : '5px'}
+                    marginLeft={screenWidth <= 960 ? '1px' : '5px'}
+                    marginRight={screenWidth <= 960 ? '1px' : '5px'}
+                    borderRadius={5}
+                    padding={screenWidth <= 960 ? 2 : 5}
                 >
-                    <VictoryAxis
-                        style={{ grid: { stroke: "#F3F3F3", strokeDasharray: "none" } }}  // Solid grid lines
+                    <HStack space={4} mb={3} justifyContent="center">
+                        <Box padding={2} backgroundColor="orange.100" borderRadius={5} alignItems="center">
+                            <Text style={{ fontSize: 14, color: "orange.800", fontWeight: "bold" }}>{`${previousMonthName}: ${previousTotal}`}</Text>
+                        </Box>
+                        <Box padding={2} backgroundColor="blue.100" borderRadius={5} alignItems="center">
+                            <Text style={{ fontSize: 14, color: "teal.800", fontWeight: "bold" }}>{`${currentMonthName}: ${currentTotal}`}</Text>
+                        </Box>
+                    </HStack>
+                    <TypeAndPeriodSelectors
+                        period={period}
+                        setPeriod={setPeriod}
+                        type={type}
+                        setType={setType}
+                        yearMonth={yearMonth}
+                        setYearMonth={setYearMonth}
                     />
-                    <VictoryAxis
-                        dependentAxis
-                        style={{ grid: { stroke: "#F3F3F3", strokeDasharray: "none" } }}  // Solid grid lines
-                        tickFormat={(tick) => `${Math.round(tick)}`}  // Format ticks as whole numbers
-                    />
-                    <VictoryBar
-                        data={data}
-                        x="value"
-                        y="count"
-                        cornerRadius={7}
-                        style={{
-                            data: {
-                                fill: ({ datum }) => {
-                                    if (minCount === maxCount) return "#16A34A";
-                                    if (datum.count === minCount) return "#FF0000";
-                                    if (datum.count === maxCount) return "#16A34A";
-                                    return "rgba(6, 66, 244, 1)";
-                                }
-                            },
-                            labels: {
-                                fontSize: 12, fill: ({ datum }) => {
-                                    if (minCount === maxCount) return "#16A34A";
-                                    if (datum.count === minCount) return "#FF0000";
-                                    if (datum.count === maxCount) return "#16A34A";
-                                    return "rgba(6, 66, 244, 1)";
-                                }
-                            }
-                        }}
-                        labels={({ datum }) => `${datum.count === 0 ? '' : datum.count}`}
-                        labelComponent={<VictoryLabel dy={-10} />}
-                    />
-                </VictoryChart>
-            </Box>
+                    <DesktopChart data={data} period={period} minCount={minCount} maxCount={maxCount} />
+                </Box>
+
+
+            </>
         );
     }
 
     return (
         <>
             {screenWidth <= 960 ? <MobileViewChart /> : <DesktopViewChart />}
+            <StatsModalComponent />
         </>
     );
 };

@@ -2585,7 +2585,11 @@ const ChatList = ({ unreadButtonValue, activeButtonValue, }) => {
 
     const handleChatPressNewTab = async (customerId, chatId) => {
         const encryptedChatId = encryptData(chatId);
-        const encodedChatId = encodeURIComponent(encryptedChatId); // URL-encode the encrypted data
+        const encodedChatId = /* The above code is a JavaScript comment block. It is not performing any
+        specific action in the code. The `encodeURIComponent` function is
+        mentioned within the comment block, but it is not being used or
+        executed in the code itself. */
+            encodeURIComponent(encryptedChatId); // URL-encode the encrypted data
         // navigate(`/devadmin/chat-messages/${encodedChatId}`);
         // console.log(encodedChatId)
         // console.log(decodeURIComponent(encodedChatId))
@@ -5459,6 +5463,7 @@ Real Motor Japan`,
 
             try {
                 const newData = {
+                    customerName: `${selectedCustomerData.textFirst} ${selectedCustomerData.textLast}`,
                     carName: selectedChatData.carData.carName,
                     customerEmail: selectedCustomerData.textEmail,
                     imageUrl: carImageUrl,
@@ -12002,66 +12007,65 @@ const TransactionButton = ({ title, buttonValue, transactionValue, colorHoverIn,
 
 
 const TransactionList = ({ displayedTransactions, handleChatPress, selectedCustomerData }) => {
-    // Assuming an environment that supports onMouseEnter and onMouseLeave
-    return (
-        Array.isArray(selectedCustomerData.transactions) && selectedCustomerData.transactions.length > 0 ? (
-            displayedTransactions.map((transaction, index) => {
-                const [isHovered, setIsHovered] = useState(false); // This won't work as expected due to scope
+    const [hoveredIndex, setHoveredIndex] = useState(null);
 
-                return (
-                    <Pressable
-                        key={index}
-                        onPress={() => handleChatPress(`chat_${transaction.stockId}_${selectedCustomerData.textEmail}`)}
-                        onMouseEnter={() => setIsHovered(true)} // These events are not native to React Native
-                        onMouseLeave={() => setIsHovered(false)}
+    if (!Array.isArray(selectedCustomerData.transactions) || selectedCustomerData.transactions.length === 0) {
+        return <Text style={{ fontWeight: 'bold', alignSelf: 'center', fontStyle: 'italic' }}>No history to show</Text>;
+    }
+
+    return displayedTransactions.map((transaction, index) => {
+        const isHovered = hoveredIndex === index;
+
+        return (
+            <Pressable
+                key={index}
+                onPress={() => handleChatPress(`chat_${transaction.stockId}_${selectedCustomerData.textEmail}`)}
+                onMouseEnter={() => setHoveredIndex(index)}
+                onMouseLeave={() => setHoveredIndex(null)}
+                style={{
+                    marginBottom: 15,
+                    backgroundColor: isHovered ? '#F2F2F2' : '#FFFFFF',
+                    borderRadius: 10,
+                    shadowColor: '#000',
+                    shadowOffset: { width: 0, height: 2 },
+                    shadowOpacity: 0.1,
+                    shadowRadius: 2,
+                    elevation: 3,
+                    padding: 5,
+                    borderBottomWidth: 1,
+                    borderBottomColor: '#eee',
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                }}
+            >
+                <View>
+                    <FastImage
+                        source={{ uri: transaction.imageUrl, priority: FastImage.priority.normal }}
                         style={{
-                            marginBottom: 15,
-                            backgroundColor: isHovered ? '#F2F2F2' : '#FFFFFF', // Change color on hover
-                            borderRadius: 10,
-                            shadowColor: '#000',
-                            shadowOffset: { width: 0, height: 2 },
-                            shadowOpacity: 0.1,
-                            shadowRadius: 2,
-                            elevation: 3,
-                            padding: 5,
-                            borderBottomWidth: 1,
-                            borderBottomColor: '#eee',
-                            flexDirection: 'row',
-                            alignItems: 'center',
+                            width: 60,
+                            height: 60,
+                            borderRadius: 30,
+                            alignSelf: 'center',
+                            margin: 10,
                         }}
-                    >
-                        <View>
-                            <FastImage
-                                source={{ uri: transaction.imageUrl, priority: FastImage.priority.normal }}
-                                style={{
-                                    width: 60,
-                                    height: 60,
-                                    borderRadius: 30,
-                                    alignSelf: 'center',
-                                    margin: 10,
-                                }}
-                                resizeMode={FastImage.resizeMode.stretch}
-                            />
-                        </View>
-                        <View>
-                            <Text style={{ fontSize: 14, fontWeight: 'bold', color: 'black', marginBottom: 5 }}>
-                                <Text style={{ color: '#0A78BE' }} selectable={false} numberOfLines={1} ellipsizeMode='tail'>
-                                    {transaction.carName}
-                                </Text>
-                            </Text>
-                            <Text style={{ fontSize: 14, fontWeight: 'bold', color: 'black', marginBottom: 5 }}>
-                                <Text style={{ color: '#333' }} selectable={false} numberOfLines={1} ellipsizeMode='tail'>
-                                    {transaction.referenceNumber}
-                                </Text>
-                            </Text>
-                        </View>
-                    </Pressable>
-                );
-            })
-        ) : (
-            <Text style={{ fontWeight: 'bold', alignSelf: 'center' }} italic>No history to show</Text>
-        )
-    );
+                        resizeMode={FastImage.resizeMode.stretch}
+                    />
+                </View>
+                <View>
+                    <Text style={{ fontSize: 14, fontWeight: 'bold', color: 'black', marginBottom: 5 }}>
+                        <Text style={{ color: '#0A78BE' }} selectable={false} numberOfLines={1} ellipsizeMode='tail'>
+                            {transaction.carName}
+                        </Text>
+                    </Text>
+                    <Text style={{ fontSize: 14, fontWeight: 'bold', color: 'black', marginBottom: 5 }}>
+                        <Text style={{ color: '#333' }} selectable={false} numberOfLines={1} ellipsizeMode='tail'>
+                            {transaction.referenceNumber}
+                        </Text>
+                    </Text>
+                </View>
+            </Pressable>
+        );
+    });
 };
 
 const TransactionHistoryModal = () => {

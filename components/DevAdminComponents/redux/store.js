@@ -556,6 +556,7 @@ const accountListDataSlice = createSlice({
 
 // =============================== Logs ======================================== 
 
+
 const selectedLogsButtonSlice = createSlice({
   name: 'selectedLogsButton',
   initialState: 'stats',
@@ -566,11 +567,31 @@ const selectedLogsButtonSlice = createSlice({
   },
 })
 
+const statsModalVisibleSlice = createSlice({
+  name: 'statsModalVisible',
+  initialState: false,
+  reducers: {
+    setStatsModalVisible: (state, action) => {
+      return action.payload
+    },
+  },
+})
+
 const logsDataSlice = createSlice({
   name: 'logsData',
   initialState: [],
   reducers: {
     setLogsData: (state, action) => {
+      return action.payload
+    },
+  },
+})
+
+const statsDataSlice = createSlice({
+  name: 'statsData',
+  initialState: [],
+  reducers: {
+    setStatsData: (state, action) => {
       return action.payload
     },
   },
@@ -886,7 +907,6 @@ const deleteImageVisibleSlice = createSlice({
 });
 
 // =============================== Chat Messages ========================================
-export const { setSelectedLogsButton } = selectedLogsButtonSlice.actions
 export const { setMessageTextInputHeight } = messageTextInputHeightSlice.actions
 export const { setMessageTextInputValue } = messageTextInputValueSlice.actions
 export const { setCustomInvoiceVisible } = customInvoiceVisibleSlice.actions
@@ -953,6 +973,9 @@ export const { setAccountListData } = accountListDataSlice.actions
 
 // =============================== Logs ======================================== 
 export const { setLogsData } = logsDataSlice.actions
+export const { setStatsModalVisible } = statsModalVisibleSlice.actions
+export const { setSelectedLogsButton } = selectedLogsButtonSlice.actions
+export const { setStatsData } = statsDataSlice.actions
 // =============================== Logs ======================================== 
 
 export const { setStockStatusData } = stockStatusDataSlice.actions
@@ -993,7 +1016,6 @@ const store = configureStore({
   reducer: {
 
     // =============================== Chat Messages ========================================
-    selectedLogsButton: selectedLogsButtonSlice.reducer,
     messageTextInputHeight: messageTextInputHeightSlice.reducer,
     customInvoiceVisible: customInvoiceVisibleSlice.reducer,
     messageTextInputValue: messageTextInputValueSlice.reducer,
@@ -1059,6 +1081,9 @@ const store = configureStore({
 
     // =============================== Logs ======================================== 
     logsData: logsDataSlice.reducer,
+    statsModalVisible: statsModalVisibleSlice.reducer,
+    selectedLogsButton: selectedLogsButtonSlice.reducer,
+    statsData: statsDataSlice.reducer,
     // =============================== Logs ======================================== 
     stockStatusData: stockStatusDataSlice.reducer,
     isUpdateSuccessModalOpen: isUpdateSuccessModalOpenSlice.reducer,
