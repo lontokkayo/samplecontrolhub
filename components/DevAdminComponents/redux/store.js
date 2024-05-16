@@ -978,6 +978,9 @@ export const { setSelectedLogsButton } = selectedLogsButtonSlice.actions
 export const { setStatsData } = statsDataSlice.actions
 // =============================== Logs ======================================== 
 
+
+// =============================== Update/Add New Vehicle ======================================== 
+
 export const { setStockStatusData } = stockStatusDataSlice.actions
 export const { setIsSuccessModalOpen } = isSuccessModalOpenSlice.actions
 export const { setIsUpdateSuccessModalOpen } = isUpdateSuccessModalOpenSlice.actions
@@ -1011,6 +1014,9 @@ export const { setJpyToUsd } = jpyToUsdSlice.actions;
 export const { setUsdToJpy } = usdToJpySlice.actions;
 export const { setCurrentYear } = currentYearSlice.actions;
 export const { setModelData } = modelDataSlice.actions
+
+// =============================== Update/Add New Vehicle ======================================== 
+
 
 const store = configureStore({
   reducer: {
@@ -1085,7 +1091,8 @@ const store = configureStore({
     selectedLogsButton: selectedLogsButtonSlice.reducer,
     statsData: statsDataSlice.reducer,
     // =============================== Logs ======================================== 
-    stockStatusData: stockStatusDataSlice.reducer,
+    stockStatusData: stockStatusDataSlice.reducer,    
+    isSuccessModalOpen: isSuccessModalOpenSlice.reducer,
     isUpdateSuccessModalOpen: isUpdateSuccessModalOpenSlice.reducer,
     loadingModalVisible: loadingModalVisibleSlice.reducer,
     selectedPaidTo: selectedPaidToSlice.reducer,

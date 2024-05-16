@@ -313,17 +313,27 @@ const decryptData = (ciphertext) => {
 };
 
 
-const TimelineStatus = ({ data }) => {
+const TimelineStatus = () => {
+
+    const statusData = [
+        { title: 'Negotiation', value: 1 },
+        { title: 'Issued Proforma Invoice', value: 2 },
+        { title: 'Order Item', value: 3 },
+        { title: 'Payment Confirmed', value: 4 },
+        { title: 'Shipping Schedule', value: 5 },
+        { title: 'Documents', value: 6 },
+        { title: 'Vehicle Received', value: 7 },
+        // Add more events as needed
+    ];
 
     const selectedChatData = useSelector(state => state.selectedChatData);
 
-    const changeIndex = data.findIndex(item => selectedChatData.stepIndicator.value < item.value);
-
+    const changeIndex = statusData.findIndex(item => selectedChatData.stepIndicator.value < item.value);
 
     return (
         <View style={{ flexDirection: 'row', alignItems: 'center', paddingTop: 3, }}>
             {/* Dots and individual line segments */}
-            {data.map((item, index) => (
+            {statusData.map((item, index) => (
                 <View key={index} style={{ flexDirection: 'row', alignItems: 'center' }}>
                     {/* Dot */}
                     <Tooltip label={item.title} bgColor={'#FAFAFA'} _text={{ color: '#1C2B33' }}>
@@ -367,7 +377,7 @@ const TimelineStatus = ({ data }) => {
                         </View>
                     </Tooltip>
                     {/* Line Segment (except for the last dot) */}
-                    {index < data.length - 1 && (
+                    {index < statusData.length - 1 && (
                         <View style={{
                             height: 3,
                             width: 20, // Adjust the width to match the space between the dots
@@ -381,16 +391,7 @@ const TimelineStatus = ({ data }) => {
 };
 
 
-const statusData = [
-    { title: 'Negotiation', value: 1 },
-    { title: 'Issued Proforma Invoice', value: 2 },
-    { title: 'Order Item', value: 3 },
-    { title: 'Payment Confirmed', value: 4 },
-    { title: 'Shipping Schedule', value: 5 },
-    { title: 'Documents', value: 6 },
-    { title: 'Vehicle Received', value: 7 },
-    // Add more events as needed
-];
+
 
 const LoadingModal = () => {
     const loadingModalVisible = useSelector((state) => state.loadingModalVisible);
@@ -12845,7 +12846,7 @@ const ChatMessageHeader = () => {
                 </View>
 
                 {/* <Text style={{ fontWeight: 700, color: "#16A34A", }}>{`$${selectedChatData.offerPrice ? selectedChatData.offerPrice : 0}`}</Text> */}
-                <TimelineStatus data={statusData} />
+                <TimelineStatus />
 
             </View>
 
@@ -12902,7 +12903,7 @@ const ChatMessageHeader = () => {
                         ).toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`})
                     </Text>
                     <View style={{ marginTop: 3 }}>
-                        {!selectedChatData.isCancelled && <CurrencyPopover />}
+                        {(!selectedChatData.isCancelled && selectedChatData.stepIndicator.value < 4 )&&<CurrencyPopover />}
                     </View>
                 </View>
 
@@ -13040,6 +13041,56 @@ const ChatMessageHeader = () => {
                                                 </Text>
                                             </>}
                                     </View>}
+
+                                </View>
+                            </View>)
+                    }
+
+
+                    {(selectedChatData.stepIndicator.value == 4) &&
+
+
+                        (
+                            <View style={{ flexDirection: 'row', paddingRight: 10, paddingTop: 2, }}>
+                                {
+                                    selectedChatData.isCancelled == true && (
+                                        <View style={{ flexDirection: 'row', paddingRight: 10, }}>
+                                            <View style={{ paddingLeft: 10, }}>
+                                                <ReopenTransaction />
+                                            </View>
+                                        </View>
+                                    )
+                                }
+                                <View style={{ paddingLeft: 10, }}>
+                                    {!selectedChatData.isCancelled && <ProfitCalculator />}
+
+                                    <PreviewInvoice />
+
+                                    {!selectedChatData.isCancelled && <View style={{ flexDirection: 'row' }}>
+                                        <Text style={{ fontWeight: 700, fontSize: 18 }}>Final Price: </Text>
+                                        <Text selectable style={{ fontWeight: 700, fontSize: 18, color: "#FF0000", textAlign: 'right' }}>
+                                            {(totalPriceCalculated())}
+                                        </Text>
+                                        <Text selectable style={{ fontWeight: 400, fontSize: 12, color: "#8D7777", paddingTop: 4, marginLeft: 2 }}>
+                                            ({`¥${(invoiceData && invoiceData.paymentDetails && invoiceData.paymentDetails.totalAmount && selectedChatData && selectedChatData.currency && selectedChatData.currency.jpyToUsd ? (Number(invoiceData.paymentDetails.totalAmount.replace(/,/g, '')) / Number(selectedChatData.currency.jpyToUsd)) : 0).toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`})
+                                        </Text>
+                                    </View>}
+                                </View>
+
+                                <View style={{ paddingLeft: 10, }}>
+
+                                    {!selectedChatData.isCancelled && <TransactionButton
+                                        key={'Issue Proforma Invoice'}
+                                        title={selectedChatData.stepIndicator.value == 1 ? 'Issue Proforma Invoice' : 'Update Invoice'}
+                                        colorHoverIn={'#0f7534'}
+                                        colorHoverOut={'#16A34A'}
+                                        transactionValue={2}
+                                        buttonValue={2}
+                                        iconActive={<FontAwesome5 name="file-invoice-dollar" color="#1C2B33" size={14} />} />}
+
+                                    {!selectedChatData.isCancelled && <CancelTransaction />}
+
+
 
                                 </View>
                             </View>)

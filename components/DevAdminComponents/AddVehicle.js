@@ -48,7 +48,7 @@ import {
 import { useNavigation } from '@react-navigation/core';
 import axios from 'axios';
 import { signOut } from 'firebase/auth';
-import { addDoc, collection, doc, getDoc, getDocs, getFirestore, onSnapshot, setDoc, arrayUnion, updateDoc, query, where } from 'firebase/firestore';
+import { addDoc, collection, doc, getDoc, getDocs, getFirestore, onSnapshot, setDoc, arrayUnion, updateDoc, query, where, increment, runTransaction } from 'firebase/firestore';
 import moment from 'moment';
 import './../style.css';
 import { projectControlFirestore, projectControlAuth, projectExtensionFirestore, projectExtensionFirebase, projectControlFirebase } from "../../crossFirebase";
@@ -59,7 +59,7 @@ import DraggableFlatList from "react-native-draggable-flatlist";
 import SelectDropdown from 'react-native-select-dropdown';
 import { useSelector, useDispatch } from 'react-redux';
 import SideDrawer from './SideDrawer/SideDrawer';
-import { cloneDeep } from 'lodash';
+import { cloneDeep, merge } from 'lodash';
 import ImageMarker, { Position } from "react-native-image-marker";
 import QRCodeScanner from './QrCodeScanner/QrCodeScanner';
 
@@ -5006,21 +5006,21 @@ export default function AddVehicle() {
         memo: inputCarMemo.current?.value,
 
         comfort: {
-          ComfortAiCoFr: featuresState.ComfortAiCoFr  || false,
-          ComfortAiCoRe: featuresState.ComfortAiCoRe  || false,
+          ComfortAiCoFr: featuresState.ComfortAiCoFr || false,
+          ComfortAiCoRe: featuresState.ComfortAiCoRe || false,
           ComfortAMFMRa: featuresState.ComfortAMFMRa || false,
-          ComfortAMFMSt: featuresState.ComfortAMFMSt  || false,
-          ComfortCDPl: featuresState.ComfortCDPl  || false,
-          ComfortCDCh: featuresState.ComfortCDCh  || false,
-          ComfortCrSpCo: featuresState.ComfortCrSpCo  || false,
-          ComfortDiSp: featuresState.ComfortDiSp  || false,
-          ComfortDVDPl: featuresState.ComfortDVDPl  || false,
-          ComfortHDD: featuresState.ComfortHDD  || false,
-          ComfortNaSyGPS: featuresState.ComfortNaSyGPS  || false,
-          ComfortPoSt: featuresState.ComfortPoSt  || false,
-          ComfortPrAuSy: featuresState.ComfortPrAuSy  || false,
-          ComfortReKeSy: featuresState.ComfortReKeSy  || false,
-          ComfortTiStWh: featuresState.ComfortTiStWh  || false,
+          ComfortAMFMSt: featuresState.ComfortAMFMSt || false,
+          ComfortCDPl: featuresState.ComfortCDPl || false,
+          ComfortCDCh: featuresState.ComfortCDCh || false,
+          ComfortCrSpCo: featuresState.ComfortCrSpCo || false,
+          ComfortDiSp: featuresState.ComfortDiSp || false,
+          ComfortDVDPl: featuresState.ComfortDVDPl || false,
+          ComfortHDD: featuresState.ComfortHDD || false,
+          ComfortNaSyGPS: featuresState.ComfortNaSyGPS || false,
+          ComfortPoSt: featuresState.ComfortPoSt || false,
+          ComfortPrAuSy: featuresState.ComfortPrAuSy || false,
+          ComfortReKeSy: featuresState.ComfortReKeSy || false,
+          ComfortTiStWh: featuresState.ComfortTiStWh || false,
         },
 
         ComfortAiCoFr: featuresState.ComfortAiCoFr || false,
@@ -5120,6 +5120,44 @@ export default function AddVehicle() {
 
       // Get the document
 
+
+      const incrementCount = async (make, model) => {
+        const vehicleCountRef = doc(projectExtensionFirestore, "counts", "vehicles");
+        const makeCountRef = doc(projectExtensionFirestore, "counts", "make");
+        const modelCountRef = doc(projectExtensionFirestore, "counts", "model");
+
+        try {
+          await runTransaction(projectExtensionFirestore, async (transaction) => {
+            const vehicleCountSnap = await transaction.get(vehicleCountRef);
+            const makeCountSnap = await transaction.get(makeCountRef);
+            const modelCountSnap = await transaction.get(modelCountRef);
+
+            // Check if the document exists and create with initial count if it doesn't
+
+            if (!vehicleCountSnap.exists()) {
+              transaction.set(vehicleCountRef, { stockCount: 1, totalCount: 1 });
+            } else {
+              transaction.update(vehicleCountRef, { stockCount: increment(1), totalCount: increment(1) });
+            }
+
+            if (!makeCountSnap.exists()) {
+              transaction.set(makeCountRef, { [make]: 1 }, { merge: true });
+            } else {
+              transaction.set(makeCountRef, { [make]: increment(1) }, { merge: true });
+            }
+
+            if (!modelCountSnap.exists()) {
+              transaction.set(modelCountRef, { [model]: 1 }, { merge: true });
+            } else {
+              transaction.set(modelCountRef, { [model]: increment(1) }, { merge: true });
+            }
+          });
+
+          console.log("Vehicle count incremented successfully.");
+        } catch (error) {
+          console.error("Failed to increment vehicle count: ", error);
+        }
+      };
 
       // Check if the document exists
       if (docSnap.exists()) {
@@ -5232,53 +5270,6 @@ export default function AddVehicle() {
               dispatch(setLoadingModalVisible(false));
               dispatch(setIsSuccessModalOpen(true));
 
-              // try {
-              //   // Check if the document exists
-              //   const docSnapshot = await getDoc(docRef);
-
-              //   if (docSnapshot.exists()) {
-              //     const data = docSnapshot.data();
-              //     if (data) {
-              //       if ('dateAdded' in data) {
-              //         // The document exists and has a 'dateAdded' field
-              //         console.log('Date Update');
-              //         // Update the 'updatedDate' field in the document
-              //         const updates = {
-              //           updatedDate: formattedTime, // Replace 'newFieldValue' with the updated date value
-              //         };
-
-              //         // Use setDoc to update the 'updatedDate' field in the document
-              //         await setDoc(docRef, updates, { merge: true });
-              //       } else {
-              //         // The document exists, but it doesn't have a 'dateAdded' field
-              //         console.log('Date Added');
-              //         // Update the 'dateAdded' field in the document
-              //         const updates = {
-              //           dateAdded: formattedTime, // Replace 'newFieldValue' with the date value
-              //         };
-
-              //         // Use setDoc to update the 'dateAdded' field in the document
-              //         await setDoc(docRef, updates, { merge: true });
-              //       }
-              //     } else {
-              //       // The document exists, but it doesn't have a 'dateAdded' field
-              //       console.log('Date Added');
-              //       // Update the 'dateAdded' field in the document
-              //       const updates = {
-              //         dateAdded: formattedTime, // Replace 'newFieldValue' with the date value
-              //       };
-
-              //       // Use setDoc to update the 'dateAdded' field in the document
-              //       await setDoc(docRef, updates, { merge: true });
-              //     }
-              //   } else {
-              //     // The document does not exist
-              //     console.log('Date Added');
-              //   }
-              // } catch (error) {
-              //   console.error('Error checking document:', error);
-              // }
-
               const logData = {
                 message: `Vehicle Added: "${nameVariable.text}" added "${inputCarName.current?.value}" with a reference number of "${inputRefNum.current?.value}"`,
                 timestamp: formattedTime,
@@ -5305,6 +5296,7 @@ export default function AddVehicle() {
 
               handleClearImages();
               addLogToCollection(logData);
+              incrementCount(data.make, data.model);
               handleClear();
               console.log('Document added successfully!');
               // console.log(`Folder Name ${globalVehicleFolderName}`);
@@ -5318,6 +5310,9 @@ export default function AddVehicle() {
             dispatch(setLoadingModalVisible(false));
             console.error('Error adding document: ', error);
           });
+
+
+
       }
 
     }

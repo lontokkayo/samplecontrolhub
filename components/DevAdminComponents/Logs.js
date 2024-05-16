@@ -66,7 +66,7 @@ import { setLoginName, setSelectedLogsButton, setStatsData, setLogsData, setLoad
 import MobileViewDrawer from './SideDrawer/MobileViewDrawer';
 import SideDrawer from './SideDrawer/SideDrawer';
 import { LineChart, BarChart } from 'react-native-chart-kit';
-import { VictoryBar, VictoryChart, VictoryAxis, VictoryTheme, VictoryLabel, VictoryVoronoiContainer } from 'victory';
+import { VictoryBar, VictoryChart, VictoryAxis, VictoryTheme, VictoryLabel, VictoryContainer } from 'victory';
 import {
     OPEN_EXCHANGE_API_KEY
 } from '@env';
@@ -951,14 +951,17 @@ const processData = (data, period) => {
         const months = Array.from({ length: 12 }, (_, i) => ({ value: `${(i + 1).toString().padStart(2, '0')}`, count: 0, data: [] }));
         data.forEach((monthData, index) => {
             if (index < months.length) {
-                months[index].value = `${(index + 1).toString().padStart(2, '0')}`; // Ensure month labels are "01", "02", etc.
-                months[index].count = monthData.count; // Assign count from the data, assuming data is pre-aggregated by month
+                months[index].value = `${(index + 1).toString().padStart(2, '0')}`; // Ensure month labels are correct
+                months[index].count = monthData.count; // Assign pre-aggregated count from the data
+
+                // Flatten the structured data for each day into the month's data array after sorting the days
                 monthData.data.forEach(day => {
-                    // Sort the keys to ensure data is processed in the correct order of days
-                    Object.keys(day).sort((a, b) => parseInt(a, 10) - parseInt(b, 10)).forEach(dayKey => {
-                        const dayEntries = day[dayKey];
-                        months[index].data = months[index].data.concat(dayEntries);
-                    });
+                    Object.keys(day)
+                        .sort((a, b) => parseInt(a, 10) - parseInt(b, 10)) // Sorting day keys in ascending order
+                        .forEach(dayKey => {
+                            const dayEntries = day[dayKey]; // Accessing the entries for a sorted day
+                            months[index].data = months[index].data.concat(dayEntries); // Concatenating entries to the month's data array
+                        });
                 });
             }
         });
@@ -1328,6 +1331,90 @@ const DesktopChart = ({ data, period, minCount, maxCount, }) => {
 };
 
 
+const MobileChart = ({ data, period, minCount, maxCount, }) => {
+    const dispatch = useDispatch();
+    const [hoveredBarIndex, setHoveredBarIndex] = useState(null);
+
+    const maxValue = Math.max(...data.map(d => d.value));
+
+    const screenWidth = Dimensions.get('window').width;
+
+
+    const handleBarPress = (datum) => {
+
+        dispatch(setStatsData(datum.data))
+        dispatch(setStatsModalVisible(true));
+        console.log(datum);
+    };
+
+    return (
+
+        <VictoryChart
+            width={700}
+            height={1500} // Increased height for more space
+            theme={VictoryTheme.material}
+            domainPadding={{ y: period === 'Weekly' ? 60 : 40 }}
+
+        >
+            <VictoryAxis
+                style={{ grid: { stroke: "#F3F3F3", strokeDasharray: "none" } }}
+                tickFormat={(tick) => `${Math.round(tick)}`}
+                domain={[0, maxValue]}
+            />
+            <VictoryAxis
+                dependentAxis
+                style={{ grid: { stroke: "#F3F3F3", strokeDasharray: "none" } }}
+                tickFormat={(tick) => tick}
+                domain={[1, 0]}
+            />
+            <VictoryBar
+                data={data}
+                x="value"
+                y="count"
+                horizontal={true}
+                cornerRadius={7}
+                style={{
+                    data: {
+                        fill: ({ datum }) => {
+                            if (minCount === maxCount) return "#16A34A";
+                            if (datum.count === minCount) return "#FF0000";
+                            if (datum.count === maxCount) return "#16A34A";
+                            return "rgba(6, 66, 244, 1)";
+                        }
+                    },
+                    labels: {
+                        fontSize: 20, fill: ({ datum }) => {
+                            if (minCount === maxCount) return "#16A34A";
+                            if (datum.count === minCount) return "#FF0000";
+                            if (datum.count === maxCount) return "#16A34A";
+                            return "rgba(6, 66, 244, 1)";
+                        }
+                    }
+                }}
+                labels={({ datum }) => `${datum.count === 0 ? '' : datum.count}`}
+                labelComponent={<VictoryLabel dx={10} />}
+                events={[
+                    {
+                        target: "data",
+                        eventHandlers: {
+                            onClick: (evt, clickedProps) => {
+                                handleBarPress(clickedProps.datum);
+                            },
+                            onMouseOver: (evt, targetProps) => {
+                                setHoveredBarIndex(targetProps.index);
+                            },
+                            onMouseOut: () => {
+                                setHoveredBarIndex(null);
+                            }
+                        }
+                    }
+                ]}
+            />
+        </VictoryChart>
+    );
+};
+
+
 const StatsChart = () => {
     const [data, setData] = useState([]);
     const [yearMonth, setYearMonth] = useState("");
@@ -1337,6 +1424,8 @@ const StatsChart = () => {
     const [previousTotal, setPreviousTotal] = useState(0);
     const [currentMonthName, setCurrentMonthName] = useState("");
     const [previousMonthName, setPreviousMonthName] = useState("");
+    const [countsData, setCountsData] = useState("");
+
     const screenWidth = Dimensions.get('window').width;
     const dispatch = useDispatch();
 
@@ -1366,6 +1455,16 @@ const StatsChart = () => {
 
         };
 
+        const fetchCounts = async () => {
+            const documentRef = doc(projectExtensionFirestore, `counts`, `vehicles`);
+            const documentSnapshot = await getDoc(documentRef);
+            const docData = documentSnapshot.data() || {};
+
+            setCountsData(docData);
+
+        }
+
+        fetchCounts();
         fetchData();
         dispatch(setLoadingModalVisible(false));
     }, [yearMonth, type, period]); // Dependencies to trigger re-fetching and re-processing
@@ -1395,6 +1494,8 @@ const StatsChart = () => {
                 borderRadius={5}
                 padding={2}
             >
+
+
                 <HStack space={4} mb={3} justifyContent="center">
                     <Box padding={2} backgroundColor="orange.100" borderRadius={5} alignItems="center">
                         <Text style={{ fontSize: 14, color: "orange.800", fontWeight: "bold" }}>{`${previousMonthName}: ${previousTotal}`}</Text>
@@ -1403,6 +1504,25 @@ const StatsChart = () => {
                         <Text style={{ fontSize: 14, color: "teal.800", fontWeight: "bold" }}>{`${currentMonthName}: ${currentTotal}`}</Text>
                     </Box>
                 </HStack>
+
+                <HStack space={4} mb={3} justifyContent="center">
+                    <Box padding={2} borderRadius={5} alignItems="center">
+                        <Text style={{ fontSize: 14, color: "orange.800", fontWeight: "bold" }}>{`All-Time Total: `}
+                            <Text style={{ fontSize: 14, color: "#FF0000", fontWeight: "bold" }}>{`${countsData.totalCount}`}</Text>
+                        </Text>
+                    </Box>
+                    <Box padding={2} borderRadius={5} alignItems="center">
+                        <Text style={{ fontSize: 14, color: "teal.800", fontWeight: "bold" }}>{`Stocks: `}
+                            <Text style={{ fontSize: 14, color: "#0642F4", fontWeight: "bold" }}>{`${countsData.stockCount}`}</Text>
+                        </Text>
+                    </Box>
+                    <Box padding={2} borderRadius={5} alignItems="center">
+                        <Text style={{ fontSize: 14, color: "teal.800", fontWeight: "bold" }}>{`Sold: `}
+                            <Text style={{ fontSize: 14, color: "#16A34A", fontWeight: "bold" }}>{`${countsData.soldCount}`}</Text>
+                        </Text>
+                    </Box>
+                </HStack>
+
                 <TypeAndPeriodSelectors
                     period={period}
                     setPeriod={setPeriod}
@@ -1411,7 +1531,10 @@ const StatsChart = () => {
                     yearMonth={yearMonth}
                     setYearMonth={setYearMonth}
                 />
-                <VictoryChart
+
+                <MobileChart data={data} period={period} minCount={minCount} maxCount={maxCount} />
+
+                {/* <VictoryChart
                     width={1000}
                     height={1500}  // Increased height for more space
                     theme={VictoryTheme.material}
@@ -1457,7 +1580,7 @@ const StatsChart = () => {
                         labelComponent={<VictoryLabel dx={10} />}
                     />
 
-                </VictoryChart>
+                </VictoryChart> */}
             </Box>
         );
     };
@@ -1479,14 +1602,39 @@ const StatsChart = () => {
                     borderRadius={5}
                     padding={screenWidth <= 960 ? 2 : 5}
                 >
+
                     <HStack space={4} mb={3} justifyContent="center">
-                        <Box padding={2} backgroundColor="orange.100" borderRadius={5} alignItems="center">
-                            <Text style={{ fontSize: 14, color: "orange.800", fontWeight: "bold" }}>{`${previousMonthName}: ${previousTotal}`}</Text>
-                        </Box>
-                        <Box padding={2} backgroundColor="blue.100" borderRadius={5} alignItems="center">
-                            <Text style={{ fontSize: 14, color: "teal.800", fontWeight: "bold" }}>{`${currentMonthName}: ${currentTotal}`}</Text>
-                        </Box>
+
+                        <HStack space={4} mb={3} justifyContent="center">
+                            <Box padding={2} backgroundColor="orange.100" borderRadius={5} alignItems="center">
+                                <Text style={{ fontSize: 14, color: "orange.800", fontWeight: "bold" }}>{`${previousMonthName}: ${previousTotal}`}</Text>
+                            </Box>
+                            <Box padding={2} backgroundColor="blue.100" borderRadius={5} alignItems="center">
+                                <Text style={{ fontSize: 14, color: "teal.800", fontWeight: "bold" }}>{`${currentMonthName}: ${currentTotal}`}</Text>
+                            </Box>
+                        </HStack>
+
+                        <HStack space={4} mb={3} justifyContent="center">
+                            <Box padding={2} borderRadius={5} alignItems="center">
+                                <Text style={{ fontSize: 14, color: "orange.800", fontWeight: "bold" }}>{`All-Time Total: `}
+                                    <Text style={{ fontSize: 14, color: "#FF0000", fontWeight: "bold" }}>{`${countsData.totalCount}`}</Text>
+                                </Text>
+                            </Box>
+                            <Box padding={2} borderRadius={5} alignItems="center">
+                                <Text style={{ fontSize: 14, color: "teal.800", fontWeight: "bold" }}>{`Stocks: `}
+                                    <Text style={{ fontSize: 14, color: "#0642F4", fontWeight: "bold" }}>{`${countsData.stockCount}`}</Text>
+                                </Text>
+                            </Box>
+                            <Box padding={2} borderRadius={5} alignItems="center">
+                                <Text style={{ fontSize: 14, color: "teal.800", fontWeight: "bold" }}>{`Sold: `}
+                                    <Text style={{ fontSize: 14, color: "#16A34A", fontWeight: "bold" }}>{`${countsData.soldCount}`}</Text>
+                                </Text>
+                            </Box>
+                        </HStack>
+
                     </HStack>
+
+
                     <TypeAndPeriodSelectors
                         period={period}
                         setPeriod={setPeriod}
