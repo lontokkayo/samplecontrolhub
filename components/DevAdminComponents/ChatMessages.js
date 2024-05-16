@@ -12903,7 +12903,7 @@ const ChatMessageHeader = () => {
                         ).toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`})
                     </Text>
                     <View style={{ marginTop: 3 }}>
-                        {(!selectedChatData.isCancelled && selectedChatData.stepIndicator.value < 4 )&&<CurrencyPopover />}
+                        {(!selectedChatData.isCancelled && selectedChatData.stepIndicator.value < 4) && <CurrencyPopover />}
                     </View>
                 </View>
 
