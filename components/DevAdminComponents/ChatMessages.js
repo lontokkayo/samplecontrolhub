@@ -1645,9 +1645,7 @@ const ChatInputText = () => {
             addFileMessage();
         }
         if (messageTextInputValue !== '' && imageUri == null && fileUri !== null) {
-            
             addMessage();
-
         }
 
     }
