@@ -72,7 +72,29 @@ import {
 import { useNavigation } from '@react-navigation/core';
 import axios from 'axios';
 import { createUserWithEmailAndPassword, fetchSignInMethodsForEmail, signOut } from 'firebase/auth';
-import { addDoc, collection, doc, getDoc, getFirestore, onSnapshot, setDoc, arrayUnion, updateDoc, query, getDocs, orderBy, startAfter, limit, where, endBefore, endAt, limitToLast, collectionGroup, increment } from 'firebase/firestore';
+import {
+    addDoc,
+    collection,
+    doc,
+    getDoc,
+    getFirestore,
+    onSnapshot,
+    setDoc,
+    arrayUnion,
+    updateDoc,
+    query,
+    getDocs,
+    orderBy,
+    startAfter,
+    limit,
+    where,
+    endBefore,
+    endAt,
+    limitToLast,
+    collectionGroup,
+    increment,
+    runTransaction
+} from 'firebase/firestore';
 import moment from 'moment';
 import { authForCreateUser } from '../../firebasecontrolCreateUser';
 import './../style.css';
@@ -1481,8 +1503,10 @@ const ChatInputText = () => {
 
         if (imageUri) { // Assuming imageFile holds the file to be uploaded
 
+            dispatch(setMessageTextInputValue(''));
             textInputRef.current.clear();
             textInputRef.current.focus();
+            dispatch(setMessageTextInputHeight(50));
             removeImage();
 
             try {
@@ -1620,7 +1644,8 @@ const ChatInputText = () => {
         if (fileUri !== null) {
             addFileMessage();
         }
-        else {
+        if (messageTextInputValue !== '' && imageUri == null && fileUri !== null) {
+            
             addMessage();
 
         }
@@ -5486,6 +5511,39 @@ Real Motor Japan`,
         }
     }
 
+
+    const incrementCountForSold = async (make, model) => {
+        const vehicleCountRef = doc(projectExtensionFirestore, "counts", "vehicles");
+        const makeCountRef = doc(projectExtensionFirestore, "counts", "make");
+        const modelCountRef = doc(projectExtensionFirestore, "counts", "model");
+
+        try {
+            await runTransaction(projectExtensionFirestore, async (transaction) => {
+                const vehicleCountSnap = await transaction.get(vehicleCountRef);
+                const makeCountSnap = await transaction.get(makeCountRef);
+                const modelCountSnap = await transaction.get(modelCountRef);
+
+                if (vehicleCountSnap.exists() && vehicleCountSnap.data().stockCount > 0) {
+                    transaction.update(vehicleCountRef, { stockCount: increment(-1), soldCount: increment(1) });
+                }
+
+                if (makeCountSnap.exists() && makeCountSnap.data()[make] > 0) {
+                    transaction.update(makeCountRef, { [make]: increment(-1) }, { merge: true });
+                }
+
+                if (modelCountSnap.exists() && modelCountSnap.data()[model] > 0) {
+                    transaction.update(modelCountRef, { [model]: increment(-1) }, { merge: true });
+                }
+            });
+
+            console.log("Vehicle count decremented successfully.");
+        } catch (error) {
+            console.error("Failed to decrement vehicle count: ", error);
+        }
+    };
+
+
+
     const confirmPayment = async () => {
         setIsConfirmLoading(true);
 
@@ -5569,6 +5627,7 @@ Real Motor Japan`,
                     await appendSalesInfoDataToCSV(salesDataToSubmit);
                     await delay(10); //10ms delay
                     await addOrUpdatePaidStats();
+                    incrementCountForSold(selectedChatData.carData.make, selectedChatData.carData.model);
                     if (numericInputAmount > amountNeeded) {
                         // Calculate overbalance and execute overBalanceMessage
                         const overBalance = numericInputAmount - amountNeeded;
@@ -11213,6 +11272,40 @@ const ReopenTransaction = () => {
         }
     }
 
+
+
+
+    const decrementCount = async (make, model) => {
+        const vehicleCountRef = doc(projectExtensionFirestore, "counts", "vehicles");
+        const makeCountRef = doc(projectExtensionFirestore, "counts", "make");
+        const modelCountRef = doc(projectExtensionFirestore, "counts", "model");
+
+        try {
+            await runTransaction(projectExtensionFirestore, async (transaction) => {
+                const vehicleCountSnap = await transaction.get(vehicleCountRef);
+                const makeCountSnap = await transaction.get(makeCountRef);
+                const modelCountSnap = await transaction.get(modelCountRef);
+
+                if (vehicleCountSnap.exists() && vehicleCountSnap.data().stockCount > 0) {
+                    transaction.update(vehicleCountRef, { stockCount: increment(-1), });
+                }
+
+                if (makeCountSnap.exists() && makeCountSnap.data()[make] > 0) {
+                    transaction.update(makeCountRef, { [make]: increment(-1) }, { merge: true });
+                }
+
+                if (modelCountSnap.exists() && modelCountSnap.data()[model] > 0) {
+                    transaction.update(modelCountRef, { [model]: increment(-1) }, { merge: true });
+                }
+            });
+
+            console.log("Vehicle count decremented successfully.");
+        } catch (error) {
+            console.error("Failed to decrement vehicle count: ", error);
+        }
+    };
+
+
     const handleReopenTransaction = async () => {
         const response = await axios.get('https://worldtimeapi.org/api/timezone/Asia/Tokyo');
         const { datetime } = response.data;
@@ -11242,6 +11335,11 @@ const ReopenTransaction = () => {
                 } catch (error) {
                     console.error("Error updating document: ", error);
                 }
+
+                if (selectedChatData.stepIndicator.value == 4) {
+                    decrementCount(selectedChatData.carData.make, selectedChatData.carData.model)
+                }
+
                 await reopenTransactionMessage();
 
                 setIsYesLoading(false);
@@ -11493,6 +11591,44 @@ const CancelTransaction = () => {
         }
     }
 
+    const incrementCount = async (make, model) => {
+        const vehicleCountRef = doc(projectExtensionFirestore, "counts", "vehicles");
+        const makeCountRef = doc(projectExtensionFirestore, "counts", "make");
+        const modelCountRef = doc(projectExtensionFirestore, "counts", "model");
+
+        try {
+            await runTransaction(projectExtensionFirestore, async (transaction) => {
+                const vehicleCountSnap = await transaction.get(vehicleCountRef);
+                const makeCountSnap = await transaction.get(makeCountRef);
+                const modelCountSnap = await transaction.get(modelCountRef);
+
+                // Check if the document exists and create with initial count if it doesn't
+
+                if (!vehicleCountSnap.exists()) {
+                    transaction.set(vehicleCountRef, { stockCount: 1, });
+                } else {
+                    transaction.update(vehicleCountRef, { stockCount: increment(1), });
+                }
+
+                if (!makeCountSnap.exists()) {
+                    transaction.set(makeCountRef, { [make]: 1 }, { merge: true });
+                } else {
+                    transaction.set(makeCountRef, { [make]: increment(1) }, { merge: true });
+                }
+
+                if (!modelCountSnap.exists()) {
+                    transaction.set(modelCountRef, { [model]: 1 }, { merge: true });
+                } else {
+                    transaction.set(modelCountRef, { [model]: increment(1) }, { merge: true });
+                }
+            });
+
+            console.log("Vehicle count incremented successfully.");
+        } catch (error) {
+            console.error("Failed to increment vehicle count: ", error);
+        }
+    };
+
     const handleCancelTransaction = async () => {
         const response = await axios.get('https://worldtimeapi.org/api/timezone/Asia/Tokyo');
         const { datetime } = response.data;
@@ -11523,6 +11659,10 @@ const CancelTransaction = () => {
                     console.error("Error updating document: ", error);
                 }
                 await cancelTransactionMessage();
+
+                if (selectedChatData.stepIndicator.value == 4) {
+                    incrementCount(selectedChatData.carData.make, selectedChatData.carData.model);
+                }
 
                 await sendEmail(selectedCustomerData.textEmail, `Transaction Cancelled | Real Motor Japan | Invoice No. ${selectedChatData.invoiceNumber}  (${formattedTimeEmail})`, htmlContent);
 

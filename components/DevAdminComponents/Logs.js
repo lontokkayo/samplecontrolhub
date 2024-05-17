@@ -1257,7 +1257,7 @@ const DesktopChart = ({ data, period, minCount, maxCount, }) => {
 
     return (
         <VictoryChart
-            width={1000}
+            width={1100}
             theme={VictoryTheme.material}
             domainPadding={{ x: period === 'Weekly' ? 40 : 20 }}
 
@@ -1455,14 +1455,24 @@ const StatsChart = () => {
 
         };
 
-        const fetchCounts = async () => {
+        const fetchCounts = () => {
             const documentRef = doc(projectExtensionFirestore, `counts`, `vehicles`);
-            const documentSnapshot = await getDoc(documentRef);
-            const docData = documentSnapshot.data() || {};
 
-            setCountsData(docData);
+            const unsubscribe = onSnapshot(documentRef, (documentSnapshot) => {
+                if (documentSnapshot.exists()) {
+                    const docData = documentSnapshot.data();
+                    setCountsData(docData);
+                } else {
+                    console.log("No such document!");
+                    setCountsData({});
+                }
+            }, (error) => {
+                console.error("Error fetching document: ", error);
+            });
 
+            return unsubscribe;
         }
+
 
         fetchCounts();
         fetchData();
@@ -1596,11 +1606,11 @@ const StatsChart = () => {
                     borderWidth={1}
                     borderColor="#FFF"
                     backgroundColor="#FFF"
-                    marginBottom={screenWidth <= 960 ? '1px' : '5px'}
-                    marginLeft={screenWidth <= 960 ? '1px' : '5px'}
-                    marginRight={screenWidth <= 960 ? '1px' : '5px'}
+                    marginBottom={'5px'}
+                    marginLeft={'5px'}
+                    marginRight={'5px'}
                     borderRadius={5}
-                    padding={screenWidth <= 960 ? 2 : 5}
+                    padding={5}
                 >
 
                     <HStack space={4} mb={3} justifyContent="center">
