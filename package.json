@@ -5,13 +5,15 @@
   "main": "node_modules/expo/AppEntry.js",
   "scripts": {
     "predeploy": "npx expo export:web",
-    "deploy": "gh-pages -d web-build",
+    "deploy-gh-pages": "gh-pages -d web-build",
+    "deploy-firebase": "firebase deploy --project samplermj",
     "start": "expo start",
     "android": "expo start --android",
     "ios": "expo start --ios",
     "web": "expo start --web",
     "build": "set \"GENERATE_SOURCEMAP=false\" && npx react-scripts build",
-    "windows": "react-native run-windows"
+    "windows": "react-native run-windows",
+    "deploy-all": "npm run predeploy && npm run deploy-gh-pages && npm run deploy-firebase"
   },
   "bundler": "metro",
   "dependencies": {

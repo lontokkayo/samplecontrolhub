@@ -1634,7 +1634,7 @@ const ChatInputText = () => {
     };
 
 
-    
+
     const handleSendMessage = () => {
         textInputRef.current.focus();
 
