@@ -1,5 +1,4 @@
 {
-  "homepage": "https://lontokkayo.github.io/samplecontrolhub",
   "name": "samplecontrolhub",
   "version": "1.0.0",
   "main": "node_modules/expo/AppEntry.js",
@@ -11,7 +10,7 @@
     "android": "expo start --android",
     "ios": "expo start --ios",
     "web": "expo start --web",
-    "build": "set \"GENERATE_SOURCEMAP=false\" && npx react-scripts build",
+    "build": "npx expo export:web",
     "windows": "react-native run-windows",
     "deploy-all": "npm run predeploy && npm run deploy-gh-pages && npm run deploy-firebase"
   },

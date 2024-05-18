@@ -8,7 +8,9 @@
       "https://localhost:19006",
       "https://192.168.24.126:19006",
       "https://samplermj.web.app",
-      "https://lontokkayo.github.io/samplecontrolhub/"
+      "https://lontokkayo.github.io/samplecontrolhub/",
+      "https://control-rmj.web.app/",
+      "control-rmj.firebaseapp.com"
     ],
     "method": [
       "GET",
