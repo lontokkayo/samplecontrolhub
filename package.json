@@ -5,8 +5,8 @@
   "main": "node_modules/expo/AppEntry.js",
   "scripts": {
     "predeploy": "npx expo export:web",
-    "deploy-gh-pages": "gh-pages -d web-build",
-    "deploy-firebase": "firebase deploy --project samplermj",
+    "deploy-gh-pages": "npm run predeploy && gh-pages -d web-build",
+    "deploy-firebase": "npm run predeploy && firebase deploy --only hosting --project samplermj",
     "start": "expo start",
     "android": "expo start --android",
     "ios": "expo start --ios",
