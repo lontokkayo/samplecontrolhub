@@ -4,7 +4,7 @@
     "main.js": "/samplecontrolhub/static/js/main.9489aeb8.js",
     "static/js/245.704124dc.chunk.js": "/samplecontrolhub/static/js/245.704124dc.chunk.js",
     "static/js/162.da88e0a0.chunk.js": "/samplecontrolhub/static/js/162.da88e0a0.chunk.js",
-    "static/js/649.5df49f30.js": "/samplecontrolhub/static/js/649.5df49f30.js",
+    "static/js/649.dc9f04be.js": "/samplecontrolhub/static/js/649.dc9f04be.js",
     "static/media/MaterialCommunityIcons.ttf": "/samplecontrolhub/static/media/MaterialCommunityIcons.5d42b4e60858731e7b65.ttf",
     "static/media/RMJ logo for invoice.png": "/samplecontrolhub/static/media/RMJ logo for invoice.260660476b8ac2af1cf6.png",
     "static/media/Ionicons.ttf": "/samplecontrolhub/static/media/Ionicons.3517aeaa34b2f8cd8eef.ttf",
@@ -43,10 +43,10 @@
     "main.9489aeb8.js.map": "/samplecontrolhub/static/js/main.9489aeb8.js.map",
     "245.704124dc.chunk.js.map": "/samplecontrolhub/static/js/245.704124dc.chunk.js.map",
     "162.da88e0a0.chunk.js.map": "/samplecontrolhub/static/js/162.da88e0a0.chunk.js.map",
-    "649.5df49f30.js.map": "/samplecontrolhub/static/js/649.5df49f30.js.map"
+    "649.dc9f04be.js.map": "/samplecontrolhub/static/js/649.dc9f04be.js.map"
   },
   "entrypoints": [
-    "static/js/649.5df49f30.js",
+    "static/js/649.dc9f04be.js",
     "static/css/main.41e8abfd.css",
     "static/js/main.9489aeb8.js"
   ]
