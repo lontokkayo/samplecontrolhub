@@ -1,19 +1,36 @@
-/**
- * Import function triggers from their respective submodules:
- *
- * const {onCall} = require("firebase-functions/v2/https");
- * const {onDocumentWritten} = require("firebase-functions/v2/firestore");
- *
- * See a full list of supported triggers at https://firebase.google.com/docs/functions
- */
+require("@babel/register")({
+    presets: ["@babel/preset-env", "@babel/preset-react"]
+});
 
-// const {onRequest} = require("firebase-functions/v2/https");
-// const logger = require("firebase-functions/logger");
+const functions = require("firebase-functions");
+const express = require("express");
+const React = require("react");
+const ReactDOMServer = require("react-dom/server");
+const path = require("path");
+const fs = require("fs");
 
-// Create and deploy your first functions
-// https://firebase.google.com/docs/functions/get-started
+const App = require("../App_SSR").default; // Adjust path if necessary
 
-// exports.helloWorld = onRequest((request, response) => {
-//   logger.info("Hello logs!", {structuredData: true});
-//   response.send("Hello from Firebase!");
-// });
+const app = express();
+
+// Serve static files from the Expo web build
+app.use(express.static(path.resolve(__dirname, "../web-build")));
+
+// SSR for the main app
+app.get("/*", (req, res) => {
+    const appStream = ReactDOMServer.renderToString(React.createElement(App));
+
+    const indexFile = path.resolve(__dirname, "../web-build/index.html");
+    fs.readFile(indexFile, "utf8", (err, data) => {
+        if (err) {
+            console.error("Something went wrong:", err);
+            return res.status(500).send("Oops, better luck next time!");
+        }
+
+        return res.send(
+            data.replace('<div id="root"></div>', `<div id="root">${appStream}</div>`)
+        );
+    });
+});
+
+exports.ssr = functions.https.onRequest(app);

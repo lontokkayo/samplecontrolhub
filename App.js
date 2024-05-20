@@ -36,6 +36,9 @@ import './style.css';
 import { Provider } from 'react-redux';
 import store from './components/DevAdminComponents/redux/store';
 import { HashRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
+import FastImage from 'react-native-fast-image-web-support';
+
+const logo = require('./assets/RMJ C-Hub 制御ハブ.png');
 
 
 const StackNavigator = createNativeStackNavigator();
@@ -54,18 +57,35 @@ export default function App() {
     if (initializing) setInitializing(false);
   }
 
-
   useEffect(() => {
-    const subscriber = auth.onAuthStateChanged(onAuthStateChanged)
-
-    return subscriber;
-  }, [])
-
+    const auth = getAuth();
+    const subscriber = auth.onAuthStateChanged(onAuthStateChanged);
+    return subscriber; // unsubscribe on unmount
+  }, []);
 
   if (initializing) {
-    return null; // or a loading screen if needed
+    return (
+      <NativeBaseProvider>
+        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
+          <VStack space={4} alignItems="center">
+            <Box w={[300, 400, 550]} h={[94, 125, 172]}>
+              <FastImage
+                source={{
+                  uri: logo,
+                  priority: FastImage.priority.normal,
+                }}
+                style={{
+                  flex: 1,
+                }}
+                resizeMode={FastImage.resizeMode.stretch}
+              />
+            </Box>
+            <Spinner size="lg" color={'white'} />
+          </VStack>
+        </div>
+      </NativeBaseProvider>
+    ); // Show a loading spinner
   }
-
 
   const config = {
     screens: {
@@ -83,7 +103,6 @@ export default function App() {
           'ADD C-HUB ACCOUNT': 'AddCHubAccount',
         },
       },
-
     },
   };
 
@@ -94,11 +113,11 @@ export default function App() {
 
   const style = document.createElement('style');
   style.textContent = `
-  body, html {
-    overscroll-behavior-x: none;
-    overscroll-behavior-y: none;
-  }
-`;
+    body, html {
+      overscroll-behavior-x: none;
+      overscroll-behavior-y: none;
+    }
+  `;
 
   document.head.append(style);
 
@@ -110,34 +129,12 @@ export default function App() {
           <Route path="/Login" element={<LoginPage />} />
           <Route path="/Login/*" element={<LoginPage />} />
           <Route path="/Checkpoint" element={<Checkpoint />} />
-          {/* Corrected path for Admin if needed */}
           <Route path="/top/*" element={<Top />} />
-          {/* Define other routes */}
+          <Route path="/ResetPassword" element={<ResetPassword />} />
+          <Route path="/ResetPasswordSuccess" element={<ResetPasswordSuccess />} />
         </Routes>
       </Router>
     </Provider>
-    // <Router>
-    //   <Provider store={store}>
-    //     <NativeBaseProvider>
-    //       {/* <LoginPage/> */}
-    //       <NavigationContainer linking={linking}>
-    //         <StackNavigator.Navigator options={{ headerShown: false }}>
-    //           <StackNavigator.Screen options={{ headerShown: false, }} name="Login" component={LoginPage} />
-    //           <StackNavigator.Screen options={{ headerShown: false, }} name="Checkpoint" component={Checkpoint} />
-    //           <StackNavigator.Screen options={{ headerShown: false, unmountOnBlur: true }} name="devadmin" component={DevAdmin} />
-    //           <StackNavigator.Screen options={{ headerShown: false }} name="admin" component={Admin} />
-    //           <StackNavigator.Screen options={{ headerShown: false }} name="ResetPassword" component={ResetPassword} />
-    //           <StackNavigator.Screen options={{ headerShown: false }} name="ResetPasswordSuccess" component={ResetPasswordSuccess} />
-    //           {/* {user ? (<StackNavigator.Screen options={{ headerShown: false }} name="Checkpoint" component={Checkpoint} /> ) : user ?
-    //       (<StackNavigator.Screen options={{ headerShown: false }} name="superadmin" component={SuperAdmin} />) : user ?
-    //       (<StackNavigator.Screen options={{ headerShown: false }} name="admin" component={Admin} />) :  (
-    //       <StackNavigator.Screen  options={{ headerShown: false }} name="Login" component={LoginPage} />
-    //     )} */}
-    //         </StackNavigator.Navigator>
-    //       </NavigationContainer>
-    //     </NativeBaseProvider>
-    //   </Provider>
-    // </Router>
   );
 }
 
