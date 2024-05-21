@@ -351,7 +351,7 @@ export default function Top({ navigation }) {
         <Route path="chat-messages" element={<ChatMessages />} />
         <Route path="chat-messages/:chatId" element={<ChatMessages />} />
         <Route path="freight" element={<Freight />} />
-        <Route path="add-new-vehicle" element={<AddVehicle />} />
+        <Route path="add-new-vehicle" element={<AddVehicleComponent />} />
         <Route path="logs" element={<Logs />} />
         <Route path="vehicle-list" element={<VehicleList />} />
         <Route path="account-list" element={<AccountList />} />

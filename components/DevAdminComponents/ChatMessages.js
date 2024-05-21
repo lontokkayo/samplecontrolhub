@@ -5580,11 +5580,10 @@ Real Motor Japan`,
         }
 
 
-        const prepareSalesData = () => {
-            // Initial data from the function call
+        const prepareSalesData = (newId) => {
             let salesData = {
-                id: selectedVehicleData.jackall_id,
-                stock_system_id: selectedChatData.carData.stockID,
+                id: newId,
+                stock_system_id: selectedVehicleData.jackall_id,
                 sales_date: formattedSalesDate,
                 fob: invoiceData.paymentDetails.fobPrice,
                 freight: invoiceData.paymentDetails.freightPrice,
@@ -5612,6 +5611,36 @@ Real Motor Japan`,
             return salesData;
         };
 
+        const updateSalesData = async () => {
+            try {
+                const countsDocRef = doc(projectExtensionFirestore, "counts", "jackall_ids");
+
+                await runTransaction(projectExtensionFirestore, async (transaction) => {
+                    const countsDoc = await transaction.get(countsDocRef);
+                    if (!countsDoc.exists()) {
+                        throw new Error("Document does not exist!");
+                    }
+
+                    const currentId = countsDoc.data()["vehicle-ftp-id"];
+                    const newId = currentId + 1;
+
+                    // Prepare sales data with the new ID
+                    const salesData = prepareSalesData(newId);
+
+                    // Add your sales data to the appropriate collection
+                    const salesDocRef = doc(projectExtensionFirestore, "sales", newId.toString());
+                    transaction.set(salesDocRef, salesData);
+
+                    // Update the vehicle-ftp-id in the counts collection
+                    transaction.update(countsDocRef, { "vehicle-ftp-id": increment(1) });
+                });
+
+                console.log("Transaction successfully committed!");
+            } catch (e) {
+                console.error("Transaction failed: ", e);
+            }
+        };
+
         const salesDataToSubmit = prepareSalesData();
 
         try {
@@ -5624,9 +5653,10 @@ Real Motor Japan`,
                     // Once paymentMessage is successful, execute fullPaymentMessage
                     await fullPaymentMessage();
                     await appendSalesInfoDataToCSV(salesDataToSubmit);
-                    await delay(10); //10ms delay
                     await addOrUpdatePaidStats();
+                    await updateSalesData();
                     incrementCountForSold(selectedChatData.carData.make, selectedChatData.carData.model);
+                    await delay(10); //10ms delay
                     if (numericInputAmount > amountNeeded) {
                         // Calculate overbalance and execute overBalanceMessage
                         const overBalance = numericInputAmount - amountNeeded;
