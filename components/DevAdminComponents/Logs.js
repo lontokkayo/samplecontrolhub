@@ -4,7 +4,6 @@ import {
     Input,
     Icon,
     Stack,
-
     Center,
     PresenceTransition,
     NativeBaseProvider,
@@ -137,6 +136,7 @@ let globalChatId;
 //       console.error("Error adding keywords to logs collection:", error);
 //     }
 //   }
+
 const LoadingModal = () => {
     const loadingModalVisible = useSelector((state) => state.loadingModalVisible);
 
@@ -1678,14 +1678,23 @@ const LogsNavigation = () => {
     const dispatch = useDispatch();
     const [selectedButtonState, setSelectedButtonState] = useState(defaultSelectedButton);
 
+    useEffect(() => {
+
+        dispatch(setSelectedLogsButton('stats')); //Resets Logs Navigation
+
+    }, [])
 
     const handlePress = (button) => {
         if (button !== selectedButtonState) {
             dispatch(setLoadingModalVisible(true));
         }
+        else {
+            return null;
+        }
         dispatch(setSelectedLogsButton(button));
         setSelectedButtonState(button);
     };
+
 
     return (
         <View style={{ flexDirection: 'row', justifyContent: 'center', alignItems: 'center', width: screenWidth >= 960 ? '50%' : '90%' }}>
@@ -1777,6 +1786,7 @@ export default function Logs() {
     const [email, setEmail] = useState('');
     const [name, setName] = useState('');
     const loginName = useSelector((state) => state.loginName);
+    const selectedLogsButton = useSelector((state) => state.selectedLogsButton);
     const [screenWidth, setScreenWidth] = useState(Dimensions.get('window').width);
 
     // const navigation = useNavigation();
@@ -1813,7 +1823,6 @@ export default function Logs() {
 
 
     useEffect(() => {
-
         const updateWidth = () => {
             const newWidth = Dimensions.get('window').width;
             setScreenWidth(newWidth); // Update the screenWidth state
@@ -1823,6 +1832,7 @@ export default function Logs() {
         Dimensions.addEventListener('change', updateWidth);
 
         const fetchData = async () => {
+
             try {
                 const q = query(collection(db, 'logs'), orderBy('timestamp', 'desc'));
                 const unsubscribe = onSnapshot(q, (snapshot) => {

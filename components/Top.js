@@ -350,12 +350,12 @@ export default function Top({ navigation }) {
         <Route path="parse-csv" element={<ParseCSV />} />
         <Route path="chat-messages" element={<ChatMessages />} />
         <Route path="chat-messages/:chatId" element={<ChatMessages />} />
-        <Route path="freight" element={<FreightComponent />} />
-        <Route path="add-new-vehicle" element={<AddVehicleComponent />} />
-        <Route path="logs" element={<LogsComponent />} />
-        <Route path="vehicle-list" element={<VehicleListComponent />} />
-        <Route path="account-list" element={<AccountListComponent />} />
-        <Route path="add-c-hub-account" element={<AddAccountComponent />} />
+        <Route path="freight" element={<Freight />} />
+        <Route path="add-new-vehicle" element={<AddVehicle />} />
+        <Route path="logs" element={<Logs />} />
+        <Route path="vehicle-list" element={<VehicleList />} />
+        <Route path="account-list" element={<AccountList />} />
+        <Route path="add-c-hub-account" element={<AddAccount />} />
         {/* Add additional nested routes as needed */}
       </Routes>
     </NativeBaseProvider>
