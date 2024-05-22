@@ -75,6 +75,8 @@ import Svg, { Rect } from 'react-native-svg';
 import { AES } from 'crypto-js';
 import { CRYPTO_KEY, CRYPTO_KEY_API } from '@env';
 
+let selectedType = "Offer";
+let selectedPeriod = "Daily";
 const { width, height } = Dimensions.get('window');
 
 const firestore = getFirestore();
@@ -865,8 +867,11 @@ const fetchStatsData = async (yearMonth, type, period) => {
                     // Fetch data for each field (assuming each field contains an array of items)
                     const fieldPromises = Object.keys(docData).map(async (field) => {
                         const fieldData = docData[field];
-                        // Example: Adjust the way fieldData is fetched or processed if necessary
-                        return { [field]: fieldData };
+
+                        // Sort fieldData by timestamp if it contains items with timestamp property
+                        const sortedFieldData = fieldData.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+
+                        return { [field]: sortedFieldData };
                     });
 
                     data = await Promise.all(fieldPromises);
@@ -880,7 +885,8 @@ const fetchStatsData = async (yearMonth, type, period) => {
             }));
 
             return monthlyData;
-        } else {
+        }
+        else {
             // Existing logic for daily data
             const documentRef = doc(projectExtensionFirestore, `${type}`, `${yearMonth}`);
             const documentSnapshot = await getDoc(documentRef);
@@ -1024,6 +1030,7 @@ const TypeAndPeriodSelectors = ({ period, setPeriod, type, setType, yearMonth, s
                     }}
                     mt={1}
                     onValueChange={(value) => {
+                        selectedPeriod = value;
                         setPeriod(value);
                         // Update yearMonth when switching periods; set to currentYear if "Monthly" is selected
                         if (value === "Monthly") {
@@ -1050,7 +1057,10 @@ const TypeAndPeriodSelectors = ({ period, setPeriod, type, setType, yearMonth, s
                         endIcon: <CheckIcon size="5" />
                     }}
                     mt={1}
-                    onValueChange={(value) => setType(value)}
+                    onValueChange={(value) => {
+                        setType(value);
+                        selectedType = value;
+                    }}
                 >
                     <Select.Item label="Offer" value="Offer" />
                     <Select.Item label="Orders" value="Orders" />
@@ -1109,7 +1119,7 @@ const handleChatPressNewTab = async (chatId) => {
     // globalCustomerId = customerId;
     globalChatId = chatId;
 
-    console.log(fullPath)
+    // console.log(fullPath)
 };
 
 const renderModalContent = () => {
@@ -1118,9 +1128,19 @@ const renderModalContent = () => {
     const [hoveredIndex, setHoveredIndex] = useState(null);
     const statsData = useSelector((state) => state.statsData);
 
+    const parseTimestamp = (timestamp) => {
+        if (!timestamp) return new Date(0); // Return an early date if the timestamp is undefined
+        const [datePart, timePart] = timestamp.split(' - ');
+        const [year, month, day] = datePart.split('/').map(Number);
+        const [hours, minutes, seconds] = timePart.split(':').map(Number);
+        return new Date(year, month - 1, day, hours, minutes, seconds);
+    };
+
     useEffect(() => {
         if (statsData && statsData.length > 0) {
-            setDisplayedTransactions(statsData.slice(-5)); // Show the last 5 transactions
+            // Create a shallow copy of the array before sorting
+            const sortedData = [...statsData].sort((a, b) => parseTimestamp(b.timestamp) - parseTimestamp(a.timestamp)); // Sort by timestamp in descending order
+            setDisplayedTransactions(sortedData.slice(0, 5)); // Show the last 5 transactions
         }
     }, [statsData]);
 
@@ -1129,14 +1149,15 @@ const renderModalContent = () => {
 
         const remainingItems = statsData.length - displayedTransactions.length;
         const nextItemsCount = remainingItems >= 5 ? 5 : remainingItems;
-        const nextItems = statsData.slice(statsData.length - displayedTransactions.length - nextItemsCount, statsData.length - displayedTransactions.length);
+        const sortedData = [...statsData].sort((a, b) => parseTimestamp(b.timestamp) - parseTimestamp(a.timestamp)); // Ensure the data is sorted
+        const nextItems = sortedData.slice(displayedTransactions.length, displayedTransactions.length + nextItemsCount);
 
         if (nextItems.length === 0) return; // Stop loading if no new data
 
         setLoadingMore(true);
 
         setTimeout(() => { // Simulate network request
-            setDisplayedTransactions((prevTransactions) => [...nextItems, ...prevTransactions]); // Prepend new items
+            setDisplayedTransactions((prevTransactions) => [...prevTransactions, ...nextItems]); // Append new items
             setLoadingMore(false);
         }, 500); // Adjust the timeout as needed
     };
@@ -1146,7 +1167,6 @@ const renderModalContent = () => {
     };
 
     return (
-
         <ScrollView
             style={{ flex: 1, paddingHorizontal: 5, maxHeight: 500 }}
             onScroll={({ nativeEvent }) => {
@@ -1156,58 +1176,63 @@ const renderModalContent = () => {
             }}
             scrollEventThrottle={400} // Adjust as needed
         >
-            {displayedTransactions.slice().reverse().map((item, index) => {
-                const isHovered = hoveredIndex === index;
+            {displayedTransactions
+                .slice()
+                .map((item, index) => {
+                    const isHovered = hoveredIndex === index;
 
-                return (
-                    <Pressable
-                        key={index}
-                        onPress={() => handleChatPressNewTab(`chat_${item.stockId}_${item.customerEmail}`)}
-                        onMouseEnter={() => setHoveredIndex(index)}
-                        onMouseLeave={() => setHoveredIndex(null)}
-                        style={{
-                            marginBottom: 15,
-                            backgroundColor: isHovered ? '#F2F2F2' : '#FFFFFF',
-                            borderRadius: 10,
-                            shadowColor: '#000',
-                            shadowOffset: { width: 0, height: 2 },
-                            shadowOpacity: 0.1,
-                            shadowRadius: 2,
-                            elevation: 3,
-                            padding: 5,
-                            borderBottomWidth: 1,
-                            borderBottomColor: '#eee',
-                            flexDirection: 'row',
-                            alignItems: 'center',
-                        }}
-                    >
-                        <View>
-                            <FastImage
-                                source={{ uri: item.imageUrl, priority: FastImage.priority.normal }}
-                                style={{
-                                    width: 60,
-                                    height: 60,
-                                    borderRadius: 30,
-                                    alignSelf: 'center',
-                                    margin: 10,
-                                }}
-                                resizeMode={FastImage.resizeMode.stretch}
-                            />
-                        </View>
-                        <VStack>
-                            <Text fontSize="14" fontWeight="bold" color="black" mb={1}>
-                                <Text color="#0029A3" isTruncated>{item.customerName}</Text>
-                            </Text>
-                            <Text fontSize="14" fontWeight="bold" color="black" mb={1}>
-                                <Text color="#0A78BE" isTruncated>{item.carName}</Text>
-                            </Text>
-                            <Text fontSize="14" fontWeight="bold" color="black" mb={1}>
-                                <Text color="#333" isTruncated>{item.referenceNumber}</Text>
-                            </Text>
-                        </VStack>
-                    </Pressable>
-                );
-            })}
+                    return (
+                        <Pressable
+                            key={item.stockId} // Use a unique key, such as item.stockId
+                            onPress={() => handleChatPressNewTab(`chat_${item.stockId}_${item.customerEmail}`)}
+                            onMouseEnter={() => setHoveredIndex(index)}
+                            onMouseLeave={() => setHoveredIndex(null)}
+                            style={{
+                                marginBottom: 15,
+                                backgroundColor: isHovered ? '#F2F2F2' : '#FFFFFF',
+                                borderRadius: 10,
+                                shadowColor: '#000',
+                                shadowOffset: { width: 0, height: 2 },
+                                shadowOpacity: 0.1,
+                                shadowRadius: 2,
+                                elevation: 3,
+                                padding: 5,
+                                borderBottomWidth: 1,
+                                borderBottomColor: '#eee',
+                                flexDirection: 'row',
+                                alignItems: 'center',
+                            }}
+                        >
+                            <View>
+                                <FastImage
+                                    source={{ uri: item.imageUrl, priority: FastImage.priority.normal }}
+                                    style={{
+                                        width: 60,
+                                        height: 60,
+                                        borderRadius: 30,
+                                        alignSelf: 'center',
+                                        margin: 10,
+                                    }}
+                                    resizeMode={FastImage.resizeMode.stretch}
+                                />
+                            </View>
+                            <VStack>
+                                <Text fontSize="14" fontWeight="bold" mb={1}>
+                                    <Text color="#0029A3" isTruncated>{item.customerName}</Text>
+                                </Text>
+                                <Text fontSize="14" fontWeight="bold" mb={1}>
+                                    <Text color="#0A78BE" isTruncated>{item.carName}</Text>
+                                </Text>
+                                <Text fontSize="14" fontWeight="bold" mb={1}>
+                                    <Text color="#333" isTruncated>{item.referenceNumber}</Text>
+                                </Text>
+                                <Text fontSize="12" mb={1}>
+                                    <Text color="#586369" isTruncated>{item.timestamp}</Text>
+                                </Text>
+                            </VStack>
+                        </Pressable>
+                    );
+                })}
 
             <View style={{ height: 20 }}>
                 {loadingMore && <Spinner size='sm' color="#7B9CFF" />}
@@ -1215,7 +1240,6 @@ const renderModalContent = () => {
         </ScrollView>
     );
 };
-
 const StatsModalComponent = () => {
     const dispatch = useDispatch();
     const statsModalVisible = useSelector((state) => state.statsModalVisible);
@@ -1226,7 +1250,7 @@ const StatsModalComponent = () => {
             <Modal.Content>
                 <Modal.CloseButton />
                 <Modal.Header style={{ backgroundColor: 'white', textAlign: 'center', fontSize: 18, fontWeight: 'bold', color: '#333' }}>
-                    Transactions
+                    {`Transactions (${selectedPeriod} ${selectedType})`}
                 </Modal.Header>
                 <Modal.Body>
                     {renderModalContent()}
@@ -1252,7 +1276,7 @@ const DesktopChart = ({ data, period, minCount, maxCount, }) => {
 
         dispatch(setStatsData(datum.data))
         dispatch(setStatsModalVisible(true));
-        console.log(datum);
+        // console.log(datum);
     };
 
     return (
@@ -1344,7 +1368,7 @@ const MobileChart = ({ data, period, minCount, maxCount, }) => {
 
         dispatch(setStatsData(datum.data))
         dispatch(setStatsModalVisible(true));
-        console.log(datum);
+        // console.log(datum);
     };
 
     return (
@@ -1429,6 +1453,7 @@ const StatsChart = () => {
     const screenWidth = Dimensions.get('window').width;
     const dispatch = useDispatch();
 
+
     useEffect(() => {
         const fetchData = async () => {
             const effectiveDate = yearMonth || await fetchCurrentDate();
@@ -1445,7 +1470,7 @@ const StatsChart = () => {
             const previousTotal = calculateTotal(processedPreviousData);
 
             setData(processedData);
-            console.log(processedData);
+            // console.log(processedData);
             setCurrentTotal(currentTotal);
             setPreviousTotal(previousTotal);
             if (period !== 'Monthly') {

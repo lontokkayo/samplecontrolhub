@@ -5478,6 +5478,7 @@ Real Motor Japan`,
         try {
             const response = await axios.get('https://worldtimeapi.org/api/timezone/Asia/Tokyo');
             const datetime = response.data.datetime; // ISO 8601 format: YYYY-MM-DDTHH:mm:ss.ssssss±hh:mm
+            const formattedDateTime = moment(datetime).format('YYYY/MM/DD - HH:mm:ss');
             const year = datetime.slice(0, 4);
             const month = datetime.slice(5, 7);
             const day = datetime.slice(8, 10);
@@ -5494,6 +5495,7 @@ Real Motor Japan`,
                     imageUrl: carImageUrl,
                     stockId: selectedChatData.carData.stockID,
                     referenceNumber: selectedChatData.carData.referenceNumber,
+                    timestamp: formattedDateTime,
 
                 };
 
@@ -5627,9 +5629,7 @@ Real Motor Japan`,
                     // Prepare sales data with the new ID
                     const salesData = prepareSalesData(newId);
 
-                    // Add your sales data to the appropriate collection
-                    const salesDocRef = doc(projectExtensionFirestore, "sales", newId.toString());
-                    transaction.set(salesDocRef, salesData);
+                    await appendSalesInfoDataToCSV(salesData);
 
                     // Update the vehicle-ftp-id in the counts collection
                     transaction.update(countsDocRef, { "vehicle-ftp-id": increment(1) });
@@ -5652,7 +5652,6 @@ Real Motor Japan`,
                 if (numericInputAmount >= amountNeeded) {
                     // Once paymentMessage is successful, execute fullPaymentMessage
                     await fullPaymentMessage();
-                    await appendSalesInfoDataToCSV(salesDataToSubmit);
                     await addOrUpdatePaidStats();
                     await updateSalesData();
                     incrementCountForSold(selectedChatData.carData.make, selectedChatData.carData.model);
@@ -14665,6 +14664,7 @@ export default function ChatMessages() {
 
         // Clean up the event listener when the component unmounts or re-renders
 
+
         const fetchIpAndCountry = async () => {
             try {
                 // dispatch(setChatMessageBoxLoading(true));
@@ -14680,6 +14680,12 @@ export default function ChatMessages() {
                     ipCountry = fetchedIpCountry;
                     // dispatch(setChatMessageBoxLoading(false));
                 }
+
+                const response = await axios.get('https://worldtimeapi.org/api/timezone/Asia/Tokyo');
+                const { datetime } = response.data;
+                const formattedTime = moment(datetime).format('YYYY/MM/DD - HH:mm:ss');
+
+                console.log(formattedTime)
 
             } catch (error) {
                 console.error('Error fetching IP data:', error);

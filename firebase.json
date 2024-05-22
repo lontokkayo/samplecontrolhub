@@ -12,7 +12,8 @@
         ".git",
         "firebase-debug.log",
         "firebase-debug.*.log"
-      ]
+      ],
+      "runtime": "nodejs14"
     }
   ],
   "hosting": {
@@ -61,6 +62,8 @@
         "source": "**",
         "function": "ssr"
       }
-    ]
+    ],
+    "redirects": [],
+    "cleanUrls": true
   }
 }

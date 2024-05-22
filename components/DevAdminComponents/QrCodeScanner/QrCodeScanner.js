@@ -1237,17 +1237,45 @@ const QRCodeScanner = () => {
             </Modal>
 
 
-            <Modal isOpen={isScanning} onClose={() => setIsScanning(false)} size="lg">
-                <View
-                    style={{ backgroundColor: 'black', }}
-                >
-                    {isScanning && <Webcam ref={webcamRef}
-                        style={{
-                            width: screenWidth < mobileViewBreakpoint ? 300 : 500,
-                            height: screenWidth < mobileViewBreakpoint ? 300 : 500,
-                        }} videoConstraints={{ facingMode: "environment" }} />}
-                </View>
+            <Modal isOpen={isScanning} onClose={() => setIsScanning(false)} size="lg" useRNModal>
+                {isScanning &&
+                    <View style={{ backgroundColor: 'black', }}>
+                        <View style={{
+                            backgroundColor: 'rgba(0,0,0, 0.3)',
+                            padding: 8,
+                            borderRadius: 5,
+                            width: '100%',
+                            alignSelf: 'center',
+                            position: 'absolute',
 
+                        }}>
+                            <Text style={{
+                                fontWeight: 700,
+                                fontSize: 12,
+                                color: 'white',
+                                alignSelf: 'center',
+                            }}>
+                                {`Scan Invoice QR Code`}
+                            </Text>
+                        </View>
+
+
+                        <Webcam
+                            ref={webcamRef}
+                            style={{
+                                borderWidth: 2,
+                                borderColor: 'white',
+                                padding: 1,
+                                borderRadius: 5,
+                                marginTop: 2,
+                                width: screenWidth < mobileViewBreakpoint ? 300 : 500,
+                                height: screenWidth < mobileViewBreakpoint ? 300 : 500,
+                            }}
+                            videoConstraints={{ facingMode: "environment" }} />
+
+
+                    </View>
+                }
 
             </Modal>
 
