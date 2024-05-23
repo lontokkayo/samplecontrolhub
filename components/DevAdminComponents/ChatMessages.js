@@ -5584,36 +5584,37 @@ Real Motor Japan`,
 
         const prepareSalesData = (newId) => {
             let salesData = {
-                id: newId,
-                stock_system_id: selectedVehicleData.jackall_id,
-                sales_date: formattedSalesDate,
-                fob: invoiceData.paymentDetails.fobPrice,
-                freight: invoiceData.paymentDetails.freightPrice,
-                insurance: 0,
-                inspection: invoiceData.paymentDetails.inspectionIsChecked ? invoiceData.paymentDetails.inspectionPrice : 0,
-                coupon_discount: 0,
-                price_discount: 0,
-                subtotal: parseFloat(invoiceData.paymentDetails.totalAmount.replace(/,/g, '')),
-                clients: selectedCustomerData.j_id
+                id: `${newId}`,
+                stock_system_id: `${selectedVehicleData.jackall_id}`,
+                sales_date: `${formattedSalesDate}`,
+                fob: `${Math.round(invoiceData.paymentDetails.fobPrice)}`,
+                freight: `${Math.round(invoiceData.paymentDetails.freightPrice)}`,
+                insurance: `0`,
+                inspection: `${Math.round(invoiceData.paymentDetails.inspectionIsChecked ? invoiceData.paymentDetails.inspectionPrice : 0)}`,
+                coupon_discount: `0`,
+                price_discount: `0`,
+                subtotal: `${Math.round(parseFloat(invoiceData.paymentDetails.totalAmount.replace(/,/g, '')))}`,
+                clients: `${selectedCustomerData.j_id}`,
+                sales_pending: `NULL`
             };
 
             // Map additional names and prices to cost_name and cost fields
             invoiceData.paymentDetails.additionalName.forEach((name, index) => {
                 const price = invoiceData.paymentDetails.additionalPrice[index] || 0;
-                salesData[`cost_name${index + 1}`] = name;
-                salesData[`cost${index + 1}`] = price;
+                salesData[`cost_name${index + 1}`] = `${name}`;
+                salesData[`cost${index + 1}`] = `${Math.round(price)}`;
             });
 
             // Fill remaining cost_name and cost fields with default values if they haven't been set
             for (let i = invoiceData.paymentDetails.additionalName.length + 1; i <= 5; i++) {
-                salesData[`cost_name${i}`] = 0;
-                salesData[`cost${i}`] = 0;
+                salesData[`cost_name${i}`] = `${0}`;
+                salesData[`cost${i}`] = `${Math.round(0)}`;
             }
 
             return salesData;
         };
 
-        const updateSalesData = async () => {
+        const incrementJackallId = async () => {
             try {
                 const countsDocRef = doc(projectExtensionFirestore, "counts", "jackall_ids");
 
@@ -5630,7 +5631,7 @@ Real Motor Japan`,
                     const salesData = prepareSalesData(newId);
 
                     await appendSalesInfoDataToCSV(salesData);
-
+                    console.log(salesData);
                     // Update the vehicle-ftp-id in the counts collection
                     transaction.update(countsDocRef, { "vehicle-ftp-id": increment(1) });
                 });
@@ -5653,7 +5654,7 @@ Real Motor Japan`,
                     // Once paymentMessage is successful, execute fullPaymentMessage
                     await fullPaymentMessage();
                     await addOrUpdatePaidStats();
-                    await updateSalesData();
+                    await incrementJackallId();
                     incrementCountForSold(selectedChatData.carData.make, selectedChatData.carData.model);
                     await delay(10); //10ms delay
                     if (numericInputAmount > amountNeeded) {
@@ -5890,9 +5891,9 @@ Real Motor Japan`,
                                 Confirm
                             </Text>
                         </Pressable>
+
                     ) : (
                         <Spinner size={'sm'} color={'white'} />)}
-
                 </View>
             </View>
 
@@ -8811,10 +8812,13 @@ const PreviewInvoice = () => {
     // npm install html2canvas jspdf
     // import jsPDF from 'jspdf';
     // import html2canvas from 'html2canvas';
+
     const dispatch = useDispatch();
+
     const selectedChatData = useSelector((state) => state.selectedChatData);
     const previewInvoiceVisible = useSelector((state) => state.previewInvoiceVisible);
     const invoiceData = useSelector((state) => state.invoiceData);
+
     const [isPreviewHovered, setIsPreviewHovered] = useState(false);
     const screenWidth = Dimensions.get('window').width;
     const invoiceRef = useRef(null);
@@ -8903,7 +8907,7 @@ const PreviewInvoice = () => {
 
     useEffect(() => {
         setCapturedImageUri(capturedImageUri);
-    }, [capturedImageUri])
+    }, [capturedImageUri]);
 
     const captureImage = async () => {
         try {
@@ -14680,12 +14684,6 @@ export default function ChatMessages() {
                     ipCountry = fetchedIpCountry;
                     // dispatch(setChatMessageBoxLoading(false));
                 }
-
-                const response = await axios.get('https://worldtimeapi.org/api/timezone/Asia/Tokyo');
-                const { datetime } = response.data;
-                const formattedTime = moment(datetime).format('YYYY/MM/DD - HH:mm:ss');
-
-                console.log(formattedTime)
 
             } catch (error) {
                 console.error('Error fetching IP data:', error);

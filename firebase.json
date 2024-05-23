@@ -22,7 +22,8 @@
     "ignore": [
       "firebase.json",
       "**/.*",
-      "**/node_modules/**"
+      "**/node_modules/**",
+      "**/*.map"
     ],
     "headers": [
       {
@@ -31,7 +32,7 @@
           {
             "key": "Cache-Control",
             "value": "max-age=31536000"
-          },
+          }, 
           {
             "key": "Content-Encoding",
             "value": "gzip"
