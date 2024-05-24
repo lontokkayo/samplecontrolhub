@@ -2551,7 +2551,7 @@ const CountriesTable = () => {
             const formattedCountryCode = countryCode.replace(/\./g, '_'); // Replace dots with underscores or any other valid character
 
             // Specify the field using dot notation for the nested field
-            const insuranceField = `${formattedCountryCode}.insurance`;
+            const insuranceField = `${formattedCountryCode}.insuranceRestricted`;
 
             try {
                 if (currentValue == newValue) {
@@ -2757,13 +2757,14 @@ const CountriesTable = () => {
 
                                 <View style={{ flex: 1, marginHorizontal: 5, justifyContent: 'center', alignItems: 'center', }}>
                                     <BouncyCheckbox
+                                        iconStyle={{
+                                            borderColor: 'black',
+                                        }}
                                         size={25}
-                                        fillColor="#0642F4"
-                                        unfillColor="#FFFFFF"
-                                        innerIconStyle={{ borderWidth: 2 }}
-                                        textStyle={{ fontFamily: "JosefinSans-Regular" }}
-                                        isChecked={item.insurance ? item.insurance : false}
-                                        onPress={(isChecked) => handleUpdateInsurance(isChecked, item.insurance ? item.insurance : false, item.country)}
+                                        fillColor={"#DC2626"} // Transparent fill color to remove the check icon
+                                        unfillColor="#16A34A"
+                                        isChecked={item.insuranceRestricted ? item.insuranceRestricted : false}
+                                        onPress={(isChecked) => handleUpdateInsurance(isChecked, item.insuranceRestricted ? item.insuranceRestricted : false, item.country)}
                                     />
                                 </View>
                                 <View style={{ flexDirection: 'row', flex: screenWidth < 1700 ? 2 : 1, marginHorizontal: 5 }}>
@@ -2945,11 +2946,12 @@ const CountriesTable = () => {
 
                                         <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', borderBottomWidth: 1, borderBottomColor: '#E4E4E7', }}>
                                             <BouncyCheckbox
+                                                iconStyle={{
+                                                    borderColor: 'white',
+                                                }}
                                                 size={25}
-                                                fillColor="#0642F4"
-                                                unfillColor="#FFFFFF"
-                                                innerIconStyle={{ borderWidth: 2 }}
-                                                textStyle={{ fontFamily: "JosefinSans-Regular" }}
+                                                fillColor="#DC2626"
+                                                unfillColor="#16A34A"
                                                 isChecked={item.insurance ? item.insurance : false}
                                                 onPress={(isChecked) => handleUpdateInsurance(isChecked, item.insurance ? item.insurance : false, item.country)}
                                             />

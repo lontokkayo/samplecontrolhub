@@ -5589,13 +5589,13 @@ Real Motor Japan`,
                 sales_date: `${formattedSalesDate}`,
                 fob: `${Math.round(invoiceData.paymentDetails.fobPrice)}`,
                 freight: `${Math.round(invoiceData.paymentDetails.freightPrice)}`,
-                insurance: `0`,
+                insurance: `${Math.round(invoiceData.paymentDetails.insurancePrice)}`,
                 inspection: `${Math.round(invoiceData.paymentDetails.inspectionIsChecked ? invoiceData.paymentDetails.inspectionPrice : 0)}`,
                 coupon_discount: `0`,
                 price_discount: `0`,
                 subtotal: `${Math.round(parseFloat(invoiceData.paymentDetails.totalAmount.replace(/,/g, '')))}`,
                 clients: `${selectedCustomerData.j_id}`,
-                sales_pending: `NULL`
+                // sales_pending: "NULL"
             };
 
             // Map additional names and prices to cost_name and cost fields
@@ -12350,15 +12350,15 @@ const TransactionHistoryModal = () => {
 
 
 const PaymentHistoryModal = () => {
-
     const [paymentHistoryVisible, setPaymentHistoryVisible] = useState(false);
     const selectedCustomerData = useSelector((state) => state.selectedCustomerData);
     const screenWidth = Dimensions.get('window').width;
+    const mobileViewBreakpoint = 768; // Define your mobile view breakpoint
 
     const sortedPayments = selectedCustomerData.paymentsHistory
         ? [...selectedCustomerData.paymentsHistory].sort((a, b) => {
-            const dateA = new Date(a.date);
-            const dateB = new Date(b.date);
+            const dateA = new Date(a.date.replace(' at ', ' '));
+            const dateB = new Date(b.date.replace(' at ', ' '));
             return dateB - dateA; // Sorts in descending order
         })
         : [];
@@ -12384,25 +12384,17 @@ const PaymentHistoryModal = () => {
     const handlePaymentHistoryModalOpen = () => {
         setDisplayedPayments(sortedPayments.slice(0, 5));
         setPaymentHistoryVisible(true);
-
     };
 
     const handlePaymentHistoryModalClose = () => {
         setPaymentHistoryVisible(false);
     };
 
-
-
-
-
-
     function formatDate(dateString) {
-        // Remove ' at ' from the date string
         const cleanedDateString = dateString.replace(' at ', ' ');
         const date = new Date(cleanedDateString);
 
         if (isNaN(date.getTime())) {
-            // Date is not valid
             console.error("Invalid Date:", dateString);
             return "Invalid Date";
         }
@@ -12412,16 +12404,7 @@ const PaymentHistoryModal = () => {
         const month = months[date.getMonth()];
         const day = date.getDate().toString().padStart(2, '0');
 
-        let hours = date.getHours();
-        const minutes = date.getMinutes().toString().padStart(2, '0');
-        const ampm = hours >= 12 ? 'pm' : 'am';
-
-        hours = hours % 12;
-        hours = hours ? hours : 12; // the hour '0' should be '12'
-
-        // return `${year} ${month} ${day} at ${hours}:${minutes}${ampm}`;
         return `${year} ${month} ${day}`;
-
     }
 
     const isCloseToBottom = ({ layoutMeasurement, contentOffset, contentSize }) => {
@@ -12429,10 +12412,9 @@ const PaymentHistoryModal = () => {
     };
 
     return (
-
         <>
             <Pressable onPress={handlePaymentHistoryModalOpen}>
-                <Text style={{ fontSize: screenWidth < mobileViewBreakpoint ? 10 : 14, color: '#0A78BE', textAlign: 'center', }} underline>
+                <Text style={{ fontSize: screenWidth < mobileViewBreakpoint ? 10 : 14, color: '#0A78BE', textAlign: 'center' }} underline>
                     {`View Payments History`}
                 </Text>
             </Pressable>
@@ -12469,50 +12451,42 @@ const PaymentHistoryModal = () => {
                                             borderBottomWidth: 1,
                                             borderBottomColor: '#eee',
                                         }}>
-
                                             <Text style={{ fontSize: 14, fontWeight: 'bold', color: 'black', marginBottom: 5 }}>
-                                                <Text style={{ fontWeight: 'bold', color: '#0A78BE', }}>Date: </Text>
+                                                <Text style={{ fontWeight: 'bold', color: '#0A78BE' }}>Date: </Text>
                                                 <Text style={{ color: '#333' }}>
-                                                    {formatDate(sortedPayments[sortedPayments.length - 1 - index].date)}
+                                                    {formatDate(payment.date)}
                                                 </Text>
                                             </Text>
 
                                             <Text style={{ fontSize: 14, fontWeight: 'bold', color: 'black', marginBottom: 5 }}>
-                                                <Text style={{ fontWeight: 'bold', color: '#0A78BE', }}>Value: </Text>
-                                                <Text style={{ color: Number(sortedPayments[sortedPayments.length - 1 - index].value).toLocaleString().startsWith('-') ? '#FF0000' : '#16A34A' }}>
-                                                    ${Number(sortedPayments[sortedPayments.length - 1 - index].value).toLocaleString()}
+                                                <Text style={{ fontWeight: 'bold', color: '#0A78BE' }}>Value: </Text>
+                                                <Text style={{ color: Number(payment.value).toLocaleString().startsWith('-') ? '#FF0000' : '#16A34A' }}>
+                                                    ${Number(payment.value).toLocaleString()}
                                                 </Text>
                                             </Text>
 
                                             <Text style={{ fontSize: 14, fontWeight: 'bold', color: 'black', marginBottom: 5 }}>
-                                                <Text style={{ fontWeight: 'bold', color: '#0A78BE', }}>Vehicle Name: </Text>
-                                                <Text style={{ color: '#333' }}>{sortedPayments[sortedPayments.length - 1 - index].vehicleName}</Text>
+                                                <Text style={{ fontWeight: 'bold', color: '#0A78BE' }}>Vehicle Name: </Text>
+                                                <Text style={{ color: '#333' }}>{payment.vehicleName}</Text>
                                             </Text>
 
                                             <Text style={{ fontSize: 14, fontWeight: 'bold', color: 'black', marginBottom: 5 }}>
-                                                <Text style={{ fontWeight: 'bold', color: '#0A78BE', }}>Reference Number: </Text>
-                                                <Text style={{ color: '#333' }}>{sortedPayments[sortedPayments.length - 1 - index].vehicleRef}</Text>
+                                                <Text style={{ fontWeight: 'bold', color: '#0A78BE' }}>Reference Number: </Text>
+                                                <Text style={{ color: '#333' }}>{payment.vehicleRef}</Text>
                                             </Text>
-
                                         </View>
-
                                     )) :
-                                    <Text style={{ fontWeight: 'bold', alignSelf: 'center', }} italic>No history to show</Text>
+                                    <Text style={{ fontWeight: 'bold', alignSelf: 'center' }} italic>No history to show</Text>
                             }
-                            <View style={{ height: 20, }}>
+                            <View style={{ height: 20 }}>
                                 {loadingMore && <Spinner size='sm' color="#7B9CFF" />}
                             </View>
-
                         </ScrollView>
-
-
-
                     </Modal.Body>
                 </Modal.Content>
             </Modal>
         </>
-
-    )
+    );
 }
 
 const CustomerProfileModal = () => {
