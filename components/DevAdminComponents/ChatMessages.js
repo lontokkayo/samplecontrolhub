@@ -5478,7 +5478,7 @@ Real Motor Japan`,
         try {
             const response = await axios.get('https://worldtimeapi.org/api/timezone/Asia/Tokyo');
             const datetime = response.data.datetime; // ISO 8601 format: YYYY-MM-DDTHH:mm:ss.ssssss±hh:mm
-            const formattedDateTime = moment(datetime).format('YYYY/MM/DD - HH:mm:ss');
+            const formattedDateTime = moment(datetime).format('YYYY/MM/DD - HH:mm:ss'); 
             const year = datetime.slice(0, 4);
             const month = datetime.slice(5, 7);
             const day = datetime.slice(8, 10);
@@ -5495,7 +5495,7 @@ Real Motor Japan`,
                     imageUrl: carImageUrl,
                     stockId: selectedChatData.carData.stockID,
                     referenceNumber: selectedChatData.carData.referenceNumber,
-                    timestamp: formattedDateTime,
+                    timestamp: formattedDateTime, 
 
                 };
 

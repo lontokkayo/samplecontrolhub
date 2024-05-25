@@ -2567,12 +2567,12 @@ const CountriesTable = () => {
 
                     dispatch(setLoadingModalVisible(false));
                     const logData = {
-                        message: `Insurance Updated: "${nameVariable.text}" updated "${countryCode}" insurance to "${newValue}"`,
+                        message: `Insurance Updated: "${nameVariable.text}" updated "${countryCode}" insurance restriction to "${newValue}"`,
                         timestamp: formattedTime,
                         colorScheme: true,
                         keywords: [
                             formattedTime.toLowerCase(),
-                            `Insurance Updated: "${nameVariable.text}" updated "${countryCode}" insurance to "${newValue}"`.toLowerCase(),
+                            `Insurance Updated: "${nameVariable.text}" updated "${countryCode}" insurance restriction  to "${newValue}"`.toLowerCase(),
                             'Insurance'.toLowerCase(),
                             'Inspection'.toLowerCase(),
                             'Insurance Updated'.toLowerCase(),
@@ -2758,13 +2758,18 @@ const CountriesTable = () => {
                                 <View style={{ flex: 1, marginHorizontal: 5, justifyContent: 'center', alignItems: 'center', }}>
                                     <BouncyCheckbox
                                         iconStyle={{
-                                            borderColor: 'black',
+                                            borderColor: 'white',
                                         }}
                                         size={25}
-                                        fillColor={"#DC2626"} // Transparent fill color to remove the check icon
+                                        fillColor="transparent"
                                         unfillColor="#16A34A"
                                         isChecked={item.insuranceRestricted ? item.insuranceRestricted : false}
                                         onPress={(isChecked) => handleUpdateInsurance(isChecked, item.insuranceRestricted ? item.insuranceRestricted : false, item.country)}
+                                        iconComponent={item.insuranceRestricted ? (
+                                            <View style={{ backgroundColor: '#DC2626', borderRadius: 12.5, width: 25, height: 25, justifyContent: 'center', alignItems: 'center' }}>
+                                                <Ionicons name="close" size={20} color="white" />
+                                            </View>
+                                        ) : null}
                                     />
                                 </View>
                                 <View style={{ flexDirection: 'row', flex: screenWidth < 1700 ? 2 : 1, marginHorizontal: 5 }}>
@@ -2950,10 +2955,15 @@ const CountriesTable = () => {
                                                     borderColor: 'white',
                                                 }}
                                                 size={25}
-                                                fillColor="#DC2626"
+                                                fillColor="transparent"
                                                 unfillColor="#16A34A"
-                                                isChecked={item.insurance ? item.insurance : false}
-                                                onPress={(isChecked) => handleUpdateInsurance(isChecked, item.insurance ? item.insurance : false, item.country)}
+                                                isChecked={item.insuranceRestricted ? item.insuranceRestricted : false}
+                                                onPress={(isChecked) => handleUpdateInsurance(isChecked, item.insuranceRestricted ? item.insuranceRestricted : false, item.country)}
+                                                iconComponent={item.insuranceRestricted ? (
+                                                    <View style={{ backgroundColor: '#DC2626', borderRadius: 12.5, width: 25, height: 25, justifyContent: 'center', alignItems: 'center' }}>
+                                                        <Ionicons name="close" size={20} color="white" />
+                                                    </View>
+                                                ) : null}
                                             />
                                         </View>
                                     </View>
