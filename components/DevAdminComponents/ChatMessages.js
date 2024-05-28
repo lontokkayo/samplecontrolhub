@@ -3490,7 +3490,7 @@ const PaymentDetails = () => {
 
         insuranceInput.current.value = Number(convertedCurrency(invoiceData && Object.keys(invoiceData).length > 0 && invoiceData.paymentDetails.insurancePrice && invoiceData.paymentDetails.incoterms == 'CIF' ? invoiceData.paymentDetails.insurancePrice : selectedIncoterms == 'CIF' ? valueInsurancePrice : 0)).toFixed(2);
         freightInput.current.value = Number(convertedCurrency(invoiceData && Object.keys(invoiceData).length > 0 && invoiceData.paymentDetails.freightPrice ? invoiceData.paymentDetails.freightPrice : selectedIncoterms == 'FOB' ? 0 : freightCalculation)).toFixed(2);
-
+        console.log(selectedIncoterms);
         calculateTotalAmount();
 
     }, [selectedIncoterms]);
@@ -3624,7 +3624,7 @@ const PaymentDetails = () => {
                     }}
                 >
                     <Select
-                        selectedValue={selectedIncoterms}
+                        selectedValue={selectedIncoterms === 'CIF' && selectedChatData.insuranceRestricted ? 'C&F' : selectedIncoterms}
                         onValueChange={(value) => {
                             setSelectedIncoterms(value);
                             globalInvoiceVariable.paymentDetails.incoterms = value;
@@ -3644,7 +3644,7 @@ const PaymentDetails = () => {
                         style={{ flex: 1, marginLeft: 10, marginRight: 10, paddingLeft: 1, }}
                     >
                         <Select.Item key={'C&F'} label={'C&F'} value={'C&F'} />
-                        <Select.Item key={'CIF'} label={'CIF'} value={'CIF'} />
+                        {!selectedChatData.insuranceRestricted && <Select.Item key={'CIF'} label={'CIF'} value={'CIF'} />}
                         <Select.Item key={'FOB'} label={'FOB'} value={'FOB'} />
                     </Select>
                     <Text style={{ fontWeight: 700, margin: 3, }}>Rate: </Text>
@@ -5478,7 +5478,7 @@ Real Motor Japan`,
         try {
             const response = await axios.get('https://worldtimeapi.org/api/timezone/Asia/Tokyo');
             const datetime = response.data.datetime; // ISO 8601 format: YYYY-MM-DDTHH:mm:ss.ssssss±hh:mm
-            const formattedDateTime = moment(datetime).format('YYYY/MM/DD - HH:mm:ss'); 
+            const formattedDateTime = moment(datetime).format('YYYY/MM/DD - HH:mm:ss');
             const year = datetime.slice(0, 4);
             const month = datetime.slice(5, 7);
             const day = datetime.slice(8, 10);
@@ -5495,7 +5495,7 @@ Real Motor Japan`,
                     imageUrl: carImageUrl,
                     stockId: selectedChatData.carData.stockID,
                     referenceNumber: selectedChatData.carData.referenceNumber,
-                    timestamp: formattedDateTime, 
+                    timestamp: formattedDateTime,
 
                 };
 
@@ -5648,7 +5648,7 @@ Real Motor Japan`,
             if (!inputAmount.startsWith('-')) {
                 // First, execute paymentMessage
                 await paymentMessage(formattedInputAmount, formattedDate);
-                await delay(10); //10ms delay
+                // await delay(10); //10ms delay
 
                 if (numericInputAmount >= amountNeeded) {
                     // Once paymentMessage is successful, execute fullPaymentMessage
@@ -5656,7 +5656,7 @@ Real Motor Japan`,
                     await addOrUpdatePaidStats();
                     await incrementJackallId();
                     incrementCountForSold(selectedChatData.carData.make, selectedChatData.carData.model);
-                    await delay(10); //10ms delay
+                    // await delay(10); //10ms delay
                     if (numericInputAmount > amountNeeded) {
                         // Calculate overbalance and execute overBalanceMessage
                         const overBalance = numericInputAmount - amountNeeded;
@@ -5667,7 +5667,7 @@ Real Motor Japan`,
                             await updateDoc(docRefCustomer, {
                                 overBalance: increment(parseDollars(overBalance)),
                             });
-                            await delay(10); //10ms delay
+                            // await delay(10); //10ms delay
                             await overBalanceMessage(formattedOverbalanceAmount);
 
                         }
@@ -6116,12 +6116,44 @@ const IssueProformaInvoiceModalContent = () => {
     //     calculateTotalAmount();
     // }, [additionalPriceArray]);
 
+    const fetchInsuranceRestricted = async () => {
+        const currentCountry = selectedChatData.country;
+
+        // Fetch data if the current port is different from the last fetched port
+        if (!selectedChatData?.insuranceRestricted) {
+            const docRef = doc(projectExtensionFirestore, 'CustomerCountryPort', 'CountriesDoc');
+            try {
+                const docSnap = await getDoc(docRef);
+
+                if (docSnap.exists()) {
+                    const data = docSnap.data();
+                    const countriesData = data[currentCountry];
+
+
+                    await updateDoc(doc(projectExtensionFirestore, 'chats', selectedChatData.id), {
+                        insuranceRestricted: countriesData.insuranceRestricted,
+                    });
+
+
+
+                } else {
+                    console.log('No such document!');
+                }
+            } catch (error) {
+                console.error('Error fetching document:', error);
+            }
+        } else {
+            console.log('No need to fetch new data');
+        }
+    };
+
+
 
     useEffect(() => {
 
         globalInvoiceVariable.cfs = invoiceData && Object.keys(invoiceData).length > 0 && invoiceData.cfs ? invoiceData.cfs : cfsInputRef.current?.value;
         globalInvoiceVariable.placeOfDelivery = invoiceData && Object.keys(invoiceData).length > 0 && invoiceData.placeOfDelivery ? invoiceData.placeOfDelivery : placeOfDeliveryInputRef.current?.value;
-
+        fetchInsuranceRestricted();
     }, []);
 
 
