@@ -3364,6 +3364,8 @@ const PaymentDetails = () => {
     const additionalNameRef = useRef(null);
     const additionalPriceRef = useRef(null);
 
+    const screenWidth = Dimensions.get('window').width;
+
     const safelyParseNumber = (value) => {
         const number = Number(value.replace(/,/g, ''));
         return isNaN(number) ? 0 : number;
@@ -3390,52 +3392,45 @@ const PaymentDetails = () => {
 
 
     const convertedCurrency = (baseValue) => {
+        const numberFormatOptions = {
+            useGrouping: true,
+            minimumFractionDigits: 0,
+            maximumFractionDigits: 0
+        };
 
+        const formatNumber = (value) => Math.round(Number(value)).toLocaleString('en-US', numberFormatOptions);
+
+        const getExchangeRate = (currency) => {
+            switch (currency) {
+                case 'EURO':
+                    return selectedChatData.currency.usdToEur;
+                case 'AUD':
+                    return selectedChatData.currency.usdToAud;
+                case 'GBP':
+                    return selectedChatData.currency.usdToGbp;
+                case 'CAD':
+                    return selectedChatData.currency.usdToCad;
+                default:
+                    return 1;
+            }
+        };
+
+        let selectedCurrencyExchange = 'USD';
         if (invoiceData && Object.keys(invoiceData).length > 0) {
-            if (invoiceData.selectedCurrencyExchange == 'None' || !invoiceData.selectedCurrencyExchange || invoiceData.selectedCurrencyExchange == 'USD') {
-                return `${Number(baseValue)}`
-            }
-            if (invoiceData.selectedCurrencyExchange == 'EURO') {
-                const euroValue = Number(baseValue) * Number(selectedChatData.currency.usdToEur) + Number(baseValue) * Number(valueCurrency);
-                return `${(euroValue)}`;
-            }
-            if (invoiceData.selectedCurrencyExchange == 'AUD') {
-                const audValue = Number(baseValue) * Number(selectedChatData.currency.usdToAud) + Number(baseValue) * Number(valueCurrency);
-                return `${(audValue)}`;
-            }
-            if (invoiceData.selectedCurrencyExchange == 'GBP') {
-                const gbpValue = Number(baseValue) * Number(selectedChatData.currency.usdToGbp) + Number(baseValue) * Number(valueCurrency);
-                return `${(gbpValue)}`;
-            }
-            if (invoiceData.selectedCurrencyExchange == 'CAD') {
-                const cadValue = Number(baseValue) * Number(selectedChatData.currency.usdToCad) + Number(baseValue) * Number(valueCurrency);
-                return `${(cadValue)}`;
-            }
+            selectedCurrencyExchange = invoiceData.selectedCurrencyExchange || 'USD';
+        } else {
+            selectedCurrencyExchange = selectedChatData.selectedCurrencyExchange || 'USD';
         }
 
-        else {
-            if (selectedChatData.selectedCurrencyExchange == 'None' || !selectedChatData.selectedCurrencyExchange || selectedChatData.selectedCurrencyExchange == 'USD') {
-                return `${Number(baseValue)}`
-            }
-            if (selectedChatData.selectedCurrencyExchange == 'EURO') {
-                const euroValue = Number(baseValue) * Number(selectedChatData.currency.usdToEur) + Number(baseValue) * Number(valueCurrency);
-                return `${(euroValue)}`;
-            }
-            if (selectedChatData.selectedCurrencyExchange == 'AUD') {
-                const audValue = Number(baseValue) * Number(selectedChatData.currency.usdToAud) + Number(baseValue) * Number(valueCurrency);
-                return `${(audValue)}`;
-            }
-            if (selectedChatData.selectedCurrencyExchange == 'GBP') {
-                const gbpValue = Number(baseValue) * Number(selectedChatData.currency.usdToGbp) + Number(baseValue) * Number(valueCurrency);
-                return `${(gbpValue)}`;
-            }
-            if (selectedChatData.selectedCurrencyExchange == 'CAD') {
-                const cadValue = Number(baseValue) * Number(selectedChatData.currency.usdToCad) + Number(baseValue) * Number(valueCurrency);
-                return `${(cadValue)}`;
-            }
-        }
+        const exchangeRate = getExchangeRate(selectedCurrencyExchange);
+        const baseValueNumber = Number(baseValue);
+        const valueCurrencyNumber = Number(valueCurrency) || 0;
+        const convertedValue = baseValueNumber * exchangeRate + baseValueNumber * valueCurrencyNumber;
 
-    }
+        return formatNumber(convertedValue);
+    };
+
+
 
     const calculateTotalAmount = () => {
         const fobPrice = safelyParseNumber(fobPriceInput.current?.value);
@@ -3456,7 +3451,7 @@ const PaymentDetails = () => {
 
         additionalNameRef.current.value = invoiceData && Object.keys(invoiceData).length > 0 && invoiceData.paymentDetails.additionalName ? invoiceData.paymentDetails.additionalName.join('\n') : '';
         additionalPriceRef.current.value = invoiceData && Object.keys(invoiceData).length > 0 && invoiceData.paymentDetails.additionalPrice
-            ? invoiceData.paymentDetails.additionalPrice.map(price => Number(convertedCurrency(price)).toFixed(2)).join('\n')
+            ? invoiceData.paymentDetails.additionalPrice.map(price => convertedCurrency(price)).join('\n')
             : '';
 
 
@@ -3481,19 +3476,22 @@ const PaymentDetails = () => {
 
     useEffect(() => {
 
-        inspectionInput.current.value = Number(convertedCurrency(invoiceData && Object.keys(invoiceData).length > 0 && invoiceData.paymentDetails.inspectionPrice && invoiceData.paymentDetails.inspectionPrice == true ? invoiceData.paymentDetails.inspectionPrice : inspectionIsChecked ? valueInspectionPrice : 0)).toFixed(2);
+        inspectionInput.current.value = convertedCurrency(invoiceData && Object.keys(invoiceData).length > 0 && invoiceData.paymentDetails.inspectionPrice && invoiceData.paymentDetails.inspectionPrice == true ? invoiceData.paymentDetails.inspectionPrice : inspectionIsChecked ? valueInspectionPrice : 0);
         calculateTotalAmount();
 
     }, [inspectionIsChecked]);
 
     useEffect(() => {
 
-        insuranceInput.current.value = Number(convertedCurrency(invoiceData && Object.keys(invoiceData).length > 0 && invoiceData.paymentDetails.insurancePrice && invoiceData.paymentDetails.incoterms == 'CIF' ? invoiceData.paymentDetails.insurancePrice : selectedIncoterms == 'CIF' ? valueInsurancePrice : 0)).toFixed(2);
-        freightInput.current.value = Number(convertedCurrency(invoiceData && Object.keys(invoiceData).length > 0 && invoiceData.paymentDetails.freightPrice ? invoiceData.paymentDetails.freightPrice : selectedIncoterms == 'FOB' ? 0 : freightCalculation)).toFixed(2);
+        insuranceInput.current.value = convertedCurrency(invoiceData && Object.keys(invoiceData).length > 0 && invoiceData.paymentDetails.insurancePrice && invoiceData.paymentDetails.incoterms == 'CIF' ? invoiceData.paymentDetails.insurancePrice : selectedIncoterms == 'CIF' ? valueInsurancePrice : 0);
+        freightInput.current.value = convertedCurrency(invoiceData && Object.keys(invoiceData).length > 0 && invoiceData.paymentDetails.freightPrice ? invoiceData.paymentDetails.freightPrice : selectedIncoterms == 'FOB' ? 0 : freightCalculation);
         console.log(selectedIncoterms);
         calculateTotalAmount();
 
     }, [selectedIncoterms]);
+
+
+
 
     useEffect(() => {
         calculateTotalAmount();
@@ -3530,22 +3528,34 @@ const PaymentDetails = () => {
     const handleAdditionalPriceTextChange = (text) => {
         // Process and filter each line
         const filteredLines = text.split('\n').map(line => {
+            // Remove non-digit characters, allow only one dot
             let filteredLine = line.replace(/[^0-9.]/g, '');
             const parts = filteredLine.split('.');
             if (parts.length > 2) {
                 filteredLine = parts[0] + '.' + parts[1];
             }
-            return filteredLine;
+
+            // If the filtered line is not empty, convert to number, round, and format without decimals
+            if (filteredLine) {
+                const numberValue = Math.round(Number(filteredLine));
+                return isNaN(numberValue) ? '' : numberValue.toLocaleString('en-US', {
+                    useGrouping: true,
+                    minimumFractionDigits: 0,
+                    maximumFractionDigits: 0
+                });
+            } else {
+                return ''; // Preserve blank lines
+            }
         });
 
         // Update the ref and the state
         additionalPriceRef.current.value = filteredLines.join('\n');
-        // setAdditionalPriceArray(filteredLines);
         globalAdditionalPriceArray = filteredLines;
         globalInvoiceVariable.paymentDetails.additionalPrice = filteredLines;
         calculateTotalAmount();
-
     };
+
+
 
     const handleAdditionalNameTextChange = (text) => {
         // Update the ref
@@ -3559,30 +3569,52 @@ const PaymentDetails = () => {
 
 
     const handleFobPriceInputChangeText = (text) => {
-        const filteredText = text.replace(/[^0-9.]/g, '').replace(/(\..*)\./g, '$1');
-        fobPriceInput.current.value = filteredText;
+        // Remove non-digit characters
+        const filteredText = text.replace(/[^0-9]/g, '');
+
+        // Format the filtered text with comma separators
+        const formattedText = Number(filteredText).toLocaleString('en-US');
+
+        fobPriceInput.current.value = formattedText;
         globalInvoiceVariable.paymentDetails.fobPrice = filteredText;
         calculateTotalAmount();
     };
 
     const handleFreightInputChangeText = (text) => {
-        const filteredText = text.replace(/[^0-9.]/g, '').replace(/(\..*)\./g, '$1');
-        freightInput.current.value = filteredText;
-        globalInvoiceVariable.paymentDetails.freightPrice = filteredText;
+        // Remove non-digit characters
+        const filteredText = text.replace(/[^0-9]/g, '');
+
+        // Format the filtered text with comma separators
+        const formattedText = Number(filteredText).toLocaleString('en-US');
+
+        freightInput.current.value = formattedText;
+        globalInvoiceVariable.paymentDetails.freight = filteredText;
         calculateTotalAmount();
     };
 
     const handleInspectionInputChangeText = (text) => {
-        const filteredText = text.replace(/[^0-9.]/g, '').replace(/(\..*)\./g, '$1');
-        inspectionInput.current.value = filteredText;
-        globalInvoiceVariable.paymentDetails.inspectionPrice = filteredText;
+        // Remove non-digit characters
+        const filteredText = text.replace(/[^0-9]/g, '');
 
+        // Ensure the text is converted to a number, rounded, and formatted without decimals
+        const roundedValue = Math.round(Number(filteredText)).toLocaleString('en-US', {
+            useGrouping: true,
+            minimumFractionDigits: 0,
+            maximumFractionDigits: 0
+        });
+
+        // Set the value in the input field and global variable
+        inspectionInput.current.value = roundedValue;
+        globalInvoiceVariable.paymentDetails.inspectionPrice = filteredText;
         calculateTotalAmount();
     };
 
     const handleInsuranceInputChangeText = (text) => {
-        const filteredText = text.replace(/[^0-9.]/g, '').replace(/(\..*)\./g, '$1');
-        insuranceInput.current.value = filteredText;
+        const filteredText = text.replace(/[^0-9]/g, '');
+
+        const formattedText = Number(filteredText).toLocaleString('en-US');
+
+        insuranceInput.current.value = formattedText;
         globalInvoiceVariable.paymentDetails.insurancePrice = filteredText;
         calculateTotalAmount();
     };
@@ -3619,10 +3651,11 @@ const PaymentDetails = () => {
 
                 <View
                     style={{
-                        flexDirection: 'row',
+                        flexDirection: screenWidth < mobileViewBreakpoint ? 'column' : 'row',
                         flex: 1,
                     }}
                 >
+
                     <Select
                         selectedValue={selectedIncoterms === 'CIF' && selectedChatData.insuranceRestricted ? 'C&F' : selectedIncoterms}
                         onValueChange={(value) => {
@@ -3695,11 +3728,22 @@ const PaymentDetails = () => {
                     <TextInput
                         onChangeText={handleFobPriceInputChangeText}
                         ref={fobPriceInput}
-                        defaultValue={Number(convertedCurrency(invoiceData && Object.keys(invoiceData).length > 0 ? invoiceData.paymentDetails.fobPrice : selectedIncoterms == 'FOB' ? 0 : fobPriceDollars)).toFixed(2)}
+                        defaultValue={(() => {
+                            const baseValue = invoiceData && Object.keys(invoiceData).length > 0
+                                ? invoiceData.paymentDetails.fobPrice
+                                : selectedIncoterms == 'FOB'
+                                    ? 0
+                                    : fobPriceDollars;
+
+                            // Ensure baseValue is a valid number
+                            const baseValueNumber = Number(baseValue);
+                            return isNaN(baseValueNumber) ? '' : convertedCurrency(baseValueNumber);
+                        })()}
                         placeholderTextColor='#9B9E9F'
                         placeholder='FOB Price'
                         style={{ flex: 1, height: 25, margin: 2, padding: 1, borderRadius: 2, borderWidth: 1, borderColor: '#D9D9D9', outlineStyle: 'none', }}
                     />
+
                 </View>
 
             </View>
@@ -3718,7 +3762,11 @@ const PaymentDetails = () => {
                     <TextInput
                         onChangeText={handleFreightInputChangeText}
                         ref={freightInput}
-                        defaultValue={Number(convertedCurrency(freightCalculation)).toFixed(2)}
+                        defaultValue={(() => {
+                            // Ensure freightCalculation is a valid number
+                            const baseValueNumber = Number(freightCalculation);
+                            return isNaN(baseValueNumber) ? '' : convertedCurrency(baseValueNumber);
+                        })()}
                         placeholderTextColor='#9B9E9F'
                         placeholder='Freight'
                         style={{ flex: 1, height: 25, margin: 2, padding: 1, borderRadius: 2, borderWidth: 1, borderColor: '#D9D9D9', outlineStyle: 'none', }}
@@ -5116,29 +5164,33 @@ const InputPaymentModalContent = () => {
         inputAmountRef.current.value = filteredText;
     };
 
-
     const convertedCurrency = (baseValue) => {
         const numberFormatOptions = {
-            minimumFractionDigits: 2,
-            maximumFractionDigits: 2,
+            minimumFractionDigits: 0,
+            maximumFractionDigits: 0,
             useGrouping: true
         };
+
+        const roundValue = (value) => Math.round(Number(value)).toLocaleString('en-US', numberFormatOptions);
+
         if (selectedChatData.selectedCurrencyExchange == 'None' || selectedChatData.selectedCurrencyExchange == 'USD' || !selectedChatData.selectedCurrencyExchange) {
-            return `${Number(baseValue).toLocaleString('en-US', numberFormatOptions)}`;
+            return `${roundValue(baseValue)}`;
         }
         if (selectedChatData.selectedCurrencyExchange == 'EURO') {
-            return `${(Number(baseValue) * Number(selectedChatData.currency.usdToEur)).toLocaleString('en-US', numberFormatOptions)}`;
+            return `${roundValue(Number(baseValue) * Number(selectedChatData.currency.usdToEur))}`;
         }
         if (selectedChatData.selectedCurrencyExchange == 'AUD') {
-            return `${(Number(baseValue) * Number(selectedChatData.currency.usdToAud)).toLocaleString('en-US', numberFormatOptions)}`;
+            return `${roundValue(Number(baseValue) * Number(selectedChatData.currency.usdToAud))}`;
         }
         if (selectedChatData.selectedCurrencyExchange == 'GBP') {
-            return `${(Number(baseValue) * Number(selectedChatData.currency.usdToGbp)).toLocaleString('en-US', numberFormatOptions)}`;
+            return `${roundValue(Number(baseValue) * Number(selectedChatData.currency.usdToGbp))}`;
         }
         if (selectedChatData.selectedCurrencyExchange == 'CAD') {
-            return `${(Number(baseValue) * Number(selectedChatData.currency.usdToCad)).toLocaleString('en-US', numberFormatOptions)}`;
+            return `${roundValue(Number(baseValue) * Number(selectedChatData.currency.usdToCad))}`;
         }
     }
+
+
 
 
     const totalValue = selectedChatData.payments
@@ -6129,12 +6181,9 @@ const IssueProformaInvoiceModalContent = () => {
                     const data = docSnap.data();
                     const countriesData = data[currentCountry];
 
-
                     await updateDoc(doc(projectExtensionFirestore, 'chats', selectedChatData.id), {
                         insuranceRestricted: countriesData.insuranceRestricted,
                     });
-
-
 
                 } else {
                     console.log('No such document!');
@@ -6301,52 +6350,37 @@ const ProfitCalculator = () => {
 
 
     const convertedCurrency = (baseValue) => {
+        const roundValue = (value) => Math.round(Number(value)).toLocaleString('en-US', { useGrouping: true });
 
+        const calculateValue = (base, rate, extra = 0) => Number(base) * Number(rate) + Number(base) * Number(extra);
+
+        let selectedCurrencyExchange;
         if (invoiceData && Object.keys(invoiceData).length > 0) {
-            if (invoiceData.selectedCurrencyExchange == 'None' || !invoiceData.selectedCurrencyExchange || invoiceData.selectedCurrencyExchange == 'USD') {
-                return `${Number(baseValue)}`
-            }
-            if (invoiceData.selectedCurrencyExchange == 'EURO') {
-                const euroValue = Number(baseValue) * Number(selectedChatData.currency.usdToEur) + Number(baseValue) * Number(valueCurrency);
-                return `${(euroValue)}`;
-            }
-            if (invoiceData.selectedCurrencyExchange == 'AUD') {
-                const audValue = Number(baseValue) * Number(selectedChatData.currency.usdToAud) + Number(baseValue) * Number(valueCurrency);
-                return `${(audValue)}`;
-            }
-            if (invoiceData.selectedCurrencyExchange == 'GBP') {
-                const gbpValue = Number(baseValue) * Number(selectedChatData.currency.usdToGbp) + Number(baseValue) * Number(valueCurrency);
-                return `${(gbpValue)}`;
-            }
-            if (invoiceData.selectedCurrencyExchange == 'CAD') {
-                const cadValue = Number(baseValue) * Number(selectedChatData.currency.usdToCad) + Number(baseValue) * Number(valueCurrency);
-                return `${(cadValue)}`;
-            }
+            selectedCurrencyExchange = invoiceData.selectedCurrencyExchange;
+        } else {
+            selectedCurrencyExchange = selectedChatData.selectedCurrencyExchange;
         }
 
-        else {
-            if (selectedChatData.selectedCurrencyExchange == 'None' || !selectedChatData.selectedCurrencyExchange || selectedChatData.selectedCurrencyExchange == 'USD') {
-                return `${Number(baseValue)}`
-            }
-            if (selectedChatData.selectedCurrencyExchange == 'EURO') {
-                const euroValue = Number(baseValue) * Number(selectedChatData.currency.usdToEur) + Number(baseValue) * Number(valueCurrency);
-                return `${(euroValue)}`;
-            }
-            if (selectedChatData.selectedCurrencyExchange == 'AUD') {
-                const audValue = Number(baseValue) * Number(selectedChatData.currency.usdToAud) + Number(baseValue) * Number(valueCurrency);
-                return `${(audValue)}`;
-            }
-            if (selectedChatData.selectedCurrencyExchange == 'GBP') {
-                const gbpValue = Number(baseValue) * Number(selectedChatData.currency.usdToGbp) + Number(baseValue) * Number(valueCurrency);
-                return `${(gbpValue)}`;
-            }
-            if (selectedChatData.selectedCurrencyExchange == 'CAD') {
-                const cadValue = Number(baseValue) * Number(selectedChatData.currency.usdToCad) + Number(baseValue) * Number(valueCurrency);
-                return `${(cadValue)}`;
-            }
+        if (selectedCurrencyExchange == 'None' || !selectedCurrencyExchange || selectedCurrencyExchange == 'USD') {
+            return `${roundValue(baseValue)}`;
+        }
+        if (selectedCurrencyExchange == 'EURO') {
+            return `${roundValue(calculateValue(baseValue, selectedChatData.currency.usdToEur, valueCurrency))}`;
+        }
+        if (selectedCurrencyExchange == 'AUD') {
+            return `${roundValue(calculateValue(baseValue, selectedChatData.currency.usdToAud, valueCurrency))}`;
+        }
+        if (selectedCurrencyExchange == 'GBP') {
+            return `${roundValue(calculateValue(baseValue, selectedChatData.currency.usdToGbp, valueCurrency))}`;
+        }
+        if (selectedCurrencyExchange == 'CAD') {
+            return `${roundValue(calculateValue(baseValue, selectedChatData.currency.usdToCad, valueCurrency))}`;
         }
 
-    }
+        return `${roundValue(baseValue)}`;
+    };
+
+
 
     // Function to fetch ports data from Firestore
     const fetchPortsData = async () => {
@@ -9154,26 +9188,44 @@ const PreviewInvoice = () => {
                 selectedChatData.currency.jpyToUsd : 0))) + freightCalculation;
 
     const convertedCurrency = (baseValue) => {
+        // Ensure baseValue is a valid number
+        const baseValueNumber = Number(baseValue);
+
+        if (isNaN(baseValueNumber)) {
+            return 'Invalid base value';
+        }
+
+        const numberFormatOptions = {
+            useGrouping: true,
+            minimumFractionDigits: 0,
+            maximumFractionDigits: 0
+        };
+
         if (invoiceData.selectedCurrencyExchange == 'None' || !invoiceData.selectedCurrencyExchange || invoiceData.selectedCurrencyExchange == 'USD') {
-            return `$${Number(baseValue).toFixed(2).toLocaleString('en-US', { useGrouping: true })}`
+            return `$${Math.round(baseValueNumber).toLocaleString('en-US', numberFormatOptions)}`;
         }
         if (invoiceData.selectedCurrencyExchange == 'EURO') {
-            const euroValue = Number(baseValue) * Number(selectedChatData.currency.usdToEur);
-            return `€${(euroValue).toFixed(2).toLocaleString('en-US', { useGrouping: true })}`;
+            const euroValue = baseValueNumber * Number(selectedChatData.currency.usdToEur);
+            return `€${Math.round(euroValue).toLocaleString('en-US', numberFormatOptions)}`;
         }
         if (invoiceData.selectedCurrencyExchange == 'AUD') {
-            const audValue = Number(baseValue) * Number(selectedChatData.currency.usdToAud);
-            return `A$${(audValue).toFixed(2).toLocaleString('en-US', { useGrouping: true })}`;
+            const audValue = baseValueNumber * Number(selectedChatData.currency.usdToAud);
+            return `A$${Math.round(audValue).toLocaleString('en-US', numberFormatOptions)}`;
         }
         if (invoiceData.selectedCurrencyExchange == 'GBP') {
-            const gbpValue = Number(baseValue) * Number(selectedChatData.currency.usdToGbp);
-            return `£${(gbpValue).toFixed(2).toLocaleString('en-US', { useGrouping: true })}`;
+            const gbpValue = baseValueNumber * Number(selectedChatData.currency.usdToGbp);
+            return `£${Math.round(gbpValue).toLocaleString('en-US', numberFormatOptions)}`;
         }
         if (invoiceData.selectedCurrencyExchange == 'CAD') {
-            const cadValue = Number(baseValue) * Number(selectedChatData.currency.usdToCad);
-            return `C$${(cadValue).toFixed(2).toLocaleString('en-US', { useGrouping: true })}`;
+            const cadValue = baseValueNumber * Number(selectedChatData.currency.usdToCad);
+            return `C$${Math.round(cadValue).toLocaleString('en-US', numberFormatOptions)}`;
         }
-    }
+
+        // Add a default return value if none of the conditions are met
+        return `$${Math.round(baseValueNumber).toLocaleString('en-US', numberFormatOptions)}`;
+    };
+
+
 
     const totalPriceCalculated = () => {
 
@@ -12130,7 +12182,7 @@ const TransactionModal = () => {
             onClose={() => {
                 handleTransactionModalClose()
             }}
-            size={'lg'}
+            size={'xl'}
             useRNModal
         >
             {transactionModalVisible &&
@@ -12737,22 +12789,45 @@ const ChatMessageHeader = () => {
     // }
 
     const convertedCurrency = (baseValue) => {
+        // Convert baseValue to a number
+        const baseValueNumber = Number(baseValue);
+
+        if (isNaN(baseValueNumber)) {
+            // Handle the case where baseValue is not a valid number
+            return 'Invalid base value';
+        }
+
+        const numberFormatOptions = {
+            useGrouping: true,
+            minimumFractionDigits: 0,
+            maximumFractionDigits: 0
+        };
+
         if (selectedChatData.selectedCurrencyExchange == 'None' || selectedChatData.selectedCurrencyExchange == 'USD' || !selectedChatData.selectedCurrencyExchange) {
-            return `$${Math.round(Number(baseValue)).toLocaleString('en-US', { useGrouping: true })}`
+            return `$${Math.round(baseValueNumber).toLocaleString('en-US', numberFormatOptions)}`;
         }
         if (selectedChatData.selectedCurrencyExchange == 'EURO') {
-            return `€${(Math.round((Number(baseValue) * Number(selectedChatData.currency.usdToEur)))).toLocaleString('en-US', { useGrouping: true })}`;
+            const euroValue = baseValueNumber * Number(selectedChatData.currency.usdToEur);
+            return `€${Math.round(euroValue).toLocaleString('en-US', numberFormatOptions)}`;
         }
         if (selectedChatData.selectedCurrencyExchange == 'AUD') {
-            return `A$${(Math.round((Number(baseValue) * Number(selectedChatData.currency.usdToAud)))).toLocaleString('en-US', { useGrouping: true })}`;
+            const audValue = baseValueNumber * Number(selectedChatData.currency.usdToAud);
+            return `A$${Math.round(audValue).toLocaleString('en-US', numberFormatOptions)}`;
         }
         if (selectedChatData.selectedCurrencyExchange == 'GBP') {
-            return `£${(Math.round((Number(baseValue) * Number(selectedChatData.currency.usdToGbp)))).toLocaleString('en-US', { useGrouping: true })}`;
+            const gbpValue = baseValueNumber * Number(selectedChatData.currency.usdToGbp);
+            return `£${Math.round(gbpValue).toLocaleString('en-US', numberFormatOptions)}`;
         }
         if (selectedChatData.selectedCurrencyExchange == 'CAD') {
-            return `C$${(Math.round((Number(baseValue) * Number(selectedChatData.currency.usdToCad)))).toLocaleString('en-US', { useGrouping: true })}`;
+            const cadValue = baseValueNumber * Number(selectedChatData.currency.usdToCad);
+            return `C$${Math.round(cadValue).toLocaleString('en-US', numberFormatOptions)}`;
         }
-    }
+        // Add a default return value if none of the conditions are met
+        return `$${Math.round(baseValueNumber).toLocaleString('en-US', numberFormatOptions)}`;
+    };
+
+
+
 
 
     const freightCalculation = ((selectedChatData.m3 ? selectedChatData.m3 :
