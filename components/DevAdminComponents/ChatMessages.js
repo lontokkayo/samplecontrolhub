@@ -3364,6 +3364,10 @@ const PaymentDetails = () => {
     const additionalNameRef = useRef(null);
     const additionalPriceRef = useRef(null);
 
+
+    const totalAmountRef = useRef(null);
+
+
     const screenWidth = Dimensions.get('window').width;
 
     const safelyParseNumber = (value) => {
@@ -3375,6 +3379,9 @@ const PaymentDetails = () => {
         switch (selectedCurrencyExchange) {
             case 'USD':
                 return '$';
+
+            case 'JPY':
+                return '¥';
 
             case 'EURO':
                 return '€';
@@ -3402,6 +3409,8 @@ const PaymentDetails = () => {
 
         const getExchangeRate = (currency) => {
             switch (currency) {
+                case 'JPY':
+                    return selectedChatData.currency.usdToJpy;
                 case 'EURO':
                     return selectedChatData.currency.usdToEur;
                 case 'AUD':
@@ -3444,6 +3453,10 @@ const PaymentDetails = () => {
         // const total = Math.round(fobPrice + freight + inspection + (warrantyIsChecked ? warrantyPrice : 0) + insurance + additionalPricesTotal).toLocaleString();
         const total = Math.round(fobPrice + freight + inspection + incotermsCondition + additionalPricesTotal).toLocaleString();
         setTotalAmountCalculated(total);
+
+        totalAmountRef.current.value = total;
+
+
         globalInvoiceVariable.paymentDetails.totalAmount = total;
     };
 
@@ -3607,6 +3620,43 @@ const PaymentDetails = () => {
         inspectionInput.current.value = roundedValue;
         globalInvoiceVariable.paymentDetails.inspectionPrice = filteredText;
         calculateTotalAmount();
+    };
+
+    const handleTotalAmountInputChangeText = (text) => {
+
+
+        const fobPrice = safelyParseNumber(fobPriceInput.current?.value);
+        const freight = safelyParseNumber(freightInput.current?.value);
+        const inspection = safelyParseNumber(inspectionInput.current?.value);
+        const insurance = safelyParseNumber(insuranceInput.current?.value);
+
+        const additionalPricesTotal = globalAdditionalPriceArray.reduce((sum, value) => sum + safelyParseNumber(convertedCurrency(value)), 0);
+
+        const incotermsCondition = globalInvoiceVariable.paymentDetails.incoterms == 'CIF' ? insurance : 0;
+        // const total = Math.round(fobPrice + freight + inspection + (warrantyIsChecked ? warrantyPrice : 0) + insurance + additionalPricesTotal).toLocaleString();
+        const totalFobAmount = totalAmountRef.current.value.replace(/,/g, '') - Math.round(freight + inspection + incotermsCondition + additionalPricesTotal);
+
+        fobPriceInput.current.value = Number(totalFobAmount).toLocaleString('en-US');
+
+        console.log(totalFobAmount);
+        // Remove non-digit characters
+        const filteredText = text.replace(/[^0-9]/g, '');
+
+        // Ensure the text is converted to a number, rounded, and formatted without decimals
+        const roundedValue = Math.round(Number(filteredText)).toLocaleString('en-US', {
+            useGrouping: true,
+            minimumFractionDigits: 0,
+            maximumFractionDigits: 0
+        });
+
+        // Set the value in the input field and global variable
+        totalAmountRef.current.value = roundedValue;
+
+        setTotalAmountCalculated(filteredText);
+
+        console.log(filteredText);
+
+
     };
 
     const handleInsuranceInputChangeText = (text) => {
@@ -3841,8 +3891,13 @@ const PaymentDetails = () => {
             <View style={{ width: '100%', borderBottomWidth: 2, borderColor: '#0A9FDC', alignSelf: 'center', marginBottom: 4, }} />
             <View style={{ flex: 1, flexDirection: 'row', margin: 2, alignItems: 'center', }}>
                 <Text style={{ fontWeight: 700, margin: 3, }}>Total Amount:</Text>
-                <Text style={{ fontWeight: 700, fontSize: 18, margin: 3, color: '#FF0000', }}>{`${CurrencySign()}${totalAmountCalculated}`}</Text>
-
+                <Text style={{ fontWeight: 700, fontSize: 18, margin: 3, color: '#FF0000', }}>{`${CurrencySign()}`}</Text>
+                <TextInput
+                    onChangeText={handleTotalAmountInputChangeText}
+                    ref={totalAmountRef}
+                    placeholderTextColor='#9B9E9F'
+                    style={{ flex: 1, height: 25, margin: 2, padding: 1, borderRadius: 2, borderWidth: 1, borderColor: '#D9D9D9', outlineStyle: 'none', fontWeight: 700, fontSize: 18, color: '#FF0000', }}
+                />
                 {/* <MaterialCommunityIcons name='swap-horizontal' size={30} color={'gray'} />
 
 
@@ -5176,6 +5231,9 @@ const InputPaymentModalContent = () => {
         if (selectedChatData.selectedCurrencyExchange == 'None' || selectedChatData.selectedCurrencyExchange == 'USD' || !selectedChatData.selectedCurrencyExchange) {
             return `${roundValue(baseValue)}`;
         }
+        if (selectedChatData.selectedCurrencyExchange == 'JPY') {
+            return `${roundValue(Number(baseValue) * Number(selectedChatData.currency.usdToJpy))}`;
+        }
         if (selectedChatData.selectedCurrencyExchange == 'EURO') {
             return `${roundValue(Number(baseValue) * Number(selectedChatData.currency.usdToEur))}`;
         }
@@ -5257,6 +5315,9 @@ const InputPaymentModalContent = () => {
             if (invoiceData.selectedCurrencyExchange == 'None' || invoiceData.selectedCurrencyExchange == 'USD' || !invoiceData.selectedCurrencyExchange) {
                 return `${Number(baseValue).toFixed(2)}`;
             }
+            if (invoiceData.selectedCurrencyExchange == 'JPY') {
+                return `${(Number(baseValue) * Number(invoiceData.currency.jpyToUsd)).toFixed(2)}`;
+            }
             if (invoiceData.selectedCurrencyExchange == 'EURO') {
                 return `${(Number(baseValue) * Number(invoiceData.currency.eurToUsd)).toFixed(2)}`;
             }
@@ -5272,6 +5333,9 @@ const InputPaymentModalContent = () => {
         } else {
             if (selectedChatData.selectedCurrencyExchange == 'None' || selectedChatData.selectedCurrencyExchange == 'USD' || !selectedChatData.selectedCurrencyExchange) {
                 return `${Number(baseValue).toFixed(2)}`;
+            }
+            if (selectedChatData.selectedCurrencyExchange == 'JPY') {
+                return `${(Number(baseValue) * Number(selectedChatData.currency.jpyToUsd)).toFixed(2)}`;
             }
             if (selectedChatData.selectedCurrencyExchange == 'EURO') {
                 return `${(Number(baseValue) * Number(selectedChatData.currency.eurToUsd)).toFixed(2)}`;
@@ -5295,6 +5359,8 @@ const InputPaymentModalContent = () => {
         switch (selectedChatData.selectedCurrencyExchange) {
             case 'USD':
                 return '$';
+            case 'JPY':
+                return '¥';
             case 'EURO':
                 return '€';
             case 'AUD':
@@ -6021,6 +6087,9 @@ const IssueProformaInvoiceModalContent = () => {
             if (invoiceData.selectedCurrencyExchange == 'None' || invoiceData.selectedCurrencyExchange == 'USD' || !invoiceData.selectedCurrencyExchange) {
                 return `${Number(baseValue).toFixed(6)}`;
             }
+            if (invoiceData.selectedCurrencyExchange == 'JPY') {
+                return `${(Number(baseValue) * Number(invoiceData.currency.jpyToUsd)).toFixed(6)}`;
+            }
             if (invoiceData.selectedCurrencyExchange == 'EURO') {
                 return `${(Number(baseValue) * Number(invoiceData.currency.eurToUsd)).toFixed(6)}`;
             }
@@ -6036,6 +6105,9 @@ const IssueProformaInvoiceModalContent = () => {
         } else {
             if (selectedChatData.selectedCurrencyExchange == 'None' || selectedChatData.selectedCurrencyExchange == 'USD' || !selectedChatData.selectedCurrencyExchange) {
                 return `${Number(baseValue).toFixed(6)}`;
+            }
+            if (selectedChatData.selectedCurrencyExchange == 'JPY') {
+                return `${(Number(baseValue) * Number(selectedChatData.currency.jpyToUsd)).toFixed(6)}`;
             }
             if (selectedChatData.selectedCurrencyExchange == 'EURO') {
                 return `${(Number(baseValue) * Number(selectedChatData.currency.eurToUsd)).toFixed(6)}`;
@@ -6313,39 +6385,45 @@ const ProfitCalculator = () => {
 
         if (invoiceData && Object.keys(invoiceData).length > 0) {
             if (invoiceData.selectedCurrencyExchange == 'None' || invoiceData.selectedCurrencyExchange == 'USD' || !invoiceData.selectedCurrencyExchange) {
-                return `${Number(baseValue).toFixed(2)}`;
+                return `${Number(baseValue)}`;
+            }
+            if (invoiceData.selectedCurrencyExchange == 'JPY') {
+                return `${(Number(baseValue) * Number(invoiceData.currency.jpyToUsd))}`;
             }
             if (invoiceData.selectedCurrencyExchange == 'EURO') {
-                return `${(Number(baseValue) * Number(invoiceData.currency.eurToUsd)).toFixed(2)}`;
+                return `${(Number(baseValue) * Number(invoiceData.currency.eurToUsd))}`;
             }
             if (invoiceData.selectedCurrencyExchange == 'AUD') {
-                return `${(Number(baseValue) * Number(invoiceData.currency.audToUsd)).toFixed(2)}`;
+                return `${(Number(baseValue) * Number(invoiceData.currency.audToUsd))}`;
             }
             if (invoiceData.selectedCurrencyExchange == 'GBP') {
-                return `${(Number(baseValue) * Number(invoiceData.currency.gbpToUsd)).toFixed(2)}`;
+                return `${(Number(baseValue) * Number(invoiceData.currency.gbpToUsd))}`;
             }
             if (invoiceData.selectedCurrencyExchange == 'CAD') {
-                return `${(Number(baseValue) * Number(invoiceData.currency.cadToUsd)).toFixed(2)}`;
+                return `${(Number(baseValue) * Number(invoiceData.currency.cadToUsd))}`;
             }
         } else {
             if (selectedChatData.selectedCurrencyExchange == 'None' || selectedChatData.selectedCurrencyExchange == 'USD' || !selectedChatData.selectedCurrencyExchange) {
-                return `${Number(baseValue).toFixed(2)}`;
+                return `${Number(baseValue)}`;
+            }
+            if (selectedChatData.selectedCurrencyExchange == 'JPY') {
+                return `${(Number(baseValue) * Number(selectedChatData.currency.jpyToUsd))}`;
             }
             if (selectedChatData.selectedCurrencyExchange == 'EURO') {
-                return `${(Number(baseValue) * Number(selectedChatData.currency.eurToUsd)).toFixed(2)}`;
+                return `${(Number(baseValue) * Number(selectedChatData.currency.eurToUsd))}`;
             }
             if (selectedChatData.selectedCurrencyExchange == 'AUD') {
-                return `${(Number(baseValue) * Number(selectedChatData.currency.audToUsd)).toFixed(2)}`;
+                return `${(Number(baseValue) * Number(selectedChatData.currency.audToUsd))}`;
             }
             if (selectedChatData.selectedCurrencyExchange == 'GBP') {
-                return `${(Number(baseValue) * Number(selectedChatData.currency.gbpToUsd)).toFixed(2)}`;
+                return `${(Number(baseValue) * Number(selectedChatData.currency.gbpToUsd))}`;
             }
             if (selectedChatData.selectedCurrencyExchange == 'CAD') {
-                return `${(Number(baseValue) * Number(selectedChatData.currency.cadToUsd)).toFixed(2)}`;
+                return `${(Number(baseValue) * Number(selectedChatData.currency.cadToUsd))}`;
             }
         }
         // Fallback in case no conditions are met
-        return `${Number(baseValue).toFixed(2)}`;
+        return `${Number(baseValue)}`;
     };
 
 
@@ -6361,23 +6439,29 @@ const ProfitCalculator = () => {
             selectedCurrencyExchange = selectedChatData.selectedCurrencyExchange;
         }
 
-        if (selectedCurrencyExchange == 'None' || !selectedCurrencyExchange || selectedCurrencyExchange == 'USD') {
-            return `${roundValue(baseValue)}`;
-        }
-        if (selectedCurrencyExchange == 'EURO') {
-            return `${roundValue(calculateValue(baseValue, selectedChatData.currency.usdToEur, valueCurrency))}`;
-        }
-        if (selectedCurrencyExchange == 'AUD') {
-            return `${roundValue(calculateValue(baseValue, selectedChatData.currency.usdToAud, valueCurrency))}`;
-        }
-        if (selectedCurrencyExchange == 'GBP') {
-            return `${roundValue(calculateValue(baseValue, selectedChatData.currency.usdToGbp, valueCurrency))}`;
-        }
-        if (selectedCurrencyExchange == 'CAD') {
-            return `${roundValue(calculateValue(baseValue, selectedChatData.currency.usdToCad, valueCurrency))}`;
+        if (selectedCurrencyExchange === 'None' || !selectedCurrencyExchange || selectedCurrencyExchange === 'USD') {
+            return roundValue(baseValue);
         }
 
-        return `${roundValue(baseValue)}`;
+        const valueCurrency = 0; // Ensure valueCurrency is defined
+
+        if (selectedCurrencyExchange === 'JPY') {
+            return roundValue(calculateValue(baseValue, selectedChatData.currency.usdToJpy, valueCurrency));
+        }
+        if (selectedCurrencyExchange === 'EURO') {
+            return roundValue(calculateValue(baseValue, selectedChatData.currency.usdToEur, valueCurrency));
+        }
+        if (selectedCurrencyExchange === 'AUD') {
+            return roundValue(calculateValue(baseValue, selectedChatData.currency.usdToAud, valueCurrency));
+        }
+        if (selectedCurrencyExchange === 'GBP') {
+            return roundValue(calculateValue(baseValue, selectedChatData.currency.usdToGbp, valueCurrency));
+        }
+        if (selectedCurrencyExchange === 'CAD') {
+            return roundValue(calculateValue(baseValue, selectedChatData.currency.usdToCad, valueCurrency));
+        }
+
+        return roundValue(baseValue);
     };
 
 
@@ -6533,11 +6617,12 @@ const ProfitCalculator = () => {
             (selectedChatData.currency && selectedChatData.currency.jpyToUsd ?
                 selectedChatData.currency.jpyToUsd : 0))) + freightCalculation;
 
-    const defaultInputPrice = Math.round(convertedCurrency(
-        invoiceData && invoiceData.paymentDetails && invoiceData.paymentDetails.totalAmount
-            ? Number(invoiceData.paymentDetails.totalAmount.replace(/,/g, ''))
-            : totalPriceCalculation
-    ));
+    const defaultInputPrice =
+        convertedCurrency(
+            invoiceData && invoiceData.paymentDetails && invoiceData.paymentDetails.totalAmount
+                ? invoiceData.paymentDetails.totalAmount.replace(/,/g, '')
+                : totalPriceCalculation
+        );
 
 
 
@@ -6552,7 +6637,7 @@ const ProfitCalculator = () => {
         const inputPrice = safelyParseNumber(inputPriceRef.current?.value);
 
         const totalAmountDollars = Math.round(parseDollars(inputPrice) - realTotalPriceDollars);
-        setTotalProfitAmountDollars(totalAmountDollars);
+        setTotalProfitAmountDollars(Number(totalAmountDollars));
         // const total = Math.round(fobPrice + freight + inspection + insurance + additionalPricesTotal).toLocaleString();
         // setTotalAmountCalculated(total);
         // globalInvoiceVariable.paymentDetails.totalAmount = total;
@@ -6620,6 +6705,8 @@ const ProfitCalculator = () => {
         switch (selectedChatData.selectedCurrencyExchange) {
             case 'USD':
                 return '$';
+            case 'JPY':
+                return '¥';
             case 'EURO':
                 return '€';
             case 'AUD':
@@ -6637,6 +6724,8 @@ const ProfitCalculator = () => {
         switch (selectedChatData.selectedCurrencyExchange) {
             case 'USD':
                 return '$ USD';
+            case 'JPY':
+                return '¥ JPY';
             case 'EURO':
                 return '€ EUR';
             case 'AUD':
@@ -6715,7 +6804,7 @@ const ProfitCalculator = () => {
                                     fontWeight: '700', fontSize: 18,
                                     color: Number(totalProfitAmountDollars) < 0 ? '#FF0000' : '#0772AD',
                                 }}>
-                                    {`${CurrencySymbol()}${Math.round(convertedCurrency(Number(totalProfitAmountDollars))).toLocaleString('en-US',)}`}
+                                    {`${CurrencySymbol()}${convertedCurrency(totalProfitAmountDollars).toLocaleString('en-US',)}`}
                                 </Text>
                             </View>}
 
@@ -7356,6 +7445,9 @@ const GenerateCustomInvoice = () => {
             case 'USD':
                 return '$ USD';
 
+            case 'JPY':
+                return '¥ JPY';
+
             case 'EURO':
                 return '€ EURO';
 
@@ -7374,6 +7466,9 @@ const GenerateCustomInvoice = () => {
         switch (value) {
             case 'USD':
                 return '$';
+
+            case 'JPY':
+                return '¥';
 
             case 'EURO':
                 return '€';
@@ -7394,6 +7489,7 @@ const GenerateCustomInvoice = () => {
 
         const currencies = [
             { label: '$ USD', value: 'USD' },
+            { label: '¥ JPY', value: 'JPY' },
             { label: '€ EURO', value: 'EURO' },
             { label: 'A$ AUD', value: 'AUD' },
             { label: '£ GBP', value: 'GBP' },
@@ -9203,6 +9299,10 @@ const PreviewInvoice = () => {
 
         if (invoiceData.selectedCurrencyExchange == 'None' || !invoiceData.selectedCurrencyExchange || invoiceData.selectedCurrencyExchange == 'USD') {
             return `$${Math.round(baseValueNumber).toLocaleString('en-US', numberFormatOptions)}`;
+        }
+        if (invoiceData.selectedCurrencyExchange == 'JPY') {
+            const jpyValue = baseValueNumber * Number(selectedChatData.currency.usdToJpy);
+            return `€${Math.round(jpyValue).toLocaleString('en-US', numberFormatOptions)}`;
         }
         if (invoiceData.selectedCurrencyExchange == 'EURO') {
             const euroValue = baseValueNumber * Number(selectedChatData.currency.usdToEur);
@@ -12806,6 +12906,10 @@ const ChatMessageHeader = () => {
         if (selectedChatData.selectedCurrencyExchange == 'None' || selectedChatData.selectedCurrencyExchange == 'USD' || !selectedChatData.selectedCurrencyExchange) {
             return `$${Math.round(baseValueNumber).toLocaleString('en-US', numberFormatOptions)}`;
         }
+        if (selectedChatData.selectedCurrencyExchange == 'JPY') {
+            const jpyValue = baseValueNumber * Number(selectedChatData.currency.usdToJpy);
+            return `€${Math.round(jpyValue).toLocaleString('en-US', numberFormatOptions)}`;
+        }
         if (selectedChatData.selectedCurrencyExchange == 'EURO') {
             const euroValue = baseValueNumber * Number(selectedChatData.currency.usdToEur);
             return `€${Math.round(euroValue).toLocaleString('en-US', numberFormatOptions)}`;
@@ -12838,15 +12942,15 @@ const ChatMessageHeader = () => {
     const inspectionPriceCondition = (selectedChatData.inspection === true ? Number(valueInspectionPrice) : 0);
     const insurancePriceCondition = (selectedChatData.insurance === true ? Number(valueInsurancePrice) : 0);
 
-    const totalPriceCalculation = (selectedChatData.fobPrice ? selectedChatData.fobPrice :
+    const totalPriceCalculation = (selectedChatData.fobPrice ? Math.round(Number(selectedChatData.fobPrice)) :
         (selectedChatData.carData && selectedChatData.carData.fobPrice ?
-            selectedChatData.carData.fobPrice : 0) *
+            Math.round(Number(selectedChatData.carData.fobPrice)) : 0) *
         (selectedChatData.jpyToUsd ? selectedChatData.jpyToUsd :
             (selectedChatData.currency && selectedChatData.currency.jpyToUsd ?
                 selectedChatData.currency.jpyToUsd : 0)))
-        + freightCalculation
-        + inspectionPriceCondition
-        + insurancePriceCondition;
+        + Math.round(freightCalculation)
+        + Math.round(inspectionPriceCondition)
+        + Math.round(insurancePriceCondition);
 
     const fobPriceDollars = (selectedChatData.fobPrice ? selectedChatData.fobPrice :
         (selectedChatData.carData && selectedChatData.carData.fobPrice ?
@@ -12869,8 +12973,12 @@ const ChatMessageHeader = () => {
 
     const CurrencySymbol = (value) => {
         switch (value) {
+
             case 'USD':
                 return '$ USD';
+
+            case 'JPY':
+                return '¥ JPY';
 
             case 'EURO':
                 return '€ EURO';
@@ -12984,6 +13092,7 @@ const ChatMessageHeader = () => {
 
         const currencies = [
             { label: '$ USD', value: 'USD' },
+            { label: '¥ JPY', value: 'JPY' },
             { label: '€ EURO', value: 'EURO' },
             { label: 'A$ AUD', value: 'AUD' },
             { label: '£ GBP', value: 'GBP' },
