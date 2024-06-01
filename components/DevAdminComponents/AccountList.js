@@ -1047,9 +1047,6 @@ export default function AccountList() {
     };
 
 
-    useEffect(() => {
-
-    }, [selectedItem]);
     const addLogToCollection = async (data) => {
         try {
             const firestore = getFirestore();
@@ -1257,7 +1254,7 @@ export default function AccountList() {
             // setData(updatedData);
             // const filteredData = applySearchFilter(updatedData, searchInput.current?.value); // Apply search filter to updated data
             setFilteredData(filteredData);
-            navigate('/account-list')
+            navigate('/top/account-list')
             // console.log('Field updated successfully.');
             setIsDisabled(false);
             setIsYesLoading(false);

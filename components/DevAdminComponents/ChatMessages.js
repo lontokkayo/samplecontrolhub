@@ -6168,11 +6168,11 @@ const IssueProformaInvoiceModalContent = () => {
                     ...globalInvoiceVariable,
                     paymentDetails: {
                         ...globalInvoiceVariable.paymentDetails,
-                        fobPrice: parseDollars(globalInvoiceVariable.paymentDetails.fobPrice.replace(/,/g, '')).toLocaleString('en-US', { useGrouping: true }),
-                        freightPrice: parseDollars(globalInvoiceVariable.paymentDetails.freightPrice.replace(/,/g, '')).toLocaleString('en-US', { useGrouping: true }),
-                        inspectionPrice: parseDollars(globalInvoiceVariable.paymentDetails.inspectionPrice.replace(/,/g, '')).toLocaleString('en-US', { useGrouping: true }),
-                        insurancePrice: parseDollars(globalInvoiceVariable.paymentDetails.insurancePrice.replace(/,/g, '')).toLocaleString('en-US', { useGrouping: true }),
-                        totalAmount: parseDollars(globalInvoiceVariable.paymentDetails.totalAmount.replace(/,/g, '')).toLocaleString('en-US', { useGrouping: true }),
+                        fobPrice: `${parseDollars(globalInvoiceVariable.paymentDetails.fobPrice.replace(/,/g, ''))}`,
+                        freightPrice: `${parseDollars(globalInvoiceVariable.paymentDetails.freightPrice.replace(/,/g, ''))}`,
+                        inspectionPrice: `${parseDollars(globalInvoiceVariable.paymentDetails.inspectionPrice.replace(/,/g, ''))}`,
+                        insurancePrice: `${parseDollars(globalInvoiceVariable.paymentDetails.insurancePrice.replace(/,/g, ''))}`,
+                        totalAmount: `${parseDollars(globalInvoiceVariable.paymentDetails.totalAmount.replace(/,/g, ''))}`,
                     },
                     fullyPaid: false,
                     isCancelled: false,
@@ -6202,11 +6202,11 @@ const IssueProformaInvoiceModalContent = () => {
                     ...globalInvoiceVariable,
                     paymentDetails: {
                         ...globalInvoiceVariable.paymentDetails,
-                        fobPrice: parseDollars(globalInvoiceVariable.paymentDetails.fobPrice.replace(/,/g, '')).toLocaleString('en-US', { useGrouping: true }),
-                        freightPrice: parseDollars(globalInvoiceVariable.paymentDetails.freightPrice.replace(/,/g, '')).toLocaleString('en-US', { useGrouping: true }),
-                        inspectionPrice: parseDollars(globalInvoiceVariable.paymentDetails.inspectionPrice.replace(/,/g, '')).toLocaleString('en-US', { useGrouping: true }),
-                        insurancePrice: parseDollars(globalInvoiceVariable.paymentDetails.insurancePrice.replace(/,/g, '')).toLocaleString('en-US', { useGrouping: true }),
-                        totalAmount: parseDollars(globalInvoiceVariable.paymentDetails.totalAmount.replace(/,/g, '')).toLocaleString('en-US', { useGrouping: true }),
+                        fobPrice: `${parseDollars(globalInvoiceVariable.paymentDetails.fobPrice.replace(/,/g, ''))}`,
+                        freightPrice: `${parseDollars(globalInvoiceVariable.paymentDetails.freightPrice.replace(/,/g, ''))}`,
+                        inspectionPrice: `${parseDollars(globalInvoiceVariable.paymentDetails.inspectionPrice.replace(/,/g, ''))}`,
+                        insurancePrice: `${parseDollars(globalInvoiceVariable.paymentDetails.insurancePrice.replace(/,/g, ''))}`,
+                        totalAmount: `${parseDollars(globalInvoiceVariable.paymentDetails.totalAmount.replace(/,/g, ''))}`,
                     },
                     fullyPaid: false,
                     isCancelled: false,
@@ -9311,7 +9311,7 @@ const PreviewInvoice = () => {
         }
         if (invoiceData.selectedCurrencyExchange == 'JPY') {
             const jpyValue = baseValueNumber * Number(selectedChatData.currency.usdToJpy);
-            return `€${Math.round(jpyValue).toLocaleString('en-US', numberFormatOptions)}`;
+            return `¥${Math.round(jpyValue).toLocaleString('en-US', numberFormatOptions)}`;
         }
         if (invoiceData.selectedCurrencyExchange == 'EURO') {
             const euroValue = baseValueNumber * Number(selectedChatData.currency.usdToEur);
@@ -9356,6 +9356,16 @@ const PreviewInvoice = () => {
             // * Number(invoiceData.currency.jpyToEur)
             ;
 
+        const totalJpy = ((Number(invoiceData.paymentDetails.fobPrice)
+            + Number(invoiceData.paymentDetails.freightPrice)
+            + (invoiceData.paymentDetails.inspectionIsChecked
+                ? (Number(invoiceData.paymentDetails.inspectionPrice))
+                : 0)
+            + (invoiceData.paymentDetails.incoterms == 'CIF'
+                ? Number(invoiceData.paymentDetails.insurancePrice)
+                : 0)
+            + totalAdditionalPrice)
+            * Number(invoiceData.currency.usdToJpy));
 
         const totalEur = ((Number(invoiceData.paymentDetails.fobPrice)
             + Number(invoiceData.paymentDetails.freightPrice)
@@ -9414,6 +9424,10 @@ const PreviewInvoice = () => {
 
         if (invoiceData.selectedCurrencyExchange == 'None' || !invoiceData.selectedCurrencyExchange || invoiceData.selectedCurrencyExchange == 'USD') {
             return `$${Math.round(totalUsd).toLocaleString('en-US', { useGrouping: true })}`;
+        }
+
+        if (invoiceData.selectedCurrencyExchange == 'JPY') {
+            return `¥${Math.round(totalJpy).toLocaleString('en-US', { useGrouping: true })}`;
         }
 
         if (invoiceData.selectedCurrencyExchange == 'EURO') {
