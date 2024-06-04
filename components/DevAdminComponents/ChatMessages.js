@@ -3447,15 +3447,14 @@ const PaymentDetails = () => {
         const inspection = safelyParseNumber(inspectionInput.current?.value);
         const insurance = safelyParseNumber(insuranceInput.current?.value);
 
-        const additionalPricesTotal = globalAdditionalPriceArray.reduce((sum, value) => sum + safelyParseNumber(convertedCurrency(value)), 0);
+        const additionalPricesTotal = globalAdditionalPriceArray.reduce((sum, value) => sum + safelyParseNumber(value.replace(/,/g, '')), 0);
 
-        const incotermsCondition = globalInvoiceVariable.paymentDetails.incoterms == 'CIF' ? insurance : 0;
+        const incotermsCondition = selectedChatData.insuranceRestricted == false && globalInvoiceVariable.paymentDetails.incoterms == 'CIF' ? insurance : 0;
         // const total = Math.round(fobPrice + freight + inspection + (warrantyIsChecked ? warrantyPrice : 0) + insurance + additionalPricesTotal).toLocaleString();
         const total = Math.round(fobPrice + freight + inspection + incotermsCondition + additionalPricesTotal).toLocaleString();
         setTotalAmountCalculated(total);
 
         totalAmountRef.current.value = total;
-
 
         globalInvoiceVariable.paymentDetails.totalAmount = total;
     };
@@ -3482,8 +3481,6 @@ const PaymentDetails = () => {
         globalInvoiceVariable.paymentDetails.additionalPrice = invoiceData && Object.keys(invoiceData).length > 0 && invoiceData.paymentDetails.additionalPrice ? invoiceData.paymentDetails.additionalPrice : [];
         globalInvoiceVariable.paymentDetails.additionalName = invoiceData && Object.keys(invoiceData).length > 0 && invoiceData.paymentDetails.additionalName ? invoiceData.paymentDetails.additionalName : [];
         globalAdditionalPriceArray = invoiceData && Object.keys(invoiceData).length > 0 && invoiceData.paymentDetails.additionalPrice ? invoiceData.paymentDetails.additionalPrice : [];
-
-
 
         calculateTotalAmount();
     }, []);
@@ -3565,8 +3562,9 @@ const PaymentDetails = () => {
 
         // Update the ref and the state
         additionalPriceRef.current.value = filteredLines.join('\n');
-        globalAdditionalPriceArray = filteredLines;
-        globalInvoiceVariable.paymentDetails.additionalPrice = filteredLines;
+        const cleanFilteredLines = filteredLines.map(line => line.replace(/,/g, ''));
+        globalAdditionalPriceArray = cleanFilteredLines;
+        globalInvoiceVariable.paymentDetails.additionalPrice = cleanFilteredLines; // Keep it as an array
         calculateTotalAmount();
     };
 
@@ -3626,21 +3624,21 @@ const PaymentDetails = () => {
 
     const handleTotalAmountInputChangeText = (text) => {
 
-
         const fobPrice = safelyParseNumber(fobPriceInput.current?.value);
         const freight = safelyParseNumber(freightInput.current?.value);
         const inspection = safelyParseNumber(inspectionInput.current?.value);
         const insurance = safelyParseNumber(insuranceInput.current?.value);
+        // const additionalPriceTotal = safelyParseNumber(additionalPriceRef.current?.value);
 
-        const additionalPricesTotal = globalAdditionalPriceArray.reduce((sum, value) => sum + safelyParseNumber(convertedCurrency(value)), 0);
-
-        const incotermsCondition = globalInvoiceVariable.paymentDetails.incoterms == 'CIF' ? insurance : 0;
+        const additionalPricesTotal = globalAdditionalPriceArray.reduce((sum, value) => sum + safelyParseNumber(value.replace(/,/g, '')), 0);
+        // 
+        const incotermsCondition = selectedChatData.insuranceRestricted == false && globalInvoiceVariable.paymentDetails.incoterms == 'CIF' ? insurance : 0;
         // const total = Math.round(fobPrice + freight + inspection + (warrantyIsChecked ? warrantyPrice : 0) + insurance + additionalPricesTotal).toLocaleString();
         const totalFobAmount = totalAmountRef.current.value.replace(/,/g, '') - Math.round(freight + inspection + incotermsCondition + additionalPricesTotal);
 
         fobPriceInput.current.value = Number(totalFobAmount).toLocaleString('en-US');
+        globalInvoiceVariable.paymentDetails.fobPrice = Number(totalFobAmount).toLocaleString('en-US').replace(/[^0-9]/g, '');
 
-        console.log(totalFobAmount);
         // Remove non-digit characters
         const filteredText = text.replace(/[^0-9]/g, '');
 
@@ -5181,7 +5179,7 @@ const appendSalesInfoDataToCSV = async ({
 
 
 
-const InputPaymentModalContent = () => {
+const InputPaymentModalContent = () => { //Input Payment
     const dispatch = useDispatch();
     const invoiceData = useSelector((state) => state.invoiceData);
     const selectedChatData = useSelector((state) => state.selectedChatData);
@@ -5212,15 +5210,23 @@ const InputPaymentModalContent = () => {
 
     const handleInputAmountChangeText = (text) => {
         // Remove characters that are not digits, dot, or minus, and ensure minus is only at the start
-        const filteredText = text
+        let filteredText = text
             .replace(/[^0-9.-]/g, '')  // Remove characters that are not digits, dot, or minus
             .replace(/(.)\-/g, '$1')   // Remove minus if not at the start
             .replace(/^-(?=\-)/, '')   // Remove extra minus at the start
             .replace(/(\..*)\./g, '$1'); // Allow only one dot
 
+        // Format the number with commas as thousands separators
+        if (filteredText) {
+            const parts = filteredText.split('.');
+            parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+            filteredText = parts.join('.');
+        }
+
         // Update the input field
         inputAmountRef.current.value = filteredText;
     };
+
 
     const convertedCurrency = (baseValue) => {
         const numberFormatOptions = {
@@ -5284,12 +5290,15 @@ const InputPaymentModalContent = () => {
 
         // Calculating total in different currencies
         const totalUsd = baseTotal;
+        const totalJpy = baseTotal * usdToJpy;
         const totalEur = baseTotal * usdToEur;
         const totalAud = baseTotal * usdToJpy * jpyToAud;
         const totalGbp = baseTotal * usdToJpy * jpyToGbp;
         const totalCad = baseTotal * usdToJpy * cadToJpy;
 
         switch (invoiceData?.selectedCurrencyExchange) {
+            case 'JPY':
+                return `${Math.round(Number(totalJpy))}`;
             case 'EURO':
                 return `${Math.round(Number(totalEur))}`;
             case 'AUD':
@@ -5303,12 +5312,24 @@ const InputPaymentModalContent = () => {
             default:
                 return `${Math.round(Number(totalUsd))}`;
         }
+
     }
 
     const handleCompletePaymentPress = () => {
-        const filteredText = totalPriceCalculated().replace(/[^0-9.]/g, '').replace(/(\..*)\./g, '$1').replace(/,/g, '') - convertedCurrency(Number(totalValue)).replace(/,/g, '');
-        inputAmountRef.current.value = filteredText;
+        const totalPrice = Number(totalPriceCalculated().replace(/[^0-9.]/g, '').replace(/(\..*)\./g, '$1').replace(/,/g, ''));
+        const totalValueConverted = Number(convertedCurrency(Number(totalValue)).replace(/,/g, ''));
+        const filteredText = totalPrice - totalValueConverted;
+
+        // Format the number with commas as thousands separators
+        const formattedText = filteredText.toLocaleString('en-US', {
+            useGrouping: true,
+            minimumFractionDigits: 0,
+            maximumFractionDigits: 0
+        });
+
+        inputAmountRef.current.value = formattedText;
     }
+
 
 
 
@@ -5316,45 +5337,45 @@ const InputPaymentModalContent = () => {
 
         if (invoiceData && Object.keys(invoiceData).length > 0) {
             if (invoiceData.selectedCurrencyExchange == 'None' || invoiceData.selectedCurrencyExchange == 'USD' || !invoiceData.selectedCurrencyExchange) {
-                return `${Number(baseValue).toFixed(2)}`;
+                return `${Number(baseValue)}`;
             }
             if (invoiceData.selectedCurrencyExchange == 'JPY') {
-                return `${(Number(baseValue) * Number(invoiceData.currency.jpyToUsd)).toFixed(2)}`;
+                return `${(Number(baseValue) * Number(invoiceData.currency.jpyToUsd))}`;
             }
             if (invoiceData.selectedCurrencyExchange == 'EURO') {
-                return `${(Number(baseValue) * Number(invoiceData.currency.eurToUsd)).toFixed(2)}`;
+                return `${(Number(baseValue) * Number(invoiceData.currency.eurToUsd))}`;
             }
             if (invoiceData.selectedCurrencyExchange == 'AUD') {
-                return `${(Number(baseValue) * Number(invoiceData.currency.audToUsd)).toFixed(2)}`;
+                return `${(Number(baseValue) * Number(invoiceData.currency.audToUsd))}`;
             }
             if (invoiceData.selectedCurrencyExchange == 'GBP') {
-                return `${(Number(baseValue) * Number(invoiceData.currency.gbpToUsd)).toFixed(2)}`;
+                return `${(Number(baseValue) * Number(invoiceData.currency.gbpToUsd))}`;
             }
             if (invoiceData.selectedCurrencyExchange == 'CAD') {
-                return `${(Number(baseValue) * Number(invoiceData.currency.cadToUsd)).toFixed(2)}`;
+                return `${(Number(baseValue) * Number(invoiceData.currency.cadToUsd))}`;
             }
         } else {
             if (selectedChatData.selectedCurrencyExchange == 'None' || selectedChatData.selectedCurrencyExchange == 'USD' || !selectedChatData.selectedCurrencyExchange) {
-                return `${Number(baseValue).toFixed(2)}`;
+                return `${Number(baseValue)}`;
             }
             if (selectedChatData.selectedCurrencyExchange == 'JPY') {
-                return `${(Number(baseValue) * Number(selectedChatData.currency.jpyToUsd)).toFixed(2)}`;
+                return `${(Number(baseValue) * Number(selectedChatData.currency.jpyToUsd))}`;
             }
             if (selectedChatData.selectedCurrencyExchange == 'EURO') {
-                return `${(Number(baseValue) * Number(selectedChatData.currency.eurToUsd)).toFixed(2)}`;
+                return `${(Number(baseValue) * Number(selectedChatData.currency.eurToUsd))}`;
             }
             if (selectedChatData.selectedCurrencyExchange == 'AUD') {
-                return `${(Number(baseValue) * Number(selectedChatData.currency.audToUsd)).toFixed(2)}`;
+                return `${(Number(baseValue) * Number(selectedChatData.currency.audToUsd))}`;
             }
             if (selectedChatData.selectedCurrencyExchange == 'GBP') {
-                return `${(Number(baseValue) * Number(selectedChatData.currency.gbpToUsd)).toFixed(2)}`;
+                return `${(Number(baseValue) * Number(selectedChatData.currency.gbpToUsd))}`;
             }
             if (selectedChatData.selectedCurrencyExchange == 'CAD') {
-                return `${(Number(baseValue) * Number(selectedChatData.currency.cadToUsd)).toFixed(2)}`;
+                return `${(Number(baseValue) * Number(selectedChatData.currency.cadToUsd))}`;
             }
         }
         // Fallback in case no conditions are met
-        return `${Number(baseValue).toFixed(2)}`;
+        return `${Number(baseValue)}`;
     };
 
 
@@ -5679,21 +5700,21 @@ Real Motor Japan`,
         const formattedSalesDate = moment(datetime).format('YYYY/MM/DD');
 
         const newPayments = [
-            { value: parseDollars(inputAmountRef.current.value), date: formattedDate },
+            { value: parseDollars(inputAmountRef.current.value.replace(/,/g, '')), date: formattedDate },
         ];
 
         const newPaymentsAccount = [
-            { value: parseDollars(inputAmountRef.current.value), date: formattedDate, vehicleRef: selectedChatData.carData.referenceNumber, vehicleName: selectedChatData.carData.carName, },
+            { value: parseDollars(inputAmountRef.current.value.replace(/,/g, '')), date: formattedDate, vehicleRef: selectedChatData.carData.referenceNumber, vehicleName: selectedChatData.carData.carName, },
         ];
 
         const inputAmountFormatOptions = {
-            minimumFractionDigits: 2,
-            maximumFractionDigits: 2,
+            minimumFractionDigits: 0,
+            maximumFractionDigits: 0,
             useGrouping: true
         };
 
         const inputAmount = inputAmountRef.current.value;
-        const numericInputAmount = Number(inputAmount);
+        const numericInputAmount = Math.round(Number(inputAmount.replace(/,/g, '')));
         const formattedInputAmount = Number(numericInputAmount).toLocaleString('en-US', inputAmountFormatOptions);
         const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
 
@@ -5926,7 +5947,6 @@ Real Motor Japan`,
     };
 
 
-
     const isTotalValueGreater = Number(totalValue) < Number(totalPriceCalculated().replace(/[^0-9.]/g, '').replace(/(\..*)\./g, '$1'));
     const displayedAmount = isTotalValueGreater ? Number(totalValue).toLocaleString() : totalPriceCalculated();
 
@@ -5946,8 +5966,8 @@ Real Motor Japan`,
                     <Text style={{ fontWeight: 700, fontSize: 14, color: '#8D7777', }}> out of </Text>
                     <Text style={{ fontWeight: 700, fontSize: 14, color: '#16A34A', }}>
                         {`${CurrencySymbol()}${Number(totalPriceCalculated()).toLocaleString('en-US', {
-                            minimumFractionDigits: 2,
-                            maximumFractionDigits: 2
+                            minimumFractionDigits: 0,
+                            maximumFractionDigits: 0
                         })}`}
                     </Text>
                 </Text>
@@ -6168,6 +6188,7 @@ const IssueProformaInvoiceModalContent = () => {
                     ...globalInvoiceVariable,
                     paymentDetails: {
                         ...globalInvoiceVariable.paymentDetails,
+                        additionalPrice: globalAdditionalPriceArray.map(item => `${parseDollars(item.replace(/,/g, ''))}`),
                         fobPrice: `${parseDollars(globalInvoiceVariable.paymentDetails.fobPrice.replace(/,/g, ''))}`,
                         freightPrice: `${parseDollars(globalInvoiceVariable.paymentDetails.freightPrice.replace(/,/g, ''))}`,
                         inspectionPrice: `${parseDollars(globalInvoiceVariable.paymentDetails.inspectionPrice.replace(/,/g, ''))}`,
@@ -6202,6 +6223,7 @@ const IssueProformaInvoiceModalContent = () => {
                     ...globalInvoiceVariable,
                     paymentDetails: {
                         ...globalInvoiceVariable.paymentDetails,
+                        additionalPrice: globalAdditionalPriceArray.map(item => `${parseDollars(item.replace(/,/g, ''))}`),
                         fobPrice: `${parseDollars(globalInvoiceVariable.paymentDetails.fobPrice.replace(/,/g, ''))}`,
                         freightPrice: `${parseDollars(globalInvoiceVariable.paymentDetails.freightPrice.replace(/,/g, ''))}`,
                         inspectionPrice: `${parseDollars(globalInvoiceVariable.paymentDetails.inspectionPrice.replace(/,/g, ''))}`,
@@ -9425,11 +9447,9 @@ const PreviewInvoice = () => {
         if (invoiceData.selectedCurrencyExchange == 'None' || !invoiceData.selectedCurrencyExchange || invoiceData.selectedCurrencyExchange == 'USD') {
             return `$${Math.round(totalUsd).toLocaleString('en-US', { useGrouping: true })}`;
         }
-
         if (invoiceData.selectedCurrencyExchange == 'JPY') {
             return `¥${Math.round(totalJpy).toLocaleString('en-US', { useGrouping: true })}`;
         }
-
         if (invoiceData.selectedCurrencyExchange == 'EURO') {
             return `€${Math.round(totalEur).toLocaleString('en-US', { useGrouping: true })}`;
         }
@@ -13100,6 +13120,29 @@ const ChatMessageHeader = () => {
         }
     }
 
+    const CurrencySign = () => {
+        switch (selectedChatData.selectedCurrencyExchange) {
+
+            case 'USD':
+                return '$';
+
+            case 'JPY':
+                return '¥';
+
+            case 'EURO':
+                return '€';
+
+            case 'AUD':
+                return 'A$';
+
+            case 'GBP':
+                return '£';
+
+            case 'CAD':
+                return 'C$';
+        }
+    }
+
 
 
     const UpdateCurrency = async (currencyValue) => {
@@ -13170,12 +13213,15 @@ const ChatMessageHeader = () => {
 
         // Calculating total in different currencies
         const totalUsd = baseTotal;
+        const totalJpy = baseTotal * usdToJpy;
         const totalEur = baseTotal * usdToEur;
         const totalAud = baseTotal * usdToJpy * jpyToAud;
         const totalGbp = baseTotal * usdToJpy * jpyToGbp;
         const totalCad = baseTotal * usdToJpy * cadToJpy;
 
         switch (invoiceData?.selectedCurrencyExchange) {
+            case 'JPY':
+                return `¥${Math.round(Number(totalJpy)).toLocaleString('en-US', { useGrouping: true })}`;
             case 'EURO':
                 return `€${Math.round(Number(totalEur)).toLocaleString('en-US', { useGrouping: true })}`;
             case 'AUD':
@@ -13187,7 +13233,7 @@ const ChatMessageHeader = () => {
             case 'None':
             case 'USD':
             default:
-                return `$${Math.round(Number(totalUsd)).toLocaleString('en-US', { useGrouping: true })}`;
+                return `${CurrencySign()}${Math.round(Number(totalUsd)).toLocaleString('en-US', { useGrouping: true })}`;
         }
     }
 

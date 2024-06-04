@@ -184,26 +184,46 @@ const QRCodeScanner = () => {
     const valueCurrency = 0.5;
 
     const convertedCurrency = (baseValue) => {
+        // Ensure baseValue is a valid number
+        const baseValueNumber = Number(baseValue);
+
+        if (isNaN(baseValueNumber)) {
+            return 'Invalid base value';
+        }
+
+        const numberFormatOptions = {
+            useGrouping: true,
+            minimumFractionDigits: 0,
+            maximumFractionDigits: 0
+        };
+
         if (invoiceData.selectedCurrencyExchange == 'None' || !invoiceData.selectedCurrencyExchange || invoiceData.selectedCurrencyExchange == 'USD') {
-            return `$${Number(baseValue).toFixed(2).toLocaleString('en-US', { useGrouping: true })}`
+            return `$${Math.round(baseValueNumber).toLocaleString('en-US', numberFormatOptions)}`;
+        }
+        if (invoiceData.selectedCurrencyExchange == 'JPY') {
+            const jpyValue = baseValueNumber * Number(invoiceData.currency.usdToJpy);
+            return `¥${Math.round(jpyValue).toLocaleString('en-US', numberFormatOptions)}`;
         }
         if (invoiceData.selectedCurrencyExchange == 'EURO') {
-            const euroValue = Number(baseValue) * Number(invoiceData.currency.usdToEur);
-            return `€${(euroValue).toFixed(2).toLocaleString('en-US', { useGrouping: true })}`;
+            const euroValue = baseValueNumber * Number(invoiceData.currency.usdToEur);
+            return `€${Math.round(euroValue).toLocaleString('en-US', numberFormatOptions)}`;
         }
         if (invoiceData.selectedCurrencyExchange == 'AUD') {
-            const audValue = Number(baseValue) * Number(invoiceData.currency.usdToAud);
-            return `A$${(audValue).toFixed(2).toLocaleString('en-US', { useGrouping: true })}`;
+            const audValue = baseValueNumber * Number(invoiceData.currency.usdToAud);
+            return `A$${Math.round(audValue).toLocaleString('en-US', numberFormatOptions)}`;
         }
         if (invoiceData.selectedCurrencyExchange == 'GBP') {
-            const gbpValue = Number(baseValue) * Number(invoiceData.currency.usdToGbp);
-            return `£${(gbpValue).toFixed(2).toLocaleString('en-US', { useGrouping: true })}`;
+            const gbpValue = baseValueNumber * Number(invoiceData.currency.usdToGbp);
+            return `£${Math.round(gbpValue).toLocaleString('en-US', numberFormatOptions)}`;
         }
         if (invoiceData.selectedCurrencyExchange == 'CAD') {
-            const cadValue = Number(baseValue) * Number(invoiceData.currency.usdToCad);
-            return `C$${(cadValue).toFixed(2).toLocaleString('en-US', { useGrouping: true })}`;
+            const cadValue = baseValueNumber * Number(invoiceData.currency.usdToCad);
+            return `C$${Math.round(cadValue).toLocaleString('en-US', numberFormatOptions)}`;
         }
-    }
+
+        // Add a default return value if none of the conditions are met
+        return `$${Math.round(baseValueNumber).toLocaleString('en-US', numberFormatOptions)}`;
+    };
 
     const totalPriceCalculated = () => {
 
@@ -225,6 +245,17 @@ const QRCodeScanner = () => {
             // * Number(invoiceData.currency.jpyToEur)
             ;
 
+
+        const totalJpy = ((Number(invoiceData.paymentDetails.fobPrice)
+            + Number(invoiceData.paymentDetails.freightPrice)
+            + (invoiceData.paymentDetails.inspectionIsChecked
+                ? (Number(invoiceData.paymentDetails.inspectionPrice))
+                : 0)
+            + (invoiceData.paymentDetails.incoterms == 'CIF'
+                ? Number(invoiceData.paymentDetails.insurancePrice)
+                : 0)
+            + totalAdditionalPrice)
+            * Number(invoiceData.currency.usdToJpy));
 
         const totalEur = ((Number(invoiceData.paymentDetails.fobPrice)
             + Number(invoiceData.paymentDetails.freightPrice)
@@ -284,7 +315,9 @@ const QRCodeScanner = () => {
         if (invoiceData.selectedCurrencyExchange == 'None' || !invoiceData.selectedCurrencyExchange || invoiceData.selectedCurrencyExchange == 'USD') {
             return `$${Math.round(totalUsd).toLocaleString('en-US', { useGrouping: true })}`;
         }
-
+        if (invoiceData.selectedCurrencyExchange == 'JPY') {
+            return `€${Math.round(totalJpy).toLocaleString('en-US', { useGrouping: true })}`;
+        }
         if (invoiceData.selectedCurrencyExchange == 'EURO') {
             return `€${Math.round(totalEur).toLocaleString('en-US', { useGrouping: true })}`;
         }
