@@ -3478,9 +3478,9 @@ const PaymentDetails = () => {
         globalInvoiceVariable.paymentDetails.fobPrice = convertedCurrency(invoiceData && Object.keys(invoiceData).length > 0 && invoiceData.paymentDetails.fobPrice ? invoiceData.paymentDetails.fobPrice : fobPriceDollars);
         globalInvoiceVariable.paymentDetails.freightPrice = convertedCurrency(invoiceData && Object.keys(invoiceData).length > 0 && invoiceData.paymentDetails.freightPrice ? invoiceData.paymentDetails.freightPrice : freightCalculation);
         globalInvoiceVariable.paymentDetails.insurancePrice = convertedCurrency(invoiceData && Object.keys(invoiceData).length > 0 && invoiceData.paymentDetails.insurancePrice ? invoiceData.paymentDetails.insurancePrice : selectedIncoterms == 'CIF' ? insuranceInput.current?.value : 0);
-        globalInvoiceVariable.paymentDetails.additionalPrice = invoiceData && Object.keys(invoiceData).length > 0 && invoiceData.paymentDetails.additionalPrice ? invoiceData.paymentDetails.additionalPrice : [];
+        globalInvoiceVariable.paymentDetails.additionalPrice = invoiceData && Object.keys(invoiceData).length > 0 && invoiceData.paymentDetails.additionalPrice ? invoiceData.paymentDetails.additionalPrice.map(item => `${convertedCurrency(item.replace(/,/g, ''))}`) : [];
         globalInvoiceVariable.paymentDetails.additionalName = invoiceData && Object.keys(invoiceData).length > 0 && invoiceData.paymentDetails.additionalName ? invoiceData.paymentDetails.additionalName : [];
-        globalAdditionalPriceArray = invoiceData && Object.keys(invoiceData).length > 0 && invoiceData.paymentDetails.additionalPrice ? invoiceData.paymentDetails.additionalPrice : [];
+        globalAdditionalPriceArray = invoiceData && Object.keys(invoiceData).length > 0 && invoiceData.paymentDetails.additionalPrice ? invoiceData.paymentDetails.additionalPrice.map(item => `${convertedCurrency(item.replace(/,/g, ''))}`) : [];
 
         calculateTotalAmount();
     }, []);
@@ -6049,7 +6049,7 @@ Real Motor Japan`,
 
 }
 
-const IssueProformaInvoiceModalContent = () => {
+const IssueProformaInvoiceModalContent = () => { // Issue Invoice && Update Invoice
     const dispatch = useDispatch();
     const selectedChatData = useSelector((state) => state.selectedChatData);
     const selectedCustomerData = useSelector((state) => state.selectedCustomerData);
@@ -6080,7 +6080,7 @@ const IssueProformaInvoiceModalContent = () => {
         try {
             // Adding the message to the 'messages' subcollection
             await addDoc(collection(projectExtensionFirestore, 'chats', selectedChatData.id, 'messages'), {
-                text: 'Issued Invoice',
+                text: selectedChatData.stepIndicator.value >= 2 ? 'Updated Invoice' : 'Issued Invoice',
                 sender: email,
                 timestamp: formattedTime, // Using the fetched timestamp
                 messageType: 'IssuedInvoice',
@@ -6091,7 +6091,7 @@ const IssueProformaInvoiceModalContent = () => {
             // Updating the main chat document with the latest message details
             await updateDoc(doc(projectExtensionFirestore, 'chats', selectedChatData.id), {
                 lastMessageSender: email,
-                lastMessage: 'Issued Invoice',
+                lastMessage: selectedChatData.stepIndicator.value >= 2 ? 'Updated Invoice' : 'Issued Invoice',
                 lastMessageDate: formattedTime,
                 customerRead: false,
                 read: true,
@@ -12665,6 +12665,7 @@ const PaymentHistoryModal = () => {
                             {
                                 Array.isArray(sortedPayments) && sortedPayments.length > 0 ?
                                     displayedPayments.map((payment, index) => (
+
                                         <View key={index} style={{
                                             marginBottom: 15,
                                             backgroundColor: '#F8F9FF', // Card background color
@@ -12678,6 +12679,7 @@ const PaymentHistoryModal = () => {
                                             borderBottomWidth: 1,
                                             borderBottomColor: '#eee',
                                         }}>
+
                                             <Text style={{ fontSize: 14, fontWeight: 'bold', color: 'black', marginBottom: 5 }}>
                                                 <Text style={{ fontWeight: 'bold', color: '#0A78BE' }}>Date: </Text>
                                                 <Text style={{ color: '#333' }}>
@@ -12701,6 +12703,7 @@ const PaymentHistoryModal = () => {
                                                 <Text style={{ fontWeight: 'bold', color: '#0A78BE' }}>Reference Number: </Text>
                                                 <Text style={{ color: '#333' }}>{payment.vehicleRef}</Text>
                                             </Text>
+
                                         </View>
                                     )) :
                                     <Text style={{ fontWeight: 'bold', alignSelf: 'center' }} italic>No history to show</Text>
@@ -12717,6 +12720,7 @@ const PaymentHistoryModal = () => {
 }
 
 const CustomerProfileModal = () => {
+
     const [customerModalVisible, setCustomerModalVisible] = useState(false);
     const selectedCustomerData = useSelector((state) => state.selectedCustomerData);
     const screenWidth = Dimensions.get('window').width;

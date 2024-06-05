@@ -1260,14 +1260,22 @@ const QRCodeScanner = () => {
                 size="lg"
                 useRNModal
             >
-
                 {invoiceData ? (
                     <PreviewInvoice />
                 ) : (
-                    <Text>No data available</Text>
+                    <View style={{
+                        backgroundColor: 'red',
+                        color: 'white',
+                        padding: '20px',
+                        borderRadius: '10px',
+                        textAlign: 'center',
+                        fontWeight: 'bold'
+                    }}>
+                        No data available
+                    </View>
                 )}
-
             </Modal>
+
 
 
             <Modal isOpen={isScanning} onClose={() => setIsScanning(false)} size="lg" useRNModal>
