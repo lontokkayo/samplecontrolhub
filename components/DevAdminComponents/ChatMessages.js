@@ -3346,7 +3346,7 @@ const PaymentDetails = () => {
     const inspectionInput = useRef(null);
     const insuranceInput = useRef(null);
 
-    const [totalAmountCalculated, setTotalAmountCalculated] = useState('0');
+    // const [totalAmountCalculated, setTotalAmountCalculated] = useState('0');
     const [selectedIncoterms, setSelectedIncoterms] = useState(invoiceData && Object.keys(invoiceData).length > 0 && invoiceData.paymentDetails.incoterms ? invoiceData.paymentDetails.incoterms :
         selectedChatData.insurance ? 'CIF' : 'C&F');
 
@@ -3452,7 +3452,7 @@ const PaymentDetails = () => {
         const incotermsCondition = selectedChatData.insuranceRestricted == false && globalInvoiceVariable.paymentDetails.incoterms == 'CIF' ? insurance : 0;
         // const total = Math.round(fobPrice + freight + inspection + (warrantyIsChecked ? warrantyPrice : 0) + insurance + additionalPricesTotal).toLocaleString();
         const total = Math.round(fobPrice + freight + inspection + incotermsCondition + additionalPricesTotal).toLocaleString();
-        setTotalAmountCalculated(total);
+        // setTotalAmountCalculated(total);
 
         totalAmountRef.current.value = total;
 
@@ -3652,7 +3652,7 @@ const PaymentDetails = () => {
         // Set the value in the input field and global variable
         totalAmountRef.current.value = roundedValue;
 
-        setTotalAmountCalculated(filteredText);
+        // setTotalAmountCalculated(filteredText);
 
         console.log(filteredText);
 
@@ -4171,6 +4171,8 @@ const SelectPortOfDeparture = () => {
 
 const NotifyPartyInput = ({ accountData, setAccountData }) => {
     const invoiceData = useSelector((state) => state.invoiceData);
+    const selectedChatData = useSelector((state) => state.selectedChatData);
+    const selectedCustomerData = useSelector((state) => state.selectedCustomerData);
 
     const [isChecked, setIsChecked] = useState(invoiceData && Object.keys(invoiceData).length > 0 ? invoiceData.notifyParty.sameAsConsignee : true);
 
@@ -4184,22 +4186,26 @@ const NotifyPartyInput = ({ accountData, setAccountData }) => {
 
     useEffect(() => {
 
-        notifyPartyName.current.value = invoiceData && Object.keys(invoiceData).length > 0 && invoiceData.notifyParty.name ? invoiceData.notifyParty.name : '';
-        notifyPartyAddress.current.value = invoiceData && Object.keys(invoiceData).length > 0 && invoiceData.notifyParty.address ? invoiceData.notifyParty.address : '';
-        notifyPartyCity.current.value = invoiceData && Object.keys(invoiceData).length > 0 && invoiceData.notifyParty.city ? invoiceData.notifyParty.city : '';
-        notifyPartyCountry.current.value = invoiceData && Object.keys(invoiceData).length > 0 && invoiceData.notifyParty.country ? invoiceData.notifyParty.country : '';
-        notifyPartyContactNumber.current.value = invoiceData && Object.keys(invoiceData).length > 0 && invoiceData.notifyParty.contactNumber ? invoiceData.notifyParty.contactNumber : '';
-        notifyPartyFax.current.value = invoiceData && Object.keys(invoiceData).length > 0 && invoiceData.notifyParty.fax ? invoiceData.notifyParty.fax : '';
-        notifyPartyEmail.current.value = invoiceData && Object.keys(invoiceData).length > 0 && invoiceData.notifyParty.email ? invoiceData.notifyParty.email : '';
 
-        globalInvoiceVariable.notifyParty.name = invoiceData && Object.keys(invoiceData).length > 0 && invoiceData.notifyParty.name ? invoiceData.notifyParty.name : notifyPartyName.current?.value;
-        globalInvoiceVariable.notifyParty.address = invoiceData && Object.keys(invoiceData).length > 0 && invoiceData.notifyParty.address ? invoiceData.notifyParty.address : notifyPartyAddress.current?.value;
-        globalInvoiceVariable.notifyParty.city = invoiceData && Object.keys(invoiceData).length > 0 && invoiceData.notifyParty.city ? invoiceData.notifyParty.city : notifyPartyCity.current?.value;
-        globalInvoiceVariable.notifyParty.country = invoiceData && Object.keys(invoiceData).length > 0 && invoiceData.notifyParty.country ? invoiceData.notifyParty.country : notifyPartyCountry.current?.value;
-        globalInvoiceVariable.notifyParty.contactNumber = invoiceData && Object.keys(invoiceData).length > 0 && invoiceData.notifyParty.contactNumber ? invoiceData.notifyParty.contactNumber : notifyPartyContactNumber.current?.value;
-        globalInvoiceVariable.notifyParty.fax = invoiceData && Object.keys(invoiceData).length > 0 && invoiceData.notifyParty.fax ? invoiceData.notifyParty.fax : notifyPartyFax.current?.value;
-        globalInvoiceVariable.notifyParty.email = invoiceData && Object.keys(invoiceData).length > 0 && invoiceData.notifyParty.email ? invoiceData.notifyParty.email : notifyPartyEmail.current?.value;
-        globalInvoiceVariable.notifyParty.sameAsConsignee = invoiceData && Object.keys(invoiceData).length > 0 && invoiceData.notifyParty.sameAsConsignee ? invoiceData.notifyParty.sameAsConsignee : isChecked;
+        // console.log(docSnap.data());
+        notifyPartyName.current.value = invoiceData && Object.keys(invoiceData).length > 0 && invoiceData.consignee.name ? invoiceData.consignee.name : `${selectedCustomerData.textFirst ? selectedCustomerData.textFirst : ''} ${selectedCustomerData.textLast ? selectedCustomerData.textLast : ''}`;
+        notifyPartyAddress.current.value = invoiceData && Object.keys(invoiceData).length > 0 && invoiceData.consignee.address ? invoiceData.consignee.address : `${selectedCustomerData.textStreet ? selectedCustomerData.textStreet : ''} ${selectedCustomerData.textZip ? selectedCustomerData.textZip : ''}`;
+        notifyPartyCity.current.value = invoiceData && Object.keys(invoiceData).length > 0 && invoiceData.consignee.city ? invoiceData.consignee.city : `${selectedCustomerData.city ? selectedCustomerData.city : ''}`;
+        notifyPartyCountry.current.value = invoiceData && Object.keys(invoiceData).length > 0 && invoiceData.consignee.country ? invoiceData.consignee.country : `${selectedCustomerData.country ? selectedCustomerData.country : ''}`;
+        notifyPartyContactNumber.current.value = invoiceData && Object.keys(invoiceData).length > 0 && invoiceData.consignee.contactNumber ? invoiceData.consignee.contactNumber : `${selectedCustomerData.textPhoneNumber ? selectedCustomerData.textPhoneNumber : ''}`;
+        notifyPartyFax.current.value = invoiceData && Object.keys(invoiceData).length > 0 && invoiceData.consignee.fax ? invoiceData.consignee.fax : `${selectedCustomerData.fax ? selectedCustomerData.fax : ''}`;
+        notifyPartyEmail.current.value = invoiceData && Object.keys(invoiceData).length > 0 && invoiceData.consignee.email ? invoiceData.consignee.email : `${selectedCustomerData.textEmail ? selectedCustomerData.textEmail : ''}`;
+
+
+        globalInvoiceVariable.notifyParty.name = invoiceData && Object.keys(invoiceData).length > 0 && invoiceData.consignee.name ? invoiceData.consignee.name : `${selectedCustomerData.textFirst ? selectedCustomerData.textFirst : ''} ${selectedCustomerData.textLast ? selectedCustomerData.textLast : ''}`;
+        globalInvoiceVariable.notifyParty.address = invoiceData && Object.keys(invoiceData).length > 0 && invoiceData.consignee.address ? invoiceData.consignee.address : `${selectedCustomerData.textStreet ? selectedCustomerData.textStreet : ''} ${selectedCustomerData.textZip ? selectedCustomerData.textZip : ''}`;
+        globalInvoiceVariable.notifyParty.city = invoiceData && Object.keys(invoiceData).length > 0 && invoiceData.consignee.city ? invoiceData.consignee.city : `${selectedCustomerData.city ? selectedCustomerData.city : ''}`;
+        globalInvoiceVariable.notifyParty.country = invoiceData && Object.keys(invoiceData).length > 0 && invoiceData.consignee.country ? invoiceData.consignee.country : `${selectedCustomerData.country ? selectedCustomerData.country : ''}`;
+        globalInvoiceVariable.notifyParty.contactNumber = invoiceData && Object.keys(invoiceData).length > 0 && invoiceData.consignee.contactNumber ? invoiceData.consignee.contactNumber : `${selectedCustomerData.textPhoneNumber ? selectedCustomerData.textPhoneNumber : ''}`;
+        globalInvoiceVariable.notifyParty.fax = invoiceData && Object.keys(invoiceData).length > 0 && invoiceData.consignee.fax ? invoiceData.consignee.fax : `${selectedCustomerData.fax ? selectedCustomerData.fax : ''}`;
+        globalInvoiceVariable.notifyParty.email = invoiceData && Object.keys(invoiceData).length > 0 && invoiceData.consignee.email ? invoiceData.consignee.email : `${selectedCustomerData.textEmail ? selectedCustomerData.textEmail : ''}`;
+        globalInvoiceVariable.notifyParty.sameAsBuyer = invoiceData && Object.keys(invoiceData).length > 0 && invoiceData.consignee.sameAsBuyer ? invoiceData.consignee.sameAsBuyer : isChecked;
+
 
 
     }, []);
@@ -4211,6 +4217,7 @@ const NotifyPartyInput = ({ accountData, setAccountData }) => {
             <View style={{ flex: 1, flexDirection: 'row', margin: 2, alignSelf: 'center', }}>
                 <Text style={{ fontWeight: 700, fontSize: 16, margin: 3, color: '#FF0000', }}>Notify Party</Text>
             </View>
+
             <View style={{ flex: 1, flexDirection: 'row', margin: 5, }}>
                 <Checkbox
                     isChecked={isChecked}
@@ -4287,6 +4294,7 @@ const NotifyPartyInput = ({ accountData, setAccountData }) => {
 
 const ConsigneeInput = () => {
 
+    const selectedCustomerData = useSelector((state) => state.selectedCustomerData);
     const selectedChatData = useSelector((state) => state.selectedChatData);
     const invoiceData = useSelector((state) => state.invoiceData);
     const [isChecked, setIsChecked] = useState(invoiceData && Object.keys(invoiceData).length > 0 ? invoiceData.consignee.sameAsBuyer : true);
@@ -4302,64 +4310,46 @@ const ConsigneeInput = () => {
 
 
     useEffect(() => {
-        const fetchAccountData = async () => {
-            if (!selectedChatData.participants && selectedChatData.participants.customer) return; // Make sure there's a selected email
-            const docRef = doc(projectExtensionFirestore, 'accounts', selectedChatData.participants.customer);
+        console.log(invoiceData.consignee);
 
-            try {
-                const docSnap = await getDoc(docRef);
-
-                if (docSnap.exists()) {
-                    const data = docSnap.data();
-                    setAccountData(docSnap.data());
-                    // console.log(docSnap.data());
-                    consigneeName.current.value = invoiceData && Object.keys(invoiceData).length > 0 && invoiceData.consignee.name ? invoiceData.consignee.name : `${data.textFirst ? data.textFirst : ''} ${data.textLast ? data.textLast : ''}`;
-                    consigneeAddress.current.value = invoiceData && Object.keys(invoiceData).length > 0 && invoiceData.consignee.address ? invoiceData.consignee.address : `${data.textStreet ? data.textStreet : ''} ${data.textZip ? data.textZip : ''}`;
-                    consigneeCity.current.value = invoiceData && Object.keys(invoiceData).length > 0 && invoiceData.consignee.city ? invoiceData.consignee.city : `${data.city ? data.city : ''}`;
-                    consigneeCountry.current.value = invoiceData && Object.keys(invoiceData).length > 0 && invoiceData.consignee.country ? invoiceData.consignee.country : `${data.country ? data.country : ''}`;
-                    consigneeContactNumber.current.value = invoiceData && Object.keys(invoiceData).length > 0 && invoiceData.consignee.contactNumber ? invoiceData.consignee.contactNumber : `${data.textPhoneNumber ? data.textPhoneNumber : ''}`;
-                    consigneeFax.current.value = invoiceData && Object.keys(invoiceData).length > 0 && invoiceData.consignee.fax ? invoiceData.consignee.fax : `${data.fax ? data.fax : ''}`;
-                    consigneeEmail.current.value = invoiceData && Object.keys(invoiceData).length > 0 && invoiceData.consignee.email ? invoiceData.consignee.email : `${data.textEmail ? data.textEmail : ''}`;
+        consigneeName.current.value = invoiceData && Object.keys(invoiceData).length > 0 && invoiceData.consignee.name ? invoiceData.consignee.name : `${selectedCustomerData.textFirst ? selectedCustomerData.textFirst : ''} ${selectedCustomerData.textLast ? selectedCustomerData.textLast : ''}`;
+        consigneeAddress.current.value = invoiceData && Object.keys(invoiceData).length > 0 && invoiceData.consignee.address ? invoiceData.consignee.address : `${selectedCustomerData.textStreet ? selectedCustomerData.textStreet : ''} ${selectedCustomerData.textZip ? selectedCustomerData.textZip : ''}`;
+        consigneeCity.current.value = invoiceData && Object.keys(invoiceData).length > 0 && invoiceData.consignee.city ? invoiceData.consignee.city : `${selectedCustomerData.city ? selectedCustomerData.city : ''}`;
+        consigneeCountry.current.value = invoiceData && Object.keys(invoiceData).length > 0 && invoiceData.consignee.country ? invoiceData.consignee.country : `${selectedCustomerData.country ? selectedCustomerData.country : ''}`;
+        consigneeContactNumber.current.value = invoiceData && Object.keys(invoiceData).length > 0 && invoiceData.consignee.contactNumber ? invoiceData.consignee.contactNumber : `${selectedCustomerData.textPhoneNumber ? selectedCustomerData.textPhoneNumber : ''}`;
+        consigneeFax.current.value = invoiceData && Object.keys(invoiceData).length > 0 && invoiceData.consignee.fax ? invoiceData.consignee.fax : `${selectedCustomerData.fax ? selectedCustomerData.fax : ''}`;
+        consigneeEmail.current.value = invoiceData && Object.keys(invoiceData).length > 0 && invoiceData.consignee.email ? invoiceData.consignee.email : `${selectedCustomerData.textEmail ? selectedCustomerData.textEmail : ''}`;
 
 
-                    globalInvoiceVariable.consignee.name = invoiceData && Object.keys(invoiceData).length > 0 && invoiceData.consignee.name ? invoiceData.consignee.name : `${data.textFirst ? data.textFirst : ''} ${data.textLast ? data.textLast : ''}`;
-                    globalInvoiceVariable.consignee.address = invoiceData && Object.keys(invoiceData).length > 0 && invoiceData.consignee.address ? invoiceData.consignee.address : `${data.textStreet ? data.textStreet : ''} ${data.textZip ? data.textZip : ''}`;
-                    globalInvoiceVariable.consignee.city = invoiceData && Object.keys(invoiceData).length > 0 && invoiceData.consignee.city ? invoiceData.consignee.city : `${data.city ? data.city : ''}`;
-                    globalInvoiceVariable.consignee.country = invoiceData && Object.keys(invoiceData).length > 0 && invoiceData.consignee.country ? invoiceData.consignee.country : `${data.country ? data.country : ''}`;
-                    globalInvoiceVariable.consignee.contactNumber = invoiceData && Object.keys(invoiceData).length > 0 && invoiceData.consignee.contactNumber ? invoiceData.consignee.contactNumber : `${data.textPhoneNumber ? data.textPhoneNumber : ''}`;
-                    globalInvoiceVariable.consignee.fax = invoiceData && Object.keys(invoiceData).length > 0 && invoiceData.consignee.fax ? invoiceData.consignee.fax : `${data.fax ? data.fax : ''}`;
-                    globalInvoiceVariable.consignee.email = invoiceData && Object.keys(invoiceData).length > 0 && invoiceData.consignee.email ? invoiceData.consignee.email : `${data.textEmail ? data.textEmail : ''}`;
-                    globalInvoiceVariable.consignee.sameAsBuyer = invoiceData && Object.keys(invoiceData).length > 0 && invoiceData.consignee.sameAsBuyer ? invoiceData.consignee.sameAsBuyer : isChecked;
-
-                    // console.log(accountData.length);
-                } else {
-                    console.log('No such document!');
-                    setAccountData(null);
-                }
-            } catch (error) {
-                console.error('Error fetching document:', error);
-            }
-        };
-        fetchAccountData();
+        globalInvoiceVariable.consignee.name = invoiceData && Object.keys(invoiceData).length > 0 && invoiceData.consignee.name ? invoiceData.consignee.name : `${selectedCustomerData.textFirst ? selectedCustomerData.textFirst : ''} ${selectedCustomerData.textLast ? selectedCustomerData.textLast : ''}`;
+        globalInvoiceVariable.consignee.address = invoiceData && Object.keys(invoiceData).length > 0 && invoiceData.consignee.address ? invoiceData.consignee.address : `${selectedCustomerData.textStreet ? selectedCustomerData.textStreet : ''} ${selectedCustomerData.textZip ? selectedCustomerData.textZip : ''}`;
+        globalInvoiceVariable.consignee.city = invoiceData && Object.keys(invoiceData).length > 0 && invoiceData.consignee.city ? invoiceData.consignee.city : `${selectedCustomerData.city ? selectedCustomerData.city : ''}`;
+        globalInvoiceVariable.consignee.country = invoiceData && Object.keys(invoiceData).length > 0 && invoiceData.consignee.country ? invoiceData.consignee.country : `${selectedCustomerData.country ? selectedCustomerData.country : ''}`;
+        globalInvoiceVariable.consignee.contactNumber = invoiceData && Object.keys(invoiceData).length > 0 && invoiceData.consignee.contactNumber ? invoiceData.consignee.contactNumber : `${selectedCustomerData.textPhoneNumber ? selectedCustomerData.textPhoneNumber : ''}`;
+        globalInvoiceVariable.consignee.fax = invoiceData && Object.keys(invoiceData).length > 0 && invoiceData.consignee.fax ? invoiceData.consignee.fax : `${selectedCustomerData.fax ? selectedCustomerData.fax : ''}`;
+        globalInvoiceVariable.consignee.email = invoiceData && Object.keys(invoiceData).length > 0 && invoiceData.consignee.email ? invoiceData.consignee.email : `${selectedCustomerData.textEmail ? selectedCustomerData.textEmail : ''}`;
+        globalInvoiceVariable.consignee.sameAsBuyer = invoiceData && Object.keys(invoiceData).length > 0 && invoiceData.consignee.sameAsBuyer ? invoiceData.consignee.sameAsBuyer : isChecked;
 
     }, []);
 
-    useEffect(() => {
 
-        if (isChecked) {
-            consigneeName.current.value = `${accountData.textFirst ? accountData.textFirst : ''} ${accountData.textLast ? accountData.textLast : ''}`;
-            consigneeAddress.current.value = `${accountData.textStreet ? accountData.textStreet : ''} ${accountData.textZip ? accountData.textZip : ''}`;
-            consigneeCity.current.value = `${accountData.city ? accountData.city : ''}`;
-            consigneeCountry.current.value = `${accountData.country ? accountData.country : ''}`;
-            consigneeContactNumber.current.value = `${accountData.textPhoneNumber ? accountData.textPhoneNumber : ''}`;
-            consigneeFax.current.value = `${accountData.fax ? accountData.fax : ''}`;
-            consigneeEmail.current.value = `${accountData.textEmail ? accountData.textEmail : ''}`;
+    const checkboxOnPress = (value) => {
+        globalInvoiceVariable.consignee.sameAsBuyer = value;
+        setIsChecked(value);
+        if (value == true) {
+            if (!(invoiceData && Object.keys(invoiceData).length > 0 && invoiceData.consignee.name)) {
+                consigneeName.current.value = `${selectedCustomerData.textFirst ? selectedCustomerData.textFirst : ''} ${selectedCustomerData.textLast ? selectedCustomerData.textLast : ''}`;
+                consigneeAddress.current.value = `${selectedCustomerData.textStreet ? selectedCustomerData.textStreet : ''} ${selectedCustomerData.textZip ? selectedCustomerData.textZip : ''}`;
+                consigneeCity.current.value = `${selectedCustomerData.city ? selectedCustomerData.city : ''}`;
+                consigneeCountry.current.value = `${selectedCustomerData.country ? selectedCustomerData.country : ''}`;
+                consigneeContactNumber.current.value = `${selectedCustomerData.textPhoneNumber ? selectedCustomerData.textPhoneNumber : ''}`;
+                consigneeFax.current.value = `${selectedCustomerData.fax ? selectedCustomerData.fax : ''}`;
+                consigneeEmail.current.value = `${selectedCustomerData.textEmail ? selectedCustomerData.textEmail : ''}`;
+            }
+
         }
 
-        // console.log(globalInvoiceVariable);
-
-
-    }, [isChecked])
+    }
 
 
     return (
@@ -4371,8 +4361,7 @@ const ConsigneeInput = () => {
                 <Checkbox
                     isChecked={isChecked}
                     onChange={value => {
-                        globalInvoiceVariable.consignee.sameAsBuyer = value;
-                        setIsChecked(value)
+                        checkboxOnPress(value)
                     }}
                     style={{ margin: 2, borderColor: '#0A9FDC' }}
                     size="sm"
@@ -6050,6 +6039,7 @@ Real Motor Japan`,
 }
 
 const IssueProformaInvoiceModalContent = () => { // Issue Invoice && Update Invoice
+
     const dispatch = useDispatch();
     const selectedChatData = useSelector((state) => state.selectedChatData);
     const selectedCustomerData = useSelector((state) => state.selectedCustomerData);
@@ -6588,7 +6578,7 @@ const ProfitCalculator = () => {
 
     const handleModalOpen = () => {
         setModalVisible(true);
-        inputPriceRef.current.value = defaultInputPrice;
+        // inputPriceRef.current.value = defaultInputPrice;
         calculateTotalAmount();
 
     };
@@ -6664,22 +6654,27 @@ const ProfitCalculator = () => {
     };
 
     const calculateTotalAmount = () => {
-
-        const inputPrice = safelyParseNumber(inputPriceRef.current?.value);
-
-        const totalAmountDollars = Math.round(parseDollars(inputPrice) - realTotalPriceDollars);
-        setTotalProfitAmountDollars(Number(totalAmountDollars));
-        // const total = Math.round(fobPrice + freight + inspection + insurance + additionalPricesTotal).toLocaleString();
-        // setTotalAmountCalculated(total);
-        // globalInvoiceVariable.paymentDetails.totalAmount = total;
+        if (inputPriceRef.current) {
+            const inputPrice = safelyParseNumber(inputPriceRef.current.value);
+            const totalAmountDollars = (parseDollars(inputPrice) - realTotalPriceDollars);
+            setTotalProfitAmountDollars(Number(totalAmountDollars));
+            // const total = Math.round(fobPrice + freight + inspection + insurance + additionalPricesTotal).toLocaleString();
+            // setTotalAmountCalculated(total);
+            // globalInvoiceVariable.paymentDetails.totalAmount = total;
+        }
     };
+
 
     const handleInputPriceChangeText = (text) => {
         const filteredText = text.replace(/[^0-9]/g, '');
-        inputPriceRef.current.value = filteredText;
+        const numericValue = Number(filteredText);
+        const formattedValue = numericValue.toLocaleString('en-US');
 
-        calculateTotalAmount();
-    };
+        if (inputPriceRef.current) {
+            inputPriceRef.current.value = formattedValue;
+            calculateTotalAmount();
+        }
+    }
 
     useEffect(() => {
 
@@ -6707,15 +6702,17 @@ const ProfitCalculator = () => {
         }
 
 
-
-
     }, []);
 
     useEffect(() => {
+
+        calculateTotalAmount()
+
         const freightOrigPrice = selectedChatData.freightOrigPrice;
 
         if (modalVisible && !freightOrigPrice) {
             fetchPortsData();
+
         }
 
 
@@ -6799,14 +6796,15 @@ const ProfitCalculator = () => {
                     handleModalClose()
                 }}
                 initialFocusRef={inputPriceRef}
-                size={'lg'}
+                size={'xl'}
+                useRNModal
             >
                 <Modal.Content>
                     <Modal.CloseButton />
                     <Modal.Header>Profit Calculator</Modal.Header>
                     <Modal.Body style={{ flexDirection: 'row', backgroundColor: '#fafafa', }}>
 
-                        <View style={{ flex: 1, borderRightWidth: 1, borderRightColor: '#DADDE1', maxHeight: 500, }}>
+                        <View style={{ flex: 1, borderRightWidth: 1, borderRightColor: '#DADDE1', }}>
 
                             <View style={{ marginBottom: 10, borderWidth: 1, borderColor: '#DADDE1', borderRadius: 5, marginRight: 3, padding: 3, backgroundColor: 'white', }}>
                                 <Text style={{ fontWeight: 'bold', marginVertical: 5, fontSize: 20, }}>Profit (Yen):</Text>
@@ -13144,6 +13142,8 @@ const ChatMessageHeader = () => {
 
             case 'CAD':
                 return 'C$';
+            default:
+                return '$';
         }
     }
 
@@ -13181,7 +13181,6 @@ const ChatMessageHeader = () => {
                     selectedCurrencyExchange: currencyValue,
                 }, { merge: true });
             }
-
 
             await updateDoc(doc(projectExtensionFirestore, 'chats', selectedChatData.id), {
                 selectedCurrencyExchange: currencyValue,
@@ -13352,7 +13351,7 @@ const ChatMessageHeader = () => {
                 />
             )}
 
-            <View style={{ alignSelf: 'center', paddingRight: 10, }}>
+            <View style={{ alignSelf: 'center', justifyContent: 'center', paddingRight: 10, }}>
                 <Text style={{ fontWeight: 700, color: '#0A78BE', }}>{carName}</Text>
 
                 <CustomerProfileModal />
@@ -13369,6 +13368,104 @@ const ChatMessageHeader = () => {
             </View>
 
             {/* <HorizontalTimeline /> */}
+
+            {selectedChatData.stepIndicator.value >= 4 &&
+                <View style={{
+                    alignSelf: 'center',
+                    justifyContent: 'center',
+                    backgroundColor: '#F8F9FF',
+                    borderWidth: 0,
+                    borderColor: '#d0d0d0',
+                    borderRadius: 5,
+                    marginTop: 2,
+                    padding: 1,
+                    elevation: 5, // for Android
+                    shadowColor: '#000', // for iOS
+                    shadowOffset: { width: 0, height: 2 }, // for iOS
+                    shadowOpacity: 0.25, // for iOS
+                    shadowRadius: 3.84, // for iOS
+                }}>
+                    {/* Title */}
+                    <View style={{ flexDirection: 'row', justifyContent: 'center', borderRadius: 5, backgroundColor: '#E1EDF7', padding: 1, }}>
+                        <Text selectable style={{ fontWeight: 700, fontSize: 14, marginHorizontal: 5, lineHeight: 14, color: '#0A78BE', }}>
+                            Document Delivery Address
+                        </Text>
+                    </View>
+
+                    {/* Name */}
+                    <View style={{ flexDirection: 'row', borderBottomWidth: 0, borderColor: '#d0d0d0', padding: 0 }}>
+                        <Text selectable style={{ fontWeight: 700, fontSize: 12, paddingTop: 0, marginHorizontal: 5, lineHeight: 14, color: '#000', }}>
+                            Name:
+                        </Text>
+                        <Text selectable style={{ fontWeight: 400, fontSize: 12, paddingTop: 0, marginHorizontal: 5, lineHeight: 14 }}>
+                            {selectedChatData.documentDeliveryAddress && selectedChatData.documentDeliveryAddress.name ? selectedChatData.documentDeliveryAddress.name : ''}
+                        </Text>
+                    </View>
+
+                    {/* Address */}
+                    <View style={{ flexDirection: 'row', borderBottomWidth: 0, borderColor: '#d0d0d0', padding: 0 }}>
+                        <Text selectable style={{ fontWeight: 700, fontSize: 12, paddingTop: 0, marginHorizontal: 5, lineHeight: 14, color: '#000', }}>
+                            Address:
+                        </Text>
+                        <Text selectable style={{ fontWeight: 400, fontSize: 12, paddingTop: 0, marginHorizontal: 5, lineHeight: 14 }}>
+                            {selectedChatData.documentDeliveryAddress && selectedChatData.documentDeliveryAddress.address ? selectedChatData.documentDeliveryAddress.address : ''}
+                        </Text>
+                    </View>
+
+                    {/* City */}
+                    <View style={{ flexDirection: 'row', borderBottomWidth: 0, borderColor: '#d0d0d0', padding: 0 }}>
+                        <Text selectable style={{ fontWeight: 700, fontSize: 12, paddingTop: 0, marginHorizontal: 5, lineHeight: 14, color: '#000', }}>
+                            City:
+                        </Text>
+                        <Text selectable style={{ fontWeight: 400, fontSize: 12, paddingTop: 0, marginHorizontal: 5, lineHeight: 14 }}>
+                            {selectedChatData.documentDeliveryAddress && selectedChatData.documentDeliveryAddress.city ? selectedChatData.documentDeliveryAddress.city : ''}
+                        </Text>
+                    </View>
+
+                    {/* Country */}
+                    <View style={{ flexDirection: 'row', borderBottomWidth: 0, borderColor: '#d0d0d0', padding: 0 }}>
+                        <Text selectable style={{ fontWeight: 700, fontSize: 12, paddingTop: 0, marginHorizontal: 5, lineHeight: 14, color: '#000', }}>
+                            Country:
+                        </Text>
+                        <Text selectable style={{ fontWeight: 400, fontSize: 12, paddingTop: 0, marginHorizontal: 5, lineHeight: 14 }}>
+                            {selectedChatData.documentDeliveryAddress && selectedChatData.documentDeliveryAddress.country ? selectedChatData.documentDeliveryAddress.country : ''}
+                        </Text>
+                    </View>
+
+                    {/* Contact Number */}
+                    <View style={{ flexDirection: 'row', borderBottomWidth: 0, borderColor: '#d0d0d0', padding: 0 }}>
+                        <Text selectable style={{ fontWeight: 700, fontSize: 12, paddingTop: 0, marginHorizontal: 5, lineHeight: 14, color: '#000', }}>
+                            Contact Number:
+                        </Text>
+                        <Text selectable style={{ fontWeight: 400, fontSize: 12, paddingTop: 0, marginHorizontal: 5, lineHeight: 14 }}>
+                            {selectedChatData.documentDeliveryAddress && selectedChatData.documentDeliveryAddress.contactNumber ? selectedChatData.documentDeliveryAddress.contactNumber : ''}
+                        </Text>
+                    </View>
+
+                    {/* Fax */}
+                    <View style={{ flexDirection: 'row', borderBottomWidth: 0, borderColor: '#d0d0d0', padding: 0 }}>
+                        <Text selectable style={{ fontWeight: 700, fontSize: 12, paddingTop: 0, marginHorizontal: 5, lineHeight: 14, color: '#000', }}>
+                            Fax:
+                        </Text>
+                        <Text selectable style={{ fontWeight: 400, fontSize: 12, paddingTop: 0, marginHorizontal: 5, lineHeight: 14 }}>
+                            {selectedChatData.documentDeliveryAddress && selectedChatData.documentDeliveryAddress.fax ? selectedChatData.documentDeliveryAddress.fax : ''}
+                        </Text>
+                    </View>
+
+                    {/* Email */}
+                    <View style={{ flexDirection: 'row', padding: 0 }}>
+                        <Text selectable style={{ fontWeight: 700, fontSize: 12, paddingTop: 0, marginHorizontal: 5, lineHeight: 14, color: '#000', }}>
+                            Email:
+                        </Text>
+                        <Text selectable style={{ fontWeight: 400, fontSize: 12, paddingTop: 0, marginHorizontal: 5, lineHeight: 14 }}>
+                            {selectedChatData.documentDeliveryAddress && selectedChatData.documentDeliveryAddress.email ? selectedChatData.documentDeliveryAddress.email : ''}
+                        </Text>
+                    </View>
+
+                </View>
+
+
+            }
 
             <View style={{ alignSelf: 'center', justifyContent: 'center', paddingLeft: 10, }}>
 
@@ -14227,6 +14324,7 @@ const ChatMessageBox = ({ activeButtonValue, userEmail }) => {
     const renderItemText = (isGlobalCustomerSender, text) => {
         const urlPattern = new RegExp('(https?:\\/\\/[^\\s]+)', 'g');
         let segments = text.split(urlPattern);
+        const textFontSize = screenWidth < mobileViewBreakpoint ? 11 : 12;
 
         const insertBreaks = (str, n) => {
             // Inserts a zero-width space every 'n' characters in 'str'
@@ -14250,7 +14348,7 @@ const ChatMessageBox = ({ activeButtonValue, userEmail }) => {
                             style={{
                                 fontWeight: '400',
                                 color: isGlobalCustomerSender ? '#555659' : '#555659',
-                                fontSize: 16,
+                                fontSize: textFontSize,
                                 flexShrink: 1,
                                 textDecorationLine: 'underline',
                                 flexWrap: 'wrap',
@@ -14268,7 +14366,7 @@ const ChatMessageBox = ({ activeButtonValue, userEmail }) => {
                         style={{
                             fontWeight: '400',
                             color: isGlobalCustomerSender ? '#555659' : '#555659',
-                            fontSize: screenWidth < mobileViewBreakpoint ? 14 : 16,
+                            fontSize: textFontSize,
                             flexShrink: 1,
                             flexWrap: 'wrap',
                         }}
@@ -14321,7 +14419,7 @@ const ChatMessageBox = ({ activeButtonValue, userEmail }) => {
         const isGlobalCustomerSender = item.sender === globalCustomerId;
         const isLastMessage = index === 0; // Since the list is inverted, the first item is actually the last message
         const isHovered = hoveredImageIndex === index;
-        const textFontSize = screenWidth < mobileViewBreakpoint ? 14 : 16;
+        const textFontSize = screenWidth < mobileViewBreakpoint ? 12 : 14;
 
         return (
             <View style={{
@@ -14409,21 +14507,32 @@ const ChatMessageBox = ({ activeButtonValue, userEmail }) => {
                             </View>
                         </View>
 
-                        {/* Additional message properties like timestamp and sender */}
-                        <Text style={{
-                            fontWeight: '300',
-                            color: '#888c96',
-                            fontSize: screenWidth < mobileViewBreakpoint ? 9 : 11,
-                            marginTop: 4,
-                            marginBottom: 4,
-                            marginLeft: isGlobalCustomerSender ? 15 : 0,
-                            marginRight: isGlobalCustomerSender ? 0 : 15,
-                        }}
-                            selectable>
-                            {!isGlobalCustomerSender ?
-                                (`${formatDate(item.timestamp)} - ${extractUsernameFromEmail(item.sender)}${item.ip ? ` - ${item.ip}` : ''}${item.ipCountry ? ` - ${item.ipCountry}` : ''}`)
-                                : (`${formatDate(item.timestamp)}${item.ip ? ` - ${item.ip}${item.ipCountry ? ` - ${item.ipCountry}` : ''}` : ''}`)
-                            }
+                        {/* Additional message properties like timestamp, sender email, IP, and country */}
+                        <Text
+                            style={{
+                                fontWeight: '300',
+                                color: '#888c96',
+                                fontSize: screenWidth < mobileViewBreakpoint ? 9 : 10,
+                                marginTop: 4,
+                                marginBottom: 4,
+                                marginLeft: isGlobalCustomerSender ? 15 : 0,
+                                marginRight: isGlobalCustomerSender ? 0 : 15,
+                            }}
+                            selectable
+                        >
+                            {!isGlobalCustomerSender ? (
+                                <>
+                                    {formatDate(item.timestamp)} - <Text style={{ fontWeight: 'bold' }}>{extractUsernameFromEmail(item.sender)}</Text>
+                                    {item.ip ? ` - ${item.ip}` : ''}
+                                    {item.ipCountry ? ` - ${item.ipCountry}` : ''}
+                                </>
+                            ) : (
+                                <>
+                                    {formatDate(item.timestamp)}
+                                    {item.ip ? ` - ${item.ip}` : ''}
+                                    {item.ipCountry ? ` - ${item.ipCountry}` : ''}
+                                </>
+                            )}
                         </Text>
 
                     </View>
@@ -14504,20 +14613,31 @@ const ChatMessageBox = ({ activeButtonValue, userEmail }) => {
                         </View>
 
                         {/* Additional message properties like timestamp, sender email, IP, and country */}
-                        <Text style={{
-                            fontWeight: '300',
-                            color: 'gray',
-                            fontSize: 11,
-                            marginTop: 4,
-                            marginBottom: 4,
-                            marginLeft: isGlobalCustomerSender ? 15 : 0,
-                            marginRight: isGlobalCustomerSender ? 0 : 15,
-                        }}
-                            selectable>
-                            {!isGlobalCustomerSender ?
-                                (`${formatDate(item.timestamp)} - ${extractUsernameFromEmail(item.sender)}${item.ip ? ` - ${item.ip}` : ''}${item.ipCountry ? ` - ${item.ipCountry}` : ''}`)
-                                : (`${formatDate(item.timestamp)}${item.ip ? ` - ${item.ip}${item.ipCountry ? ` - ${item.ipCountry}` : ''}` : ''}`)
-                            }
+                        <Text
+                            style={{
+                                fontWeight: '300',
+                                color: '#888c96',
+                                fontSize: screenWidth < mobileViewBreakpoint ? 9 : 10,
+                                marginTop: 4,
+                                marginBottom: 4,
+                                marginLeft: isGlobalCustomerSender ? 15 : 0,
+                                marginRight: isGlobalCustomerSender ? 0 : 15,
+                            }}
+                            selectable
+                        >
+                            {!isGlobalCustomerSender ? (
+                                <>
+                                    {formatDate(item.timestamp)} - <Text style={{ fontWeight: 'bold' }}>{extractUsernameFromEmail(item.sender)}</Text>
+                                    {item.ip ? ` - ${item.ip}` : ''}
+                                    {item.ipCountry ? ` - ${item.ipCountry}` : ''}
+                                </>
+                            ) : (
+                                <>
+                                    {formatDate(item.timestamp)}
+                                    {item.ip ? ` - ${item.ip}` : ''}
+                                    {item.ipCountry ? ` - ${item.ipCountry}` : ''}
+                                </>
+                            )}
                         </Text>
                     </View>
                 }
@@ -14646,21 +14766,32 @@ const ChatMessageBox = ({ activeButtonValue, userEmail }) => {
                             </View>
                         </View>
 
-                        {/* Additional message properties like timestamp and sender */}
-                        <Text style={{
-                            fontWeight: '300',
-                            color: '#888c96',
-                            fontSize: screenWidth < mobileViewBreakpoint ? 9 : 11,
-                            marginTop: 4,
-                            marginBottom: 4,
-                            marginLeft: isGlobalCustomerSender ? 15 : 0,
-                            marginRight: isGlobalCustomerSender ? 0 : 15,
-                        }}
-                            selectable>
-                            {!isGlobalCustomerSender ?
-                                (`${formatDate(item.timestamp)} - ${extractUsernameFromEmail(item.sender)}${item.ip ? ` - ${item.ip}` : ''}${item.ipCountry ? ` - ${item.ipCountry}` : ''}`)
-                                : (`${formatDate(item.timestamp)}${item.ip ? ` - ${item.ip}${item.ipCountry ? ` - ${item.ipCountry}` : ''}` : ''}`)
-                            }
+                        {/* Additional message properties like timestamp, sender email, IP, and country */}
+                        <Text
+                            style={{
+                                fontWeight: '300',
+                                color: '#888c96',
+                                fontSize: screenWidth < mobileViewBreakpoint ? 9 : 10,
+                                marginTop: 4,
+                                marginBottom: 4,
+                                marginLeft: isGlobalCustomerSender ? 15 : 0,
+                                marginRight: isGlobalCustomerSender ? 0 : 15,
+                            }}
+                            selectable
+                        >
+                            {!isGlobalCustomerSender ? (
+                                <>
+                                    {formatDate(item.timestamp)} - <Text style={{ fontWeight: 'bold' }}>{extractUsernameFromEmail(item.sender)}</Text>
+                                    {item.ip ? ` - ${item.ip}` : ''}
+                                    {item.ipCountry ? ` - ${item.ipCountry}` : ''}
+                                </>
+                            ) : (
+                                <>
+                                    {formatDate(item.timestamp)}
+                                    {item.ip ? ` - ${item.ip}` : ''}
+                                    {item.ipCountry ? ` - ${item.ipCountry}` : ''}
+                                </>
+                            )}
                         </Text>
 
 
@@ -14780,21 +14911,32 @@ const ChatMessageBox = ({ activeButtonValue, userEmail }) => {
                             </View>
                         </View>
 
-                        {/* Additional message properties like timestamp and sender */}
-                        <Text style={{
-                            fontWeight: '300',
-                            color: '#888c96',
-                            fontSize: screenWidth < mobileViewBreakpoint ? 9 : 11,
-                            marginTop: 4,
-                            marginBottom: 4,
-                            marginLeft: isGlobalCustomerSender ? 15 : 0,
-                            marginRight: isGlobalCustomerSender ? 0 : 15,
-                        }}
-                            selectable>
-                            {!isGlobalCustomerSender ?
-                                (`${formatDate(item.timestamp)} - ${extractUsernameFromEmail(item.sender)}${item.ip ? ` - ${item.ip}` : ''}${item.ipCountry ? ` - ${item.ipCountry}` : ''}`)
-                                : (`${formatDate(item.timestamp)}${item.ip ? ` - ${item.ip}${item.ipCountry ? ` - ${item.ipCountry}` : ''}` : ''}`)
-                            }
+                        {/* Additional message properties like timestamp, sender email, IP, and country */}
+                        <Text
+                            style={{
+                                fontWeight: '300',
+                                color: '#888c96',
+                                fontSize: screenWidth < mobileViewBreakpoint ? 9 : 10,
+                                marginTop: 4,
+                                marginBottom: 4,
+                                marginLeft: isGlobalCustomerSender ? 15 : 0,
+                                marginRight: isGlobalCustomerSender ? 0 : 15,
+                            }}
+                            selectable
+                        >
+                            {!isGlobalCustomerSender ? (
+                                <>
+                                    {formatDate(item.timestamp)} - <Text style={{ fontWeight: 'bold' }}>{extractUsernameFromEmail(item.sender)}</Text>
+                                    {item.ip ? ` - ${item.ip}` : ''}
+                                    {item.ipCountry ? ` - ${item.ipCountry}` : ''}
+                                </>
+                            ) : (
+                                <>
+                                    {formatDate(item.timestamp)}
+                                    {item.ip ? ` - ${item.ip}` : ''}
+                                    {item.ipCountry ? ` - ${item.ipCountry}` : ''}
+                                </>
+                            )}
                         </Text>
 
 
@@ -14873,21 +15015,32 @@ const ChatMessageBox = ({ activeButtonValue, userEmail }) => {
 
                         </View>
 
-                        {/* Additional message properties like timestamp and sender */}
-                        <Text style={{
-                            fontWeight: '300',
-                            color: '#888c96',
-                            fontSize: screenWidth < mobileViewBreakpoint ? 9 : 11,
-                            marginTop: 4,
-                            marginBottom: 4,
-                            marginLeft: isGlobalCustomerSender ? 15 : 0,
-                            marginRight: isGlobalCustomerSender ? 0 : 15,
-                        }}
-                            selectable>
-                            {!isGlobalCustomerSender ?
-                                (`${formatDate(item.timestamp)} - ${extractUsernameFromEmail(item.sender)}${item.ip ? ` - ${item.ip}` : ''}${item.ipCountry ? ` - ${item.ipCountry}` : ''}`)
-                                : (`${formatDate(item.timestamp)}${item.ip ? ` - ${item.ip}${item.ipCountry ? ` - ${item.ipCountry}` : ''}` : ''}`)
-                            }
+                        {/* Additional message properties like timestamp, sender email, IP, and country */}
+                        <Text
+                            style={{
+                                fontWeight: '300',
+                                color: '#888c96',
+                                fontSize: screenWidth < mobileViewBreakpoint ? 9 : 10,
+                                marginTop: 4,
+                                marginBottom: 4,
+                                marginLeft: isGlobalCustomerSender ? 15 : 0,
+                                marginRight: isGlobalCustomerSender ? 0 : 15,
+                            }}
+                            selectable
+                        >
+                            {!isGlobalCustomerSender ? (
+                                <>
+                                    {formatDate(item.timestamp)} - <Text style={{ fontWeight: 'bold' }}>{extractUsernameFromEmail(item.sender)}</Text>
+                                    {item.ip ? ` - ${item.ip}` : ''}
+                                    {item.ipCountry ? ` - ${item.ipCountry}` : ''}
+                                </>
+                            ) : (
+                                <>
+                                    {formatDate(item.timestamp)}
+                                    {item.ip ? ` - ${item.ip}` : ''}
+                                    {item.ipCountry ? ` - ${item.ipCountry}` : ''}
+                                </>
+                            )}
                         </Text>
 
                     </View>}
