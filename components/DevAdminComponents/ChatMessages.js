@@ -154,6 +154,7 @@ import {
     setMessageTextInputValue,
     setCustomInvoiceVisible,
     setMessageTextInputHeight,
+    setProfitCalculatorTotalAmountDollars,
 } from './redux/store';
 // import { TextInput } from 'react-native-gesture-handler';
 import { nanoid } from 'nanoid';
@@ -6377,9 +6378,11 @@ const IssueProformaInvoiceModalContent = () => { // Issue Invoice && Update Invo
 
 
 const ProfitCalculator = () => {
-
+    const dispatch = useDispatch();
     const selectedChatData = useSelector((state) => state.selectedChatData);
     const invoiceData = useSelector((state) => state.invoiceData);
+    const profitCalculatorTotalAmountDollars = useSelector((state) => state.profitCalculatorTotalAmountDollars);
+    const screenWidth = Dimensions.get('window').width;
 
     const [totalSCCAmount, setTotalSCCAmount] = useState(0);
     const [formattedTotalSCCAmount, setFormattedTotalSCCAmount] = useState(0);
@@ -6391,6 +6394,10 @@ const ProfitCalculator = () => {
 
     const inputPriceRef = useRef(null);
 
+    const totalProfitPercentRef = useRef(null);
+    const totalProfitOtherRef = useRef(null);
+    const totalProfitYenRef = useRef(null);
+    const totalProfitDollarsRef = useRef(null);
 
     const [portsData, setPortsData] = useState({});
     const [origFreight, setOrigFreight] = useState(0);
@@ -6653,11 +6660,33 @@ const ProfitCalculator = () => {
         return isNaN(number) ? 0 : number;
     };
 
+    let globalProfitCalculatorTotalAmountDollars;
     const calculateTotalAmount = () => {
         if (inputPriceRef.current) {
             const inputPrice = safelyParseNumber(inputPriceRef.current.value);
             const totalAmountDollars = (parseDollars(inputPrice) - realTotalPriceDollars);
-            setTotalProfitAmountDollars(Number(totalAmountDollars));
+
+            totalProfitYenRef.current.value = `${Number(totalAmountDollars * selectedChatData.currency.usdToJpy).toLocaleString('en-US', { style: 'currency', currency: 'JPY', minimumFractionDigits: 0, maximumFractionDigits: 0 })}`;
+            totalProfitDollarsRef.current.value = `${Number(totalAmountDollars).toLocaleString('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 0, maximumFractionDigits: 0 })}`;
+
+            if (selectedChatData.selectedCurrencyExchange !== 'JPY' &&
+                selectedChatData.selectedCurrencyExchange !== 'USD') {
+
+                totalProfitOtherRef.current.value = `${CurrencySymbol()}${convertedCurrency(totalAmountDollars).toLocaleString('en-US',)}`;
+
+            }
+
+
+
+
+
+
+            totalProfitPercentRef.current.value = `${Number(((totalAmountDollars * selectedChatData.currency.usdToJpy) / purchasedPrice) * 100).toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}%`;
+
+            globalProfitCalculatorTotalAmountDollars = totalAmountDollars;
+            // dispatch(setProfitCalculatorTotalAmountDollars(totalAmountDollars));
+
+            // setTotalProfitAmountDollars(Number(totalAmountDollars));
             // const total = Math.round(fobPrice + freight + inspection + insurance + additionalPricesTotal).toLocaleString();
             // setTotalAmountCalculated(total);
             // globalInvoiceVariable.paymentDetails.totalAmount = total;
@@ -6722,7 +6751,7 @@ const ProfitCalculator = () => {
 
         if (totalSCCAmount !== 0 || totalSCCAmount !== '') {
             const totalAmountDollars = Math.round(defaultInputPrice - realTotalPriceDollars);
-            setTotalProfitAmountDollars(totalAmountDollars);
+            dispatch(setProfitCalculatorTotalAmountDollars(totalAmountDollars));
         }
 
 
@@ -6795,171 +6824,227 @@ const ProfitCalculator = () => {
                 onClose={() => {
                     handleModalClose()
                 }}
-                initialFocusRef={inputPriceRef}
+
                 size={'xl'}
                 useRNModal
             >
                 <Modal.Content>
                     <Modal.CloseButton />
                     <Modal.Header>Profit Calculator</Modal.Header>
-                    <Modal.Body style={{ flexDirection: 'row', backgroundColor: '#fafafa', }}>
-
-                        <View style={{ flex: 1, borderRightWidth: 1, borderRightColor: '#DADDE1', }}>
-
-                            <View style={{ marginBottom: 10, borderWidth: 1, borderColor: '#DADDE1', borderRadius: 5, marginRight: 3, padding: 3, backgroundColor: 'white', }}>
-                                <Text style={{ fontWeight: 'bold', marginVertical: 5, fontSize: 20, }}>Profit (Yen):</Text>
-                                <Text selectable style={{
-                                    fontWeight: '700', fontSize: 18,
-                                    color: Number(totalProfitAmountDollars * selectedChatData.currency.usdToJpy) < 0 ? '#FF0000' : '#8D7777',
-                                }}>
-                                    {`${Number(totalProfitAmountDollars * selectedChatData.currency.usdToJpy).toLocaleString('en-US', { style: 'currency', currency: 'JPY', minimumFractionDigits: 0, maximumFractionDigits: 0 })}`}
-                                </Text>
-                            </View>
-
-                            <View style={{ marginBottom: 10, borderWidth: 1, borderColor: '#DADDE1', borderRadius: 5, marginRight: 3, padding: 3, backgroundColor: 'white', }}>
-                                <Text style={{ fontWeight: 'bold', marginVertical: 5, fontSize: 20, }}>Profit (US Dollars):</Text>
-                                <Text selectable style={{
-                                    fontWeight: '700', fontSize: 18,
-                                    color: Number(totalProfitAmountDollars) < 0 ? '#FF0000' : '#16A34A',
-                                }}>
-                                    {`${Number(totalProfitAmountDollars).toLocaleString('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 0, maximumFractionDigits: 0 })}`}
-                                </Text>
-                            </View>
+                    <Modal.Body>
 
 
-                            {selectedChatData.selectedCurrencyExchange !== 'USD' && <View style={{ marginBottom: 10, borderWidth: 1, borderColor: '#DADDE1', borderRadius: 5, marginRight: 3, padding: 3, backgroundColor: 'white', }}>
-                                <Text style={{ fontWeight: 'bold', marginVertical: 5, fontSize: 20, }}>Profit ({CurrencyName()}):</Text>
-                                <Text selectable style={{
-                                    fontWeight: '700', fontSize: 18,
-                                    color: Number(totalProfitAmountDollars) < 0 ? '#FF0000' : '#0772AD',
-                                }}>
-                                    {`${CurrencySymbol()}${convertedCurrency(totalProfitAmountDollars).toLocaleString('en-US',)}`}
-                                </Text>
-                            </View>}
+                        <ScrollView style={{ flex: 1, maxHeight: 500, }}>
+                            <View style={{ flexDirection: 'row', backgroundColor: '#fafafa', }}>
+
+                                <View style={{ flex: 1, borderRightWidth: 1, borderRightColor: '#DADDE1', }}>
+
+                                    <View style={{ marginBottom: 10, borderWidth: 1, borderColor: '#DADDE1', borderRadius: 5, marginRight: 3, padding: 3, backgroundColor: 'white', }}>
+                                        <Text style={{ fontWeight: 'bold', marginVertical: 5, fontSize: 20, }}>Profit (Yen):</Text>
+                                        <TextInput
+                                            disabled={screenWidth > mobileViewBreakpoint}
+                                            ref={totalProfitYenRef}
+                                            editable={false}
+                                            defaultValue={`${Number(globalProfitCalculatorTotalAmountDollars * selectedChatData.currency.usdToJpy).toLocaleString('en-US', { style: 'currency', currency: 'JPY', minimumFractionDigits: 0, maximumFractionDigits: 0 })}`}
+                                            style={{
+                                                fontWeight: '700', fontSize: 18,
+                                                color: Number(globalProfitCalculatorTotalAmountDollars * selectedChatData.currency.usdToJpy) < 0 ? '#FF0000' : '#8D7777',
+                                            }} />
+
+                                        {/* <Text selectable style={{
+                                            fontWeight: '700', fontSize: 18,
+                                            color: Number(profitCalculatorTotalAmountDollars * selectedChatData.currency.usdToJpy) < 0 ? '#FF0000' : '#8D7777',
+                                        }}>
+                                            {`${Number(profitCalculatorTotalAmountDollars * selectedChatData.currency.usdToJpy).toLocaleString('en-US', { style: 'currency', currency: 'JPY', minimumFractionDigits: 0, maximumFractionDigits: 0 })}`}
+                                        </Text> */}
+
+                                    </View>
+
+                                    <View style={{ marginBottom: 10, borderWidth: 1, borderColor: '#DADDE1', borderRadius: 5, marginRight: 3, padding: 3, backgroundColor: 'white', }}>
+                                        <Text style={{ fontWeight: 'bold', marginVertical: 5, fontSize: 20, }}>Profit (US Dollars):</Text>
+                                        <TextInput
+                                            disabled={screenWidth > mobileViewBreakpoint}
+                                            ref={totalProfitDollarsRef}
+                                            editable={false}
+                                            defaultValue={`${Number(globalProfitCalculatorTotalAmountDollars).toLocaleString('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 0, maximumFractionDigits: 0 })}`}
+                                            style={{
+                                                fontWeight: '700', fontSize: 18,
+                                                color: Number(globalProfitCalculatorTotalAmountDollars) < 0 ? '#FF0000' : '#16A34A',
+                                            }} />
+                                        {/* 
+                                        <Text
+                                            selectable style={{
+                                                fontWeight: '700', fontSize: 18,
+                                                color: Number(profitCalculatorTotalAmountDollars) < 0 ? '#FF0000' : '#16A34A',
+                                            }}>
+                                            {`${Number(profitCalculatorTotalAmountDollars).toLocaleString('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 0, maximumFractionDigits: 0 })}`}
+                                        </Text> */}
+                                    </View>
+
+
+                                    {selectedChatData.selectedCurrencyExchange !== 'JPY' &&
+                                        selectedChatData.selectedCurrencyExchange !== 'USD' &&
+
+                                        <View style={{ marginBottom: 10, borderWidth: 1, borderColor: '#DADDE1', borderRadius: 5, marginRight: 3, padding: 3, backgroundColor: 'white', }}>
+
+                                            <Text style={{ fontWeight: 'bold', marginVertical: 5, fontSize: 20, }}>Profit ({CurrencyName()}):</Text>
+
+                                            <TextInput
+                                                disabled={screenWidth > mobileViewBreakpoint}
+                                                ref={totalProfitOtherRef}
+                                                editable={false}
+                                                defaultValue={`${CurrencySymbol()}${convertedCurrency(globalProfitCalculatorTotalAmountDollars).toLocaleString('en-US',)}`}
+                                                style={{
+                                                    fontWeight: '700', fontSize: 18,
+                                                    color: convertedCurrency(globalProfitCalculatorTotalAmountDollars) < 0 ? '#FF0000' : '#0772AD',
+                                                }}
+                                            />
+
+                                            {/* <Text selectable style={{
+                                                fontWeight: '700', fontSize: 18,
+                                                color: convertedCurrency(profitCalculatorTotalAmountDollars) < 0 ? '#FF0000' : '#0772AD',
+                                            }}>
+                                                {`${CurrencySymbol()}${convertedCurrency(profitCalculatorTotalAmountDollars).toLocaleString('en-US',)}`}
+                                            </Text> */}
+                                        </View>
+                                    }
+
+                                    <View style={{ marginBottom: 10, borderWidth: 1, borderColor: '#DADDE1', borderRadius: 5, marginRight: 3, padding: 3, backgroundColor: '#303030', }}>
+                                        <Text style={{ fontWeight: 'bold', marginVertical: 5, fontSize: 20, color: 'white', }}>Profit (Percentage):</Text>
+                                        <TextInput
+                                            disabled={screenWidth > mobileViewBreakpoint}
+                                            ref={totalProfitPercentRef}
+                                            editable={false}
+                                            defaultValue={`${Number(((globalProfitCalculatorTotalAmountDollars * selectedChatData.currency.usdToJpy) / purchasedPrice) * 100).toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}%`}
+                                            style={{
+                                                fontWeight: '700', fontSize: 18,
+                                                color: Number(((globalProfitCalculatorTotalAmountDollars * selectedChatData.currency.usdToJpy) / purchasedPrice) * 100) <= 10.5 ? '#FF0000' : '#E4DCAC',
+                                            }} />
+
+                                        {/* <Text selectable style={{
+                                            fontWeight: '700', fontSize: 18,
+                                            color: Number(((profitCalculatorTotalAmountDollars * selectedChatData.currency.usdToJpy) / purchasedPrice) * 100) <= 10.5 ? '#FF0000' : '#336699',
+                                        }}>
+                                            {`${Number(((profitCalculatorTotalAmountDollars * selectedChatData.currency.usdToJpy) / purchasedPrice) * 100).toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}%`}
+                                        </Text> */}
+                                    </View>
+
+
+                                    <View style={{ marginBottom: 10, borderWidth: 1, borderColor: '#DADDE1', borderRadius: 5, marginRight: 3, padding: 3, backgroundColor: '#6E7A83' }}>
+                                        <Text style={{ fontWeight: 'bold', marginVertical: 5, fontSize: 20, color: 'white' }}>
+                                            Price to calculate:
+                                        </Text>
+                                        <View style={{ flexDirection: 'row', alignItems: 'center', }}>
+                                            <Text style={{
+                                                fontWeight: 'bold',
+                                                marginRight: 5, // provides spacing between the Text and TextInput
+                                                fontSize: 20,
+                                                color: 'white',
+                                            }}>
+                                                {CurrencySymbol()}
+                                            </Text>
+                                            <TextInput
+                                                onChangeText={handleInputPriceChangeText}
+                                                defaultValue={defaultInputPrice}
+                                                ref={inputPriceRef}
+                                                placeholder="Input Price"
+                                                placeholderTextColor="#9B9E9F"
+                                                style={{
+                                                    backgroundColor: 'white',
+                                                    height: 40,
+                                                    flex: 1, // uses flex grow and flex shrink
+                                                    flexShrink: 1, // allows the text input to shrink if needed
+                                                    width: 100,
+                                                    paddingHorizontal: 10,
+                                                    borderRadius: 4,
+                                                    borderWidth: 1,
+                                                    borderColor: 'white',
+                                                    fontSize: 18,
+                                                    fontWeight: '700',
+                                                }}
+                                            />
+                                        </View>
+                                    </View>
 
 
 
+                                </View>
 
+                                <View style={{ flex: 1, marginLeft: 3 }}>
 
-                            <View style={{ marginBottom: 10, borderWidth: 1, borderColor: '#DADDE1', borderRadius: 5, marginRight: 3, padding: 3, backgroundColor: 'white', }}>
-                                <Text style={{ fontWeight: 'bold', marginVertical: 5, fontSize: 20, }}>Profit (Percentage):</Text>
-                                <Text selectable style={{
-                                    fontWeight: '700', fontSize: 18,
-                                    color: Number(((totalProfitAmountDollars * selectedChatData.currency.usdToJpy) / purchasedPrice) * 100) <= 10.5 ? '#FF0000' : '#336699',
-                                }}>
-                                    {`${Number(((totalProfitAmountDollars * selectedChatData.currency.usdToJpy) / purchasedPrice) * 100).toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}%`}
-                                </Text>
-                            </View>
-                            <View style={{ marginBottom: 10, borderWidth: 1, borderColor: '#DADDE1', borderRadius: 5, marginRight: 3, padding: 3, backgroundColor: '#6E7A83' }}>
-                                <Text style={{ fontWeight: 'bold', marginVertical: 5, fontSize: 20, color: 'white' }}>
-                                    Price to calculate:
-                                </Text>
-                                <View style={{ flexDirection: 'row', alignItems: 'center', }}>
-                                    <Text style={{
-                                        fontWeight: 'bold',
-                                        marginRight: 5, // provides spacing between the Text and TextInput
-                                        fontSize: 20,
-                                        color: 'white',
-                                    }}>
-                                        {CurrencySymbol()}
-                                    </Text>
-                                    <TextInput
-                                        onChangeText={handleInputPriceChangeText}
-                                        defaultValue={defaultInputPrice}
-                                        ref={inputPriceRef}
-                                        placeholder="Input Price"
-                                        placeholderTextColor="#9B9E9F"
-                                        style={{
-                                            backgroundColor: 'white',
-                                            height: 40,
-                                            flex: 1, // uses flex grow and flex shrink
-                                            flexShrink: 1, // allows the text input to shrink if needed
-                                            width: 100,
-                                            paddingHorizontal: 10,
-                                            borderRadius: 4,
-                                            borderWidth: 1,
-                                            borderColor: 'white',
-                                            fontSize: 18,
-                                            fontWeight: '700',
-                                        }}
-                                    />
+                                    <View style={{ marginBottom: 10, borderWidth: 1, borderColor: '#DADDE1', borderRadius: 5, marginRight: 3, padding: 3, backgroundColor: 'white', }}>
+                                        <Text style={{ fontWeight: 'bold', marginVertical: 5, fontSize: 16, }}>Purchased Price:</Text>
+                                        <Text selectable style={{ fontWeight: '400', fontSize: 14, }}>
+                                            {`${formattedPurchasedPrice}`}
+                                        </Text>
+                                    </View>
+
+                                    <View style={{ marginBottom: 10, borderWidth: 1, borderColor: '#DADDE1', borderRadius: 5, marginRight: 3, padding: 3, backgroundColor: 'white', }}>
+                                        <Text style={{ fontWeight: 'bold', marginVertical: 5, fontSize: 16, }}>Auction Fee:</Text>
+                                        <Text selectable style={{ fontWeight: '400', fontSize: 14, }}>
+                                            {`${formattedAuctionFee}`}
+                                        </Text>
+                                    </View>
+
+                                    <View style={{ marginBottom: 10, borderWidth: 1, borderColor: '#DADDE1', borderRadius: 5, marginRight: 3, padding: 3, backgroundColor: 'white', }}>
+                                        <Text style={{ fontWeight: 'bold', marginVertical: 5, fontSize: 16, }}>Transport Fee:</Text>
+                                        <Text selectable style={{ fontWeight: '400', fontSize: 14, }}>
+                                            {`${formattedTransportFee}`}
+                                        </Text>
+                                    </View>
+
+                                    <View style={{ marginBottom: 10, borderWidth: 1, borderColor: '#DADDE1', borderRadius: 5, marginRight: 3, padding: 3, backgroundColor: 'white', }}>
+                                        <Text style={{ fontWeight: 'bold', marginVertical: 5, fontSize: 16, }}>Shipping Agent Fee:</Text>
+                                        <Text selectable style={{ fontWeight: '400', fontSize: 14, }}>
+                                            {`${formattedShippingAgentFee}`}
+                                        </Text>
+                                    </View>
+
+                                    <View style={{ marginBottom: 10, borderWidth: 1, borderColor: '#DADDE1', borderRadius: 5, marginRight: 3, padding: 3, backgroundColor: 'white', }}>
+                                        <Text style={{ fontWeight: 'bold', marginVertical: 5, fontSize: 16, }}>Supply Chains Costs:</Text>
+                                        <Text selectable style={{ fontWeight: '400', fontSize: 14, }}>
+                                            {`${formattedTotalSCCAmount}`}
+                                        </Text>
+                                    </View>
+
+                                    {/* <View style={{ marginBottom: 10, borderWidth: 1, borderColor: '#DADDE1', borderRadius: 5, marginRight: 3, padding: 3, backgroundColor: 'white', }}>
+<Text style={{ fontWeight: 'bold', marginVertical: 5, fontSize: 16, }}>Cubic Meter:</Text>
+<Text selectable style={{ fontWeight: '400', fontSize: 14, }}>
+{`${cubicMeter}`}
+</Text>
+</View> */}
+
+                                    <View style={{ marginBottom: 10, borderWidth: 1, borderColor: '#DADDE1', borderRadius: 5, marginRight: 3, padding: 3, backgroundColor: 'white', }}>
+                                        <Text style={{ fontWeight: 'bold', marginVertical: 5, fontSize: 16, }}>Cost per Cubic Meter:</Text>
+                                        <Text selectable style={{ fontWeight: '400', fontSize: 14, }}>
+                                            {`${formattedCostPerCubicMeter} x ${cubicMeter}`}
+                                        </Text>
+                                        <Text selectable style={{ fontWeight: '700', fontSize: 14, color: '#16A34A', }}>
+                                            {`${formattedTotalCubicMeterCostDollars}`}
+                                        </Text>
+                                        <Text selectable style={{ fontWeight: '700', fontSize: 14, color: '#8D7777', }}>
+                                            {`${formattedTotalCubicMeterCostYen}`}
+                                        </Text>
+                                    </View>
+
+                                    <View style={{ marginBottom: 10, borderWidth: 1, borderColor: '#DADDE1', borderRadius: 5, marginRight: 3, padding: 3, backgroundColor: 'white', }}>
+                                        <Text style={{ fontWeight: 'bold', marginVertical: 5, fontSize: 20, }}>Total:</Text>
+                                        <Text selectable style={{ fontWeight: '700', fontSize: 18, color: '#8D7777', }}>
+                                            {`${formattedRealTotalPriceYen}`}
+                                        </Text>
+                                        <Text selectable style={{ fontWeight: '700', fontSize: 18, color: '#16A34A', }}>
+                                            {`${formattedRealTotalPriceDollars}`}
+                                        </Text>
+                                    </View>
+
                                 </View>
                             </View>
 
 
 
-                        </View>
 
 
-                        <View style={{ flex: 1, marginLeft: 3 }}>
-
-                            <View style={{ marginBottom: 10, borderWidth: 1, borderColor: '#DADDE1', borderRadius: 5, marginRight: 3, padding: 3, backgroundColor: 'white', }}>
-                                <Text style={{ fontWeight: 'bold', marginVertical: 5, fontSize: 16, }}>Purchased Price:</Text>
-                                <Text selectable style={{ fontWeight: '400', fontSize: 14, }}>
-                                    {`${formattedPurchasedPrice}`}
-                                </Text>
-                            </View>
-
-                            <View style={{ marginBottom: 10, borderWidth: 1, borderColor: '#DADDE1', borderRadius: 5, marginRight: 3, padding: 3, backgroundColor: 'white', }}>
-                                <Text style={{ fontWeight: 'bold', marginVertical: 5, fontSize: 16, }}>Auction Fee:</Text>
-                                <Text selectable style={{ fontWeight: '400', fontSize: 14, }}>
-                                    {`${formattedAuctionFee}`}
-                                </Text>
-                            </View>
-
-                            <View style={{ marginBottom: 10, borderWidth: 1, borderColor: '#DADDE1', borderRadius: 5, marginRight: 3, padding: 3, backgroundColor: 'white', }}>
-                                <Text style={{ fontWeight: 'bold', marginVertical: 5, fontSize: 16, }}>Transport Fee:</Text>
-                                <Text selectable style={{ fontWeight: '400', fontSize: 14, }}>
-                                    {`${formattedTransportFee}`}
-                                </Text>
-                            </View>
-
-                            <View style={{ marginBottom: 10, borderWidth: 1, borderColor: '#DADDE1', borderRadius: 5, marginRight: 3, padding: 3, backgroundColor: 'white', }}>
-                                <Text style={{ fontWeight: 'bold', marginVertical: 5, fontSize: 16, }}>Shipping Agent Fee:</Text>
-                                <Text selectable style={{ fontWeight: '400', fontSize: 14, }}>
-                                    {`${formattedShippingAgentFee}`}
-                                </Text>
-                            </View>
-
-                            <View style={{ marginBottom: 10, borderWidth: 1, borderColor: '#DADDE1', borderRadius: 5, marginRight: 3, padding: 3, backgroundColor: 'white', }}>
-                                <Text style={{ fontWeight: 'bold', marginVertical: 5, fontSize: 16, }}>Supply Chains Costs:</Text>
-                                <Text selectable style={{ fontWeight: '400', fontSize: 14, }}>
-                                    {`${formattedTotalSCCAmount}`}
-                                </Text>
-                            </View>
-
-                            <View style={{ marginBottom: 10, borderWidth: 1, borderColor: '#DADDE1', borderRadius: 5, marginRight: 3, padding: 3, backgroundColor: 'white', }}>
-                                <Text style={{ fontWeight: 'bold', marginVertical: 5, fontSize: 16, }}>Cubic Meter:</Text>
-                                <Text selectable style={{ fontWeight: '400', fontSize: 14, }}>
-                                    {`${cubicMeter}`}
-                                </Text>
-                            </View>
-
-                            <View style={{ marginBottom: 10, borderWidth: 1, borderColor: '#DADDE1', borderRadius: 5, marginRight: 3, padding: 3, backgroundColor: 'white', }}>
-                                <Text style={{ fontWeight: 'bold', marginVertical: 5, fontSize: 16, }}>Cost per Cubic Meter:</Text>
-                                <Text selectable style={{ fontWeight: '400', fontSize: 14, }}>
-                                    {`${formattedCostPerCubicMeter} x ${cubicMeter}`}
-                                </Text>
-                                <Text selectable style={{ fontWeight: '700', fontSize: 14, color: '#16A34A', }}>
-                                    {`${formattedTotalCubicMeterCostDollars}`}
-                                </Text>
-                                <Text selectable style={{ fontWeight: '700', fontSize: 14, color: '#8D7777', }}>
-                                    {`${formattedTotalCubicMeterCostYen}`}
-                                </Text>
-                            </View>
-
-                            <View style={{ marginBottom: 10, borderWidth: 1, borderColor: '#DADDE1', borderRadius: 5, marginRight: 3, padding: 3, backgroundColor: 'white', }}>
-                                <Text style={{ fontWeight: 'bold', marginVertical: 5, fontSize: 20, }}>Total:</Text>
-                                <Text selectable style={{ fontWeight: '700', fontSize: 18, color: '#8D7777', }}>
-                                    {`${formattedRealTotalPriceYen}`}
-                                </Text>
-                                <Text selectable style={{ fontWeight: '700', fontSize: 18, color: '#16A34A', }}>
-                                    {`${formattedRealTotalPriceDollars}`}
-                                </Text>
-                            </View>
-
-                        </View>
-
+                        </ScrollView>
 
 
                     </Modal.Body>

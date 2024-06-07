@@ -2211,7 +2211,7 @@ export default function AccountList() {
                                         )}
                                     </Modal.Body>
                                     <Modal.Footer bgColor={'error.300'} borderTopWidth={0}>
-                                        <Button onPress={handleCloseDisableModal} flex={1} padding={1} margin={1}>No</Button>
+                                        <Button onPress={handleCloseDeleteModal} flex={1} padding={1} margin={1}>No</Button>
                                         <Button onPress={() => handleDelete(selectedItem.id)} colorScheme={'error'} flex={1} padding={1} margin={1} disabled={isDisabled}>{isYesLoading ? <Spinner color="white" size={21} /> : 'Yes'}</Button>
                                         {/* Add a save button or other action button to update the data */}
                                     </Modal.Footer>

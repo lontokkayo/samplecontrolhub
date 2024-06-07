@@ -11,6 +11,16 @@ let email = '';
 
 
 // =============================== Chat Messages ========================================
+const profitCalculatorTotalAmountDollarsSlice = createSlice({
+  name: 'profitCalculatorTotalAmountDollars',
+  initialState: 50,
+  reducers: {
+    setProfitCalculatorTotalAmountDollars: (state, action) => {
+      return action.payload
+    },
+  },
+})
+
 const messageTextInputHeightSlice = createSlice({
   name: 'messageTextInputHeight',
   initialState: 50,
@@ -907,6 +917,7 @@ const deleteImageVisibleSlice = createSlice({
 });
 
 // =============================== Chat Messages ========================================
+export const { setProfitCalculatorTotalAmountDollars } = profitCalculatorTotalAmountDollarsSlice.actions
 export const { setMessageTextInputHeight } = messageTextInputHeightSlice.actions
 export const { setMessageTextInputValue } = messageTextInputValueSlice.actions
 export const { setCustomInvoiceVisible } = customInvoiceVisibleSlice.actions
@@ -1022,6 +1033,8 @@ const store = configureStore({
   reducer: {
 
     // =============================== Chat Messages ========================================
+
+    profitCalculatorTotalAmountDollars: profitCalculatorTotalAmountDollarsSlice.reducer,
     messageTextInputHeight: messageTextInputHeightSlice.reducer,
     customInvoiceVisible: customInvoiceVisibleSlice.reducer,
     messageTextInputValue: messageTextInputValueSlice.reducer,
@@ -1091,7 +1104,7 @@ const store = configureStore({
     selectedLogsButton: selectedLogsButtonSlice.reducer,
     statsData: statsDataSlice.reducer,
     // =============================== Logs ======================================== 
-    stockStatusData: stockStatusDataSlice.reducer,    
+    stockStatusData: stockStatusDataSlice.reducer,
     isSuccessModalOpen: isSuccessModalOpenSlice.reducer,
     isUpdateSuccessModalOpen: isUpdateSuccessModalOpenSlice.reducer,
     loadingModalVisible: loadingModalVisibleSlice.reducer,
