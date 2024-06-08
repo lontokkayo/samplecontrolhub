@@ -5422,7 +5422,7 @@ Best regards,
 Real Motor Japan`,
                 sender: email,
                 timestamp: formattedTime, // Using the fetched timestamp
-                messageType: 'InputPayment',
+                messageType: 'FullPayment',
                 ip: ip, // IP Address
                 ipCountry: ipCountry // Country of the IP Address
             });
@@ -6674,6 +6674,7 @@ const ProfitCalculator = () => {
 
                 totalProfitOtherRef.current.value = `${CurrencySymbol()}${convertedCurrency(totalAmountDollars).toLocaleString('en-US',)}`;
 
+
             }
 
 
@@ -6753,7 +6754,6 @@ const ProfitCalculator = () => {
             const totalAmountDollars = Math.round(defaultInputPrice - realTotalPriceDollars);
             dispatch(setProfitCalculatorTotalAmountDollars(totalAmountDollars));
         }
-
 
     }, [totalSCCAmount]);
 
@@ -14624,7 +14624,119 @@ const ChatMessageBox = ({ activeButtonValue, userEmail }) => {
                 }
 
 
-                {item.messageType == 'InputPayment' &&
+                {(item.messageType == 'important') &&
+                    <View style={{ flexDirection: 'column', alignItems: isGlobalCustomerSender ? 'flex-start' : 'flex-end', flex: 1 }}>
+                        <View style={{ flexDirection: isGlobalCustomerSender ? 'row' : 'row-reverse', flex: 1, }}>
+                            <View style={{
+                                flexDirection: isGlobalCustomerSender ? 'row' : 'row-reverse',
+                                flex: 1,
+                            }}>
+                                <Animated.View style={{
+                                    padding: 10,
+                                    flex: 1,
+                                    borderRadius: 5,
+                                    backgroundColor: isGlobalCustomerSender ? '#FFFFFF' : '#f1f5ff',
+                                    marginLeft: isGlobalCustomerSender ? 10 : 0,
+                                    marginRight: isGlobalCustomerSender ? 0 : 10,
+                                    borderWidth: 3,
+                                    borderColor: borderColor,
+                                }}>
+                                    <Text selectable style={{
+                                        fontWeight: 400,
+                                        color: isGlobalCustomerSender ? '#555659' : '#555659',
+                                        fontSize: textFontSize,
+                                    }}>
+                                        {item.text.trim()}
+                                    </Text>
+                                </Animated.View>
+                            </View>
+
+                            <View style={{
+                                position: 'absolute',
+                                left: isGlobalCustomerSender ? '100%' : -60,
+                                top: '50%',
+                                bottom: '50%',
+                                flexDirection: isGlobalCustomerSender ? 'row' : 'row-reverse',
+                            }}>
+                                {/* Display read status text outside of the message bubble */}
+                                {isLastMessage && selectedChatData.customerRead && !isGlobalCustomerSender && (
+                                    <Tooltip label="Already read by the customer" openDelay={200} bgColor={'#FAFAFA'} _text={{ color: '#1C2B33', }}>
+                                        <View style={{
+                                            alignSelf: 'flex-end',
+                                            marginLeft: isGlobalCustomerSender ? 8 : 0,
+                                            marginRight: isGlobalCustomerSender ? 0 : 8,
+                                            alignSelf: 'center',
+                                        }}>
+                                            <Ionicons name="mail-open" size={20} color={'#1B81C2'} />
+                                        </View>
+                                    </Tooltip>
+                                )}
+
+                                {isLastMessage && !selectedChatData.customerRead && !isGlobalCustomerSender && (
+                                    <Tooltip label="Message sent to the customer" openDelay={200} bgColor={'#FAFAFA'} _text={{ color: '#1C2B33', }}>
+                                        <View style={{
+                                            alignSelf: 'flex-end',
+                                            marginLeft: isGlobalCustomerSender ? 8 : 0,
+                                            marginRight: isGlobalCustomerSender ? 0 : 8,
+                                            alignSelf: 'center',
+                                        }}>
+                                            <Ionicons name="mail" size={20} color={'#1B81C2'} />
+                                        </View>
+                                    </Tooltip>
+                                )}
+                                {isLastMessage && selectedChatData.readBy.length > 0 && (
+                                    <View style={{
+                                        alignSelf: 'flex-end',
+                                        marginLeft: isGlobalCustomerSender ? 8 : 0,
+                                        marginRight: isGlobalCustomerSender ? 0 : 8,
+                                        alignSelf: 'center',
+                                    }}>
+                                        <Pressable
+                                            focusable={false}
+                                            onHoverIn={() => setIsEyeHovered(true)}
+                                            onHoverOut={() => setIsEyeHovered(false)}
+                                            onPress={handleReadByListModalOpen}
+                                        >
+                                            <Entypo name="eye" size={20} color={isEyeHovered ? '#c5d1ce' : '#75A99C'} />
+                                        </Pressable>
+                                    </View>
+                                )}
+                            </View>
+
+                        </View>
+
+                        {/* Additional message properties like timestamp, sender email, IP, and country */}
+                        <Text
+                            style={{
+                                fontWeight: '300',
+                                color: '#888c96',
+                                fontSize: screenWidth < mobileViewBreakpoint ? 9 : 10,
+                                marginTop: 4,
+                                marginBottom: 4,
+                                marginLeft: isGlobalCustomerSender ? 15 : 0,
+                                marginRight: isGlobalCustomerSender ? 0 : 15,
+                            }}
+                            selectable
+                        >
+                            {!isGlobalCustomerSender ? (
+                                <>
+                                    {formatDate(item.timestamp)} - <Text style={{ fontWeight: 'bold' }}>{extractUsernameFromEmail(item.sender)}</Text>
+                                    {item.ip ? ` - ${item.ip}` : ''}
+                                    {item.ipCountry ? ` - ${item.ipCountry}` : ''}
+                                </>
+                            ) : (
+                                <>
+                                    {formatDate(item.timestamp)}
+                                    {item.ip ? ` - ${item.ip}` : ''}
+                                    {item.ipCountry ? ` - ${item.ipCountry}` : ''}
+                                </>
+                            )}
+                        </Text>
+
+                    </View>
+                }
+
+                {(item.messageType == 'InputPayment' || item.messageType == 'FullPayment') &&
                     <View style={{ flexDirection: 'column', alignItems: 'flex-end', flex: 1 }}>
                         <View style={{ flexDirection: isGlobalCustomerSender ? 'row' : 'row-reverse', flex: 1, }}>
                             <Animated.View style={{
@@ -14632,6 +14744,7 @@ const ChatMessageBox = ({ activeButtonValue, userEmail }) => {
                                 flex: 1,
                                 borderRadius: 5,
                                 backgroundColor: isGlobalCustomerSender ? '#FFFFFF' : '#f1f5ff',
+                                marginLeft: isGlobalCustomerSender ? 10 : 0,
                                 marginRight: isGlobalCustomerSender ? 0 : 10,
                                 borderWidth: 3,
                                 borderColor: borderColor,
@@ -15128,7 +15241,8 @@ const ChatMessageBox = ({ activeButtonValue, userEmail }) => {
                             )}
                         </Text>
 
-                    </View>}
+                    </View>
+                }
 
             </View>
         );
