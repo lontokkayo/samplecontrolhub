@@ -14503,6 +14503,7 @@ const ChatMessageBox = ({ activeButtonValue, userEmail }) => {
     const renderItem = ({ item, index }) => {
         const isGlobalCustomerSender = item.sender === globalCustomerId;
         const isLastMessage = index === 0; // Since the list is inverted, the first item is actually the last message
+        const isFirstMessage = index === chatMessagesData.length - 1; // Adjusted to get the first message in the inverted list
         const isHovered = hoveredImageIndex === index;
         const textFontSize = screenWidth < mobileViewBreakpoint ? 12 : 14;
 
@@ -14514,6 +14515,7 @@ const ChatMessageBox = ({ activeButtonValue, userEmail }) => {
                 alignSelf: isGlobalCustomerSender ? 'flex-start' : 'flex-end',
                 marginVertical: 4,
                 maxWidth: screenWidth < mobileViewBreakpoint ? '80%' : '60%', // Max width for long messages
+                paddingTop: isFirstMessage ? 10 : 0,
                 // borderWidth: 1,
                 // borderColor: 'red',
             }}>
@@ -14623,6 +14625,159 @@ const ChatMessageBox = ({ activeButtonValue, userEmail }) => {
                     </View>
                 }
 
+
+                {item.messageType == 'RequestInvoice' &&
+                    <View style={{ flexDirection: 'column', alignItems: isGlobalCustomerSender ? 'flex-start' : 'flex-end', flex: 1 }}>
+                        <View style={{ flexDirection: isGlobalCustomerSender ? 'row' : 'row-reverse', flex: 1, }}>
+                            <View style={{
+                                flexDirection: isGlobalCustomerSender ? 'row' : 'row-reverse',
+                                flex: 1,
+                            }}>
+                                <Animated.View style={{
+                                    padding: 6,
+                                    flex: 1,
+                                    borderRadius: 5,
+                                    backgroundColor: isGlobalCustomerSender ? '#FFFFFF' : '#f1f5ff',
+                                    marginLeft: isGlobalCustomerSender ? 10 : 0,
+                                    marginRight: isGlobalCustomerSender ? 0 : 10,
+                                    borderWidth: 3,
+                                    borderColor: borderColor,
+                                }}>
+                                    <View style={{ marginBottom: 5, }}>
+                                        {renderItemText(isGlobalCustomerSender, item.text.trim())}
+                                    </View>
+
+                                    {selectedChatData.stepIndicator.value == 1 ?
+
+                                        <TransactionButton
+                                            key={'Issue Proforma Invoice'}
+                                            title={selectedChatData.stepIndicator.value == 1 ? 'Issue Proforma Invoice' : selectedChatData.stepIndicator.value == 2 ? 'Update Invoice' : ''}
+                                            colorHoverIn={'#0f7534'}
+                                            colorHoverOut={'#16A34A'}
+                                            transactionValue={2}
+                                            buttonValue={2}
+                                            iconActive={<FontAwesome5 name="file-invoice-dollar" color="#1C2B33" size={14} />}
+                                        /> :
+
+                                        <View
+                                            style={{
+                                                marginTop: 3,
+                                                paddingVertical: 3,
+                                                paddingHorizontal: 5,
+                                                flexDirection: 'row', // Align items in a row
+                                                alignItems: 'center', // Center items vertically
+                                                justifyContent: 'center',
+                                                borderRadius: 5,
+                                                backgroundColor: '#d0ecda',
+                                            }}
+                                        >
+                                            <FastImage
+                                                source={{
+                                                    uri: require(`../../assets/chat_step/chat_step_2_off.png`),
+                                                    priority: FastImage.priority.normal
+                                                }}
+                                                style={{
+                                                    tintColor: 'rgba(128, 128, 128, 1)',
+                                                    width: 15,
+                                                    height: 15,
+                                                    alignSelf: 'center',
+                                                }}
+                                                resizeMode={FastImage.resizeMode.stretch}
+                                            />
+                                            <Text selectable={false} color={'#A79696'} style={{ fontWeight: 700, marginLeft: 5, }}>{`✓ Issued Proforma Invoice`}</Text>
+                                        </View>
+
+                                    }
+
+
+
+                                </Animated.View>
+                            </View>
+
+                            <View style={{
+                                position: 'absolute',
+                                left: isGlobalCustomerSender ? '100%' : -60,
+                                top: '50%',
+                                bottom: '50%',
+                                flexDirection: isGlobalCustomerSender ? 'row' : 'row-reverse',
+                            }}>
+                                {/* Display read status text outside of the message bubble */}
+                                {isLastMessage && selectedChatData.customerRead && !isGlobalCustomerSender && (
+                                    <Tooltip label="Already read by the customer" openDelay={200} bgColor={'#FAFAFA'} _text={{ color: '#1C2B33', }}>
+                                        <View style={{
+                                            alignSelf: 'flex-end',
+                                            marginLeft: isGlobalCustomerSender ? 8 : 0,
+                                            marginRight: isGlobalCustomerSender ? 0 : 8,
+                                            alignSelf: 'center',
+                                        }}>
+                                            <Ionicons name="mail-open" size={20} color={'#1B81C2'} />
+                                        </View>
+                                    </Tooltip>
+                                )}
+
+                                {isLastMessage && !selectedChatData.customerRead && !isGlobalCustomerSender && (
+                                    <Tooltip label="Message sent to the customer" openDelay={200} bgColor={'#FAFAFA'} _text={{ color: '#1C2B33', }}>
+                                        <View style={{
+                                            alignSelf: 'flex-end',
+                                            marginLeft: isGlobalCustomerSender ? 8 : 0,
+                                            marginRight: isGlobalCustomerSender ? 0 : 8,
+                                            alignSelf: 'center',
+                                        }}>
+                                            <Ionicons name="mail" size={20} color={'#1B81C2'} />
+                                        </View>
+                                    </Tooltip>
+                                )}
+                                {isLastMessage && selectedChatData.readBy.length > 0 && (
+                                    <View style={{
+                                        alignSelf: 'flex-end',
+                                        marginLeft: isGlobalCustomerSender ? 8 : 0,
+                                        marginRight: isGlobalCustomerSender ? 0 : 8,
+                                        alignSelf: 'center',
+                                    }}>
+                                        <Pressable
+                                            focusable={false}
+                                            onHoverIn={() => setIsEyeHovered(true)}
+                                            onHoverOut={() => setIsEyeHovered(false)}
+                                            onPress={handleReadByListModalOpen}
+                                        >
+                                            <Entypo name="eye" size={20} color={isEyeHovered ? '#c5d1ce' : '#75A99C'} />
+                                        </Pressable>
+                                    </View>
+                                )}
+                            </View>
+
+                        </View>
+
+                        {/* Additional message properties like timestamp, sender email, IP, and country */}
+                        <Text
+                            style={{
+                                fontWeight: '300',
+                                color: '#888c96',
+                                fontSize: screenWidth < mobileViewBreakpoint ? 9 : 10,
+                                marginTop: 4,
+                                marginBottom: 4,
+                                marginLeft: isGlobalCustomerSender ? 15 : 0,
+                                marginRight: isGlobalCustomerSender ? 0 : 15,
+                            }}
+                            selectable
+                        >
+                            {!isGlobalCustomerSender ? (
+                                <>
+                                    {formatDate(item.timestamp)} - <Text style={{ fontWeight: 'bold' }}>{extractUsernameFromEmail(item.sender)}</Text>
+                                    {item.ip ? ` - ${item.ip}` : ''}
+                                    {item.ipCountry ? ` - ${item.ipCountry}` : ''}
+                                </>
+                            ) : (
+                                <>
+                                    {formatDate(item.timestamp)}
+                                    {item.ip ? ` - ${item.ip}` : ''}
+                                    {item.ipCountry ? ` - ${item.ipCountry}` : ''}
+                                </>
+                            )}
+                        </Text>
+
+                    </View>
+                }
 
                 {(item.messageType == 'important') &&
                     <View style={{ flexDirection: 'column', alignItems: isGlobalCustomerSender ? 'flex-start' : 'flex-end', flex: 1 }}>
@@ -15139,6 +15294,8 @@ const ChatMessageBox = ({ activeButtonValue, userEmail }) => {
 
 
                     </View>}
+
+
 
                 {!item.messageType && !item.file &&
                     <View style={{ flexDirection: 'column', alignItems: isGlobalCustomerSender ? 'flex-start' : 'flex-end', flex: 1 }}>
