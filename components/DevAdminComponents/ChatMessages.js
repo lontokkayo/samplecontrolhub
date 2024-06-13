@@ -4175,7 +4175,7 @@ const NotifyPartyInput = ({ accountData, setAccountData }) => {
     const selectedChatData = useSelector((state) => state.selectedChatData);
     const selectedCustomerData = useSelector((state) => state.selectedCustomerData);
 
-    const [isChecked, setIsChecked] = useState(invoiceData && Object.keys(invoiceData).length > 0 ? invoiceData.notifyParty.sameAsConsignee : true);
+    const [isChecked, setIsChecked] = useState(invoiceData && Object.keys(invoiceData).length > 0 && invoiceData.notifyParty.sameAsConsignee ? invoiceData.notifyParty.sameAsConsignee : (selectedChatData.requestInvoice.notifyParty && Object.keys(selectedChatData.requestInvoice.notifyParty).length > 0 ? (selectedChatData.requestInvoice.notifyParty.sameAsConsignee) : true));
 
     const notifyPartyName = useRef(null);
     const notifyPartyAddress = useRef(null);
@@ -4189,23 +4189,24 @@ const NotifyPartyInput = ({ accountData, setAccountData }) => {
 
 
         // console.log(docSnap.data());
-        notifyPartyName.current.value = invoiceData && Object.keys(invoiceData).length > 0 && invoiceData.consignee.name ? invoiceData.consignee.name : `${selectedCustomerData.textFirst ? selectedCustomerData.textFirst : ''} ${selectedCustomerData.textLast ? selectedCustomerData.textLast : ''}`;
-        notifyPartyAddress.current.value = invoiceData && Object.keys(invoiceData).length > 0 && invoiceData.consignee.address ? invoiceData.consignee.address : `${selectedCustomerData.textStreet ? selectedCustomerData.textStreet : ''} ${selectedCustomerData.textZip ? selectedCustomerData.textZip : ''}`;
-        notifyPartyCity.current.value = invoiceData && Object.keys(invoiceData).length > 0 && invoiceData.consignee.city ? invoiceData.consignee.city : `${selectedCustomerData.city ? selectedCustomerData.city : ''}`;
-        notifyPartyCountry.current.value = invoiceData && Object.keys(invoiceData).length > 0 && invoiceData.consignee.country ? invoiceData.consignee.country : `${selectedCustomerData.country ? selectedCustomerData.country : ''}`;
-        notifyPartyContactNumber.current.value = invoiceData && Object.keys(invoiceData).length > 0 && invoiceData.consignee.contactNumber ? invoiceData.consignee.contactNumber : `${selectedCustomerData.textPhoneNumber ? selectedCustomerData.textPhoneNumber : ''}`;
-        notifyPartyFax.current.value = invoiceData && Object.keys(invoiceData).length > 0 && invoiceData.consignee.fax ? invoiceData.consignee.fax : `${selectedCustomerData.fax ? selectedCustomerData.fax : ''}`;
-        notifyPartyEmail.current.value = invoiceData && Object.keys(invoiceData).length > 0 && invoiceData.consignee.email ? invoiceData.consignee.email : `${selectedCustomerData.textEmail ? selectedCustomerData.textEmail : ''}`;
+
+        notifyPartyName.current.value = invoiceData && Object.keys(invoiceData).length > 0 && invoiceData.notifyParty.name ? invoiceData.notifyParty.name : (selectedChatData.requestInvoice.notifyParty.formDataNotify && Object.keys(selectedChatData.requestInvoice.notifyParty.formDataNotify).length > 0 ? (`${selectedChatData.requestInvoice.notifyParty.formDataNotify.fullName ? selectedChatData.requestInvoice.notifyParty.formDataNotify.fullName : ''}`) : (`${selectedCustomerData.textFirst ? selectedCustomerData.textFirst : ''} ${selectedCustomerData.textLast ? selectedCustomerData.textLast : ''}`));
+        notifyPartyAddress.current.value = invoiceData && Object.keys(invoiceData).length > 0 && invoiceData.notifyParty.address ? invoiceData.notifyParty.address : (selectedChatData.requestInvoice.notifyParty.formDataNotify && Object.keys(selectedChatData.requestInvoice.notifyParty.formDataNotify).length > 0 ? (`${selectedChatData.requestInvoice.notifyParty.formDataNotify.address ? selectedChatData.requestInvoice.notifyParty.formDataNotify.address : ''}`) : `${selectedCustomerData.textStreet ? selectedCustomerData.textStreet : ''} ${selectedCustomerData.textZip ? selectedCustomerData.textZip : ''}`);
+        notifyPartyCity.current.value = invoiceData && Object.keys(invoiceData).length > 0 && invoiceData.notifyParty.city ? invoiceData.notifyParty.city : (selectedChatData.requestInvoice.notifyParty.formDataNotify && Object.keys(selectedChatData.requestInvoice.notifyParty.formDataNotify).length > 0 ? (`${selectedChatData.requestInvoice.notifyParty.formDataNotify.city ? selectedChatData.requestInvoice.notifyParty.formDataNotify.city : ''}`) : `${selectedCustomerData.city ? selectedCustomerData.city : ''}`);
+        notifyPartyCountry.current.value = invoiceData && Object.keys(invoiceData).length > 0 && invoiceData.notifyParty.country ? invoiceData.notifyParty.country : (selectedChatData.requestInvoice.notifyParty.formDataNotify && Object.keys(selectedChatData.requestInvoice.notifyParty.formDataNotify).length > 0 ? (`${selectedChatData.requestInvoice.notifyParty.formDataNotify.country ? selectedChatData.requestInvoice.notifyParty.formDataNotify.country : ''}`) : `${selectedCustomerData.country ? selectedCustomerData.country : ''}`);
+        notifyPartyContactNumber.current.value = invoiceData && Object.keys(invoiceData).length > 0 && invoiceData.notifyParty.contactNumber ? invoiceData.notifyParty.contactNumber : (selectedChatData.requestInvoice.notifyParty.formDataNotify && Object.keys(selectedChatData.requestInvoice.notifyParty.formDataNotify).length > 0 ? (`${selectedChatData.requestInvoice.notifyParty.formDataNotify.telephones ? selectedChatData.requestInvoice.notifyParty.formDataNotify.telephones.join('\n') : ''}`) : `${selectedCustomerData.textPhoneNumber ? selectedCustomerData.textPhoneNumber : ''}`);
+        notifyPartyFax.current.value = invoiceData && Object.keys(invoiceData).length > 0 && invoiceData.notifyParty.fax ? invoiceData.notifyParty.fax : (selectedChatData.requestInvoice.notifyParty.formDataNotify && Object.keys(selectedChatData.requestInvoice.notifyParty.formDataNotify).length > 0 ? (`${selectedChatData.requestInvoice.notifyParty.formDataNotify.fax ? selectedChatData.requestInvoice.notifyParty.formDataNotify.fax : ''}`) : `${selectedCustomerData.fax ? selectedCustomerData.fax : ''}`);
+        notifyPartyEmail.current.value = invoiceData && Object.keys(invoiceData).length > 0 && invoiceData.notifyParty.email ? invoiceData.notifyParty.email : (selectedChatData.requestInvoice.notifyParty.formDataNotify && Object.keys(selectedChatData.requestInvoice.notifyParty.formDataNotify).length > 0 ? (`${selectedChatData.requestInvoice.notifyParty.formDataNotify.email ? selectedChatData.requestInvoice.notifyParty.formDataNotify.email : ''}`) : `${selectedCustomerData.textEmail ? selectedCustomerData.textEmail : ''}`);
 
 
-        globalInvoiceVariable.notifyParty.name = invoiceData && Object.keys(invoiceData).length > 0 && invoiceData.consignee.name ? invoiceData.consignee.name : `${selectedCustomerData.textFirst ? selectedCustomerData.textFirst : ''} ${selectedCustomerData.textLast ? selectedCustomerData.textLast : ''}`;
-        globalInvoiceVariable.notifyParty.address = invoiceData && Object.keys(invoiceData).length > 0 && invoiceData.consignee.address ? invoiceData.consignee.address : `${selectedCustomerData.textStreet ? selectedCustomerData.textStreet : ''} ${selectedCustomerData.textZip ? selectedCustomerData.textZip : ''}`;
-        globalInvoiceVariable.notifyParty.city = invoiceData && Object.keys(invoiceData).length > 0 && invoiceData.consignee.city ? invoiceData.consignee.city : `${selectedCustomerData.city ? selectedCustomerData.city : ''}`;
-        globalInvoiceVariable.notifyParty.country = invoiceData && Object.keys(invoiceData).length > 0 && invoiceData.consignee.country ? invoiceData.consignee.country : `${selectedCustomerData.country ? selectedCustomerData.country : ''}`;
-        globalInvoiceVariable.notifyParty.contactNumber = invoiceData && Object.keys(invoiceData).length > 0 && invoiceData.consignee.contactNumber ? invoiceData.consignee.contactNumber : `${selectedCustomerData.textPhoneNumber ? selectedCustomerData.textPhoneNumber : ''}`;
-        globalInvoiceVariable.notifyParty.fax = invoiceData && Object.keys(invoiceData).length > 0 && invoiceData.consignee.fax ? invoiceData.consignee.fax : `${selectedCustomerData.fax ? selectedCustomerData.fax : ''}`;
-        globalInvoiceVariable.notifyParty.email = invoiceData && Object.keys(invoiceData).length > 0 && invoiceData.consignee.email ? invoiceData.consignee.email : `${selectedCustomerData.textEmail ? selectedCustomerData.textEmail : ''}`;
-        globalInvoiceVariable.notifyParty.sameAsBuyer = invoiceData && Object.keys(invoiceData).length > 0 && invoiceData.consignee.sameAsBuyer ? invoiceData.consignee.sameAsBuyer : isChecked;
+        globalInvoiceVariable.notifyParty.name = invoiceData && Object.keys(invoiceData).length > 0 && invoiceData.notifyParty.name ? invoiceData.notifyParty.name : (selectedChatData.requestInvoice.notifyParty.formDataNotify && Object.keys(selectedChatData.requestInvoice.notifyParty.formDataNotify).length > 0 ? (`${selectedChatData.requestInvoice.notifyParty.formDataNotify.fullName ? selectedChatData.requestInvoice.notifyParty.formDataNotify.fullName : ''}`) : (`${selectedCustomerData.textFirst ? selectedCustomerData.textFirst : ''} ${selectedCustomerData.textLast ? selectedCustomerData.textLast : ''}`));
+        globalInvoiceVariable.notifyParty.address = invoiceData && Object.keys(invoiceData).length > 0 && invoiceData.notifyParty.address ? invoiceData.notifyParty.address : (selectedChatData.requestInvoice.notifyParty.formDataNotify && Object.keys(selectedChatData.requestInvoice.notifyParty.formDataNotify).length > 0 ? (`${selectedChatData.requestInvoice.notifyParty.formDataNotify.address ? selectedChatData.requestInvoice.notifyParty.formDataNotify.address : ''}`) : `${selectedCustomerData.textStreet ? selectedCustomerData.textStreet : ''} ${selectedCustomerData.textZip ? selectedCustomerData.textZip : ''}`);
+        globalInvoiceVariable.notifyParty.city = invoiceData && Object.keys(invoiceData).length > 0 && invoiceData.notifyParty.city ? invoiceData.notifyParty.city : (selectedChatData.requestInvoice.notifyParty.formDataNotify && Object.keys(selectedChatData.requestInvoice.notifyParty.formDataNotify).length > 0 ? (`${selectedChatData.requestInvoice.notifyParty.formDataNotify.city ? selectedChatData.requestInvoice.notifyParty.formDataNotify.city : ''}`) : `${selectedCustomerData.city ? selectedCustomerData.city : ''}`);
+        globalInvoiceVariable.notifyParty.country = invoiceData && Object.keys(invoiceData).length > 0 && invoiceData.notifyParty.country ? invoiceData.notifyParty.country : (selectedChatData.requestInvoice.notifyParty.formDataNotify && Object.keys(selectedChatData.requestInvoice.notifyParty.formDataNotify).length > 0 ? (`${selectedChatData.requestInvoice.notifyParty.formDataNotify.country ? selectedChatData.requestInvoice.notifyParty.formDataNotify.country : ''}`) : `${selectedCustomerData.country ? selectedCustomerData.country : ''}`);
+        globalInvoiceVariable.notifyParty.contactNumber = invoiceData && Object.keys(invoiceData).length > 0 && invoiceData.notifyParty.contactNumber ? invoiceData.notifyParty.contactNumber : (selectedChatData.requestInvoice.notifyParty.formDataNotify && Object.keys(selectedChatData.requestInvoice.notifyParty.formDataNotify).length > 0 ? (`${selectedChatData.requestInvoice.notifyParty.formDataNotify.telephones ? selectedChatData.requestInvoice.notifyParty.formDataNotify.telephones.join('\n') : ''}`) : `${selectedCustomerData.textPhoneNumber ? selectedCustomerData.textPhoneNumber : ''}`);
+        globalInvoiceVariable.notifyParty.fax = invoiceData && Object.keys(invoiceData).length > 0 && invoiceData.notifyParty.fax ? invoiceData.notifyParty.fax : (selectedChatData.requestInvoice.notifyParty.formDataNotify && Object.keys(selectedChatData.requestInvoice.notifyParty.formDataNotify).length > 0 ? (`${selectedChatData.requestInvoice.notifyParty.formDataNotify.fax ? selectedChatData.requestInvoice.notifyParty.formDataNotify.fax : ''}`) : `${selectedCustomerData.fax ? selectedCustomerData.fax : ''}`);
+        globalInvoiceVariable.notifyParty.email = invoiceData && Object.keys(invoiceData).length > 0 && invoiceData.notifyParty.email ? invoiceData.notifyParty.email : (selectedChatData.requestInvoice.notifyParty.formDataNotify && Object.keys(selectedChatData.requestInvoice.notifyParty.formDataNotify).length > 0 ? (`${selectedChatData.requestInvoice.notifyParty.formDataNotify.email ? selectedChatData.requestInvoice.notifyParty.formDataNotify.email : ''}`) : `${selectedCustomerData.textEmail ? selectedCustomerData.textEmail : ''}`);
+        globalInvoiceVariable.notifyParty.sameAsConsignee = invoiceData && Object.keys(invoiceData).length > 0 && invoiceData.notifyParty.sameAsConsignee ? invoiceData.notifyParty.sameAsConsignee : (selectedChatData.requestInvoice.notifyParty && Object.keys(selectedChatData.requestInvoice.notifyParty).length > 0 ? (selectedChatData.requestInvoice.notifyParty.sameAsConsignee) : isChecked);
 
 
 
@@ -4298,7 +4299,7 @@ const ConsigneeInput = () => {
     const selectedCustomerData = useSelector((state) => state.selectedCustomerData);
     const selectedChatData = useSelector((state) => state.selectedChatData);
     const invoiceData = useSelector((state) => state.invoiceData);
-    const [isChecked, setIsChecked] = useState(invoiceData && Object.keys(invoiceData).length > 0 ? invoiceData.consignee.sameAsBuyer : true);
+    const [isChecked, setIsChecked] = useState(invoiceData && Object.keys(invoiceData).length > 0 ? invoiceData.consignee.sameAsBuyer : (selectedChatData.requestInvoice.consignee && Object.keys(selectedChatData.requestInvoice.consignee).length > 0 ? selectedChatData.requestInvoice.consignee.sameAsBuyer : true));
     const [accountData, setAccountData] = useState({});
 
     const consigneeName = useRef(null);
@@ -4311,25 +4312,26 @@ const ConsigneeInput = () => {
 
 
     useEffect(() => {
-        console.log(invoiceData.consignee);
+        // console.log(invoiceData.consignee);
+        // console.log(invoiceData && Object.keys(invoiceData).length > 0 && invoiceData.consignee.sameAsBuyer ? invoiceData.consignee.sameAsBuyer : (selectedChatData.requestInvoice.consignee && Object.keys(selectedChatData.requestInvoice.consignee).length > 0 ? (selectedChatData.requestInvoice.consignee.sameAsBuyer) : isChecked));
 
-        consigneeName.current.value = invoiceData && Object.keys(invoiceData).length > 0 && invoiceData.consignee.name ? invoiceData.consignee.name : `${selectedCustomerData.textFirst ? selectedCustomerData.textFirst : ''} ${selectedCustomerData.textLast ? selectedCustomerData.textLast : ''}`;
-        consigneeAddress.current.value = invoiceData && Object.keys(invoiceData).length > 0 && invoiceData.consignee.address ? invoiceData.consignee.address : `${selectedCustomerData.textStreet ? selectedCustomerData.textStreet : ''} ${selectedCustomerData.textZip ? selectedCustomerData.textZip : ''}`;
-        consigneeCity.current.value = invoiceData && Object.keys(invoiceData).length > 0 && invoiceData.consignee.city ? invoiceData.consignee.city : `${selectedCustomerData.city ? selectedCustomerData.city : ''}`;
-        consigneeCountry.current.value = invoiceData && Object.keys(invoiceData).length > 0 && invoiceData.consignee.country ? invoiceData.consignee.country : `${selectedCustomerData.country ? selectedCustomerData.country : ''}`;
-        consigneeContactNumber.current.value = invoiceData && Object.keys(invoiceData).length > 0 && invoiceData.consignee.contactNumber ? invoiceData.consignee.contactNumber : `${selectedCustomerData.textPhoneNumber ? selectedCustomerData.textPhoneNumber : ''}`;
-        consigneeFax.current.value = invoiceData && Object.keys(invoiceData).length > 0 && invoiceData.consignee.fax ? invoiceData.consignee.fax : `${selectedCustomerData.fax ? selectedCustomerData.fax : ''}`;
-        consigneeEmail.current.value = invoiceData && Object.keys(invoiceData).length > 0 && invoiceData.consignee.email ? invoiceData.consignee.email : `${selectedCustomerData.textEmail ? selectedCustomerData.textEmail : ''}`;
+        consigneeName.current.value = invoiceData && Object.keys(invoiceData).length > 0 && invoiceData.consignee.name ? invoiceData.consignee.name : (selectedChatData.requestInvoice.consignee.formData && Object.keys(selectedChatData.requestInvoice.consignee.formData).length > 0 ? (`${selectedChatData.requestInvoice.consignee.formData.fullName ? selectedChatData.requestInvoice.consignee.formData.fullName : ''}`) : (`${selectedCustomerData.textFirst ? selectedCustomerData.textFirst : ''} ${selectedCustomerData.textLast ? selectedCustomerData.textLast : ''}`));
+        consigneeAddress.current.value = invoiceData && Object.keys(invoiceData).length > 0 && invoiceData.consignee.address ? invoiceData.consignee.address : (selectedChatData.requestInvoice.consignee.formData && Object.keys(selectedChatData.requestInvoice.consignee.formData).length > 0 ? (`${selectedChatData.requestInvoice.consignee.formData.address ? selectedChatData.requestInvoice.consignee.formData.address : ''}`) : `${selectedCustomerData.textStreet ? selectedCustomerData.textStreet : ''} ${selectedCustomerData.textZip ? selectedCustomerData.textZip : ''}`);
+        consigneeCity.current.value = invoiceData && Object.keys(invoiceData).length > 0 && invoiceData.consignee.city ? invoiceData.consignee.city : (selectedChatData.requestInvoice.consignee.formData && Object.keys(selectedChatData.requestInvoice.consignee.formData).length > 0 ? (`${selectedChatData.requestInvoice.consignee.formData.city ? selectedChatData.requestInvoice.consignee.formData.city : ''}`) : `${selectedCustomerData.city ? selectedCustomerData.city : ''}`);
+        consigneeCountry.current.value = invoiceData && Object.keys(invoiceData).length > 0 && invoiceData.consignee.country ? invoiceData.consignee.country : (selectedChatData.requestInvoice.consignee.formData && Object.keys(selectedChatData.requestInvoice.consignee.formData).length > 0 ? (`${selectedChatData.requestInvoice.consignee.formData.country ? selectedChatData.requestInvoice.consignee.formData.country : ''}`) : `${selectedCustomerData.country ? selectedCustomerData.country : ''}`);
+        consigneeContactNumber.current.value = invoiceData && Object.keys(invoiceData).length > 0 && invoiceData.consignee.contactNumber ? invoiceData.consignee.contactNumber : (selectedChatData.requestInvoice.consignee.formData && Object.keys(selectedChatData.requestInvoice.consignee.formData).length > 0 ? (`${selectedChatData.requestInvoice.consignee.formData.telephones ? selectedChatData.requestInvoice.consignee.formData.telephones.join('\n') : ''}`) : `${selectedCustomerData.textPhoneNumber ? selectedCustomerData.textPhoneNumber : ''}`);
+        consigneeFax.current.value = invoiceData && Object.keys(invoiceData).length > 0 && invoiceData.consignee.fax ? invoiceData.consignee.fax : (selectedChatData.requestInvoice.consignee.formData && Object.keys(selectedChatData.requestInvoice.consignee.formData).length > 0 ? (`${selectedChatData.requestInvoice.consignee.formData.fax ? selectedChatData.requestInvoice.consignee.formData.fax : ''}`) : `${selectedCustomerData.fax ? selectedCustomerData.fax : ''}`);
+        consigneeEmail.current.value = invoiceData && Object.keys(invoiceData).length > 0 && invoiceData.consignee.email ? invoiceData.consignee.email : (selectedChatData.requestInvoice.consignee.formData && Object.keys(selectedChatData.requestInvoice.consignee.formData).length > 0 ? (`${selectedChatData.requestInvoice.consignee.formData.email ? selectedChatData.requestInvoice.consignee.formData.email : ''}`) : `${selectedCustomerData.textEmail ? selectedCustomerData.textEmail : ''}`);
 
 
-        globalInvoiceVariable.consignee.name = invoiceData && Object.keys(invoiceData).length > 0 && invoiceData.consignee.name ? invoiceData.consignee.name : `${selectedCustomerData.textFirst ? selectedCustomerData.textFirst : ''} ${selectedCustomerData.textLast ? selectedCustomerData.textLast : ''}`;
-        globalInvoiceVariable.consignee.address = invoiceData && Object.keys(invoiceData).length > 0 && invoiceData.consignee.address ? invoiceData.consignee.address : `${selectedCustomerData.textStreet ? selectedCustomerData.textStreet : ''} ${selectedCustomerData.textZip ? selectedCustomerData.textZip : ''}`;
-        globalInvoiceVariable.consignee.city = invoiceData && Object.keys(invoiceData).length > 0 && invoiceData.consignee.city ? invoiceData.consignee.city : `${selectedCustomerData.city ? selectedCustomerData.city : ''}`;
-        globalInvoiceVariable.consignee.country = invoiceData && Object.keys(invoiceData).length > 0 && invoiceData.consignee.country ? invoiceData.consignee.country : `${selectedCustomerData.country ? selectedCustomerData.country : ''}`;
-        globalInvoiceVariable.consignee.contactNumber = invoiceData && Object.keys(invoiceData).length > 0 && invoiceData.consignee.contactNumber ? invoiceData.consignee.contactNumber : `${selectedCustomerData.textPhoneNumber ? selectedCustomerData.textPhoneNumber : ''}`;
-        globalInvoiceVariable.consignee.fax = invoiceData && Object.keys(invoiceData).length > 0 && invoiceData.consignee.fax ? invoiceData.consignee.fax : `${selectedCustomerData.fax ? selectedCustomerData.fax : ''}`;
-        globalInvoiceVariable.consignee.email = invoiceData && Object.keys(invoiceData).length > 0 && invoiceData.consignee.email ? invoiceData.consignee.email : `${selectedCustomerData.textEmail ? selectedCustomerData.textEmail : ''}`;
-        globalInvoiceVariable.consignee.sameAsBuyer = invoiceData && Object.keys(invoiceData).length > 0 && invoiceData.consignee.sameAsBuyer ? invoiceData.consignee.sameAsBuyer : isChecked;
+        globalInvoiceVariable.consignee.name = invoiceData && Object.keys(invoiceData).length > 0 && invoiceData.consignee.name ? invoiceData.consignee.name : (selectedChatData.requestInvoice.consignee.formData && Object.keys(selectedChatData.requestInvoice.consignee.formData).length > 0 ? (`${selectedChatData.requestInvoice.consignee.formData.fullName ? selectedChatData.requestInvoice.consignee.formData.fullName : ''}`) : (`${selectedCustomerData.textFirst ? selectedCustomerData.textFirst : ''} ${selectedCustomerData.textLast ? selectedCustomerData.textLast : ''}`));
+        globalInvoiceVariable.consignee.address = invoiceData && Object.keys(invoiceData).length > 0 && invoiceData.consignee.address ? invoiceData.consignee.address : (selectedChatData.requestInvoice.consignee.formData && Object.keys(selectedChatData.requestInvoice.consignee.formData).length > 0 ? (`${selectedChatData.requestInvoice.consignee.formData.address ? selectedChatData.requestInvoice.consignee.formData.address : ''}`) : `${selectedCustomerData.textStreet ? selectedCustomerData.textStreet : ''} ${selectedCustomerData.textZip ? selectedCustomerData.textZip : ''}`);
+        globalInvoiceVariable.consignee.city = invoiceData && Object.keys(invoiceData).length > 0 && invoiceData.consignee.city ? invoiceData.consignee.city : (selectedChatData.requestInvoice.consignee.formData && Object.keys(selectedChatData.requestInvoice.consignee.formData).length > 0 ? (`${selectedChatData.requestInvoice.consignee.formData.city ? selectedChatData.requestInvoice.consignee.formData.city : ''}`) : `${selectedCustomerData.city ? selectedCustomerData.city : ''}`);
+        globalInvoiceVariable.consignee.country = invoiceData && Object.keys(invoiceData).length > 0 && invoiceData.consignee.country ? invoiceData.consignee.country : (selectedChatData.requestInvoice.consignee.formData && Object.keys(selectedChatData.requestInvoice.consignee.formData).length > 0 ? (`${selectedChatData.requestInvoice.consignee.formData.country ? selectedChatData.requestInvoice.consignee.formData.country : ''}`) : `${selectedCustomerData.country ? selectedCustomerData.country : ''}`);
+        globalInvoiceVariable.consignee.contactNumber = invoiceData && Object.keys(invoiceData).length > 0 && invoiceData.consignee.contactNumber ? invoiceData.consignee.contactNumber : (selectedChatData.requestInvoice.consignee.formData && Object.keys(selectedChatData.requestInvoice.consignee.formData).length > 0 ? (`${selectedChatData.requestInvoice.consignee.formData.telephones ? selectedChatData.requestInvoice.consignee.formData.telephones.join('\n') : ''}`) : `${selectedCustomerData.textPhoneNumber ? selectedCustomerData.textPhoneNumber : ''}`);
+        globalInvoiceVariable.consignee.fax = invoiceData && Object.keys(invoiceData).length > 0 && invoiceData.consignee.fax ? invoiceData.consignee.fax : (selectedChatData.requestInvoice.consignee.formData && Object.keys(selectedChatData.requestInvoice.consignee.formData).length > 0 ? (`${selectedChatData.requestInvoice.consignee.formData.fax ? selectedChatData.requestInvoice.consignee.formData.fax : ''}`) : `${selectedCustomerData.fax ? selectedCustomerData.fax : ''}`);
+        globalInvoiceVariable.consignee.email = invoiceData && Object.keys(invoiceData).length > 0 && invoiceData.consignee.email ? invoiceData.consignee.email : (selectedChatData.requestInvoice.consignee.formData && Object.keys(selectedChatData.requestInvoice.consignee.formData).length > 0 ? (`${selectedChatData.requestInvoice.consignee.formData.email ? selectedChatData.requestInvoice.consignee.formData.email : ''}`) : `${selectedCustomerData.textEmail ? selectedCustomerData.textEmail : ''}`);
+        globalInvoiceVariable.consignee.sameAsBuyer = invoiceData && Object.keys(invoiceData).length > 0 && invoiceData.consignee.sameAsBuyer ? invoiceData.consignee.sameAsBuyer : (selectedChatData.requestInvoice.consignee && Object.keys(selectedChatData.requestInvoice.consignee).length > 0 ? (selectedChatData.requestInvoice.consignee.sameAsBuyer) : isChecked);
 
     }, []);
 
@@ -4337,6 +4339,7 @@ const ConsigneeInput = () => {
     const checkboxOnPress = (value) => {
         globalInvoiceVariable.consignee.sameAsBuyer = value;
         setIsChecked(value);
+
         if (value == true) {
             if (!(invoiceData && Object.keys(invoiceData).length > 0 && invoiceData.consignee.name)) {
                 consigneeName.current.value = `${selectedCustomerData.textFirst ? selectedCustomerData.textFirst : ''} ${selectedCustomerData.textLast ? selectedCustomerData.textLast : ''}`;
@@ -4348,6 +4351,16 @@ const ConsigneeInput = () => {
                 consigneeEmail.current.value = `${selectedCustomerData.textEmail ? selectedCustomerData.textEmail : ''}`;
             }
 
+        }
+
+        else {
+            consigneeName.current.value = invoiceData && Object.keys(invoiceData).length > 0 && invoiceData.consignee.name ? invoiceData.consignee.name : (selectedChatData.requestInvoice.consignee.formData && Object.keys(selectedChatData.requestInvoice.consignee.formData).length > 0 ? (`${selectedChatData.requestInvoice.consignee.formData.fullName ? selectedChatData.requestInvoice.consignee.formData.fullName : ''}`) : (`${selectedCustomerData.textFirst ? selectedCustomerData.textFirst : ''} ${selectedCustomerData.textLast ? selectedCustomerData.textLast : ''}`));
+            consigneeAddress.current.value = invoiceData && Object.keys(invoiceData).length > 0 && invoiceData.consignee.address ? invoiceData.consignee.address : (selectedChatData.requestInvoice.consignee.formData && Object.keys(selectedChatData.requestInvoice.consignee.formData).length > 0 ? (`${selectedChatData.requestInvoice.consignee.formData.address ? selectedChatData.requestInvoice.consignee.formData.address : ''}`) : `${selectedCustomerData.textStreet ? selectedCustomerData.textStreet : ''} ${selectedCustomerData.textZip ? selectedCustomerData.textZip : ''}`);
+            consigneeCity.current.value = invoiceData && Object.keys(invoiceData).length > 0 && invoiceData.consignee.city ? invoiceData.consignee.city : (selectedChatData.requestInvoice.consignee.formData && Object.keys(selectedChatData.requestInvoice.consignee.formData).length > 0 ? (`${selectedChatData.requestInvoice.consignee.formData.city ? selectedChatData.requestInvoice.consignee.formData.city : ''}`) : `${selectedCustomerData.city ? selectedCustomerData.city : ''}`);
+            consigneeCountry.current.value = invoiceData && Object.keys(invoiceData).length > 0 && invoiceData.consignee.country ? invoiceData.consignee.country : (selectedChatData.requestInvoice.consignee.formData && Object.keys(selectedChatData.requestInvoice.consignee.formData).length > 0 ? (`${selectedChatData.requestInvoice.consignee.formData.country ? selectedChatData.requestInvoice.consignee.formData.country : ''}`) : `${selectedCustomerData.country ? selectedCustomerData.country : ''}`);
+            consigneeContactNumber.current.value = invoiceData && Object.keys(invoiceData).length > 0 && invoiceData.consignee.contactNumber ? invoiceData.consignee.contactNumber : (selectedChatData.requestInvoice.consignee.formData && Object.keys(selectedChatData.requestInvoice.consignee.formData).length > 0 ? (`${selectedChatData.requestInvoice.consignee.formData.telephones ? selectedChatData.requestInvoice.consignee.formData.telephones.join('\n') : ''}`) : `${selectedCustomerData.textPhoneNumber ? selectedCustomerData.textPhoneNumber : ''}`);
+            consigneeFax.current.value = invoiceData && Object.keys(invoiceData).length > 0 && invoiceData.consignee.fax ? invoiceData.consignee.fax : (selectedChatData.requestInvoice.consignee.formData && Object.keys(selectedChatData.requestInvoice.consignee.formData).length > 0 ? (`${selectedChatData.requestInvoice.consignee.formData.fax ? selectedChatData.requestInvoice.consignee.formData.fax : ''}`) : `${selectedCustomerData.fax ? selectedCustomerData.fax : ''}`);
+            consigneeEmail.current.value = invoiceData && Object.keys(invoiceData).length > 0 && invoiceData.consignee.email ? invoiceData.consignee.email : (selectedChatData.requestInvoice.consignee.formData && Object.keys(selectedChatData.requestInvoice.consignee.formData).length > 0 ? (`${selectedChatData.requestInvoice.consignee.formData.email ? selectedChatData.requestInvoice.consignee.formData.email : ''}`) : `${selectedCustomerData.textEmail ? selectedCustomerData.textEmail : ''}`);
         }
 
     }
@@ -5388,7 +5401,71 @@ const InputPaymentModalContent = () => { //Input Payment
         }
     }
 
+    const documentDeliveryAddressMessage = async () => {
 
+        const response = await axios.get('https://worldtimeapi.org/api/timezone/Asia/Tokyo');
+        const { datetime } = response.data;
+        const formattedTime = moment(datetime).format('YYYY/MM/DD [at] HH:mm:ss.SSS');
+        const year = moment(datetime).format('YYYY');
+        const month = moment(datetime).format('MM');
+        const monthWithDay = moment(datetime).format('MM/DD');
+        const date = moment(datetime).format('YYYY/MM/DD');
+        const day = moment(datetime).format('DD');
+        const time = moment(datetime).format('HH:mm');
+        const timeWithMinutesSeconds = moment(datetime).format('HH:mm:ss');
+
+        const email = projectControlAuth.currentUser ? projectControlAuth.currentUser.email : '';
+
+
+        if (selectedCustomerData.documentDeliveryAddress && Object.keys(selectedCustomerData.documentDeliveryAddress).length > 0) {
+            await addDoc(collection(projectExtensionFirestore, 'chats', selectedChatData.id, 'messages'), {
+                text: `Please input/update document delivery address. (Ignore if you don't want to change)`,
+                sender: email,
+                timestamp: formattedTime, // Using the fetched timestamp
+                messageType: 'InputDocDelAdd',
+                ip: ip, // IP Address
+                ipCountry: ipCountry // Country of the IP Address
+            });
+
+            const updateData = {
+                lastMessageSender: email,
+                lastMessage: `Please input/update document delivery address. (Ignore if you don't want to change)`,
+                lastMessageDate: formattedTime,
+                customerRead: false,
+                read: true,
+                readBy: [email],
+            };
+
+            if (selectedCustomerData.documentDeliveryAddress && Object.keys(selectedCustomerData.documentDeliveryAddress).length > 0) {
+                updateData.documentDeliveryAddress = selectedCustomerData.documentDeliveryAddress;
+            }
+
+            await updateDoc(doc(projectExtensionFirestore, 'chats', selectedChatData.id), updateData);
+
+
+        }
+        else {
+            await addDoc(collection(projectExtensionFirestore, 'chats', selectedChatData.id, 'messages'), {
+                text: `Document delivery address not found, please input document delivery address.`,
+                sender: email,
+                timestamp: formattedTime, // Using the fetched timestamp
+                messageType: 'InputDocDelAdd',
+                ip: ip, // IP Address
+                ipCountry: ipCountry // Country of the IP Address
+            });
+            await updateDoc(doc(projectExtensionFirestore, 'chats', selectedChatData.id), {
+                lastMessageSender: email,
+                lastMessage: `Document delivery address not found, please input document delivery address.`,
+                lastMessageDate: formattedTime,
+                customerRead: false,
+                read: true,
+                readBy: [email],
+            });
+        }
+
+
+
+    }
     const fullPaymentMessage = async () => {
         const response = await axios.get('https://worldtimeapi.org/api/timezone/Asia/Tokyo');
         const { datetime } = response.data;
@@ -5491,7 +5568,6 @@ Best regards,
 Real Motor Japan`,
                 sender: email,
                 timestamp: formattedTime, // Using the fetched timestamp
-                messageType: 'InputPayment',
                 ip: ip, // IP Address
                 ipCountry: ipCountry // Country of the IP Address
             });
@@ -5817,6 +5893,7 @@ Real Motor Japan`,
                         fullyPaid: true,
                     });
 
+                    await documentDeliveryAddressMessage();
                 } else {
                     // Handle the case where the payment is less than the amount needed
                     console.log('Partial payment received');
@@ -14464,7 +14541,6 @@ const ChatMessageBox = ({ activeButtonValue, userEmail }) => {
     };
 
 
-
     const getFileIcon = (fileName) => {
         const iconSize = 24;
         const lowerFileName = fileName.toLowerCase();
@@ -15295,6 +15371,110 @@ const ChatMessageBox = ({ activeButtonValue, userEmail }) => {
 
                     </View>}
 
+
+                {item.messageType == 'InputDocDelAdd' &&
+                    <View style={{ flexDirection: 'column', alignItems: isGlobalCustomerSender ? 'flex-start' : 'flex-end', flex: 1 }}>
+                        <View style={{ flexDirection: isGlobalCustomerSender ? 'row' : 'row-reverse', flex: 1, }}>
+                            <View style={{
+                                flexDirection: isGlobalCustomerSender ? 'row' : 'row-reverse',
+                                flex: 1,
+                            }}>
+                                <View style={{
+                                    padding: 10,
+                                    borderRadius: 5,
+                                    backgroundColor: isGlobalCustomerSender ? '#FFFFFF' : '#f1f5ff',
+                                    marginLeft: isGlobalCustomerSender ? 10 : 0,
+                                    marginRight: isGlobalCustomerSender ? 0 : 10,
+                                    flexShrink: 1,
+                                }}>
+                                    {renderItemText(isGlobalCustomerSender, item.text.trim())}
+                                </View>
+                            </View>
+
+                            <View style={{
+                                position: 'absolute',
+                                left: isGlobalCustomerSender ? '100%' : -60,
+                                top: '50%',
+                                bottom: '50%',
+                                flexDirection: isGlobalCustomerSender ? 'row' : 'row-reverse',
+                            }}>
+                                {/* Display read status text outside of the message bubble */}
+                                {isLastMessage && selectedChatData.customerRead && !isGlobalCustomerSender && (
+                                    <Tooltip label="Already read by the customer" openDelay={200} bgColor={'#FAFAFA'} _text={{ color: '#1C2B33', }}>
+                                        <View style={{
+                                            alignSelf: 'flex-end',
+                                            marginLeft: isGlobalCustomerSender ? 8 : 0,
+                                            marginRight: isGlobalCustomerSender ? 0 : 8,
+                                            alignSelf: 'center',
+                                        }}>
+                                            <Ionicons name="mail-open" size={20} color={'#1B81C2'} />
+                                        </View>
+                                    </Tooltip>
+                                )}
+
+                                {isLastMessage && !selectedChatData.customerRead && !isGlobalCustomerSender && (
+                                    <Tooltip label="Message sent to the customer" openDelay={200} bgColor={'#FAFAFA'} _text={{ color: '#1C2B33', }}>
+                                        <View style={{
+                                            alignSelf: 'flex-end',
+                                            marginLeft: isGlobalCustomerSender ? 8 : 0,
+                                            marginRight: isGlobalCustomerSender ? 0 : 8,
+                                            alignSelf: 'center',
+                                        }}>
+                                            <Ionicons name="mail" size={20} color={'#1B81C2'} />
+                                        </View>
+                                    </Tooltip>
+                                )}
+                                {isLastMessage && selectedChatData.readBy.length > 0 && (
+                                    <View style={{
+                                        alignSelf: 'flex-end',
+                                        marginLeft: isGlobalCustomerSender ? 8 : 0,
+                                        marginRight: isGlobalCustomerSender ? 0 : 8,
+                                        alignSelf: 'center',
+                                    }}>
+                                        <Pressable
+                                            focusable={false}
+                                            onHoverIn={() => setIsEyeHovered(true)}
+                                            onHoverOut={() => setIsEyeHovered(false)}
+                                            onPress={handleReadByListModalOpen}
+                                        >
+                                            <Entypo name="eye" size={20} color={isEyeHovered ? '#c5d1ce' : '#75A99C'} />
+                                        </Pressable>
+                                    </View>
+                                )}
+                            </View>
+
+                        </View>
+
+                        {/* Additional message properties like timestamp, sender email, IP, and country */}
+                        <Text
+                            style={{
+                                fontWeight: '300',
+                                color: '#888c96',
+                                fontSize: screenWidth < mobileViewBreakpoint ? 9 : 10,
+                                marginTop: 4,
+                                marginBottom: 4,
+                                marginLeft: isGlobalCustomerSender ? 15 : 0,
+                                marginRight: isGlobalCustomerSender ? 0 : 15,
+                            }}
+                            selectable
+                        >
+                            {!isGlobalCustomerSender ? (
+                                <>
+                                    {formatDate(item.timestamp)} - <Text style={{ fontWeight: 'bold' }}>{extractUsernameFromEmail(item.sender)}</Text>
+                                    {item.ip ? ` - ${item.ip}` : ''}
+                                    {item.ipCountry ? ` - ${item.ipCountry}` : ''}
+                                </>
+                            ) : (
+                                <>
+                                    {formatDate(item.timestamp)}
+                                    {item.ip ? ` - ${item.ip}` : ''}
+                                    {item.ipCountry ? ` - ${item.ipCountry}` : ''}
+                                </>
+                            )}
+                        </Text>
+
+                    </View>
+                }
 
 
                 {!item.messageType && !item.file &&
