@@ -9,6 +9,20 @@ import { useSelector } from 'react-redux';
 let makeDataVariable = [];
 let email = '';
 
+// =============================== Customer List ========================================
+const customerListDataSlice = createSlice({
+  name: 'customerListData',
+  initialState: {},
+  reducers: {
+    setCustomerListData: (state, action) => {
+      return action.payload
+    },
+  },
+})
+
+
+
+// =============================== Customer List ========================================
 
 // =============================== Chat Messages ========================================
 const profitCalculatorTotalAmountDollarsSlice = createSlice({
@@ -917,6 +931,12 @@ const deleteImageVisibleSlice = createSlice({
 });
 
 // =============================== Chat Messages ========================================
+
+export const { setCustomerListData } = customerListDataSlice.actions
+
+// =============================== Chat Messages ========================================
+
+// =============================== Chat Messages ========================================
 export const { setProfitCalculatorTotalAmountDollars } = profitCalculatorTotalAmountDollarsSlice.actions
 export const { setMessageTextInputHeight } = messageTextInputHeightSlice.actions
 export const { setMessageTextInputValue } = messageTextInputValueSlice.actions
@@ -1031,6 +1051,14 @@ export const { setModelData } = modelDataSlice.actions
 
 const store = configureStore({
   reducer: {
+
+    // =============================== Customer List ========================================
+
+    customerListData: customerListDataSlice.reducer,
+
+    // =============================== Customer List ========================================
+
+
 
     // =============================== Chat Messages ========================================
 

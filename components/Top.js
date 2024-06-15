@@ -64,6 +64,7 @@ import AddVehicle from './DevAdminComponents/AddVehicle';
 import VehicleList from './DevAdminComponents/VehicleList';
 import Freight from './DevAdminComponents/Freight';
 import ChatMessages from './DevAdminComponents/ChatMessages';
+import CustomerList from './DevAdminComponents/CustomerList';
 import ParseCSV from './DevAdminComponents/ParseCSV';
 import { setLoginAccountType, setLoginName } from './DevAdminComponents/redux/store';
 import { useDispatch } from 'react-redux';
@@ -348,6 +349,7 @@ export default function Top({ navigation }) {
       <Routes>
         <Route path="*" element={<Navigate to="logs" replace />} />
         <Route path="parse-csv" element={<ParseCSV />} />
+        <Route path="customer-list" element={<CustomerList />} />
         <Route path="chat-messages" element={<ChatMessages />} />
         <Route path="chat-messages/:chatId" element={<ChatMessages />} />
         <Route path="freight" element={<Freight />} />

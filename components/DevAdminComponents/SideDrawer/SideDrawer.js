@@ -82,6 +82,9 @@ const SideDrawer = ({ selectedScreen }) => {
     const handleChatMessages = useCallback(() => {
         navigate("/top/chat-messages");
     }, []);
+    const handleCustomerList = useCallback(() => {
+        navigate("/top/customer-list");
+    }, []);
 
 
     const slideAnimation = useRef(new Animated.Value(0)).current;
@@ -393,7 +396,36 @@ const SideDrawer = ({ selectedScreen }) => {
                                                 justifyContent="flex-start"
                                                 alignItems="center"
                                             // rightIcon={<FontAwesome name="automobile" size={15} color="white" />}
-                                            >CHAT MESSAGES</Button>}
+                                            >CHAT MESSAGES</Button>
+                                            }
+
+                                            {(loginAccountType == 'admin' || loginAccountType == 'sales' || loginAccountType == 'booking') && <Button
+                                                _text={{ color: selectedScreen == 'CUSTOMER LIST' ? '#0642F4' : "white", }}
+                                                borderRadius={0}
+                                                borderTopWidth={1}
+                                                borderBottomWidth={1}
+                                                borderColor={'white'}
+                                                _hover={{ bgColor: selectedScreen == 'CUSTOMER LIST' ? '#FFFFFF' : '#032da8', }}
+                                                marginTop={0}
+                                                onPress={() => { selectedScreen == 'CUSTOMER LIST' ? null : handleCustomerList() }}
+                                                colorScheme={undefined}
+                                                bgColor={selectedScreen == 'CUSTOMER LIST' ? '#FFFFFF' : '#0642F4'}
+                                                leftIcon={
+                                                    <>
+                                                        <View>
+                                                            <MaterialCommunityIcons name="account-details" size={20}
+                                                                color={selectedScreen == 'CUSTOMER LIST' ? '#0642F4' : "white"}
+                                                            />
+                                                        </View>
+
+
+                                                    </>
+                                                }
+                                                justifyContent="flex-start"
+                                                alignItems="center"
+                                            // rightIcon={<FontAwesome name="automobile" size={15} color="white" />}
+                                            >CUSTOMER LIST</Button>
+                                            }
                                         </View>
                                         {/* Footer Content */}
                                         {/* <TouchableOpacity
