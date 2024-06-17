@@ -1,78 +1,25 @@
 // QRCodeScanner.js
 import {
-    Box,
-    Button,
-    Center,
-    Flex,
-    HStack,
-    Icon,
     Image as NativeImage,
-    Input,
     Modal,
-    NativeBaseProvider,
-    Popover,
-    Spinner,
-    Stack,
-    Text,
-    VStack,
-    TextArea,
-    InputRightAddon,
-    InputGroup,
-    InputLeftAddon,
-    Select,
-    CheckIcon,
-    PresenceTransition,
-    CloseIcon,
-    ScrollView as ScrollViewNative,
-    Divider,
-    useDisclosure,
-    useDisclose,
-    FormControl,
-    Checkbox,
-    useToast,
-    Tooltip,
-    Progress,
-    Alert
+    Text
 } from 'native-base';
-import React, { useEffect, useRef, useState, useMemo, useCallback, useReducer } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
     Dimensions,
-    ImageBackground,
-    TouchableOpacity,
-    TouchableWithoutFeedback,
     StyleSheet,
     View,
-    PanResponder,
-    Animated,
-    Easing,
-    InputAccessoryView,
-    FlatList,
-    ScrollView,
-    TouchableHighlight,
-    TextInput,
-    Image as RNImage,
     Pressable,
-    Linking,
-    Modal as RNModal,
-    Platform,
-    SafeAreaView,
 } from 'react-native';
 import Webcam from 'react-webcam';
 import {
-    AntDesign,
-    FontAwesome,
-    Ionicons,
-    MaterialCommunityIcons,
-    MaterialIcons,
-    Entypo,
-    FontAwesome5,
-    EvilIcons
+    MaterialCommunityIcons
 } from 'react-native-vector-icons';
 
 import QRCode from 'react-native-qrcode-svg';
 
-import { addDoc, collection, doc, getDoc, getFirestore, onSnapshot, setDoc, arrayUnion, updateDoc, query, getDocs, orderBy, startAfter, limit, where, endBefore, endAt, limitToLast, collectionGroup, increment } from 'firebase/firestore';
-import { projectControlFirestore, projectControlAuth, projectExtensionFirestore, projectExtensionAuth, projectControlFirebase, projectExtensionFirebase } from '../../../crossFirebase';
+import { collection, query, getDocs, where } from 'firebase/firestore';
+import { projectExtensionFirestore } from '../../../crossFirebase';
 import jsQR from 'jsqr';
 
 

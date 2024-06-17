@@ -141,14 +141,7 @@ export default function AccountList() {
     const [isSelectedLogs, setIsSelectedLogs] = useState(false);
     const [isSelectedAddAccount, setIsSelectedAddAccount] = useState(false);
     const [isSelectedAccountList, setIsSelectedAccountList] = useState(true);
-    const [isSelected3, setIsSelected3] = useState(false);
-    const [isSelected4, setIsSelected4] = useState(false);
 
-    const [accountTypeSpAd, setAccountTypeSpAd] = useState(false);
-    const [accountTypeDevAd, setAccountTypeDevAd] = useState(false);
-    const [accountTypeAd, setAccountTypeAd] = useState(false);
-    const [accountType3, setAccountType3] = useState(false);
-    const [accountType4, setAccountType4] = useState(false);
 
     const [inputName, setInputName] = useState('');
     const [isInputNameBlank, setIsInputNameBlank] = useState(false);
@@ -187,14 +180,8 @@ export default function AccountList() {
     const [searchQuery, setSearchQuery] = useState('');
     const [filteredData, setFilteredData] = useState([]);
 
-    const [documentListener, setDocumentListener] = useState(false);
-
     const [showNamePopover, setShowNamePopover] = useState(false);
 
-    const ref0 = useRef(null);
-    const ref1 = useRef(null);
-    const ref2 = useRef(null);
-    const ref3 = useRef(null);
     const searchInputRef = useRef(null);
 
     const searchInput = useRef(null);
@@ -530,8 +517,6 @@ export default function AccountList() {
     }, []);
 
     useEffect(() => {
-        // console.log(selectedType);
-        // console.log(selectedTypeDisplay);
 
     }, [selectedType, selectedTypeDisplay])
 
@@ -564,33 +549,9 @@ export default function AccountList() {
     }, []);
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
     useEffect(() => {
 
     }, [isSelectedLogs, isSelectedAddAccount, isSelectedAccountList]);
-
-
-
-
-
-
-
-
-
-
 
 
     useEffect(() => {
@@ -611,157 +572,7 @@ export default function AccountList() {
         return unsubscribe
     }, [])
 
-    const firebaseFirestore = getFirestore();
 
-
-
-
-    // const handleUpdate = async () => {
-    //     setIsDisabled(true);
-    //     setIsLoading(true);
-
-    //     if (
-    //         validateEmail() === false ||
-    //         inputName === ''
-    //     ) {
-    //         setTimeout(() => {
-    //             // Reset loading and disabled state
-    //             setIsLoading(false);
-    //             setIsDisabled(false);
-    //         }, 500);
-    //     } else {
-    //         try {
-    //             const signInMethods = await fetchSignInMethodsForEmail(auth, inputEmail);
-    //             if (signInMethods.length > 0) {
-    //                 // Email already exists
-    //                 setIsEmailDuplicate(true);
-    //                 setEmailError(false);
-    //                 validateEmail(false);
-    //                 setIsLoading(false);
-    //                 setIsDisabled(false);
-    //                 return;
-    //             }
-
-    //             await createUserWithEmailAndPassword(authForCreateUser, inputEmail, inputPassword)
-    //                 .then((userCredential) => {
-
-    //                     const user = userCredential.user;
-    //                     try {
-    //                         const customID = inputEmail; // Replace 'your-custom-id' with your desired custom ID
-    //                         const docRef = doc(db, 'accounts', selectedItem.email); // Replace 'myCollection' with the name of your desired collection
-    //                         updateDoc(docRef, {
-    //                             // Specify the data you want to add to the document
-    //                             email: inputEmail,
-    //                             name: inputName,
-    //                             pass: inputPassword,
-    //                             type: typeOfAccount,
-    //                             // ...
-    //                         });
-
-    //                         addLogToCollection(logData);
-    //                         // console.log(logData);
-    //                         setIsLoading(false);
-    //                         setIsDisabled(false);
-    //                         handleClear();
-    //                         setShowModal(true);
-
-    //                         // console.log('Document added with custom ID: ', customID);
-    //                     } catch (error) {
-    //                         console.error('Error adding document: ', error);
-    //                     }
-
-
-    //                     // Reset loading and disabled state
-
-
-
-    //                 })
-    //                 .catch((error) => {
-    //                     // console.log('An error occurred during sign-up. Please try again later.');
-    //                     console.log(error);
-    //                     setIsLoading(false);
-    //                     setIsDisabled(false);
-    //                 });
-    //         } catch (error) {
-    //             const errorCode = error.code;
-    //             const errorMessage = error.message;
-    //             console.log('An error occurred while checking the email existence. Please try again later.');
-    //             // console.log(errorCode, errorMessage);
-    //             setIsLoading(false);
-    //             setIsDisabled(false);
-    //         }
-    //     }
-    // };
-
-    const handleClear = useCallback(() => {
-        const text = '';
-
-        ref0.current.value = "";
-        ref1.current.value = "";
-        ref2.current.value = "";
-        ref3.current.value = "";
-        setAccountTypeAd(false);
-        setAccountTypeSpAd(false);
-        setAccountTypeDevAd(false);
-        setAccountType3(false);
-        setAccountType4(false);
-        setEmailError(false);
-        setIsEmailDuplicate(false);
-
-
-        setInputConfirmPassword('');
-        setInputEmail('');
-        setInputName('');
-        setInputPassword('');
-
-
-    }, []);
-
-
-    // const handleToggleLogs = useCallback(() => {
-    //     // setIsSelectedLogs(true);
-
-    //     // setIsSelectedAddAccount(false);
-    //     // setIsSelectedAccountList(false);
-    //     // setIsSelected3(false);
-    //     // setIsSelected4(false);
-
-    //     navigation.navigate("LOGS");
-    // }, []);
-    // const handleToggleAddAccount = useCallback(() => {
-    //     // setIsSelectedAddAccount(true);
-
-    //     // setIsSelectedLogs(false);
-    //     // setIsSelectedAccountList(false);
-    //     // setIsSelected3(false);
-    //     // setIsSelected4(false);
-
-    //     navigation.navigate("ADD C-HUB ACCOUNT");
-    // }, []);
-
-    // const handleToggleAccountList = useCallback(() => {
-    //     // setIsSelectedAccountList(true);
-
-    //     // setIsSelectedAddAccount(false);
-    //     // setIsSelected3(false);
-    //     // setIsSelected4(false);
-    //     // setIsSelectedLogs(false);
-    //     navigation.navigate("ACCOUNT LIST");
-    // }, []);
-
-    // const handleToggleAddVehicle = useCallback(() => {
-    //     // setIsSelected3(true);
-
-    //     // setIsSelectedAddAccount(false);
-    //     // setIsSelectedAccountList(false);
-    //     // setIsSelected4(false);
-    //     // setIsSelectedLogs(false);
-    //     navigation.navigate("ADD NEW VEHICLE");
-    // }, []);
-
-    // const handleVehicleList = useCallback(() => {
-    //     navigation.navigate("VEHICLE LIST");
-    // }, []);
 
     const handleDocumentChange = (snapshot) => {
 

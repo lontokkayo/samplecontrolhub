@@ -1,77 +1,48 @@
 import {
     Box,
     Button,
-    Center,
     Flex,
-    HStack,
-    Icon,
     Image as NativeImage,
-    Input,
     Modal,
     NativeBaseProvider,
     Popover,
     Spinner,
-    Stack,
     Text,
     VStack,
-    TextArea,
-    InputRightAddon,
-    InputGroup,
-    InputLeftAddon,
     Select,
     CheckIcon,
-    PresenceTransition,
-    CloseIcon,
-    ScrollView as ScrollViewNative,
-    Divider,
-    useDisclosure,
-    useDisclose,
-    FormControl,
     Checkbox,
-    useToast,
     Tooltip,
     Progress,
-    Alert,
     Pressable as NativePressable,
 } from 'native-base';
-import React, { useEffect, useRef, useState, useMemo, useCallback, useReducer } from 'react';
+import React, { useEffect, useRef, useState, useCallback } from 'react';
 import {
     Dimensions,
-    ImageBackground,
-    TouchableOpacity,
-    TouchableWithoutFeedback,
     StyleSheet,
     View,
-    PanResponder,
     Animated,
     Easing,
-    InputAccessoryView,
     FlatList,
     ScrollView,
-    TouchableHighlight,
     TextInput,
     Image as RNImage,
     Pressable,
     Linking,
-    Modal as RNModal,
     Platform,
-    SafeAreaView,
 } from 'react-native';
 import 'react-native-gesture-handler';
 import {
-    AntDesign,
     FontAwesome,
     Ionicons,
     MaterialCommunityIcons,
     MaterialIcons,
     Entypo,
-    FontAwesome5,
-    EvilIcons
+    FontAwesome5
 } from 'react-native-vector-icons';
 // import { createDrawerNavigator } from '@react-navigation/drawer';
-import { useNavigation } from '@react-navigation/core';
 import axios from 'axios';
-import { createUserWithEmailAndPassword, fetchSignInMethodsForEmail, signOut } from 'firebase/auth';
+import { signOut } from 'firebase/auth';
 import {
     addDoc,
     collection,
@@ -88,48 +59,22 @@ import {
     startAfter,
     limit,
     where,
-    endBefore,
-    endAt,
-    limitToLast,
-    collectionGroup,
     increment,
     runTransaction
 } from 'firebase/firestore';
 import moment from 'moment';
-import { authForCreateUser } from '../../firebasecontrolCreateUser';
 import './../style.css';
-import { projectControlFirestore, projectControlAuth, projectExtensionFirestore, projectExtensionAuth, projectControlFirebase, projectExtensionFirebase } from "../../crossFirebase";
+import { projectControlFirestore, projectControlAuth, projectExtensionFirestore, projectExtensionFirebase } from "../../crossFirebase";
 import { launchImageLibrary } from 'react-native-image-picker';
-import { getStorage, ref, uploadBytes, getDownloadURL, listAll, deleteObject } from 'firebase/storage';
+import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import FastImage from 'react-native-fast-image-web-support';
-import MobileViewDrawer from './SideDrawer/MobileViewDrawer';
 import SideDrawer from './SideDrawer/SideDrawer';
 import { useSelector, useDispatch } from 'react-redux';
-import DraggableFlatList from "react-native-draggable-flatlist";
-import { Calendar, LocaleConfig } from 'react-native-calendars';
-import { DragSortableView } from 'react-native-drag-sort';
+import { Calendar } from 'react-native-calendars';
 import {
-    setVehicleListData,
-    setSupplyChainsCostsData,
-    setSelectedPaidTo,
-    setSelectedExpenseName,
-    setSupplyChainsCostsModalVisible,
-    setVehicleListSupplyChainsCostsData,
-    setDeleteImageVisible,
-    setSelectedImages,
-    setAddAnotherImages,
-    setIsAddPhotoVisible,
-    setUploadImagesModalVisible,
-    setUploadImagesButtonLoading,
-    setViewImagesModalVisible,
-    setViewImagesData,
+
     setLoadingModalVisible,
-    setAddVehicleListData,
-    setEditVehicleModalVisible,
-    setFobPriceHistoryModalVisible,
     setChatListData,
-    setChatListImageUrl,
-    setChatListLastVisible,
     setLoadMoreLoading,
     setNoMoreData,
     setActiveChatId,
@@ -157,10 +102,6 @@ import {
     setProfitCalculatorTotalAmountDollars,
 } from './redux/store';
 // import { TextInput } from 'react-native-gesture-handler';
-import { nanoid } from 'nanoid';
-import { cloneDeep, toFinite } from 'lodash';
-import StickyHeader from './Header/StickyHeader';
-import { UsePagination } from './VehicleListComponent/UsePagination';
 import Hyperlink from 'react-native-hyperlink';
 import { HmacSHA256, enc } from 'crypto-js';
 import { AES } from 'crypto-js';
@@ -169,8 +110,7 @@ import { captureRef } from 'react-native-view-shot';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
 import QRCode from 'react-native-qrcode-svg';
-import { useRoute } from '@react-navigation/native';
-import { HashRouter as Router, Route, Routes, useNavigate, Navigate, useParams, useHistory, useLocation } from 'react-router-dom';
+import { useNavigate, useParams, useLocation } from 'react-router-dom';
 
 import * as XLSX from 'xlsx';
 import { saveAs } from 'file-saver';
@@ -6367,7 +6307,7 @@ const IssueProformaInvoiceModalContent = () => { // Issue Invoice && Update Invo
 
 
     return (
-        <ScrollView style={{ flex: 1, maxHeight: 500, }}>
+        <ScrollView style={{ flex: 1, maxHeight: 720, }}>
 
             <View style={{ margin: 2, }}>
                 <Text style={{ fontWeight: 700, marginLeft: 3, }}>CFS:</Text>
@@ -6905,7 +6845,7 @@ const ProfitCalculator = () => {
                     <Modal.Body>
 
 
-                        <ScrollView style={{ flex: 1, maxHeight: 500, }}>
+                        <ScrollView style={{ flex: 1, maxHeight: 720, }}>
                             <View style={{ flexDirection: 'row', backgroundColor: '#fafafa', }}>
 
                                 <View style={{ flex: 1, borderRightWidth: 1, borderRightColor: '#DADDE1', }}>
@@ -7119,6 +7059,7 @@ const ProfitCalculator = () => {
 
 
                     </Modal.Body>
+
                 </Modal.Content>
             </Modal>
         </>
@@ -12989,10 +12930,10 @@ const CustomerProfileModal = () => {
 
                             <View style={{ flex: 1, alignItems: 'center', }}>
 
-                                <Text style={{ fontWeight: 'bold', fontSize: screenWidth < mobileViewBreakpoint ? 20 : 24, color: '#009922', textAlign: 'center', }} selectable>
+                                <Text style={{ fontWeight: 'bold', fontSize: screenWidth < mobileViewBreakpoint ? 14 : 24, color: '#009922', textAlign: 'center', }} selectable>
                                     {`$${(totalPaymentValue).toLocaleString('en-US', {
-                                        minimumFractionDigits: 2,
-                                        maximumFractionDigits: 2,
+                                        minimumFractionDigits: 0,
+                                        maximumFractionDigits: 0,
                                         useGrouping: true
                                     })}`}
                                 </Text>
@@ -13007,10 +12948,10 @@ const CustomerProfileModal = () => {
 
 
                             <View style={{ flex: 1, alignItems: 'center', }}>
-                                <Text style={{ fontWeight: 'bold', fontSize: screenWidth < mobileViewBreakpoint ? 20 : 24, color: '#990000', textAlign: 'center', }} selectable>
+                                <Text style={{ fontWeight: 'bold', fontSize: screenWidth < mobileViewBreakpoint ? 14 : 24, color: '#990000', textAlign: 'center', }} selectable>
                                     {`$${selectedCustomerData.overBalance ? Number(selectedCustomerData.overBalance).toLocaleString('en-US', {
-                                        minimumFractionDigits: 2,
-                                        maximumFractionDigits: 2,
+                                        minimumFractionDigits: 0,
+                                        maximumFractionDigits: 0,
                                         useGrouping: true
                                     }) : 0}`}
                                 </Text>
@@ -13026,7 +12967,7 @@ const CustomerProfileModal = () => {
                             </View>
 
                             <View style={{ flex: 1, alignItems: 'center', }}>
-                                <Text style={{ fontWeight: 'bold', fontSize: screenWidth < mobileViewBreakpoint ? 20 : 24, color: '#0029A3', textAlign: 'center', }} selectable>
+                                <Text style={{ fontWeight: 'bold', fontSize: screenWidth < mobileViewBreakpoint ? 14 : 24, color: '#0029A3', textAlign: 'center', }} selectable>
                                     {`${selectedCustomerData.transactions ? (selectedCustomerData.transactions).length : 0}`}
                                 </Text>
                                 <Text style={{ fontWeight: 'bold', fontSize: screenWidth < mobileViewBreakpoint ? 12 : 16, color: '#5E4343', textAlign: 'center', }}>
@@ -14191,6 +14132,786 @@ const DocumentPreviewModal = () => {
 
 };
 
+const RequestAmendmentComponent = () => {
+
+    const [modalVisible, setModalVisible] = useState(false);
+    const [isAcceptLoading, setIsAcceptLoading] = useState(false);
+
+    const selectedChatData = useSelector((state) => state.selectedChatData);
+    const invoiceData = useSelector((state) => state.invoiceData);
+
+    const screenWidth = Dimensions.get('window').width;
+
+    const colorHoverIn = '#0f7534';
+    const colorHoverOut = '#16A34A';
+
+    const handleModalOpen = () => {
+        setModalVisible(true);
+    }
+
+    const handleModalClose = () => {
+        setModalVisible(false);
+    }
+
+    const handlePressAccept = async () => {
+
+        const email = projectControlAuth.currentUser ? projectControlAuth.currentUser.email : '';
+
+        const docRef = doc(projectExtensionFirestore, "IssuedInvoice", selectedChatData.invoiceNumber);
+
+        const response = await axios.get('https://worldtimeapi.org/api/timezone/Asia/Tokyo');
+        const { datetime } = response.data;
+        const formattedTime = moment(datetime).format('YYYY/MM/DD [at] HH:mm:ss.SSS');
+        const formattedTimeForFile = moment(datetime).format('MMDDYYYYHHmmss.SSS');
+
+
+        if (selectedChatData.requestAmendment == true) {
+            setIsAcceptLoading(true);
+            try {
+                await updateDoc(docRef, {
+                    consignee: {
+                        name: selectedChatData.invoiceAmendment.consignee.fullName,
+                        address: selectedChatData.invoiceAmendment.consignee.address,
+                        city: selectedChatData.invoiceAmendment.consignee.city,
+                        country: selectedChatData.invoiceAmendment.consignee.country,
+                        contactNumber: selectedChatData.invoiceAmendment.consignee.telephones.join('\n'),
+                        fax: selectedChatData.invoiceAmendment.consignee.fax,
+                        email: selectedChatData.invoiceAmendment.consignee.email,
+                        sameAsBuyer: selectedChatData.invoiceAmendment.consignee.sameAsBuyer,
+                    },
+                    notifyParty: {
+                        name: selectedChatData.invoiceAmendment.notifyParty.fullName,
+                        address: selectedChatData.invoiceAmendment.notifyParty.address,
+                        city: selectedChatData.invoiceAmendment.notifyParty.city,
+                        country: selectedChatData.invoiceAmendment.notifyParty.country,
+                        contactNumber: selectedChatData.invoiceAmendment.notifyParty.telephones.join('\n'),
+                        fax: selectedChatData.invoiceAmendment.notifyParty.fax,
+                        email: selectedChatData.invoiceAmendment.notifyParty.email,
+                        sameAsConsignee: selectedChatData.invoiceAmendment.notifyParty.sameAsConsignee,
+                    }
+                });
+
+                // Adding the message to the 'messages' subcollection
+                await addDoc(collection(projectExtensionFirestore, 'chats', selectedChatData.id, 'messages'), {
+                    text: `Invoice amended successfully!`,
+                    sender: email,
+                    timestamp: formattedTime,
+                    ip: ip,
+                    ipCountry: ipCountry,
+                    messageType: 'important',
+                });
+
+                // Updating the main chat document with the latest message details
+                await updateDoc(doc(projectExtensionFirestore, 'chats', selectedChatData.id), {
+                    requestAmendment: false,
+                    lastMessageSender: email,
+                    lastMessage: `Invoice amended successfully!`,
+                    lastMessageDate: formattedTime,
+                    customerRead: false,
+                    read: true,
+                    readBy: [email],
+                });
+
+                setIsAcceptLoading(false);
+                setModalVisible(false);
+                console.log("Document successfully updated");
+            } catch (error) {
+                console.error("Error updating document: ", error);
+            }
+        }
+
+    }
+
+
+    const ModalContent = () => {
+
+        return (
+            <>
+                {
+                    <>
+                        <View style={{ margin: 2, }}>
+                            <Text style={{ fontWeight: 'bold', marginLeft: 3, alignSelf: 'center', fontSize: 16, }}>Consignee</Text>
+                        </View>
+
+                        <View style={{ margin: 2, flexDirection: 'row', alignItems: 'center' }}>
+                            <Text style={{ width: 120, fontWeight: 'bold', marginLeft: 3, }}> </Text>
+                            {invoiceData.consignee.sameAsBuyer !== selectedChatData.invoiceAmendment.consignee.sameAsBuyer ? (
+                                <>
+                                    <View style={{ height: '100%', backgroundColor: '#ffe6e6', padding: 3, borderRadius: 5, flexDirection: 'row', alignItems: 'center', marginLeft: 3, flex: 1 }}>
+                                        <MaterialCommunityIcons
+                                            name={invoiceData.consignee.sameAsBuyer ? 'checkbox-marked' : 'checkbox-blank-outline'}
+                                            size={18}
+                                            color={'#0A8DD5'}
+                                        />
+                                        <Text style={{ flex: 1, fontWeight: 'bold' }}>
+                                            Same as buyer
+                                        </Text>
+                                    </View>
+                                    <View style={{ height: '100%', backgroundColor: '#c6f7d8', padding: 3, borderRadius: 5, flexDirection: 'row', alignItems: 'center', marginLeft: 3, flex: 1 }}>
+                                        <MaterialCommunityIcons
+                                            name={selectedChatData.invoiceAmendment.consignee.sameAsBuyer ? 'checkbox-marked' : 'checkbox-blank-outline'}
+                                            size={18}
+                                            color={'#0A8DD5'}
+                                        />
+                                        <Text style={{ flex: 1, fontWeight: 'bold' }}>
+                                            Same as buyer
+                                        </Text>
+                                    </View>
+                                </>
+
+
+                            ) : (
+                                <>
+                                    <View style={{ height: '100%', backgroundColor: '#E1EDF7', padding: 3, borderRadius: 5, flexDirection: 'row', alignItems: 'center', marginLeft: 3, flex: 1 }}>
+                                        <MaterialCommunityIcons
+                                            name={invoiceData.consignee.sameAsBuyer ? 'checkbox-marked' : 'checkbox-blank-outline'}
+                                            size={18}
+                                            color={'#0A8DD5'}
+                                        />
+                                        <Text style={{ flex: 1, fontWeight: 'bold' }}>
+                                            Same as buyer
+                                        </Text>
+
+                                    </View>
+
+                                    <View style={{ height: '100%', backgroundColor: '#E1EDF7', padding: 3, borderRadius: 5, flexDirection: 'row', alignItems: 'center', marginLeft: 3, flex: 1 }}>
+                                        <MaterialCommunityIcons
+                                            name={selectedChatData.invoiceAmendment.consignee.sameAsBuyer ? 'checkbox-marked' : 'checkbox-blank-outline'}
+                                            size={18}
+                                            color={'#0A8DD5'}
+                                        />
+                                        <Text style={{ flex: 1, fontWeight: 'bold' }}>
+                                            Same as buyer
+                                        </Text>
+                                    </View>
+                                </>
+                            )}
+                        </View>
+
+                        <View style={{ margin: 2, flexDirection: 'row', alignItems: 'center' }}>
+                            <Text style={{ width: 120, fontWeight: 'bold', marginLeft: 3, }}>Name: </Text>
+                            {invoiceData.consignee.name !== selectedChatData.invoiceAmendment.consignee.fullName ? (
+                                <>
+                                    <View style={{ height: '100%', backgroundColor: '#ffe6e6', padding: 3, borderRadius: 5, flexDirection: 'row', alignItems: 'center', marginLeft: 3, flex: 1 }}>
+                                        <Text style={{ flex: 1, fontWeight: 'bold' }}>
+                                            {invoiceData.consignee.name}
+                                        </Text>
+                                    </View>
+                                    <View style={{ height: '100%', backgroundColor: '#c6f7d8', padding: 3, borderRadius: 5, flexDirection: 'row', alignItems: 'center', marginLeft: 3, flex: 1 }}>
+                                        <Text style={{ flex: 1, fontWeight: 'bold' }}>
+                                            {selectedChatData.invoiceAmendment.consignee.fullName}
+                                        </Text>
+                                    </View>
+                                </>
+
+
+                            ) : (
+                                <>
+                                    <View style={{ height: '100%', backgroundColor: '#E1EDF7', padding: 3, borderRadius: 5, flexDirection: 'row', alignItems: 'center', marginLeft: 3, flex: 1 }}>
+                                        <Text style={{ flex: 1, fontWeight: 'bold' }}>
+                                            {invoiceData.consignee.name}
+                                        </Text>
+
+                                    </View>
+
+                                    <View style={{ height: '100%', backgroundColor: '#E1EDF7', padding: 3, borderRadius: 5, flexDirection: 'row', alignItems: 'center', marginLeft: 3, flex: 1 }}>
+                                        <Text style={{ flex: 1, fontWeight: 'bold' }}>
+                                            {selectedChatData.invoiceAmendment.consignee.fullName}
+                                        </Text>
+                                    </View>
+                                </>
+                            )}
+                        </View>
+
+                        <View style={{ margin: 2, flexDirection: 'row', alignItems: 'center' }}>
+                            <Text style={{ width: 120, fontWeight: 'bold', marginLeft: 3, }}>Address: </Text>
+                            {invoiceData.consignee.address !== selectedChatData.invoiceAmendment.consignee.address ? (
+                                <>
+                                    <View style={{ height: '100%', backgroundColor: '#ffe6e6', padding: 3, borderRadius: 5, flexDirection: 'row', alignItems: 'center', marginLeft: 3, flex: 1 }}>
+                                        <Text style={{ flex: 1, fontWeight: 'bold' }}>
+                                            {invoiceData.consignee.address}
+                                        </Text>
+                                    </View>
+                                    <View style={{ height: '100%', backgroundColor: '#c6f7d8', padding: 3, borderRadius: 5, flexDirection: 'row', alignItems: 'center', marginLeft: 3, flex: 1 }}>
+                                        <Text style={{ flex: 1, fontWeight: 'bold' }}>
+                                            {selectedChatData.invoiceAmendment.consignee.address}
+                                        </Text>
+                                    </View>
+                                </>
+                            ) : (
+                                <>
+                                    <View style={{ height: '100%', backgroundColor: '#E1EDF7', padding: 3, borderRadius: 5, flexDirection: 'row', alignItems: 'center', marginLeft: 3, flex: 1 }}>
+                                        <Text style={{ flex: 1, fontWeight: 'bold' }}>
+                                            {invoiceData.consignee.address}
+                                        </Text>
+
+                                    </View>
+
+                                    <View style={{ height: '100%', backgroundColor: '#E1EDF7', padding: 3, borderRadius: 5, flexDirection: 'row', alignItems: 'center', marginLeft: 3, flex: 1 }}>
+                                        <Text style={{ flex: 1, fontWeight: 'bold' }}>
+                                            {selectedChatData.invoiceAmendment.consignee.address}
+                                        </Text>
+                                    </View>
+                                </>
+                            )}
+                        </View>
+
+                        <View style={{ margin: 2, flexDirection: 'row', alignItems: 'center' }}>
+                            <Text style={{ width: 120, fontWeight: 'bold', marginLeft: 3, }}>City: </Text>
+                            {invoiceData.consignee.city !== selectedChatData.invoiceAmendment.consignee.city ? (
+                                <>
+                                    <View style={{ height: '100%', backgroundColor: '#ffe6e6', padding: 3, borderRadius: 5, flexDirection: 'row', alignItems: 'center', marginLeft: 3, flex: 1 }}>
+                                        <Text style={{ flex: 1, fontWeight: 'bold' }}>
+                                            {invoiceData.consignee.city}
+                                        </Text>
+                                    </View>
+                                    <View style={{ height: '100%', backgroundColor: '#c6f7d8', padding: 3, borderRadius: 5, flexDirection: 'row', alignItems: 'center', marginLeft: 3, flex: 1 }}>
+                                        <Text style={{ flex: 1, fontWeight: 'bold' }}>
+                                            {selectedChatData.invoiceAmendment.consignee.city}
+                                        </Text>
+                                    </View>
+                                </>
+                            ) : (
+                                <>
+                                    <View style={{ height: '100%', backgroundColor: '#E1EDF7', padding: 3, borderRadius: 5, flexDirection: 'row', alignItems: 'center', marginLeft: 3, flex: 1 }}>
+                                        <Text style={{ flex: 1, fontWeight: 'bold' }}>
+                                            {invoiceData.consignee.city}
+                                        </Text>
+
+                                    </View>
+
+                                    <View style={{ height: '100%', backgroundColor: '#E1EDF7', padding: 3, borderRadius: 5, flexDirection: 'row', alignItems: 'center', marginLeft: 3, flex: 1 }}>
+                                        <Text style={{ flex: 1, fontWeight: 'bold' }}>
+                                            {selectedChatData.invoiceAmendment.consignee.city}
+                                        </Text>
+                                    </View>
+                                </>
+                            )}
+                        </View>
+
+
+                        <View style={{ margin: 2, flexDirection: 'row', alignItems: 'center' }}>
+                            <Text style={{ width: 120, fontWeight: 'bold', marginLeft: 3, }}>Country: </Text>
+                            {invoiceData.consignee.country !== selectedChatData.invoiceAmendment.consignee.country ? (
+                                <>
+                                    <View style={{ height: '100%', backgroundColor: '#ffe6e6', padding: 3, borderRadius: 5, flexDirection: 'row', alignItems: 'center', marginLeft: 3, flex: 1 }}>
+                                        <Text style={{ flex: 1, fontWeight: 'bold' }}>
+                                            {invoiceData.consignee.country}
+                                        </Text>
+                                    </View>
+                                    <View style={{ height: '100%', backgroundColor: '#c6f7d8', padding: 3, borderRadius: 5, flexDirection: 'row', alignItems: 'center', marginLeft: 3, flex: 1 }}>
+                                        <Text style={{ flex: 1, fontWeight: 'bold' }}>
+                                            {selectedChatData.invoiceAmendment.consignee.country}
+                                        </Text>
+                                    </View>
+                                </>
+                            ) : (
+                                <>
+                                    <View style={{ height: '100%', backgroundColor: '#E1EDF7', padding: 3, borderRadius: 5, flexDirection: 'row', alignItems: 'center', marginLeft: 3, flex: 1 }}>
+                                        <Text style={{ flex: 1, fontWeight: 'bold' }}>
+                                            {invoiceData.consignee.country}
+                                        </Text>
+
+                                    </View>
+
+                                    <View style={{ height: '100%', backgroundColor: '#E1EDF7', padding: 3, borderRadius: 5, flexDirection: 'row', alignItems: 'center', marginLeft: 3, flex: 1 }}>
+                                        <Text style={{ flex: 1, fontWeight: 'bold' }}>
+                                            {selectedChatData.invoiceAmendment.consignee.country}
+                                        </Text>
+                                    </View>
+                                </>
+                            )}
+                        </View>
+
+                        <View style={{ margin: 2, flexDirection: 'row', alignItems: 'center' }}>
+                            <Text style={{ width: 120, fontWeight: 'bold', marginLeft: 3, }}>Contact Number: </Text>
+                            {invoiceData.consignee.contactNumber !== selectedChatData.invoiceAmendment.consignee.telephones.join('\n') ? (
+                                <>
+                                    <View style={{ height: '100%', backgroundColor: '#ffe6e6', padding: 3, borderRadius: 5, flexDirection: 'row', alignItems: 'center', marginLeft: 3, flex: 1 }}>
+                                        <Text style={{ flex: 1, fontWeight: 'bold' }}>
+                                            {invoiceData.consignee.contactNumber}
+                                        </Text>
+                                    </View>
+                                    <View style={{ height: '100%', backgroundColor: '#c6f7d8', padding: 3, borderRadius: 5, flexDirection: 'row', alignItems: 'center', marginLeft: 3, flex: 1 }}>
+                                        <Text style={{ flex: 1, fontWeight: 'bold' }}>
+                                            {selectedChatData.invoiceAmendment.consignee.telephones.join('\n')}
+                                        </Text>
+                                    </View>
+                                </>
+                            ) : (
+                                <>
+                                    <View style={{ height: '100%', backgroundColor: '#E1EDF7', padding: 3, borderRadius: 5, flexDirection: 'row', alignItems: 'center', marginLeft: 3, flex: 1 }}>
+                                        <Text style={{ flex: 1, fontWeight: 'bold' }}>
+                                            {invoiceData.consignee.contactNumber}
+                                        </Text>
+                                    </View>
+
+                                    <View style={{ height: '100%', backgroundColor: '#E1EDF7', padding: 3, borderRadius: 5, flexDirection: 'row', alignItems: 'center', marginLeft: 3, flex: 1 }}>
+                                        <Text style={{ flex: 1, fontWeight: 'bold' }}>
+                                            {selectedChatData.invoiceAmendment.consignee.telephones.join('\n')}
+                                        </Text>
+                                    </View>
+                                </>
+                            )}
+                        </View>
+
+                        <View style={{ margin: 2, flexDirection: 'row', alignItems: 'center' }}>
+                            <Text style={{ width: 120, fontWeight: 'bold', marginLeft: 3, }}>Fax: </Text>
+                            {invoiceData.consignee.fax !== selectedChatData.invoiceAmendment.consignee.fax ? (
+                                <>
+                                    <View style={{ height: '100%', backgroundColor: '#ffe6e6', padding: 3, borderRadius: 5, flexDirection: 'row', alignItems: 'center', marginLeft: 3, flex: 1 }}>
+                                        <Text style={{ flex: 1, fontWeight: 'bold' }}>
+                                            {invoiceData.consignee.fax}
+                                        </Text>
+                                    </View>
+                                    <View style={{ height: '100%', backgroundColor: '#c6f7d8', padding: 3, borderRadius: 5, flexDirection: 'row', alignItems: 'center', marginLeft: 3, flex: 1 }}>
+                                        <Text style={{ flex: 1, fontWeight: 'bold' }}>
+                                            {selectedChatData.invoiceAmendment.consignee.fax}
+                                        </Text>
+                                    </View>
+                                </>
+                            ) : (
+                                <>
+                                    <View style={{ height: '100%', backgroundColor: '#E1EDF7', padding: 3, borderRadius: 5, flexDirection: 'row', alignItems: 'center', marginLeft: 3, flex: 1 }}>
+                                        <Text style={{ flex: 1, fontWeight: 'bold' }}>
+                                            {invoiceData.consignee.fax}
+                                        </Text>
+
+                                    </View>
+
+                                    <View style={{ height: '100%', backgroundColor: '#E1EDF7', padding: 3, borderRadius: 5, flexDirection: 'row', alignItems: 'center', marginLeft: 3, flex: 1 }}>
+                                        <Text style={{ flex: 1, fontWeight: 'bold' }}>
+                                            {selectedChatData.invoiceAmendment.consignee.fax}
+                                        </Text>
+                                    </View>
+                                </>
+                            )}
+                        </View>
+
+                        <View style={{ margin: 2, flexDirection: 'row', alignItems: 'center' }}>
+                            <Text style={{ width: 120, fontWeight: 'bold', marginLeft: 3, }}>Email: </Text>
+                            {invoiceData.consignee.email !== selectedChatData.invoiceAmendment.consignee.email ? (
+                                <>
+                                    <View style={{ height: '100%', backgroundColor: '#ffe6e6', padding: 3, borderRadius: 5, flexDirection: 'row', alignItems: 'center', marginLeft: 3, flex: 1 }}>
+                                        <Text style={{ flex: 1, fontWeight: 'bold' }}>
+                                            {invoiceData.consignee.email}
+                                        </Text>
+                                    </View>
+                                    <View style={{ height: '100%', backgroundColor: '#c6f7d8', padding: 3, borderRadius: 5, flexDirection: 'row', alignItems: 'center', marginLeft: 3, flex: 1 }}>
+                                        <Text style={{ flex: 1, fontWeight: 'bold' }}>
+                                            {selectedChatData.invoiceAmendment.consignee.email}
+                                        </Text>
+                                    </View>
+                                </>
+                            ) : (
+                                <>
+                                    <View style={{ height: '100%', backgroundColor: '#E1EDF7', padding: 3, borderRadius: 5, flexDirection: 'row', alignItems: 'center', marginLeft: 3, flex: 1 }}>
+                                        <Text style={{ flex: 1, fontWeight: 'bold' }}>
+                                            {invoiceData.consignee.email}
+                                        </Text>
+
+                                    </View>
+
+                                    <View style={{ height: '100%', backgroundColor: '#E1EDF7', padding: 3, borderRadius: 5, flexDirection: 'row', alignItems: 'center', marginLeft: 3, flex: 1 }}>
+                                        <Text style={{ flex: 1, fontWeight: 'bold' }}>
+                                            {selectedChatData.invoiceAmendment.consignee.email}
+                                        </Text>
+                                    </View>
+                                </>
+                            )}
+                        </View>
+
+                        <View style={{ borderBottomWidth: 2, borderColor: '#0A9FDC', width: '100%', marginTop: 5, }} />
+
+
+                        <View style={{ margin: 2, }}>
+                            <Text style={{ fontWeight: 'bold', marginLeft: 3, alignSelf: 'center', fontSize: 16, }}>Notify Party</Text>
+                        </View>
+
+                        <View style={{ margin: 2, flexDirection: 'row', alignItems: 'center' }}>
+                            <Text style={{ width: 120, fontWeight: 'bold', marginLeft: 3, }}> </Text>
+                            {invoiceData.notifyParty.sameAsConsignee !== selectedChatData.invoiceAmendment.notifyParty.sameAsConsignee ? (
+                                <>
+                                    <View style={{ height: '100%', backgroundColor: '#ffe6e6', padding: 3, borderRadius: 5, flexDirection: 'row', alignItems: 'center', marginLeft: 3, flex: 1 }}>
+                                        <MaterialCommunityIcons
+                                            name={invoiceData.notifyParty.sameAsConsignee ? 'checkbox-marked' : 'checkbox-blank-outline'}
+                                            size={18}
+                                            color={'#0A8DD5'}
+                                        />
+                                        <Text style={{ flex: 1, fontWeight: 'bold' }}>
+                                            Same as consignee
+                                        </Text>
+
+                                    </View>
+                                    <View style={{ height: '100%', backgroundColor: '#c6f7d8', padding: 3, borderRadius: 5, flexDirection: 'row', alignItems: 'center', marginLeft: 3, flex: 1 }}>
+                                        <MaterialCommunityIcons
+                                            name={selectedChatData.invoiceAmendment.notifyParty.sameAsConsignee ? 'checkbox-marked' : 'checkbox-blank-outline'}
+                                            size={18}
+                                            color={'#0A8DD5'}
+                                        />
+                                        <Text style={{ flex: 1, fontWeight: 'bold' }}>
+                                            Same as consignee
+                                        </Text>
+                                    </View>
+                                </>
+
+
+                            ) : (
+                                <>
+                                    <View style={{ height: '100%', backgroundColor: '#E1EDF7', padding: 3, borderRadius: 5, flexDirection: 'row', alignItems: 'center', marginLeft: 3, flex: 1 }}>
+                                        <MaterialCommunityIcons
+                                            name={invoiceData.notifyParty.sameAsConsignee ? 'checkbox-marked' : 'checkbox-blank-outline'}
+                                            size={18}
+                                            color={'#0A8DD5'}
+                                        />
+                                        <Text style={{ flex: 1, fontWeight: 'bold' }}>
+                                            Same as consignee
+                                        </Text>
+
+                                    </View>
+
+                                    <View style={{ height: '100%', backgroundColor: '#E1EDF7', padding: 3, borderRadius: 5, flexDirection: 'row', alignItems: 'center', marginLeft: 3, flex: 1 }}>
+                                        <MaterialCommunityIcons
+                                            name={selectedChatData.invoiceAmendment.notifyParty.sameAsConsignee ? 'checkbox-marked' : 'checkbox-blank-outline'}
+                                            size={18}
+                                            color={'#0A8DD5'}
+                                        />
+                                        <Text style={{ flex: 1, fontWeight: 'bold' }}>
+                                            Same as consignee
+                                        </Text>
+                                    </View>
+                                </>
+                            )}
+                        </View>
+
+                        <View style={{ margin: 2, flexDirection: 'row', alignItems: 'center' }}>
+                            <Text style={{ width: 120, fontWeight: 'bold', marginLeft: 3, }}>Name: </Text>
+                            {invoiceData.notifyParty.name !== selectedChatData.invoiceAmendment.notifyParty.fullName ? (
+                                <>
+                                    <View style={{ height: '100%', backgroundColor: '#ffe6e6', padding: 3, borderRadius: 5, flexDirection: 'row', alignItems: 'center', marginLeft: 3, flex: 1 }}>
+                                        <Text style={{ flex: 1, fontWeight: 'bold' }}>
+                                            {invoiceData.notifyParty.name}
+                                        </Text>
+                                    </View>
+                                    <View style={{ height: '100%', backgroundColor: '#c6f7d8', padding: 3, borderRadius: 5, flexDirection: 'row', alignItems: 'center', marginLeft: 3, flex: 1 }}>
+                                        <Text style={{ flex: 1, fontWeight: 'bold' }}>
+                                            {selectedChatData.invoiceAmendment.notifyParty.fullName}
+                                        </Text>
+                                    </View>
+                                </>
+
+
+                            ) : (
+                                <>
+                                    <View style={{ height: '100%', backgroundColor: '#E1EDF7', padding: 3, borderRadius: 5, flexDirection: 'row', alignItems: 'center', marginLeft: 3, flex: 1 }}>
+                                        <Text style={{ flex: 1, fontWeight: 'bold' }}>
+                                            {invoiceData.notifyParty.email}
+                                        </Text>
+
+                                    </View>
+
+                                    <View style={{ height: '100%', backgroundColor: '#E1EDF7', padding: 3, borderRadius: 5, flexDirection: 'row', alignItems: 'center', marginLeft: 3, flex: 1 }}>
+                                        <Text style={{ flex: 1, fontWeight: 'bold' }}>
+                                            {selectedChatData.invoiceAmendment.notifyParty.email}
+                                        </Text>
+                                    </View>
+                                </>
+                            )}
+                        </View>
+
+                        <View style={{ margin: 2, flexDirection: 'row', alignItems: 'center' }}>
+                            <Text style={{ width: 120, fontWeight: 'bold', marginLeft: 3, }}>Address: </Text>
+                            {invoiceData.notifyParty.address !== selectedChatData.invoiceAmendment.notifyParty.address ? (
+                                <>
+                                    <View style={{ height: '100%', backgroundColor: '#ffe6e6', padding: 3, borderRadius: 5, flexDirection: 'row', alignItems: 'center', marginLeft: 3, flex: 1 }}>
+                                        <Text style={{ flex: 1, fontWeight: 'bold' }}>
+                                            {invoiceData.notifyParty.address}
+                                        </Text>
+                                    </View>
+                                    <View style={{ height: '100%', backgroundColor: '#c6f7d8', padding: 3, borderRadius: 5, flexDirection: 'row', alignItems: 'center', marginLeft: 3, flex: 1 }}>
+                                        <Text style={{ flex: 1, fontWeight: 'bold' }}>
+                                            {selectedChatData.invoiceAmendment.notifyParty.address}
+                                        </Text>
+                                    </View>
+                                </>
+                            ) : (
+                                <>
+                                    <View style={{ height: '100%', backgroundColor: '#E1EDF7', padding: 3, borderRadius: 5, flexDirection: 'row', alignItems: 'center', marginLeft: 3, flex: 1 }}>
+                                        <Text style={{ flex: 1, fontWeight: 'bold' }}>
+                                            {invoiceData.notifyParty.address}
+                                        </Text>
+
+                                    </View>
+
+                                    <View style={{ height: '100%', backgroundColor: '#E1EDF7', padding: 3, borderRadius: 5, flexDirection: 'row', alignItems: 'center', marginLeft: 3, flex: 1 }}>
+                                        <Text style={{ flex: 1, fontWeight: 'bold' }}>
+                                            {selectedChatData.invoiceAmendment.notifyParty.address}
+                                        </Text>
+                                    </View>
+                                </>
+                            )}
+                        </View>
+
+                        <View style={{ margin: 2, flexDirection: 'row', alignItems: 'center' }}>
+                            <Text style={{ width: 120, fontWeight: 'bold', marginLeft: 3, }}>City: </Text>
+                            {invoiceData.notifyParty.city !== selectedChatData.invoiceAmendment.notifyParty.city ? (
+                                <>
+                                    <View style={{ height: '100%', backgroundColor: '#ffe6e6', padding: 3, borderRadius: 5, flexDirection: 'row', alignItems: 'center', marginLeft: 3, flex: 1 }}>
+                                        <Text style={{ flex: 1, fontWeight: 'bold' }}>
+                                            {invoiceData.notifyParty.city}
+                                        </Text>
+                                    </View>
+                                    <View style={{ height: '100%', backgroundColor: '#c6f7d8', padding: 3, borderRadius: 5, flexDirection: 'row', alignItems: 'center', marginLeft: 3, flex: 1 }}>
+                                        <Text style={{ flex: 1, fontWeight: 'bold' }}>
+                                            {selectedChatData.invoiceAmendment.notifyParty.city}
+                                        </Text>
+                                    </View>
+                                </>
+                            ) : (
+                                <>
+                                    <View style={{ height: '100%', backgroundColor: '#E1EDF7', padding: 3, borderRadius: 5, flexDirection: 'row', alignItems: 'center', marginLeft: 3, flex: 1 }}>
+                                        <Text style={{ flex: 1, fontWeight: 'bold' }}>
+                                            {invoiceData.notifyParty.city}
+                                        </Text>
+
+                                    </View>
+
+                                    <View style={{ height: '100%', backgroundColor: '#E1EDF7', padding: 3, borderRadius: 5, flexDirection: 'row', alignItems: 'center', marginLeft: 3, flex: 1 }}>
+                                        <Text style={{ flex: 1, fontWeight: 'bold' }}>
+                                            {selectedChatData.invoiceAmendment.notifyParty.city}
+                                        </Text>
+                                    </View>
+                                </>
+                            )}
+                        </View>
+
+
+                        <View style={{ margin: 2, flexDirection: 'row', alignItems: 'center' }}>
+                            <Text style={{ width: 120, fontWeight: 'bold', marginLeft: 3, }}>Country: </Text>
+                            {invoiceData.notifyParty.country !== selectedChatData.invoiceAmendment.notifyParty.country ? (
+                                <>
+                                    <View style={{ height: '100%', backgroundColor: '#ffe6e6', padding: 3, borderRadius: 5, flexDirection: 'row', alignItems: 'center', marginLeft: 3, flex: 1 }}>
+                                        <Text style={{ flex: 1, fontWeight: 'bold' }}>
+                                            {invoiceData.notifyParty.country}
+                                        </Text>
+                                    </View>
+                                    <View style={{ height: '100%', backgroundColor: '#c6f7d8', padding: 3, borderRadius: 5, flexDirection: 'row', alignItems: 'center', marginLeft: 3, flex: 1 }}>
+                                        <Text style={{ flex: 1, fontWeight: 'bold' }}>
+                                            {selectedChatData.invoiceAmendment.notifyParty.country}
+                                        </Text>
+                                    </View>
+                                </>
+                            ) : (
+                                <>
+                                    <View style={{ height: '100%', backgroundColor: '#E1EDF7', padding: 3, borderRadius: 5, flexDirection: 'row', alignItems: 'center', marginLeft: 3, flex: 1 }}>
+                                        <Text style={{ flex: 1, fontWeight: 'bold' }}>
+                                            {invoiceData.notifyParty.country}
+                                        </Text>
+
+                                    </View>
+
+                                    <View style={{ height: '100%', backgroundColor: '#E1EDF7', padding: 3, borderRadius: 5, flexDirection: 'row', alignItems: 'center', marginLeft: 3, flex: 1 }}>
+                                        <Text style={{ flex: 1, fontWeight: 'bold' }}>
+                                            {selectedChatData.invoiceAmendment.notifyParty.country}
+                                        </Text>
+                                    </View>
+                                </>
+                            )}
+                        </View>
+
+                        <View style={{ margin: 2, flexDirection: 'row', alignItems: 'center' }}>
+                            <Text style={{ width: 120, fontWeight: 'bold', marginLeft: 3, }}>Contact Number: </Text>
+                            {invoiceData.notifyParty.contactNumber !== selectedChatData.invoiceAmendment.notifyParty.telephones.join('\n') ? (
+                                <>
+                                    <View style={{ height: '100%', backgroundColor: '#ffe6e6', padding: 3, borderRadius: 5, flexDirection: 'row', alignItems: 'center', marginLeft: 3, flex: 1 }}>
+                                        <Text style={{ flex: 1, fontWeight: 'bold' }}>
+                                            {invoiceData.notifyParty.contactNumber}
+                                        </Text>
+                                    </View>
+                                    <View style={{ height: '100%', backgroundColor: '#c6f7d8', padding: 3, borderRadius: 5, flexDirection: 'row', alignItems: 'center', marginLeft: 3, flex: 1 }}>
+                                        <Text style={{ flex: 1, fontWeight: 'bold' }}>
+                                            {selectedChatData.invoiceAmendment.notifyParty.telephones.join('\n')}
+                                        </Text>
+                                    </View>
+                                </>
+                            ) : (
+                                <>
+                                    <View style={{ height: '100%', backgroundColor: '#E1EDF7', padding: 3, borderRadius: 5, flexDirection: 'row', alignItems: 'center', marginLeft: 3, flex: 1 }}>
+                                        <Text style={{ flex: 1, fontWeight: 'bold' }}>
+                                            {invoiceData.notifyParty.contactNumber}
+                                        </Text>
+
+                                    </View>
+
+                                    <View style={{ height: '100%', backgroundColor: '#E1EDF7', padding: 3, borderRadius: 5, flexDirection: 'row', alignItems: 'center', marginLeft: 3, flex: 1 }}>
+                                        <Text style={{ flex: 1, fontWeight: 'bold' }}>
+                                            {selectedChatData.invoiceAmendment.notifyParty.telephones.join('\n')}
+                                        </Text>
+                                    </View>
+                                </>
+                            )}
+                        </View>
+
+                        <View style={{ margin: 2, flexDirection: 'row', alignItems: 'center' }}>
+                            <Text style={{ width: 120, fontWeight: 'bold', marginLeft: 3, }}>Fax: </Text>
+                            {invoiceData.notifyParty.fax !== selectedChatData.invoiceAmendment.notifyParty.fax ? (
+                                <>
+                                    <View style={{ height: '100%', backgroundColor: '#ffe6e6', padding: 3, borderRadius: 5, flexDirection: 'row', alignItems: 'center', marginLeft: 3, flex: 1 }}>
+                                        <Text style={{ flex: 1, fontWeight: 'bold' }}>
+                                            {invoiceData.notifyParty.fax}
+                                        </Text>
+                                    </View>
+
+                                    <View style={{ height: '100%', backgroundColor: '#c6f7d8', padding: 3, borderRadius: 5, flexDirection: 'row', alignItems: 'center', marginLeft: 3, flex: 1 }}>
+                                        <Text style={{ fontWeight: 'bold' }}>
+                                            {selectedChatData.invoiceAmendment.notifyParty.fax}
+                                        </Text>
+                                    </View>
+                                </>
+                            ) : (
+                                <>
+                                    <View style={{ height: '100%', backgroundColor: '#E1EDF7', padding: 3, borderRadius: 5, flexDirection: 'row', alignItems: 'center', marginLeft: 3, flex: 1 }}>
+                                        <Text style={{ flex: 1, fontWeight: 'bold' }}>
+                                            {invoiceData.notifyParty.fax}
+                                        </Text>
+
+                                    </View>
+
+                                    <View style={{ height: '100%', backgroundColor: '#E1EDF7', padding: 3, borderRadius: 5, flexDirection: 'row', alignItems: 'center', marginLeft: 3, flex: 1 }}>
+                                        <Text style={{ flex: 1, fontWeight: 'bold' }}>
+                                            {selectedChatData.invoiceAmendment.notifyParty.fax}
+                                        </Text>
+                                    </View>
+                                </>
+                            )}
+                        </View>
+
+                        <View style={{ margin: 2, flexDirection: 'row', alignItems: 'center' }}>
+                            <Text style={{ width: 120, fontWeight: 'bold', marginLeft: 3, }}>Email: </Text>
+                            {invoiceData.notifyParty.email !== selectedChatData.invoiceAmendment.notifyParty.email ? (
+                                <>
+                                    <View style={{ height: '100%', backgroundColor: '#ffe6e6', padding: 3, borderRadius: 5, flexDirection: 'row', alignItems: 'center', marginLeft: 3, flex: 1 }}>
+                                        <Text style={{ flex: 1, fontWeight: 'bold' }}>
+                                            {invoiceData.notifyParty.email}
+                                        </Text>
+                                    </View>
+
+                                    <View style={{ height: '100%', backgroundColor: '#c6f7d8', padding: 3, borderRadius: 5, flexDirection: 'row', alignItems: 'center', marginLeft: 3, flex: 1 }}>
+                                        <Text style={{ flex: 1, fontWeight: 'bold' }}>
+                                            {selectedChatData.invoiceAmendment.notifyParty.email}
+                                        </Text>
+                                    </View>
+                                </>
+                            ) : (
+                                <>
+                                    <View style={{ height: '100%', backgroundColor: '#E1EDF7', padding: 3, borderRadius: 5, flexDirection: 'row', alignItems: 'center', marginLeft: 3, flex: 1 }}>
+                                        <Text style={{ flex: 1, fontWeight: 'bold' }}>
+                                            {invoiceData.notifyParty.email}
+                                        </Text>
+
+                                    </View>
+
+                                    <View style={{ height: '100%', backgroundColor: '#E1EDF7', padding: 3, borderRadius: 5, flexDirection: 'row', alignItems: 'center', marginLeft: 3, flex: 1 }}>
+                                        <Text style={{ flex: 1, fontWeight: 'bold' }}>
+                                            {selectedChatData.invoiceAmendment.notifyParty.email}
+                                        </Text>
+                                    </View>
+                                </>
+
+                            )}
+                        </View>
+
+
+
+                    </>
+
+                }
+
+            </>
+
+
+        )
+    }
+    return (
+
+        <>
+            <Pressable
+                focusable={false}
+                variant='ghost'
+                onPress={handleModalOpen}
+                style={({ hovered }) => ({
+                    marginTop: 3,
+                    paddingVertical: 3,
+                    paddingHorizontal: 5,
+                    flexDirection: 'row', // Align items in a row
+                    alignItems: 'center', // Center items vertically
+                    justifyContent: 'center',
+                    borderRadius: 5,
+                    backgroundColor: hovered ? colorHoverIn : colorHoverOut,
+                })}
+            >
+                <Text color={'white'} style={{ fontWeight: '700', marginLeft: 5 }}>Amend Invoice</Text>
+            </Pressable>
+
+            <Modal
+                isOpen={modalVisible}
+                onClose={handleModalClose}
+                size={'xl'}
+                useRNModal
+            >
+                {modalVisible && (
+                    <Modal.Content>
+                        <Modal.CloseButton />
+
+                        <Modal.Header style={{ borderBottomWidth: 2, borderColor: '#0A9FDC' }}>
+                            Invoice Amendment
+                        </Modal.Header>
+
+                        <ScrollView style={{ flex: 1, maxHeight: 720, }}>
+                            <ModalContent />
+                        </ScrollView>
+
+                        <Modal.Footer style={{ borderTopWidth: 2, borderColor: '#0A9FDC' }}>
+                            <View style={{ flex: 1, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', }}>
+                                <Pressable
+                                    style={({ hovered }) => ({ width: 100, padding: 5, borderRadius: 3, backgroundColor: hovered ? '#686868' : '#525252' })}
+                                    onPress={handleModalClose}
+                                >
+                                    <Text style={{ fontWeight: 500, textAlign: 'center', color: 'white', }}>Close</Text>
+                                </Pressable>
+
+                                <Pressable
+                                    onPress={async () => isAcceptLoading ? null : await handlePressAccept()}
+                                    style={({ hovered }) => ({
+                                        width: 100, padding: 5, borderRadius: 3, backgroundColor: hovered ? '#1B8B5A' : '#16A34A'
+                                    })}
+                                >
+                                    {isAcceptLoading ?
+                                        (
+                                            <Spinner
+                                                animating
+                                                size="sm"
+                                                color={'white'}
+                                            />
+                                        )
+                                        :
+                                        (
+                                            <Text style={{ fontWeight: 500, textAlign: 'center', color: 'white', }}>Accept</Text>
+                                        )
+                                    }
+                                </Pressable>
+                            </View>
+                        </Modal.Footer>
+                    </Modal.Content>
+                )}
+            </Modal>
+        </>
+
+
+    );
+
+}
+
 const ChatMessageBox = ({ activeButtonValue, userEmail }) => {
     const chatListData = useSelector((state) => state.chatListData);
     const chatMessagesData = useSelector((state) => state.chatMessagesData);
@@ -14454,7 +15175,7 @@ const ChatMessageBox = ({ activeButtonValue, userEmail }) => {
         // Simple URL check
         const urlPattern = new RegExp('^(https?:\\/\\/)?' + // protocol
             '((([a-z\\d]([a-z\\d-]*[a-z\\d])*)\\.)+[a-z]{2,}|' + // domain name
-            '((\\d{1,3}\\.){3}\\d{1,3}))' + // OR ip (v4) address
+            '((\\d{1, 3}\\.){3}\\d{1, 3}))' + // OR ip (v4) address
             '(\\:\\d+)?(\\/[-a-z\\d%_.~+]*)*' + // port and path
             '(\\?[;&a-z\\d%_.~+=-]*)?' + // query string
             '(\\#[-a-z\\d_]*)?$', 'i'); // fragment locator
@@ -14566,7 +15287,7 @@ const ChatMessageBox = ({ activeButtonValue, userEmail }) => {
     };
 
     const isUrlForText = (text) => {
-        const urlPattern = new RegExp('^(http://www\\.|https://www\\.|http://|https://)[a-z0-9]+([\\-\\.]{1}[a-z0-9]+)*\\.[a-z]{2,5}(:[0-9]{1,5})?(/.*)?$');
+        const urlPattern = new RegExp('^(http://www\\.|https://www\\.|http://|https://)[a-z0-9]+([\\-\\.]{1}[a-z0-9]+)*\\.[a-z]{2, 5}(:[0-9]{1, 5})?(/.*)?$');
         return urlPattern.test(text);
     }
 
@@ -14804,6 +15525,290 @@ const ChatMessageBox = ({ activeButtonValue, userEmail }) => {
                     </View>
                 }
 
+                {item.messageType == 'InvoiceAmendment' &&
+                    <View style={{ flexDirection: 'column', alignItems: isGlobalCustomerSender ? 'flex-start' : 'flex-end', flex: 1 }}>
+                        <View style={{ flexDirection: isGlobalCustomerSender ? 'row' : 'row-reverse', flex: 1, }}>
+                            <View style={{
+                                flexDirection: isGlobalCustomerSender ? 'row' : 'row-reverse',
+                                flex: 1,
+                            }}>
+                                <Animated.View style={{
+                                    padding: 6,
+                                    flex: 1,
+                                    borderRadius: 5,
+                                    backgroundColor: isGlobalCustomerSender ? '#FFFFFF' : '#f1f5ff',
+                                    marginLeft: isGlobalCustomerSender ? 10 : 0,
+                                    marginRight: isGlobalCustomerSender ? 0 : 10,
+                                    borderWidth: 3,
+                                    borderColor: borderColor,
+                                }}>
+                                    <View style={{ marginBottom: 5, }}>
+                                        {renderItemText(isGlobalCustomerSender, item.text.trim())}
+                                    </View>
+
+                                    {selectedChatData.requestAmendment == true ?
+
+                                        <RequestAmendmentComponent />
+                                        :
+                                        <View
+                                            style={{
+                                                marginTop: 3,
+                                                paddingVertical: 3,
+                                                paddingHorizontal: 5,
+                                                flexDirection: 'row', // Align items in a row
+                                                alignItems: 'center', // Center items vertically
+                                                justifyContent: 'center',
+                                                borderRadius: 5,
+                                                backgroundColor: '#d0ecda',
+                                            }}
+                                        >
+                                            <Text selectable={false} color={'#A79696'} style={{ fontWeight: 700, marginLeft: 5, }}>{`✓ Request Invoice Amended`}</Text>
+                                        </View>
+
+                                    }
+
+
+
+                                </Animated.View>
+                            </View>
+
+                            <View style={{
+                                position: 'absolute',
+                                left: isGlobalCustomerSender ? '100%' : -60,
+                                top: '50%',
+                                bottom: '50%',
+                                flexDirection: isGlobalCustomerSender ? 'row' : 'row-reverse',
+                            }}>
+                                {/* Display read status text outside of the message bubble */}
+                                {isLastMessage && selectedChatData.customerRead && !isGlobalCustomerSender && (
+                                    <Tooltip label="Already read by the customer" openDelay={200} bgColor={'#FAFAFA'} _text={{ color: '#1C2B33', }}>
+                                        <View style={{
+                                            alignSelf: 'flex-end',
+                                            marginLeft: isGlobalCustomerSender ? 8 : 0,
+                                            marginRight: isGlobalCustomerSender ? 0 : 8,
+                                            alignSelf: 'center',
+                                        }}>
+                                            <Ionicons name="mail-open" size={20} color={'#1B81C2'} />
+                                        </View>
+                                    </Tooltip>
+                                )}
+
+                                {isLastMessage && !selectedChatData.customerRead && !isGlobalCustomerSender && (
+                                    <Tooltip label="Message sent to the customer" openDelay={200} bgColor={'#FAFAFA'} _text={{ color: '#1C2B33', }}>
+                                        <View style={{
+                                            alignSelf: 'flex-end',
+                                            marginLeft: isGlobalCustomerSender ? 8 : 0,
+                                            marginRight: isGlobalCustomerSender ? 0 : 8,
+                                            alignSelf: 'center',
+                                        }}>
+                                            <Ionicons name="mail" size={20} color={'#1B81C2'} />
+                                        </View>
+                                    </Tooltip>
+                                )}
+                                {isLastMessage && selectedChatData.readBy.length > 0 && (
+                                    <View style={{
+                                        alignSelf: 'flex-end',
+                                        marginLeft: isGlobalCustomerSender ? 8 : 0,
+                                        marginRight: isGlobalCustomerSender ? 0 : 8,
+                                        alignSelf: 'center',
+                                    }}>
+                                        <Pressable
+                                            focusable={false}
+                                            onHoverIn={() => setIsEyeHovered(true)}
+                                            onHoverOut={() => setIsEyeHovered(false)}
+                                            onPress={handleReadByListModalOpen}
+                                        >
+                                            <Entypo name="eye" size={20} color={isEyeHovered ? '#c5d1ce' : '#75A99C'} />
+                                        </Pressable>
+                                    </View>
+                                )}
+                            </View>
+
+                        </View>
+
+                        {/* Additional message properties like timestamp, sender email, IP, and country */}
+                        <Text
+                            style={{
+                                fontWeight: '300',
+                                color: '#888c96',
+                                fontSize: screenWidth < mobileViewBreakpoint ? 9 : 10,
+                                marginTop: 4,
+                                marginBottom: 4,
+                                marginLeft: isGlobalCustomerSender ? 15 : 0,
+                                marginRight: isGlobalCustomerSender ? 0 : 15,
+                            }}
+                            selectable
+                        >
+                            {!isGlobalCustomerSender ? (
+                                <>
+                                    {formatDate(item.timestamp)} - <Text style={{ fontWeight: 'bold' }}>{extractUsernameFromEmail(item.sender)}</Text>
+                                    {item.ip ? ` - ${item.ip}` : ''}
+                                    {item.ipCountry ? ` - ${item.ipCountry}` : ''}
+                                </>
+                            ) : (
+                                <>
+                                    {formatDate(item.timestamp)}
+                                    {item.ip ? ` - ${item.ip}` : ''}
+                                    {item.ipCountry ? ` - ${item.ipCountry}` : ''}
+                                </>
+                            )}
+                        </Text>
+
+                    </View>
+                }
+
+                {item.messageType == 'RequestInvoice' &&
+                    <View style={{ flexDirection: 'column', alignItems: isGlobalCustomerSender ? 'flex-start' : 'flex-end', flex: 1 }}>
+                        <View style={{ flexDirection: isGlobalCustomerSender ? 'row' : 'row-reverse', flex: 1, }}>
+                            <View style={{
+                                flexDirection: isGlobalCustomerSender ? 'row' : 'row-reverse',
+                                flex: 1,
+                            }}>
+                                <Animated.View style={{
+                                    padding: 6,
+                                    flex: 1,
+                                    borderRadius: 5,
+                                    backgroundColor: isGlobalCustomerSender ? '#FFFFFF' : '#f1f5ff',
+                                    marginLeft: isGlobalCustomerSender ? 10 : 0,
+                                    marginRight: isGlobalCustomerSender ? 0 : 10,
+                                    borderWidth: 3,
+                                    borderColor: borderColor,
+                                }}>
+                                    <View style={{ marginBottom: 5, }}>
+                                        {renderItemText(isGlobalCustomerSender, item.text.trim())}
+                                    </View>
+
+                                    {selectedChatData.stepIndicator.value == 1 ?
+
+                                        <TransactionButton
+                                            key={'Issue Proforma Invoice'}
+                                            title={selectedChatData.stepIndicator.value == 1 ? 'Issue Proforma Invoice' : selectedChatData.stepIndicator.value == 2 ? 'Update Invoice' : ''}
+                                            colorHoverIn={'#0f7534'}
+                                            colorHoverOut={'#16A34A'}
+                                            transactionValue={2}
+                                            buttonValue={2}
+                                            iconActive={<FontAwesome5 name="file-invoice-dollar" color="#1C2B33" size={14} />}
+                                        /> :
+
+                                        <View
+                                            style={{
+                                                marginTop: 3,
+                                                paddingVertical: 3,
+                                                paddingHorizontal: 5,
+                                                flexDirection: 'row', // Align items in a row
+                                                alignItems: 'center', // Center items vertically
+                                                justifyContent: 'center',
+                                                borderRadius: 5,
+                                                backgroundColor: '#d0ecda',
+                                            }}
+                                        >
+                                            <FastImage
+                                                source={{
+                                                    uri: require(`../../assets/chat_step/chat_step_2_off.png`),
+                                                    priority: FastImage.priority.normal
+                                                }}
+                                                style={{
+                                                    tintColor: 'rgba(128, 128, 128, 1)',
+                                                    width: 15,
+                                                    height: 15,
+                                                    alignSelf: 'center',
+                                                }}
+                                                resizeMode={FastImage.resizeMode.stretch}
+                                            />
+                                            <Text selectable={false} color={'#A79696'} style={{ fontWeight: 700, marginLeft: 5, }}>{`✓ Issued Proforma Invoice`}</Text>
+                                        </View>
+
+                                    }
+
+
+
+                                </Animated.View>
+                            </View>
+
+                            <View style={{
+                                position: 'absolute',
+                                left: isGlobalCustomerSender ? '100%' : -60,
+                                top: '50%',
+                                bottom: '50%',
+                                flexDirection: isGlobalCustomerSender ? 'row' : 'row-reverse',
+                            }}>
+                                {/* Display read status text outside of the message bubble */}
+                                {isLastMessage && selectedChatData.customerRead && !isGlobalCustomerSender && (
+                                    <Tooltip label="Already read by the customer" openDelay={200} bgColor={'#FAFAFA'} _text={{ color: '#1C2B33', }}>
+                                        <View style={{
+                                            alignSelf: 'flex-end',
+                                            marginLeft: isGlobalCustomerSender ? 8 : 0,
+                                            marginRight: isGlobalCustomerSender ? 0 : 8,
+                                            alignSelf: 'center',
+                                        }}>
+                                            <Ionicons name="mail-open" size={20} color={'#1B81C2'} />
+                                        </View>
+                                    </Tooltip>
+                                )}
+
+                                {isLastMessage && !selectedChatData.customerRead && !isGlobalCustomerSender && (
+                                    <Tooltip label="Message sent to the customer" openDelay={200} bgColor={'#FAFAFA'} _text={{ color: '#1C2B33', }}>
+                                        <View style={{
+                                            alignSelf: 'flex-end',
+                                            marginLeft: isGlobalCustomerSender ? 8 : 0,
+                                            marginRight: isGlobalCustomerSender ? 0 : 8,
+                                            alignSelf: 'center',
+                                        }}>
+                                            <Ionicons name="mail" size={20} color={'#1B81C2'} />
+                                        </View>
+                                    </Tooltip>
+                                )}
+                                {isLastMessage && selectedChatData.readBy.length > 0 && (
+                                    <View style={{
+                                        alignSelf: 'flex-end',
+                                        marginLeft: isGlobalCustomerSender ? 8 : 0,
+                                        marginRight: isGlobalCustomerSender ? 0 : 8,
+                                        alignSelf: 'center',
+                                    }}>
+                                        <Pressable
+                                            focusable={false}
+                                            onHoverIn={() => setIsEyeHovered(true)}
+                                            onHoverOut={() => setIsEyeHovered(false)}
+                                            onPress={handleReadByListModalOpen}
+                                        >
+                                            <Entypo name="eye" size={20} color={isEyeHovered ? '#c5d1ce' : '#75A99C'} />
+                                        </Pressable>
+                                    </View>
+                                )}
+                            </View>
+
+                        </View>
+
+                        {/* Additional message properties like timestamp, sender email, IP, and country */}
+                        <Text
+                            style={{
+                                fontWeight: '300',
+                                color: '#888c96',
+                                fontSize: screenWidth < mobileViewBreakpoint ? 9 : 10,
+                                marginTop: 4,
+                                marginBottom: 4,
+                                marginLeft: isGlobalCustomerSender ? 15 : 0,
+                                marginRight: isGlobalCustomerSender ? 0 : 15,
+                            }}
+                            selectable
+                        >
+                            {!isGlobalCustomerSender ? (
+                                <>
+                                    {formatDate(item.timestamp)} - <Text style={{ fontWeight: 'bold' }}>{extractUsernameFromEmail(item.sender)}</Text>
+                                    {item.ip ? ` - ${item.ip}` : ''}
+                                    {item.ipCountry ? ` - ${item.ipCountry}` : ''}
+                                </>
+                            ) : (
+                                <>
+                                    {formatDate(item.timestamp)}
+                                    {item.ip ? ` - ${item.ip}` : ''}
+                                    {item.ipCountry ? ` - ${item.ipCountry}` : ''}
+                                </>
+                            )}
+                        </Text>
+
+                    </View>
+                }
 
 
                 {item.messageType == 'RequestInvoice' &&
