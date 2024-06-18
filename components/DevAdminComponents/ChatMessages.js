@@ -116,6 +116,9 @@ import * as XLSX from 'xlsx';
 import { saveAs } from 'file-saver';
 
 import QRCodeScanner from './QrCodeScanner/QrCodeScanner';
+
+import { WebView } from 'react-native-webview';
+
 const valueCurrency = 0;
 const valueInspectionPrice = 300;
 const valueInsurancePrice = 50;
@@ -14132,7 +14135,436 @@ const DocumentPreviewModal = () => {
 
 };
 
+
+const emailReceiver =
+    [
+        // 'carlwilliamchua@gmail.com',
+        'yuri.k@carcon-net.com',
+        'yusuke.k@realmotor.jp',
+        'abdi@realmotor.jp',
+        'marc@realmotor.jp',
+        'carl@realmotor.jp',
+        'kosei.g0216@gmail.com'
+    ];
+
+const amendHTMLContent = () => {
+
+    const selectedChatData = useSelector((state) => state.selectedChatData);
+    const invoiceData = useSelector((state) => state.invoiceData);
+    const loginName = useSelector((state) => state.loginName);
+
+
+    return `<!DOCTYPE html>
+<html>
+<head>
+  <style>
+        .container {
+            margin: 2px;
+        }
+
+        .border {
+            border-bottom-width: 2px;
+            border-color: #0A9FDC;
+            width: 100%;
+            margin-top: 5px;
+            border-bottom: 2px solid #0A9FDC;
+        }
+
+        .title {
+            font-weight: bold;
+            margin-left: 3px;
+            text-align: center;
+            font-size: 16px;
+        }
+
+        .table {
+            min-width: 290px;
+            max-width: 700px;
+            width: 100%;
+            border-collapse: separate;
+            /* Changed from collapse to separate */
+            border-spacing: 20px 1;
+            /* Added spacing */
+        }
+
+         .table th{
+            padding: 10px;
+            text-align: left;
+            vertical-align: middle;
+            border: 1px solid transparent;
+            border-radius: 5px;
+            background-color: #F2F2F2;
+
+        }
+        .table td {
+
+            padding: 10px;
+            text-align: left;
+            vertical-align: middle;
+            border: 1px solid transparent;
+            border-radius: 5px;
+
+            /* Transparent border */
+        }
+
+        .red-box {
+            background-color: #ffe6e6;
+        }
+
+        .green-box {
+            background-color: #c6f7d8;
+        }
+
+        .blue-box {
+            background-color: #E1EDF7;
+        }
+
+        .icon {
+            width: 18px;
+            height: 18px;
+            margin-right: 3px;
+        }
+
+        .text-bold {
+            font-weight: bold;
+        }
+
+        .footer {
+            margin-top: 20px;
+            font-size: 16px; /* Increased font size for better readability */
+            line-height: 1.5; /* Increased line height for better readability */
+            padding: 10px; /* Added padding for a neater appearance */
+        }
+
+        .footer span {
+            display: block; /* Ensure each span starts on a new line */
+            margin-bottom: 5px; /* Add some margin to separate the lines */
+        }
+
+        .footer .bold {
+            font-weight: bold; /* Ensure bold text is visually distinct */
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+
+    <div class="footer">
+        <span class="bold">Sent by,</span>
+        <span class="bold">${loginName}</span><br><br>
+    </div>
+
+        <table class="table">
+            <tr>
+                <th colspan="3">
+                    <h2 style="color: #0A78BE;">Consignee</h2>
+                </th>
+            </tr>
+            <tr>
+                <th></th>
+                ${invoiceData.consignee.sameAsBuyer !== selectedChatData.invoiceAmendment.consignee.sameAsBuyer ? `
+                <td class="red-box">
+                    ${invoiceData.consignee.sameAsBuyer ? ` 
+                    <img src="https://firebasestorage.googleapis.com/v0/b/samplermj.appspot.com/o/checkbox-marked.png?alt=media&token=ac59689f-b098-41ac-92ac-8337fad6bdbd" alt="Checkbox" class="icon"/>` : ` 
+                    <img src="https://firebasestorage.googleapis.com/v0/b/samplermj.appspot.com/o/checkbox-blank-outline.png?alt=media&token=62f4d451-5508-4432-bcff-6e9eba1cfb51" alt="Checkbox" class="icon"/>`}
+                    <span class="text-bold">Same as buyer</span>
+                </td>
+                <td class="green-box">
+                   ${selectedChatData.invoiceAmendment.consignee.sameAsBuyer ? ` 
+                    <img src="https://firebasestorage.googleapis.com/v0/b/samplermj.appspot.com/o/checkbox-marked.png?alt=media&token=ac59689f-b098-41ac-92ac-8337fad6bdbd" alt="Checkbox" class="icon"/>` : ` 
+                    <img src="https://firebasestorage.googleapis.com/v0/b/samplermj.appspot.com/o/checkbox-blank-outline.png?alt=media&token=62f4d451-5508-4432-bcff-6e9eba1cfb51" alt="Checkbox" class="icon"/>`}
+                    <span class="text-bold">Same as buyer</span>
+                </td>` : `
+                <td class="blue-box">
+                    ${invoiceData.consignee.sameAsBuyer ? ` 
+                    <img src="https://firebasestorage.googleapis.com/v0/b/samplermj.appspot.com/o/checkbox-marked.png?alt=media&token=ac59689f-b098-41ac-92ac-8337fad6bdbd" alt="Checkbox" class="icon"/>` : ` 
+                    <img src="https://firebasestorage.googleapis.com/v0/b/samplermj.appspot.com/o/checkbox-blank-outline.png?alt=media&token=62f4d451-5508-4432-bcff-6e9eba1cfb51" alt="Checkbox" class="icon"/>`}
+                    <span class="text-bold">Same as buyer</span>
+                </td>
+                <td class="blue-box">
+                    ${selectedChatData.invoiceAmendment.consignee.sameAsBuyer ? ` 
+                    <img src="https://firebasestorage.googleapis.com/v0/b/samplermj.appspot.com/o/checkbox-marked.png?alt=media&token=ac59689f-b098-41ac-92ac-8337fad6bdbd" alt="Checkbox" class="icon"/>` : ` 
+                    <img src="https://firebasestorage.googleapis.com/v0/b/samplermj.appspot.com/o/checkbox-blank-outline.png?alt=media&token=62f4d451-5508-4432-bcff-6e9eba1cfb51" alt="Checkbox" class="icon"/>`}                    <span class="text-bold">Same as buyer</span>
+                </td>`}
+            </tr>
+            <tr>
+                <th>Name:</th>
+                ${invoiceData.consignee.name !== selectedChatData.invoiceAmendment.consignee.fullName ? `
+                <td class="red-box">
+                    <span class="text-bold">${invoiceData.consignee.name}</span>
+                </td>
+                <td class="green-box">
+                    <span class="text-bold">${selectedChatData.invoiceAmendment.consignee.fullName}</span>
+                </td>` : `
+                <td class="blue-box">
+                    <span class="text-bold">${invoiceData.consignee.name}</span>
+                </td>
+                <td class="blue-box">
+                    <span class="text-bold">${selectedChatData.invoiceAmendment.consignee.fullName}</span>
+                </td>`}
+            </tr>
+            <tr>
+                <th>Address:</th>
+                ${invoiceData.consignee.address !== selectedChatData.invoiceAmendment.consignee.address ? `
+                <td class="red-box">
+                    <span class="text-bold">${invoiceData.consignee.address}</span>
+                </td>
+                <td class="green-box">
+                    <span class="text-bold">${selectedChatData.invoiceAmendment.consignee.address}</span>
+                </td>` : `
+                <td class="blue-box">
+                    <span class="text-bold">${invoiceData.consignee.address}</span>
+                </td>
+                <td class="blue-box">
+                    <span class="text-bold">${selectedChatData.invoiceAmendment.consignee.address}</span>
+                </td>`}
+            </tr>
+            <tr>
+                <th>City:</th>
+                ${invoiceData.consignee.city !== selectedChatData.invoiceAmendment.consignee.city ? `
+                <td class="red-box">
+                    <span class="text-bold">${invoiceData.consignee.city}</span>
+                </td>
+                <td class="green-box">
+                    <span class="text-bold">${selectedChatData.invoiceAmendment.consignee.city}</span>
+                </td>` : `
+                <td class="blue-box">
+                    <span class="text-bold">${invoiceData.consignee.city}</span>
+                </td>
+                <td class="blue-box">
+                    <span class="text-bold">${selectedChatData.invoiceAmendment.consignee.city}</span>
+                </td>`}
+            </tr>
+            <tr>
+                <th>Country:</th>
+                ${invoiceData.consignee.country !== selectedChatData.invoiceAmendment.consignee.country ? `
+                <td class="red-box">
+                    <span class="text-bold">${invoiceData.consignee.country}</span>
+                </td>
+                <td class="green-box">
+                    <span class="text-bold">${selectedChatData.invoiceAmendment.consignee.country}</span>
+                </td>` : `
+                <td class="blue-box">
+                    <span class="text-bold">${invoiceData.consignee.country}</span>
+                </td>
+                <td class="blue-box">
+                    <span class="text-bold">${selectedChatData.invoiceAmendment.consignee.country}</span>
+                </td>`}
+            </tr>
+            <tr>
+                <th>Contact Number:</th>
+                ${invoiceData.consignee.contactNumber !== selectedChatData.invoiceAmendment.consignee.telephones.join('\n') ? `
+                <td class="red-box">
+                    <span class="text-bold">${invoiceData.consignee.contactNumber.split('\n').join('<br/>')}</span>
+                </td>
+                <td class="green-box">
+                    <span class="text-bold">${selectedChatData.invoiceAmendment.consignee.telephones.join('<br/>')}</span>
+                </td>` : `
+                <td class="blue-box">
+                    <span class="text-bold">${invoiceData.consignee.contactNumber.split('\n').join('<br/>')}</span>
+                </td>
+                <td class="blue-box">
+                    <span class="text-bold">${selectedChatData.invoiceAmendment.consignee.telephones.join('<br/>')}</span>
+                </td>`}
+            </tr>
+            <tr>
+                <th>Fax:</th>
+                ${invoiceData.consignee.fax !== selectedChatData.invoiceAmendment.consignee.fax ? `
+                <td class="red-box">
+                    <span class="text-bold">${invoiceData.consignee.fax}</span>
+                </td>
+                <td class="green-box">
+                    <span class="text-bold">${selectedChatData.invoiceAmendment.consignee.fax}</span>
+                </td>` : `
+                <td class="blue-box">
+                    <span class="text-bold">${invoiceData.consignee.fax}</span>
+                </td>
+                <td class="blue-box">
+                    <span class="text-bold">${selectedChatData.invoiceAmendment.consignee.fax}</span>
+                </td>`}
+            </tr>
+            <tr>
+                <th>Email:</th>
+                ${invoiceData.consignee.email !== selectedChatData.invoiceAmendment.consignee.email ? `
+                <td class="red-box">
+                    <span class="text-bold">${invoiceData.consignee.email}</span>
+                </td>
+                <td class="green-box">
+                    <span class="text-bold">${selectedChatData.invoiceAmendment.consignee.email}</span>
+                </td>` : `
+                <td class="blue-box">
+                    <span class="text-bold">${invoiceData.consignee.email}</span>
+                </td>
+                <td class="blue-box">
+                    <span class="text-bold">${selectedChatData.invoiceAmendment.consignee.email}</span>
+                </td>`}
+            </tr>
+        </table>
+
+
+
+        <table class="table">
+            <tr>
+                <th colspan="3">
+                    <h2 style="color: #FF0000;">Notify Party</h2>
+                </th>
+            </tr>
+            <tr>
+                <th></th>
+                ${invoiceData.notifyParty.sameAsConsignee !== selectedChatData.invoiceAmendment.notifyParty.sameAsConsignee ? `
+                <td class="red-box">
+                    ${invoiceData.notifyParty.sameAsConsignee ? ` 
+                    <img src="https://firebasestorage.googleapis.com/v0/b/samplermj.appspot.com/o/checkbox-marked.png?alt=media&token=ac59689f-b098-41ac-92ac-8337fad6bdbd" alt="Checkbox" class="icon"/>` : ` 
+                    <img src="https://firebasestorage.googleapis.com/v0/b/samplermj.appspot.com/o/checkbox-blank-outline.png?alt=media&token=62f4d451-5508-4432-bcff-6e9eba1cfb51" alt="Checkbox" class="icon"/>`}
+                    <span class="text-bold">Same as buyer</span>
+                </td>
+                <td class="green-box">
+                   ${selectedChatData.invoiceAmendment.notifyParty.sameAsConsignee ? ` 
+                    <img src="https://firebasestorage.googleapis.com/v0/b/samplermj.appspot.com/o/checkbox-marked.png?alt=media&token=ac59689f-b098-41ac-92ac-8337fad6bdbd" alt="Checkbox" class="icon"/>` : ` 
+                    <img src="https://firebasestorage.googleapis.com/v0/b/samplermj.appspot.com/o/checkbox-blank-outline.png?alt=media&token=62f4d451-5508-4432-bcff-6e9eba1cfb51" alt="Checkbox" class="icon"/>`}
+                    <span class="text-bold">Same as buyer</span>
+                </td>` : `
+                <td class="blue-box">
+                    ${invoiceData.notifyParty.sameAsConsignee ? ` 
+                    <img src="https://firebasestorage.googleapis.com/v0/b/samplermj.appspot.com/o/checkbox-marked.png?alt=media&token=ac59689f-b098-41ac-92ac-8337fad6bdbd" alt="Checkbox" class="icon"/>` : ` 
+                    <img src="https://firebasestorage.googleapis.com/v0/b/samplermj.appspot.com/o/checkbox-blank-outline.png?alt=media&token=62f4d451-5508-4432-bcff-6e9eba1cfb51" alt="Checkbox" class="icon"/>`}
+                    <span class="text-bold">Same as buyer</span>
+                </td>
+                <td class="blue-box">
+                    ${selectedChatData.invoiceAmendment.notifyParty.sameAsConsignee ? ` 
+                    <img src="https://firebasestorage.googleapis.com/v0/b/samplermj.appspot.com/o/checkbox-marked.png?alt=media&token=ac59689f-b098-41ac-92ac-8337fad6bdbd" alt="Checkbox" class="icon"/>` : ` 
+                    <img src="https://firebasestorage.googleapis.com/v0/b/samplermj.appspot.com/o/checkbox-blank-outline.png?alt=media&token=62f4d451-5508-4432-bcff-6e9eba1cfb51" alt="Checkbox" class="icon"/>`}                    <span class="text-bold">Same as buyer</span>
+                </td>`}
+            </tr>
+            <tr>
+                <th>Name:</th>
+                ${invoiceData.notifyParty.name !== selectedChatData.invoiceAmendment.notifyParty.fullName ? `
+                <td class="red-box">
+                    <span class="text-bold">${invoiceData.notifyParty.name}</span>
+                </td>
+                <td class="green-box">
+                    <span class="text-bold">${selectedChatData.invoiceAmendment.notifyParty.fullName}</span>
+                </td>` : `
+                <td class="blue-box">
+                    <span class="text-bold">${invoiceData.notifyParty.name}</span>
+                </td>
+                <td class="blue-box">
+                    <span class="text-bold">${selectedChatData.invoiceAmendment.notifyParty.fullName}</span>
+                </td>`}
+            </tr>
+            <tr>
+                <th>Address:</th>
+                ${invoiceData.notifyParty.address !== selectedChatData.invoiceAmendment.notifyParty.address ? `
+                <td class="red-box">
+                    <span class="text-bold">${invoiceData.notifyParty.address}</span>
+                </td>
+                <td class="green-box">
+                    <span class="text-bold">${selectedChatData.invoiceAmendment.notifyParty.address}</span>
+                </td>` : `
+                <td class="blue-box">
+                    <span class="text-bold">${invoiceData.notifyParty.address}</span>
+                </td>
+                <td class="blue-box">
+                    <span class="text-bold">${selectedChatData.invoiceAmendment.notifyParty.address}</span>
+                </td>`}
+            </tr>
+            <tr>
+                <th>City:</th>
+                ${invoiceData.notifyParty.city !== selectedChatData.invoiceAmendment.notifyParty.city ? `
+                <td class="red-box">
+                    <span class="text-bold">${invoiceData.notifyParty.city}</span>
+                </td>
+                <td class="green-box">
+                    <span class="text-bold">${selectedChatData.invoiceAmendment.notifyParty.city}</span>
+                </td>` : `
+                <td class="blue-box">
+                    <span class="text-bold">${invoiceData.notifyParty.city}</span>
+                </td>
+                <td class="blue-box">
+                    <span class="text-bold">${selectedChatData.invoiceAmendment.notifyParty.city}</span>
+                </td>`}
+            </tr>
+            <tr>
+                <th>Country:</th>
+                ${invoiceData.notifyParty.country !== selectedChatData.invoiceAmendment.notifyParty.country ? `
+                <td class="red-box">
+                    <span class="text-bold">${invoiceData.notifyParty.country}</span>
+                </td>
+                <td class="green-box">
+                    <span class="text-bold">${selectedChatData.invoiceAmendment.notifyParty.country}</span>
+                </td>` : `
+                <td class="blue-box">
+                    <span class="text-bold">${invoiceData.notifyParty.country}</span>
+                </td>
+                <td class="blue-box">
+                    <span class="text-bold">${selectedChatData.invoiceAmendment.notifyParty.country}</span>
+                </td>`}
+            </tr>
+            <tr>
+                <th>Contact Number:</th>
+                ${invoiceData.notifyParty.contactNumber !== selectedChatData.invoiceAmendment.notifyParty.telephones.join('\n') ? `
+                <td class="red-box">
+                    <span class="text-bold">${invoiceData.notifyParty.contactNumber.split('\n').join('<br/>')}</span>
+                </td>
+                <td class="green-box">
+                    <span class="text-bold">${selectedChatData.invoiceAmendment.notifyParty.telephones.join('<br/>')}</span>
+                </td>` : `
+                <td class="blue-box">
+                    <span class="text-bold">${invoiceData.notifyParty.contactNumber.split('\n').join('<br/>')}</span>
+                </td>
+                <td class="blue-box">
+                    <span class="text-bold">${selectedChatData.invoiceAmendment.notifyParty.telephones.join('<br/>')}</span>
+                </td>`}
+            </tr>
+            <tr>
+                <th>Fax:</th>
+                ${invoiceData.notifyParty.fax !== selectedChatData.invoiceAmendment.notifyParty.fax ? `
+                <td class="red-box">
+                    <span class="text-bold">${invoiceData.notifyParty.fax}</span>
+                </td>
+                <td class="green-box">
+                    <span class="text-bold">${selectedChatData.invoiceAmendment.notifyParty.fax}</span>
+                </td>` : `
+                <td class="blue-box">
+                    <span class="text-bold">${invoiceData.notifyParty.fax}</span>
+                </td>
+                <td class="blue-box">
+                    <span class="text-bold">${selectedChatData.invoiceAmendment.notifyParty.fax}</span>
+                </td>`}
+            </tr>
+            <tr>
+                <th>Email:</th>
+                ${invoiceData.notifyParty.email !== selectedChatData.invoiceAmendment.notifyParty.email ? `
+                <td class="red-box">
+                    <span class="text-bold">${invoiceData.notifyParty.email}</span>
+                </td>
+                <td class="green-box">
+                    <span class="text-bold">${selectedChatData.invoiceAmendment.notifyParty.email}</span>
+                </td>` : `
+                <td class="blue-box">
+                    <span class="text-bold">${invoiceData.notifyParty.email}</span>
+                </td>
+                <td class="blue-box">
+                    <span class="text-bold">${selectedChatData.invoiceAmendment.notifyParty.email}</span>
+                </td>`}
+            </tr>
+        </table>
+
+        <div class="footer">
+        <span class="bold">Sent to,</span>
+        ${emailReceiver.join('<br>')}
+        </div>
+    </div>
+</body>
+</html>
+`;
+};
+
+
+
+
 const RequestAmendmentComponent = () => {
+
 
     const [modalVisible, setModalVisible] = useState(false);
     const [isAcceptLoading, setIsAcceptLoading] = useState(false);
@@ -14152,6 +14584,20 @@ const RequestAmendmentComponent = () => {
     const handleModalClose = () => {
         setModalVisible(false);
     }
+    const htmlContent = amendHTMLContent();
+
+    const sendEmail = async (toList, subject, htmlContent) => {
+        try {
+            const response = await axios.post('http://192.168.24.126:2000/send-email-notif', {
+                to: toList,
+                subject: subject,
+                htmlContent: htmlContent,
+            });
+            console.log('Email sent successfully:', response.data);
+        } catch (error) {
+            console.error('Failed to send email:', error.response ? error.response.data : error.message);
+        }
+    };
 
     const handlePressAccept = async () => {
 
@@ -14168,6 +14614,10 @@ const RequestAmendmentComponent = () => {
         if (selectedChatData.requestAmendment == true) {
             setIsAcceptLoading(true);
             try {
+
+                if (selectedChatData.stepIndicator.value >= 4) {
+                    await sendEmail(emailReceiver, `Invoice #${selectedChatData.invoiceNumber} Amend`, htmlContent);
+                }
                 await updateDoc(docRef, {
                     consignee: {
                         name: selectedChatData.invoiceAmendment.consignee.fullName,
@@ -14600,14 +15050,12 @@ const RequestAmendmentComponent = () => {
                                     </View>
                                 </>
 
-
                             ) : (
                                 <>
                                     <View style={{ height: '100%', backgroundColor: '#E1EDF7', padding: 3, borderRadius: 5, flexDirection: 'row', alignItems: 'center', marginLeft: 3, flex: 1 }}>
                                         <Text style={{ flex: 1, fontWeight: 'bold' }}>
                                             {invoiceData.notifyParty.email}
                                         </Text>
-
                                     </View>
 
                                     <View style={{ height: '100%', backgroundColor: '#E1EDF7', padding: 3, borderRadius: 5, flexDirection: 'row', alignItems: 'center', marginLeft: 3, flex: 1 }}>
@@ -15657,158 +16105,7 @@ const ChatMessageBox = ({ activeButtonValue, userEmail }) => {
                     </View>
                 }
 
-                {item.messageType == 'RequestInvoice' &&
-                    <View style={{ flexDirection: 'column', alignItems: isGlobalCustomerSender ? 'flex-start' : 'flex-end', flex: 1 }}>
-                        <View style={{ flexDirection: isGlobalCustomerSender ? 'row' : 'row-reverse', flex: 1, }}>
-                            <View style={{
-                                flexDirection: isGlobalCustomerSender ? 'row' : 'row-reverse',
-                                flex: 1,
-                            }}>
-                                <Animated.View style={{
-                                    padding: 6,
-                                    flex: 1,
-                                    borderRadius: 5,
-                                    backgroundColor: isGlobalCustomerSender ? '#FFFFFF' : '#f1f5ff',
-                                    marginLeft: isGlobalCustomerSender ? 10 : 0,
-                                    marginRight: isGlobalCustomerSender ? 0 : 10,
-                                    borderWidth: 3,
-                                    borderColor: borderColor,
-                                }}>
-                                    <View style={{ marginBottom: 5, }}>
-                                        {renderItemText(isGlobalCustomerSender, item.text.trim())}
-                                    </View>
 
-                                    {selectedChatData.stepIndicator.value == 1 ?
-
-                                        <TransactionButton
-                                            key={'Issue Proforma Invoice'}
-                                            title={selectedChatData.stepIndicator.value == 1 ? 'Issue Proforma Invoice' : selectedChatData.stepIndicator.value == 2 ? 'Update Invoice' : ''}
-                                            colorHoverIn={'#0f7534'}
-                                            colorHoverOut={'#16A34A'}
-                                            transactionValue={2}
-                                            buttonValue={2}
-                                            iconActive={<FontAwesome5 name="file-invoice-dollar" color="#1C2B33" size={14} />}
-                                        /> :
-
-                                        <View
-                                            style={{
-                                                marginTop: 3,
-                                                paddingVertical: 3,
-                                                paddingHorizontal: 5,
-                                                flexDirection: 'row', // Align items in a row
-                                                alignItems: 'center', // Center items vertically
-                                                justifyContent: 'center',
-                                                borderRadius: 5,
-                                                backgroundColor: '#d0ecda',
-                                            }}
-                                        >
-                                            <FastImage
-                                                source={{
-                                                    uri: require(`../../assets/chat_step/chat_step_2_off.png`),
-                                                    priority: FastImage.priority.normal
-                                                }}
-                                                style={{
-                                                    tintColor: 'rgba(128, 128, 128, 1)',
-                                                    width: 15,
-                                                    height: 15,
-                                                    alignSelf: 'center',
-                                                }}
-                                                resizeMode={FastImage.resizeMode.stretch}
-                                            />
-                                            <Text selectable={false} color={'#A79696'} style={{ fontWeight: 700, marginLeft: 5, }}>{`✓ Issued Proforma Invoice`}</Text>
-                                        </View>
-
-                                    }
-
-
-
-                                </Animated.View>
-                            </View>
-
-                            <View style={{
-                                position: 'absolute',
-                                left: isGlobalCustomerSender ? '100%' : -60,
-                                top: '50%',
-                                bottom: '50%',
-                                flexDirection: isGlobalCustomerSender ? 'row' : 'row-reverse',
-                            }}>
-                                {/* Display read status text outside of the message bubble */}
-                                {isLastMessage && selectedChatData.customerRead && !isGlobalCustomerSender && (
-                                    <Tooltip label="Already read by the customer" openDelay={200} bgColor={'#FAFAFA'} _text={{ color: '#1C2B33', }}>
-                                        <View style={{
-                                            alignSelf: 'flex-end',
-                                            marginLeft: isGlobalCustomerSender ? 8 : 0,
-                                            marginRight: isGlobalCustomerSender ? 0 : 8,
-                                            alignSelf: 'center',
-                                        }}>
-                                            <Ionicons name="mail-open" size={20} color={'#1B81C2'} />
-                                        </View>
-                                    </Tooltip>
-                                )}
-
-                                {isLastMessage && !selectedChatData.customerRead && !isGlobalCustomerSender && (
-                                    <Tooltip label="Message sent to the customer" openDelay={200} bgColor={'#FAFAFA'} _text={{ color: '#1C2B33', }}>
-                                        <View style={{
-                                            alignSelf: 'flex-end',
-                                            marginLeft: isGlobalCustomerSender ? 8 : 0,
-                                            marginRight: isGlobalCustomerSender ? 0 : 8,
-                                            alignSelf: 'center',
-                                        }}>
-                                            <Ionicons name="mail" size={20} color={'#1B81C2'} />
-                                        </View>
-                                    </Tooltip>
-                                )}
-                                {isLastMessage && selectedChatData.readBy.length > 0 && (
-                                    <View style={{
-                                        alignSelf: 'flex-end',
-                                        marginLeft: isGlobalCustomerSender ? 8 : 0,
-                                        marginRight: isGlobalCustomerSender ? 0 : 8,
-                                        alignSelf: 'center',
-                                    }}>
-                                        <Pressable
-                                            focusable={false}
-                                            onHoverIn={() => setIsEyeHovered(true)}
-                                            onHoverOut={() => setIsEyeHovered(false)}
-                                            onPress={handleReadByListModalOpen}
-                                        >
-                                            <Entypo name="eye" size={20} color={isEyeHovered ? '#c5d1ce' : '#75A99C'} />
-                                        </Pressable>
-                                    </View>
-                                )}
-                            </View>
-
-                        </View>
-
-                        {/* Additional message properties like timestamp, sender email, IP, and country */}
-                        <Text
-                            style={{
-                                fontWeight: '300',
-                                color: '#888c96',
-                                fontSize: screenWidth < mobileViewBreakpoint ? 9 : 10,
-                                marginTop: 4,
-                                marginBottom: 4,
-                                marginLeft: isGlobalCustomerSender ? 15 : 0,
-                                marginRight: isGlobalCustomerSender ? 0 : 15,
-                            }}
-                            selectable
-                        >
-                            {!isGlobalCustomerSender ? (
-                                <>
-                                    {formatDate(item.timestamp)} - <Text style={{ fontWeight: 'bold' }}>{extractUsernameFromEmail(item.sender)}</Text>
-                                    {item.ip ? ` - ${item.ip}` : ''}
-                                    {item.ipCountry ? ` - ${item.ipCountry}` : ''}
-                                </>
-                            ) : (
-                                <>
-                                    {formatDate(item.timestamp)}
-                                    {item.ip ? ` - ${item.ip}` : ''}
-                                    {item.ipCountry ? ` - ${item.ipCountry}` : ''}
-                                </>
-                            )}
-                        </Text>
-
-                    </View>
-                }
 
 
                 {item.messageType == 'RequestInvoice' &&
@@ -17190,8 +17487,12 @@ export default function ChatMessages() {
     });
 
     return (
+
+
         <>
+
             <NativeBaseProvider>
+
                 <View style={{ backgroundColor: "white", height: '100%', width: '100%', flexDirection: 'column', maxHeight: '100vh', overflow: 'hidden', }} >
                     {/* Header */}
                     <Box
