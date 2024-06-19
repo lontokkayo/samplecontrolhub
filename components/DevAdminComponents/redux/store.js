@@ -12,7 +12,7 @@ let email = '';
 // =============================== Customer List ========================================
 const customerListDataSlice = createSlice({
   name: 'customerListData',
-  initialState: {},
+  initialState: [],
   reducers: {
     setCustomerListData: (state, action) => {
       return action.payload

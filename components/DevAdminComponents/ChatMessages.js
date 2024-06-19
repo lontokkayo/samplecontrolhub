@@ -14138,427 +14138,16 @@ const DocumentPreviewModal = () => {
 
 const emailReceiver =
     [
-        // 'carlwilliamchua@gmail.com',
-        'yuri.k@carcon-net.com',
-        'yusuke.k@realmotor.jp',
-        'abdi@realmotor.jp',
-        'marc@realmotor.jp',
-        'carl@realmotor.jp',
-        'kosei.g0216@gmail.com'
+        'carlwilliamchua@gmail.com',
+        // 'yuri.k@carcon-net.com',
+        // 'yusuke.k@realmotor.jp',
+        // 'abdi@realmotor.jp',
+        // 'marc@realmotor.jp',
+        // 'carl@realmotor.jp',
+        // 'kosei.g0216@gmail.com'
     ];
 
-const amendHTMLContent = () => {
 
-    const selectedChatData = useSelector((state) => state.selectedChatData);
-    const invoiceData = useSelector((state) => state.invoiceData);
-    const loginName = useSelector((state) => state.loginName);
-
-
-    return `<!DOCTYPE html>
-<html>
-<head>
-  <style>
-        .container {
-            margin: 2px;
-        }
-
-        .border {
-            border-bottom-width: 2px;
-            border-color: #0A9FDC;
-            width: 100%;
-            margin-top: 5px;
-            border-bottom: 2px solid #0A9FDC;
-        }
-
-        .title {
-            font-weight: bold;
-            margin-left: 3px;
-            text-align: center;
-            font-size: 16px;
-        }
-
-        .table {
-            min-width: 290px;
-            max-width: 700px;
-            width: 100%;
-            border-collapse: separate;
-            /* Changed from collapse to separate */
-            border-spacing: 20px 1;
-            /* Added spacing */
-        }
-
-         .table th{
-            padding: 10px;
-            text-align: left;
-            vertical-align: middle;
-            border: 1px solid transparent;
-            border-radius: 5px;
-            background-color: #F2F2F2;
-
-        }
-        .table td {
-
-            padding: 10px;
-            text-align: left;
-            vertical-align: middle;
-            border: 1px solid transparent;
-            border-radius: 5px;
-
-            /* Transparent border */
-        }
-
-        .red-box {
-            background-color: #ffe6e6;
-        }
-
-        .green-box {
-            background-color: #c6f7d8;
-        }
-
-        .blue-box {
-            background-color: #E1EDF7;
-        }
-
-        .icon {
-            width: 18px;
-            height: 18px;
-            margin-right: 3px;
-        }
-
-        .text-bold {
-            font-weight: bold;
-        }
-
-        .footer {
-            margin-top: 20px;
-            font-size: 16px; /* Increased font size for better readability */
-            line-height: 1.5; /* Increased line height for better readability */
-            padding: 10px; /* Added padding for a neater appearance */
-        }
-
-        .footer span {
-            display: block; /* Ensure each span starts on a new line */
-            margin-bottom: 5px; /* Add some margin to separate the lines */
-        }
-
-        .footer .bold {
-            font-weight: bold; /* Ensure bold text is visually distinct */
-        }
-    </style>
-</head>
-<body>
-    <div class="container">
-
-    <div class="footer">
-        <span class="bold">Sent by,</span>
-        <span class="bold">${loginName}</span><br><br>
-    </div>
-
-        <table class="table">
-            <tr>
-                <th colspan="3">
-                    <h2 style="color: #0A78BE;">Consignee</h2>
-                </th>
-            </tr>
-            <tr>
-                <th></th>
-                ${invoiceData.consignee.sameAsBuyer !== selectedChatData.invoiceAmendment.consignee.sameAsBuyer ? `
-                <td class="red-box">
-                    ${invoiceData.consignee.sameAsBuyer ? ` 
-                    <img src="https://firebasestorage.googleapis.com/v0/b/samplermj.appspot.com/o/checkbox-marked.png?alt=media&token=ac59689f-b098-41ac-92ac-8337fad6bdbd" alt="Checkbox" class="icon"/>` : ` 
-                    <img src="https://firebasestorage.googleapis.com/v0/b/samplermj.appspot.com/o/checkbox-blank-outline.png?alt=media&token=62f4d451-5508-4432-bcff-6e9eba1cfb51" alt="Checkbox" class="icon"/>`}
-                    <span class="text-bold">Same as buyer</span>
-                </td>
-                <td class="green-box">
-                   ${selectedChatData.invoiceAmendment.consignee.sameAsBuyer ? ` 
-                    <img src="https://firebasestorage.googleapis.com/v0/b/samplermj.appspot.com/o/checkbox-marked.png?alt=media&token=ac59689f-b098-41ac-92ac-8337fad6bdbd" alt="Checkbox" class="icon"/>` : ` 
-                    <img src="https://firebasestorage.googleapis.com/v0/b/samplermj.appspot.com/o/checkbox-blank-outline.png?alt=media&token=62f4d451-5508-4432-bcff-6e9eba1cfb51" alt="Checkbox" class="icon"/>`}
-                    <span class="text-bold">Same as buyer</span>
-                </td>` : `
-                <td class="blue-box">
-                    ${invoiceData.consignee.sameAsBuyer ? ` 
-                    <img src="https://firebasestorage.googleapis.com/v0/b/samplermj.appspot.com/o/checkbox-marked.png?alt=media&token=ac59689f-b098-41ac-92ac-8337fad6bdbd" alt="Checkbox" class="icon"/>` : ` 
-                    <img src="https://firebasestorage.googleapis.com/v0/b/samplermj.appspot.com/o/checkbox-blank-outline.png?alt=media&token=62f4d451-5508-4432-bcff-6e9eba1cfb51" alt="Checkbox" class="icon"/>`}
-                    <span class="text-bold">Same as buyer</span>
-                </td>
-                <td class="blue-box">
-                    ${selectedChatData.invoiceAmendment.consignee.sameAsBuyer ? ` 
-                    <img src="https://firebasestorage.googleapis.com/v0/b/samplermj.appspot.com/o/checkbox-marked.png?alt=media&token=ac59689f-b098-41ac-92ac-8337fad6bdbd" alt="Checkbox" class="icon"/>` : ` 
-                    <img src="https://firebasestorage.googleapis.com/v0/b/samplermj.appspot.com/o/checkbox-blank-outline.png?alt=media&token=62f4d451-5508-4432-bcff-6e9eba1cfb51" alt="Checkbox" class="icon"/>`}                    <span class="text-bold">Same as buyer</span>
-                </td>`}
-            </tr>
-            <tr>
-                <th>Name:</th>
-                ${invoiceData.consignee.name !== selectedChatData.invoiceAmendment.consignee.fullName ? `
-                <td class="red-box">
-                    <span class="text-bold">${invoiceData.consignee.name}</span>
-                </td>
-                <td class="green-box">
-                    <span class="text-bold">${selectedChatData.invoiceAmendment.consignee.fullName}</span>
-                </td>` : `
-                <td class="blue-box">
-                    <span class="text-bold">${invoiceData.consignee.name}</span>
-                </td>
-                <td class="blue-box">
-                    <span class="text-bold">${selectedChatData.invoiceAmendment.consignee.fullName}</span>
-                </td>`}
-            </tr>
-            <tr>
-                <th>Address:</th>
-                ${invoiceData.consignee.address !== selectedChatData.invoiceAmendment.consignee.address ? `
-                <td class="red-box">
-                    <span class="text-bold">${invoiceData.consignee.address}</span>
-                </td>
-                <td class="green-box">
-                    <span class="text-bold">${selectedChatData.invoiceAmendment.consignee.address}</span>
-                </td>` : `
-                <td class="blue-box">
-                    <span class="text-bold">${invoiceData.consignee.address}</span>
-                </td>
-                <td class="blue-box">
-                    <span class="text-bold">${selectedChatData.invoiceAmendment.consignee.address}</span>
-                </td>`}
-            </tr>
-            <tr>
-                <th>City:</th>
-                ${invoiceData.consignee.city !== selectedChatData.invoiceAmendment.consignee.city ? `
-                <td class="red-box">
-                    <span class="text-bold">${invoiceData.consignee.city}</span>
-                </td>
-                <td class="green-box">
-                    <span class="text-bold">${selectedChatData.invoiceAmendment.consignee.city}</span>
-                </td>` : `
-                <td class="blue-box">
-                    <span class="text-bold">${invoiceData.consignee.city}</span>
-                </td>
-                <td class="blue-box">
-                    <span class="text-bold">${selectedChatData.invoiceAmendment.consignee.city}</span>
-                </td>`}
-            </tr>
-            <tr>
-                <th>Country:</th>
-                ${invoiceData.consignee.country !== selectedChatData.invoiceAmendment.consignee.country ? `
-                <td class="red-box">
-                    <span class="text-bold">${invoiceData.consignee.country}</span>
-                </td>
-                <td class="green-box">
-                    <span class="text-bold">${selectedChatData.invoiceAmendment.consignee.country}</span>
-                </td>` : `
-                <td class="blue-box">
-                    <span class="text-bold">${invoiceData.consignee.country}</span>
-                </td>
-                <td class="blue-box">
-                    <span class="text-bold">${selectedChatData.invoiceAmendment.consignee.country}</span>
-                </td>`}
-            </tr>
-            <tr>
-                <th>Contact Number:</th>
-                ${invoiceData.consignee.contactNumber !== selectedChatData.invoiceAmendment.consignee.telephones.join('\n') ? `
-                <td class="red-box">
-                    <span class="text-bold">${invoiceData.consignee.contactNumber.split('\n').join('<br/>')}</span>
-                </td>
-                <td class="green-box">
-                    <span class="text-bold">${selectedChatData.invoiceAmendment.consignee.telephones.join('<br/>')}</span>
-                </td>` : `
-                <td class="blue-box">
-                    <span class="text-bold">${invoiceData.consignee.contactNumber.split('\n').join('<br/>')}</span>
-                </td>
-                <td class="blue-box">
-                    <span class="text-bold">${selectedChatData.invoiceAmendment.consignee.telephones.join('<br/>')}</span>
-                </td>`}
-            </tr>
-            <tr>
-                <th>Fax:</th>
-                ${invoiceData.consignee.fax !== selectedChatData.invoiceAmendment.consignee.fax ? `
-                <td class="red-box">
-                    <span class="text-bold">${invoiceData.consignee.fax}</span>
-                </td>
-                <td class="green-box">
-                    <span class="text-bold">${selectedChatData.invoiceAmendment.consignee.fax}</span>
-                </td>` : `
-                <td class="blue-box">
-                    <span class="text-bold">${invoiceData.consignee.fax}</span>
-                </td>
-                <td class="blue-box">
-                    <span class="text-bold">${selectedChatData.invoiceAmendment.consignee.fax}</span>
-                </td>`}
-            </tr>
-            <tr>
-                <th>Email:</th>
-                ${invoiceData.consignee.email !== selectedChatData.invoiceAmendment.consignee.email ? `
-                <td class="red-box">
-                    <span class="text-bold">${invoiceData.consignee.email}</span>
-                </td>
-                <td class="green-box">
-                    <span class="text-bold">${selectedChatData.invoiceAmendment.consignee.email}</span>
-                </td>` : `
-                <td class="blue-box">
-                    <span class="text-bold">${invoiceData.consignee.email}</span>
-                </td>
-                <td class="blue-box">
-                    <span class="text-bold">${selectedChatData.invoiceAmendment.consignee.email}</span>
-                </td>`}
-            </tr>
-        </table>
-
-
-
-        <table class="table">
-            <tr>
-                <th colspan="3">
-                    <h2 style="color: #FF0000;">Notify Party</h2>
-                </th>
-            </tr>
-            <tr>
-                <th></th>
-                ${invoiceData.notifyParty.sameAsConsignee !== selectedChatData.invoiceAmendment.notifyParty.sameAsConsignee ? `
-                <td class="red-box">
-                    ${invoiceData.notifyParty.sameAsConsignee ? ` 
-                    <img src="https://firebasestorage.googleapis.com/v0/b/samplermj.appspot.com/o/checkbox-marked.png?alt=media&token=ac59689f-b098-41ac-92ac-8337fad6bdbd" alt="Checkbox" class="icon"/>` : ` 
-                    <img src="https://firebasestorage.googleapis.com/v0/b/samplermj.appspot.com/o/checkbox-blank-outline.png?alt=media&token=62f4d451-5508-4432-bcff-6e9eba1cfb51" alt="Checkbox" class="icon"/>`}
-                    <span class="text-bold">Same as buyer</span>
-                </td>
-                <td class="green-box">
-                   ${selectedChatData.invoiceAmendment.notifyParty.sameAsConsignee ? ` 
-                    <img src="https://firebasestorage.googleapis.com/v0/b/samplermj.appspot.com/o/checkbox-marked.png?alt=media&token=ac59689f-b098-41ac-92ac-8337fad6bdbd" alt="Checkbox" class="icon"/>` : ` 
-                    <img src="https://firebasestorage.googleapis.com/v0/b/samplermj.appspot.com/o/checkbox-blank-outline.png?alt=media&token=62f4d451-5508-4432-bcff-6e9eba1cfb51" alt="Checkbox" class="icon"/>`}
-                    <span class="text-bold">Same as buyer</span>
-                </td>` : `
-                <td class="blue-box">
-                    ${invoiceData.notifyParty.sameAsConsignee ? ` 
-                    <img src="https://firebasestorage.googleapis.com/v0/b/samplermj.appspot.com/o/checkbox-marked.png?alt=media&token=ac59689f-b098-41ac-92ac-8337fad6bdbd" alt="Checkbox" class="icon"/>` : ` 
-                    <img src="https://firebasestorage.googleapis.com/v0/b/samplermj.appspot.com/o/checkbox-blank-outline.png?alt=media&token=62f4d451-5508-4432-bcff-6e9eba1cfb51" alt="Checkbox" class="icon"/>`}
-                    <span class="text-bold">Same as buyer</span>
-                </td>
-                <td class="blue-box">
-                    ${selectedChatData.invoiceAmendment.notifyParty.sameAsConsignee ? ` 
-                    <img src="https://firebasestorage.googleapis.com/v0/b/samplermj.appspot.com/o/checkbox-marked.png?alt=media&token=ac59689f-b098-41ac-92ac-8337fad6bdbd" alt="Checkbox" class="icon"/>` : ` 
-                    <img src="https://firebasestorage.googleapis.com/v0/b/samplermj.appspot.com/o/checkbox-blank-outline.png?alt=media&token=62f4d451-5508-4432-bcff-6e9eba1cfb51" alt="Checkbox" class="icon"/>`}                    <span class="text-bold">Same as buyer</span>
-                </td>`}
-            </tr>
-            <tr>
-                <th>Name:</th>
-                ${invoiceData.notifyParty.name !== selectedChatData.invoiceAmendment.notifyParty.fullName ? `
-                <td class="red-box">
-                    <span class="text-bold">${invoiceData.notifyParty.name}</span>
-                </td>
-                <td class="green-box">
-                    <span class="text-bold">${selectedChatData.invoiceAmendment.notifyParty.fullName}</span>
-                </td>` : `
-                <td class="blue-box">
-                    <span class="text-bold">${invoiceData.notifyParty.name}</span>
-                </td>
-                <td class="blue-box">
-                    <span class="text-bold">${selectedChatData.invoiceAmendment.notifyParty.fullName}</span>
-                </td>`}
-            </tr>
-            <tr>
-                <th>Address:</th>
-                ${invoiceData.notifyParty.address !== selectedChatData.invoiceAmendment.notifyParty.address ? `
-                <td class="red-box">
-                    <span class="text-bold">${invoiceData.notifyParty.address}</span>
-                </td>
-                <td class="green-box">
-                    <span class="text-bold">${selectedChatData.invoiceAmendment.notifyParty.address}</span>
-                </td>` : `
-                <td class="blue-box">
-                    <span class="text-bold">${invoiceData.notifyParty.address}</span>
-                </td>
-                <td class="blue-box">
-                    <span class="text-bold">${selectedChatData.invoiceAmendment.notifyParty.address}</span>
-                </td>`}
-            </tr>
-            <tr>
-                <th>City:</th>
-                ${invoiceData.notifyParty.city !== selectedChatData.invoiceAmendment.notifyParty.city ? `
-                <td class="red-box">
-                    <span class="text-bold">${invoiceData.notifyParty.city}</span>
-                </td>
-                <td class="green-box">
-                    <span class="text-bold">${selectedChatData.invoiceAmendment.notifyParty.city}</span>
-                </td>` : `
-                <td class="blue-box">
-                    <span class="text-bold">${invoiceData.notifyParty.city}</span>
-                </td>
-                <td class="blue-box">
-                    <span class="text-bold">${selectedChatData.invoiceAmendment.notifyParty.city}</span>
-                </td>`}
-            </tr>
-            <tr>
-                <th>Country:</th>
-                ${invoiceData.notifyParty.country !== selectedChatData.invoiceAmendment.notifyParty.country ? `
-                <td class="red-box">
-                    <span class="text-bold">${invoiceData.notifyParty.country}</span>
-                </td>
-                <td class="green-box">
-                    <span class="text-bold">${selectedChatData.invoiceAmendment.notifyParty.country}</span>
-                </td>` : `
-                <td class="blue-box">
-                    <span class="text-bold">${invoiceData.notifyParty.country}</span>
-                </td>
-                <td class="blue-box">
-                    <span class="text-bold">${selectedChatData.invoiceAmendment.notifyParty.country}</span>
-                </td>`}
-            </tr>
-            <tr>
-                <th>Contact Number:</th>
-                ${invoiceData.notifyParty.contactNumber !== selectedChatData.invoiceAmendment.notifyParty.telephones.join('\n') ? `
-                <td class="red-box">
-                    <span class="text-bold">${invoiceData.notifyParty.contactNumber.split('\n').join('<br/>')}</span>
-                </td>
-                <td class="green-box">
-                    <span class="text-bold">${selectedChatData.invoiceAmendment.notifyParty.telephones.join('<br/>')}</span>
-                </td>` : `
-                <td class="blue-box">
-                    <span class="text-bold">${invoiceData.notifyParty.contactNumber.split('\n').join('<br/>')}</span>
-                </td>
-                <td class="blue-box">
-                    <span class="text-bold">${selectedChatData.invoiceAmendment.notifyParty.telephones.join('<br/>')}</span>
-                </td>`}
-            </tr>
-            <tr>
-                <th>Fax:</th>
-                ${invoiceData.notifyParty.fax !== selectedChatData.invoiceAmendment.notifyParty.fax ? `
-                <td class="red-box">
-                    <span class="text-bold">${invoiceData.notifyParty.fax}</span>
-                </td>
-                <td class="green-box">
-                    <span class="text-bold">${selectedChatData.invoiceAmendment.notifyParty.fax}</span>
-                </td>` : `
-                <td class="blue-box">
-                    <span class="text-bold">${invoiceData.notifyParty.fax}</span>
-                </td>
-                <td class="blue-box">
-                    <span class="text-bold">${selectedChatData.invoiceAmendment.notifyParty.fax}</span>
-                </td>`}
-            </tr>
-            <tr>
-                <th>Email:</th>
-                ${invoiceData.notifyParty.email !== selectedChatData.invoiceAmendment.notifyParty.email ? `
-                <td class="red-box">
-                    <span class="text-bold">${invoiceData.notifyParty.email}</span>
-                </td>
-                <td class="green-box">
-                    <span class="text-bold">${selectedChatData.invoiceAmendment.notifyParty.email}</span>
-                </td>` : `
-                <td class="blue-box">
-                    <span class="text-bold">${invoiceData.notifyParty.email}</span>
-                </td>
-                <td class="blue-box">
-                    <span class="text-bold">${selectedChatData.invoiceAmendment.notifyParty.email}</span>
-                </td>`}
-            </tr>
-        </table>
-
-        <div class="footer">
-        <span class="bold">Sent to,</span>
-        ${emailReceiver.join('<br>')}
-        </div>
-    </div>
-</body>
-</html>
-`;
-};
 
 
 
@@ -14571,6 +14160,7 @@ const RequestAmendmentComponent = () => {
 
     const selectedChatData = useSelector((state) => state.selectedChatData);
     const invoiceData = useSelector((state) => state.invoiceData);
+    const loginName = useSelector((state) => state.loginName);
 
     const screenWidth = Dimensions.get('window').width;
 
@@ -14584,11 +14174,460 @@ const RequestAmendmentComponent = () => {
     const handleModalClose = () => {
         setModalVisible(false);
     }
-    const htmlContent = amendHTMLContent();
+
+    // Default values to avoid undefined errors
+    const consigneeSameAsBuyer = invoiceData.consignee?.sameAsBuyer ?? false;
+    const amendmentConsigneeSameAsBuyer = selectedChatData.invoiceAmendment?.consignee?.sameAsBuyer ?? false;
+    const consigneeName = invoiceData.consignee?.name ?? "";
+    const amendmentConsigneeFullName = selectedChatData.invoiceAmendment?.consignee?.fullName ?? "";
+    const consigneeAddress = invoiceData.consignee?.address ?? "";
+    const amendmentConsigneeAddress = selectedChatData.invoiceAmendment?.consignee?.address ?? "";
+    const consigneeCity = invoiceData.consignee?.city ?? "";
+    const amendmentConsigneeCity = selectedChatData.invoiceAmendment?.consignee?.city ?? "";
+    const consigneeCountry = invoiceData.consignee?.country ?? "";
+    const amendmentConsigneeCountry = selectedChatData.invoiceAmendment?.consignee?.country ?? "";
+    const consigneeContactNumber = invoiceData.consignee?.contactNumber?.split('\n').join('<br/>') ?? "";
+    const amendmentConsigneeTelephones = selectedChatData.invoiceAmendment?.consignee?.telephones?.join('<br/>') ?? "";
+    const consigneeFax = invoiceData.consignee?.fax ?? "";
+    const amendmentConsigneeFax = selectedChatData.invoiceAmendment?.consignee?.fax ?? "";
+    const consigneeEmail = invoiceData.consignee?.email ?? "";
+    const amendmentConsigneeEmail = selectedChatData.invoiceAmendment?.consignee?.email ?? "";
+    const notifyPartySameAsConsignee = invoiceData.notifyParty?.sameAsConsignee ?? false;
+    const amendmentNotifyPartySameAsConsignee = selectedChatData.invoiceAmendment?.notifyParty?.sameAsConsignee ?? false;
+    const notifyPartyName = invoiceData.notifyParty?.name ?? "";
+    const amendmentNotifyPartyFullName = selectedChatData.invoiceAmendment?.notifyParty?.fullName ?? "";
+    const notifyPartyAddress = invoiceData.notifyParty?.address ?? "";
+    const amendmentNotifyPartyAddress = selectedChatData.invoiceAmendment?.notifyParty?.address ?? "";
+    const notifyPartyCity = invoiceData.notifyParty?.city ?? "";
+    const amendmentNotifyPartyCity = selectedChatData.invoiceAmendment?.notifyParty?.city ?? "";
+    const notifyPartyCountry = invoiceData.notifyParty?.country ?? "";
+    const amendmentNotifyPartyCountry = selectedChatData.invoiceAmendment?.notifyParty?.country ?? "";
+    const notifyPartyContactNumber = invoiceData.notifyParty?.contactNumber?.split('\n').join('<br/>') ?? "";
+    const amendmentNotifyPartyTelephones = selectedChatData.invoiceAmendment?.notifyParty?.telephones?.join('<br/>') ?? "";
+    const notifyPartyFax = invoiceData.notifyParty?.fax ?? "";
+    const amendmentNotifyPartyFax = selectedChatData.invoiceAmendment?.notifyParty?.fax ?? "";
+    const notifyPartyEmail = invoiceData.notifyParty?.email ?? "";
+    const amendmentNotifyPartyEmail = selectedChatData.invoiceAmendment?.notifyParty?.email ?? "";
+
+
+    const amendHTMLContent = () => {
+
+
+
+
+        return `<!DOCTYPE html>
+        <html>
+        <head>
+        <style>
+             .container {
+                margin: 2px;
+            }
+    
+            .border {
+                border-bottom-width: 2px;
+                border-color: #0A9FDC;
+                width: 100%;
+                margin-top: 5px;
+                border-bottom: 2px solid #0A9FDC;
+            }
+    
+            .title {
+                font-weight: bold;
+                margin-left: 3px;
+                text-align: center;
+                font-size: 16px;
+            }
+    
+            .table {
+                min-width: 290px;
+                max-width: 700px;
+                width: 100%;
+                border-collapse: separate;
+                /* Changed from collapse to separate */
+                border-spacing: 20px 1;
+                /* Added spacing */
+            }
+    
+             .table th{
+                padding: 5px;
+                text-align: left;
+                vertical-align: middle;
+                border: 1px solid transparent;
+                border-radius: 5px;
+                background-color: #F2F2F2;
+    
+            }
+            .table td {
+    
+                padding: 5px;
+                text-align: left;
+                vertical-align: middle;
+                border: 1px solid transparent;
+                border-radius: 5px;
+    
+                /* Transparent border */
+            }
+    
+            .red-box {
+                background-color: #ffe6e6;
+            }
+    
+            .green-box {
+                background-color: #c6f7d8;
+            }
+    
+            .blue-box {
+                background-color: #E1EDF7;
+            }
+    
+            .icon {
+                width: 18px;
+                height: 18px;
+                margin-right: 3px;
+            }
+    
+            .text-bold {
+                font-weight: bold;
+            }
+    
+            .footer {
+                font-size: 16px; /* Increased font size for better readability */
+                line-height: 1.5; /* Increased line height for better readability */
+                padding: 5px; /* Added padding for a neater appearance */
+            }
+    
+            .footer span {
+                display: block; /* Ensure each span starts on a new line */
+            }
+    
+            .footer .bold {
+                font-weight: bold; /* Ensure bold text is visually distinct */
+            }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+
+            <div class="footer">
+                <span class="bold">Sent by,</span>
+                <span class="bold">${loginName}</span>
+            </div>
+            
+            <table class="table">
+                <tr>
+                    <th colspan="3" style="color: #0A78BE;">
+                        Consignee
+                    </th>
+                </tr>
+                <tr>
+                    <th></th>
+                    ${consigneeSameAsBuyer !== amendmentConsigneeSameAsBuyer ? `
+                    <td class="red-box">
+                        ${consigneeSameAsBuyer ? ` 
+                        <img src="https://firebasestorage.googleapis.com/v0/b/samplermj.appspot.com/o/assets%2Fcheckbox-marked.png?alt=media&token=a9d74dd1-2a10-4347-b775-a986a066b706" alt="Checkbox" class="icon"/>` : ` 
+                        <img src="https://firebasestorage.googleapis.com/v0/b/samplermj.appspot.com/o/assets%2Fcheckbox-blank-outline.png?alt=media&token=250acad0-26d0-435d-9412-e5a5f73b8f3f" alt="Checkbox" class="icon"/>`}
+                        <span class="text-bold">Same as buyer</span>
+                    </td>
+                    <td class="green-box">
+                       ${amendmentConsigneeSameAsBuyer ? ` 
+                        <img src="https://firebasestorage.googleapis.com/v0/b/samplermj.appspot.com/o/assets%2Fcheckbox-marked.png?alt=media&token=a9d74dd1-2a10-4347-b775-a986a066b706" alt="Checkbox" class="icon"/>` : ` 
+                        <img src="https://firebasestorage.googleapis.com/v0/b/samplermj.appspot.com/o/assets%2Fcheckbox-blank-outline.png?alt=media&token=250acad0-26d0-435d-9412-e5a5f73b8f3f" alt="Checkbox" class="icon"/>`}
+                        <span class="text-bold">Same as buyer</span>
+                    </td>` : `
+                    <td class="blue-box">
+                        ${consigneeSameAsBuyer ? ` 
+                        <img src="https://firebasestorage.googleapis.com/v0/b/samplermj.appspot.com/o/assets%2Fcheckbox-marked.png?alt=media&token=a9d74dd1-2a10-4347-b775-a986a066b706" alt="Checkbox" class="icon"/>` : ` 
+                        <img src="https://firebasestorage.googleapis.com/v0/b/samplermj.appspot.com/o/assets%2Fcheckbox-blank-outline.png?alt=media&token=250acad0-26d0-435d-9412-e5a5f73b8f3f" alt="Checkbox" class="icon"/>`}
+                        <span class="text-bold">Same as buyer</span>
+                    </td>
+                    <td class="blue-box">
+                        ${amendmentConsigneeSameAsBuyer ? ` 
+                        <img src="https://firebasestorage.googleapis.com/v0/b/samplermj.appspot.com/o/assets%2Fcheckbox-marked.png?alt=media&token=a9d74dd1-2a10-4347-b775-a986a066b706" alt="Checkbox" class="icon"/>` : ` 
+                        <img src="https://firebasestorage.googleapis.com/v0/b/samplermj.appspot.com/o/assets%2Fcheckbox-blank-outline.png?alt=media&token=250acad0-26d0-435d-9412-e5a5f73b8f3f" alt="Checkbox" class="icon"/>`}                    <span class="text-bold">Same as buyer</span>
+                    </td>`}
+                </tr>
+                <tr>
+                    <th>Name:</th>
+                    ${consigneeName !== amendmentConsigneeFullName ? `
+                    <td class="red-box">
+                        <span class="text-bold">${consigneeName}</span>
+                    </td>
+                    <td class="green-box">
+                        <span class="text-bold">${amendmentConsigneeFullName}</span>
+                    </td>` : `
+                    <td class="blue-box">
+                        <span class="text-bold">${consigneeName}</span>
+                    </td>
+                    <td class="blue-box">
+                        <span class="text-bold">${amendmentConsigneeFullName}</span>
+                    </td>`}
+                </tr>
+                <tr>
+                    <th>Address:</th>
+                    ${consigneeAddress !== amendmentConsigneeAddress ? `
+                    <td class="red-box">
+                        <span class="text-bold">${consigneeAddress}</span>
+                    </td>
+                    <td class="green-box">
+                        <span class="text-bold">${amendmentConsigneeAddress}</span>
+                    </td>` : `
+                    <td class="blue-box">
+                        <span class="text-bold">${consigneeAddress}</span>
+                    </td>
+                    <td class="blue-box">
+                        <span class="text-bold">${amendmentConsigneeAddress}</span>
+                    </td>`}
+                </tr>
+                <tr>
+                    <th>City:</th>
+                    ${consigneeCity !== amendmentConsigneeCity ? `
+                    <td class="red-box">
+                        <span class="text-bold">${consigneeCity}</span>
+                    </td>
+                    <td class="green-box">
+                        <span class="text-bold">${amendmentConsigneeCity}</span>
+                    </td>` : `
+                    <td class="blue-box">
+                        <span class="text-bold">${consigneeCity}</span>
+                    </td>
+                    <td class="blue-box">
+                        <span class="text-bold">${amendmentConsigneeCity}</span>
+                    </td>`}
+                </tr>
+                <tr>
+                    <th>Country:</th>
+                    ${consigneeCountry !== amendmentConsigneeCountry ? `
+                    <td class="red-box">
+                        <span class="text-bold">${consigneeCountry}</span>
+                    </td>
+                    <td class="green-box">
+                        <span class="text-bold">${amendmentConsigneeCountry}</span>
+                    </td>` : `
+                    <td class="blue-box">
+                        <span class="text-bold">${consigneeCountry}</span>
+                    </td>
+                    <td class="blue-box">
+                        <span class="text-bold">${amendmentConsigneeCountry}</span>
+                    </td>`}
+                </tr>
+                <tr>
+                    <th>Contact Number:</th>
+                    ${invoiceData.consignee.contactNumber !== selectedChatData.invoiceAmendment.consignee.telephones.join('\n') ? `
+                    <td class="red-box">
+                        <span class="text-bold">${consigneeContactNumber}</span>
+                    </td>
+                    <td class="green-box">
+                        <span class="text-bold">${amendmentConsigneeTelephones}</span>
+                    </td>` : `
+                    <td class="blue-box">
+                        <span class="text-bold">${consigneeContactNumber}</span>
+                    </td>
+                    <td class="blue-box">
+                        <span class="text-bold">${amendmentConsigneeTelephones}</span>
+                    </td>`}
+                </tr>
+                <tr>
+                    <th>Fax:</th>
+                    ${consigneeFax !== amendmentConsigneeFax ? `
+                    <td class="red-box">
+                        <span class="text-bold">${consigneeFax}</span>
+                    </td>
+                    <td class="green-box">
+                        <span class="text-bold">${amendmentConsigneeFax}</span>
+                    </td>` : `
+                    <td class="blue-box">
+                        <span class="text-bold">${consigneeFax}</span>
+                    </td>
+                    <td class="blue-box">
+                        <span class="text-bold">${amendmentConsigneeFax}</span>
+                    </td>`}
+                </tr>
+                <tr>
+                    <th>Email:</th>
+                    ${consigneeEmail !== amendmentConsigneeEmail ? `
+                    <td class="red-box">
+                        <span class="text-bold">${consigneeEmail}</span>
+                    </td>
+                    <td class="green-box">
+                        <span class="text-bold">${amendmentConsigneeEmail}</span>
+                    </td>` : `
+                    <td class="blue-box">
+                        <span class="text-bold">${consigneeEmail}</span>
+                    </td>
+                    <td class="blue-box">
+                        <span class="text-bold">${amendmentConsigneeEmail}</span>
+                    </td>`}
+                </tr>
+            </table>
+    
+    
+            <br/>
+
+            <table class="table">
+                <tr>
+                    <th colspan="3" style="color: #FF0000;">
+                        Notify Party
+                    </th>
+                </tr>
+                <tr>
+                    <th></th>
+                    ${notifyPartySameAsConsignee !== amendmentNotifyPartySameAsConsignee ? `
+                    <td class="red-box">
+                        ${notifyPartySameAsConsignee ? ` 
+                        <img src="https://firebasestorage.googleapis.com/v0/b/samplermj.appspot.com/o/assets%2Fcheckbox-marked.png?alt=media&token=a9d74dd1-2a10-4347-b775-a986a066b706" alt="Checkbox" class="icon"/>` : ` 
+                        <img src="https://firebasestorage.googleapis.com/v0/b/samplermj.appspot.com/o/assets%2Fcheckbox-blank-outline.png?alt=media&token=250acad0-26d0-435d-9412-e5a5f73b8f3f" alt="Checkbox" class="icon"/>`}
+                        <span class="text-bold">Same as buyer</span>
+                    </td>
+                    <td class="green-box">
+                       ${amendmentNotifyPartySameAsConsignee ? ` 
+                        <img src="https://firebasestorage.googleapis.com/v0/b/samplermj.appspot.com/o/assets%2Fcheckbox-marked.png?alt=media&token=a9d74dd1-2a10-4347-b775-a986a066b706" alt="Checkbox" class="icon"/>` : ` 
+                        <img src="https://firebasestorage.googleapis.com/v0/b/samplermj.appspot.com/o/assets%2Fcheckbox-blank-outline.png?alt=media&token=250acad0-26d0-435d-9412-e5a5f73b8f3f" alt="Checkbox" class="icon"/>`}
+                        <span class="text-bold">Same as buyer</span>
+                    </td>` : `
+                    <td class="blue-box">
+                        ${notifyPartySameAsConsignee ? ` 
+                        <img src="https://firebasestorage.googleapis.com/v0/b/samplermj.appspot.com/o/assets%2Fcheckbox-marked.png?alt=media&token=a9d74dd1-2a10-4347-b775-a986a066b706" alt="Checkbox" class="icon"/>` : ` 
+                        <img src="https://firebasestorage.googleapis.com/v0/b/samplermj.appspot.com/o/assets%2Fcheckbox-blank-outline.png?alt=media&token=250acad0-26d0-435d-9412-e5a5f73b8f3f" alt="Checkbox" class="icon"/>`}
+                        <span class="text-bold">Same as buyer</span>
+                    </td>
+                    <td class="blue-box">
+                        ${amendmentNotifyPartySameAsConsignee ? ` 
+                        <img src="https://firebasestorage.googleapis.com/v0/b/samplermj.appspot.com/o/assets%2Fcheckbox-marked.png?alt=media&token=a9d74dd1-2a10-4347-b775-a986a066b706" alt="Checkbox" class="icon"/>` : ` 
+                        <img src="https://firebasestorage.googleapis.com/v0/b/samplermj.appspot.com/o/assets%2Fcheckbox-blank-outline.png?alt=media&token=250acad0-26d0-435d-9412-e5a5f73b8f3f" alt="Checkbox" class="icon"/>`}                    <span class="text-bold">Same as buyer</span>
+                    </td>`}
+                </tr>
+                <tr>
+                    <th>Name:</th>
+                    ${notifyPartyName !== amendmentNotifyPartyFullName ? `
+                    <td class="red-box">
+                        <span class="text-bold">${notifyPartyName}</span>
+                    </td>
+                    <td class="green-box">
+                        <span class="text-bold">${amendmentNotifyPartyFullName}</span>
+                    </td>` : `
+                    <td class="blue-box">
+                        <span class="text-bold">${notifyPartyName}</span>
+                    </td>
+                    <td class="blue-box">
+                        <span class="text-bold">${amendmentNotifyPartyFullName}</span>
+                    </td>`}
+                </tr>
+                <tr>
+                    <th>Address:</th>
+                    ${notifyPartyAddress !== amendmentNotifyPartyAddress ? `
+                    <td class="red-box">
+                        <span class="text-bold">${notifyPartyAddress}</span>
+                    </td>
+                    <td class="green-box">
+                        <span class="text-bold">${amendmentNotifyPartyAddress}</span>
+                    </td>` : `
+                    <td class="blue-box">
+                        <span class="text-bold">${notifyPartyAddress}</span>
+                    </td>
+                    <td class="blue-box">
+                        <span class="text-bold">${amendmentNotifyPartyAddress}</span>
+                    </td>`}
+                </tr>
+                <tr>
+                    <th>City:</th>
+                    ${notifyPartyCity !== amendmentNotifyPartyCity ? `
+                    <td class="red-box">
+                        <span class="text-bold">${notifyPartyCity}</span>
+                    </td>
+                    <td class="green-box">
+                        <span class="text-bold">${amendmentNotifyPartyCity}</span>
+                    </td>` : `
+                    <td class="blue-box">
+                        <span class="text-bold">${notifyPartyCity}</span>
+                    </td>
+                    <td class="blue-box">
+                        <span class="text-bold">${amendmentNotifyPartyCity}</span>
+                    </td>`}
+                </tr>
+                <tr>
+                    <th>Country:</th>
+                    ${notifyPartyCountry !== amendmentNotifyPartyCountry ? `
+                    <td class="red-box">
+                        <span class="text-bold">${notifyPartyCountry}</span>
+                    </td>
+                    <td class="green-box">
+                        <span class="text-bold">${amendmentNotifyPartyCountry}</span>
+                    </td>` : `
+                    <td class="blue-box">
+                        <span class="text-bold">${notifyPartyCountry}</span>
+                    </td>
+                    <td class="blue-box">
+                        <span class="text-bold">${amendmentNotifyPartyCountry}</span>
+                    </td>`}
+                </tr>
+                <tr>
+                    <th>Contact Number:</th>
+                    ${invoiceData.notifyParty.contactNumber !== selectedChatData.invoiceAmendment.notifyParty.telephones.join('\n') ? `
+                    <td class="red-box">
+                        <span class="text-bold">${notifyPartyContactNumber}</span>
+                    </td>
+                    <td class="green-box">
+                        <span class="text-bold">${amendmentNotifyPartyTelephones}</span>
+                    </td>` : `
+                    <td class="blue-box">
+                        <span class="text-bold">${notifyPartyContactNumber}</span>
+                    </td>
+                    <td class="blue-box">
+                        <span class="text-bold">${amendmentNotifyPartyTelephones}</span>
+                    </td>`}
+                </tr>
+                <tr>
+                    <th>Fax:</th>
+                    ${notifyPartyFax !== amendmentNotifyPartyFax ? `
+                    <td class="red-box">
+                        <span class="text-bold">${notifyPartyFax}</span>
+                    </td>
+                    <td class="green-box">
+                        <span class="text-bold">${amendmentNotifyPartyFax}</span>
+                    </td>` : `
+                    <td class="blue-box">
+                        <span class="text-bold">${notifyPartyFax}</span>
+                    </td>
+                    <td class="blue-box">
+                        <span class="text-bold">${amendmentNotifyPartyFax}</span>
+                    </td>`}
+                </tr>
+                <tr>
+                    <th>Email:</th>
+                    ${notifyPartyEmail !== amendmentNotifyPartyEmail ? `
+                    <td class="red-box">
+                        <span class="text-bold">${notifyPartyEmail}</span>
+                    </td>
+                    <td class="green-box">
+                        <span class="text-bold">${amendmentNotifyPartyEmail}</span>
+                    </td>` : `
+                    <td class="blue-box">
+                        <span class="text-bold">${notifyPartyEmail}</span>
+                    </td>
+                    <td class="blue-box">
+                        <span class="text-bold">${amendmentNotifyPartyEmail}</span>
+                    </td>`}
+                </tr>
+            </table>
+    
+            <div class="footer">
+            <span class="bold">Sent to,</span>
+            ${emailReceiver.join('<br>')}
+        </div>
+        </div>
+    </body>
+    </html>
+    `;
+    };
+
+
 
     const sendEmail = async (toList, subject, htmlContent) => {
+
+
+
         try {
-            const response = await axios.post('http://192.168.24.126:2000/send-email-notif', {
+            const response = await axios.post('https://rmjsmtp.duckdns.org/emailServer/send-email-notif', {
                 to: toList,
                 subject: subject,
                 htmlContent: htmlContent,
@@ -14597,6 +14636,7 @@ const RequestAmendmentComponent = () => {
         } catch (error) {
             console.error('Failed to send email:', error.response ? error.response.data : error.message);
         }
+
     };
 
     const handlePressAccept = async () => {
@@ -14610,6 +14650,7 @@ const RequestAmendmentComponent = () => {
         const formattedTime = moment(datetime).format('YYYY/MM/DD [at] HH:mm:ss.SSS');
         const formattedTimeForFile = moment(datetime).format('MMDDYYYYHHmmss.SSS');
 
+        const htmlContent = amendHTMLContent();
 
         if (selectedChatData.requestAmendment == true) {
             setIsAcceptLoading(true);
@@ -15054,13 +15095,13 @@ const RequestAmendmentComponent = () => {
                                 <>
                                     <View style={{ height: '100%', backgroundColor: '#E1EDF7', padding: 3, borderRadius: 5, flexDirection: 'row', alignItems: 'center', marginLeft: 3, flex: 1 }}>
                                         <Text style={{ flex: 1, fontWeight: 'bold' }}>
-                                            {invoiceData.notifyParty.email}
+                                            {invoiceData.notifyParty.name}
                                         </Text>
                                     </View>
 
                                     <View style={{ height: '100%', backgroundColor: '#E1EDF7', padding: 3, borderRadius: 5, flexDirection: 'row', alignItems: 'center', marginLeft: 3, flex: 1 }}>
                                         <Text style={{ flex: 1, fontWeight: 'bold' }}>
-                                            {selectedChatData.invoiceAmendment.notifyParty.email}
+                                            {selectedChatData.invoiceAmendment.notifyParty.fullName}
                                         </Text>
                                     </View>
                                 </>
@@ -16010,7 +16051,7 @@ const ChatMessageBox = ({ activeButtonValue, userEmail }) => {
                                                 backgroundColor: '#d0ecda',
                                             }}
                                         >
-                                            <Text selectable={false} color={'#A79696'} style={{ fontWeight: 700, marginLeft: 5, }}>{`✓ Request Invoice Amended`}</Text>
+                                            <Text selectable={false} color={'#A79696'} style={{ fontWeight: 700, marginLeft: 5, }}>{`✓ Invoice Amended`}</Text>
                                         </View>
 
                                     }

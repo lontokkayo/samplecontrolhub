@@ -146,155 +146,6 @@ const getEmailOfCurrentUser = () => {
 
 const storage = getStorage(projectExtensionFirebase);
 
-const SelectStockStatus = ({ selectedValue, id, item }) => {
-
-    const dispatch = useDispatch();
-    const toast = useToast();
-    const stockStatusData = useSelector((state) => state.stockStatusData);
-    const [key, setKey] = useState(nanoid());
-
-    const [selectedStockStatusValue, setSelectedStockStatusValue] = useState(selectedValue);
-    const screenWidth = Dimensions.get('window').width;
-
-
-    useEffect(() => {
-        const unsubscribe = onSnapshot(doc(projectExtensionFirestore, 'accounts', id), (doc) => {
-            if (doc.exists()) {
-                const data = doc.data();
-                // Handle the data from the document
-                setSelectedStockStatusValue(data.stockStatus);
-                // console.log(`Read ${doc.size} documents from accounts`);
-
-            }
-        });
-
-        // Clean up the listener when the component unmounts
-        return () => unsubscribe();
-    }, []);
-
-    const handleSaveStockStatus = async () => {
-
-        dispatch(setLoadingModalVisible(true));
-
-        const response = await axios.get('https://worldtimeapi.org/api/timezone/Asia/Tokyo');
-        const { datetime } = response.data;
-        const formattedTime = moment(datetime).format('YYYY/MM/DD [at] HH:mm:ss');
-        const year = moment(datetime).format('YYYY');
-        const month = moment(datetime).format('MM');
-        const monthWithDay = moment(datetime).format('MM/DD');
-        const date = moment(datetime).format('YYYY/MM/DD');
-        const day = moment(datetime).format('DD');
-        const time = moment(datetime).format('HH:mm');
-
-        const timeWithMinutesSeconds = moment(datetime).format('HH:mm:ss');
-        if (item.stockStatus == selectedStockStatusValue || selectedStockStatusValue == '' || selectedStockStatusValue == '__NativeBasePlaceHolder__') {
-            dispatch(setLoadingModalVisible(false));
-
-        }
-        else {
-
-            const stockStatusHistoryData = {
-                date: formattedTime,
-                stockStatus: selectedStockStatusValue,
-                changedBy: nameVariable.text,
-            };
-            const vehicleProductRef = doc(collection(projectExtensionFirestore, 'accounts'), item.stockID);
-
-            try {
-                await updateDoc(vehicleProductRef, {
-                    stockStatus: selectedStockStatusValue,
-                    stockStatusHistory: arrayUnion(stockStatusHistoryData)
-                });
-                const logData = {
-                    message: `Stock Status Updated: "${nameVariable.text}" updated "${item.carName}" stock status to "${selectedStockStatusValue}" with a reference number of "${item.referenceNumber}" using Vehicle List.`,
-                    timestamp: formattedTime,
-                    colorScheme: true,
-                    keywords: [
-                        formattedTime.toLowerCase(),
-                        globalCurrentStockID.toLowerCase(),
-                        `Stock Status Updated: "${nameVariable.text}" updated "${item.carName}" stock status to ${selectedStockStatusValue} with a reference number of "${item.referenceNumber}" using Vehicle List`.toLowerCase(),
-                        'Stock Status'.toLowerCase(),
-                        'Stock Status Updated'.toLowerCase(),
-                        'Stock'.toLowerCase(),
-                        'Status Updated'.toLowerCase(),
-                        'Updated'.toLowerCase(),
-                        globalSelectedCarName.toLowerCase(),
-                        globalSelectedVehicleReferenceNumber.toLowerCase(),
-                        nameVariable.text.toLowerCase(),
-                        year.toLowerCase(),
-                        month.toLowerCase(),
-                        monthWithDay.toLowerCase(),
-                        date.toLowerCase(),
-                        day.toLowerCase(),
-                        time.toLowerCase(),
-                        timeWithMinutesSeconds.toLowerCase(),
-                    ],
-                };
-                addLogToCollection(logData);
-                dispatch(setLoadingModalVisible(false));
-
-                // console.log('FOB Price updated successfully');
-                toast.show({
-                    render: () => {
-                        return <View style={{ backgroundColor: '#16A34A', padding: 5, borderRadius: 5 }}>
-                            <Text style={{ color: 'white' }}>Stock Status updated successfully!</Text>
-                        </View>;
-                    }
-                })
-            } catch (error) {
-                console.error(error);
-                toast.show({
-                    render: () => {
-                        return <View style={{ backgroundColor: '#DC2626', padding: 5, borderRadius: 5 }}>
-                            <Text style={{ color: 'white' }}>Error updating: {error}</Text>
-                        </View>;
-                    }
-                })
-            }
-        }
-    }
-
-    return (
-        <View style={{ flex: 1, flexDirection: 'row' }}>
-            <View style={{ width: screenWidth >= 1360 ? '70%' : '88%', backgroundColor: 'white', }}>
-                <Select
-                    selectedValue={selectedStockStatusValue}
-                    onValueChange={(value) => {
-                        setSelectedStockStatusValue(value);
-                    }}
-                    flex={3}
-                    accessibilityLabel="---"
-                    placeholder="---"
-                    _selectedItem={{
-                        bg: "teal.600",
-                        endIcon: <CheckIcon size="5" />
-                    }}
-                >
-                    {stockStatusData.map((item) => (
-                        <Select.Item key={item} label={item} value={item} />
-                    ))}
-                </Select>
-            </View>
-
-            <TouchableHighlight
-                underlayColor={'rgba(22, 163, 74, 0.3)'}
-                onPress={handleSaveStockStatus}
-                style={{
-                    backgroundColor: '#16A34A',
-                    borderRadius: 5,
-                    padding: 3,
-                    margin: 2,
-                    alignSelf: 'center',
-                }}>
-                <MaterialIcons name='update' color='white' size={22} />
-            </TouchableHighlight>
-        </View>
-
-
-
-
-    );
-};
 
 
 const addLogToCollection = async (data) => {
@@ -1053,369 +904,11 @@ const ImageUploader = ({ dragSortableViewRef, handleClearImagesExtra }) => {
     );
 };
 
-const ImageUploadModal = ({ handleUploadImagesModalClose, screenWidth, dragSortableViewRef, handleClearImagesExtra, handleUploadImages }) => {
 
-    const uploadImagesModalVisible = useSelector((state) => state.uploadImagesModalVisible)
-    const uploadImagesButtonLoading = useSelector((state) => state.uploadImagesButtonLoading)
-    return (
-        <Modal isOpen={uploadImagesModalVisible} onClose={handleUploadImagesModalClose} size={'full'} useRNModal>
-            <Modal.Content bgColor={'white'} w={'90%'} h={'100%'}>
-                <Modal.CloseButton />
-                <Modal.Header bgColor={'#7B9CFF'} flexDir={screenWidth <= 960 ? 'column' : 'row'} alignItems={screenWidth <= 960 ? 'center' : ''}>
-                    <Text color={'white'} fontSize={20} bold>Upload Images for </Text><Text color={'cyan.200'} fontSize={20} bold textAlign={screenWidth <= 960 ? 'center' : ''}>{globalSelectedVehicle}</Text>
-                </Modal.Header>
 
 
-                <View style={{ flex: 1, height: '100%', width: '100%', alignItems: 'center', justifyContent: 'center' }}>
 
-                    <View style={{ borderWidth: 1, borderColor: '#12293F', width: '95%', height: '95%' }}>
-
-                        <ImageUploader dragSortableViewRef={dragSortableViewRef} handleClearImagesExtra={handleClearImagesExtra} />
-
-                    </View>
-
-                </View>
-
-                <View style={{ flexDirection: 'row' }}>
-                    <TouchableOpacity
-                        onPress={handleUploadImagesModalClose}
-                        style={{
-                            backgroundColor: '#525252',
-                            borderRadius: 5,
-                            margin: 3,
-                            flex: 1,
-                            justifyContent: 'center',
-                            alignItems: 'center',
-                            padding: 8,
-                        }}>
-                        <Text style={{ color: 'white' }}>Close</Text>
-                    </TouchableOpacity>
-                    <View style={{ flex: 4 }} />
-
-                    <TouchableOpacity
-                        disabled={uploadImagesButtonLoading}
-                        onPress={handleUploadImages}
-                        style={{
-                            backgroundColor: '#16A34A',
-                            borderRadius: 5,
-                            margin: 3,
-                            flex: 1,
-                            justifyContent: 'center',
-                            alignItems: 'center',
-                            padding: 8,
-                        }}>
-                        {!uploadImagesButtonLoading ? (
-                            <Text style={{ color: 'white' }}>Upload</Text>) : (
-                            <Spinner color="white" />
-                        )}
-                    </TouchableOpacity>
-
-
-                </View>
-
-
-
-            </Modal.Content>
-
-        </Modal>
-
-    );
-}
-
-const UploadImagesModal = ({ fetchImageCounts }) => {
-
-
-    const screenWidth = Dimensions.get('window').width;
-    const dispatch = useDispatch();
-    const toast = useToast();
-    const dragSortableViewRef = useRef();
-
-    const handleClearImagesExtra = () => {
-        dispatch(setSelectedImages([]));
-        globalSelectedImages = [];
-        dispatch(setIsAddPhotoVisible(true));
-        dispatch(setAddAnotherImages(false));
-        dispatch(setDeleteImageVisible(true));
-    };
-
-
-    const handleUploadImagesModalClose = () => {
-
-        dispatch(setUploadImagesModalVisible(false));
-        // globalCurrentStockID = '';
-        handleClearImagesExtra();
-        globalSelectedVehicle = '';
-    }
-
-    const uploadImages = useCallback(async () => {
-
-        const storageRef = ref(storage, `${globalCurrentStockID}`);
-        const ImageFormat = { jpg: 'jpg' };
-        const collectionRef = collection(projectExtensionFirestore, 'accounts');
-        const docRef = doc(collectionRef, globalCurrentStockID);
-
-
-
-        try {
-            // Get the names of the images to keep
-            const imageNamesToKeep = globalSelectedImages.map((asset, index) => index.toString());
-
-            // Delete existing files in the folder that do not match the names of the images to keep
-            const listResult = await listAll(storageRef);
-            await Promise.all(
-                listResult.items
-                    .filter((itemRef) => !imageNamesToKeep.includes(itemRef.name))
-                    .map((itemRef) => deleteObject(itemRef))
-            );
-
-            await Promise.all(
-                globalSelectedImages.map(async (asset, index) => {
-                    const { uri } = asset;
-                    const imagename = index.toString();
-
-                    const response = await fetch(uri);
-                    const blob = await response.blob();
-
-                    // Create an offscreen canvas
-                    const canvas = document.createElement('canvas');
-                    const ctx = canvas.getContext('2d');
-
-                    // Create a new image object
-                    const img = new Image();
-                    img.src = URL.createObjectURL(blob);
-
-                    // Draw the image on the canvas
-                    img.onload = async () => {
-                        // Create a canvas element
-                        const canvas = document.createElement('canvas');
-                        const ctx = canvas.getContext('2d');
-
-                        // Calculate the desired width and height for the resized image
-                        const maxWidth = 800; // Set your desired maximum width
-                        const maxHeight = 600; // Set your desired maximum height
-                        let newWidth = img.width;
-                        let newHeight = img.height;
-
-                        // Check if the image needs resizing
-                        if (img.width > maxWidth) {
-                            newWidth = maxWidth;
-                            newHeight = (img.height * maxWidth) / img.width;
-                        }
-
-                        if (newHeight > maxHeight) {
-                            newWidth = (newWidth * maxHeight) / newHeight;
-                            newHeight = maxHeight;
-                        }
-
-                        // Set the canvas dimensions to the new width and height
-                        canvas.width = newWidth;
-                        canvas.height = newHeight;
-
-                        // Draw the resized image onto the canvas
-                        ctx.drawImage(img, 0, 0, newWidth, newHeight);
-
-                        // Calculate the font size as a percentage of the image width
-                        const fontSizePercentage = 3;
-                        const imageRes = img.height * img.width;
-                        const fontSize = (canvas.width * fontSizePercentage) / 100;
-
-                        ctx.font = `bold ${fontSize}px Arial`;
-                        ctx.fillStyle = '#fff';
-                        ctx.shadowColor = 'transparent';
-                        ctx.imageSmoothingEnabled = true;
-                        ctx.lineWidth = 2;
-
-                        // Calculate the position for the watermark text
-                        const watermarkText = `Real Motor Japan ${globalSelectedVehicleReferenceNumber}`;
-                        const textWidth = ctx.measureText(watermarkText).width;
-                        const textHeight = fontSize; // Font size determines the text height
-
-                        // Set padding around the text (adjust as needed)
-                        const paddingX = 10;
-                        const paddingY = 5;
-
-                        // Calculate the position for the text shadow
-                        const xShadow = (canvas.width - textWidth) / 2 + 2; // Adjust the horizontal position for the shadow
-                        const yShadow = canvas.height - 20 + 2; // Adjust the vertical position for the shadow
-
-                        // Increase the shadow thickness by adjusting the shadow blur radius
-                        ctx.shadowBlur = 10; // Adjust this value to make the shadow thicker
-
-                        // Draw the text shadow (black)
-                        ctx.fillStyle = 'black';
-                        ctx.fillText(watermarkText, xShadow, yShadow);
-
-                        // Reset the shadow blur radius for the actual text
-                        ctx.shadowBlur = 2; // Reset the shadow blur radius to the original value
-
-                        // Calculate the position for the actual text
-                        const x = (canvas.width - textWidth) / 2;
-                        const y = canvas.height - 20;
-
-                        // Draw the actual text (white)
-                        ctx.fillStyle = '#fff';
-                        ctx.fillText(watermarkText, x, y);
-
-                        // Convert the canvas to a blob
-                        const watermarkedImageBlob = await new Promise(resolve => {
-                            canvas.toBlob(resolve, 'image/jpeg', 0.8); // You can adjust the quality (0.7 is a good compromise between size and quality)
-                        });
-
-                        // Upload the resized image to Firebase Storage
-                        const imageRef = ref(storage, `${globalCurrentStockID}/${imagename}`);
-                        await uploadBytes(imageRef, watermarkedImageBlob, { contentType: 'image/jpeg' });
-                    };
-                })
-            );
-            const response = await axios.get('https://worldtimeapi.org/api/timezone/Asia/Tokyo');
-            const { datetime } = response.data;
-            const formattedTime = moment(datetime).format('YYYY/MM/DD [at] HH:mm:ss');
-            const year = moment(datetime).format('YYYY');
-            const month = moment(datetime).format('MM');
-            const monthWithDay = moment(datetime).format('MM/DD');
-            const date = moment(datetime).format('YYYY/MM/DD');
-            const day = moment(datetime).format('DD');
-            const time = moment(datetime).format('HH:mm');
-            const timeWithMinutesSeconds = moment(datetime).format('HH:mm:ss');
-            const imageCount = {
-                imageCount: globalSelectedImages.length,
-            };
-
-            await updateDoc(docRef, imageCount);
-
-            const logData = {
-                message: `Vehicle Updated: "${nameVariable.text}" updated "${globalSelectedCarName}" images with a reference number of "${globalSelectedVehicleReferenceNumber}" using Vehicle List`,
-                timestamp: formattedTime,
-                colorScheme: true,
-                keywords: [
-                    formattedTime.toLowerCase(),
-                    globalCurrentStockID.toLowerCase(),
-                    `Vehicle Updated: "${nameVariable.text}" updated "${globalSelectedCarName}" images with a reference number of "${globalSelectedVehicleReferenceNumber} using Vehicle List"`.toLowerCase(),
-                    'Vehicle List'.toLowerCase(),
-                    'Vehicle Updated'.toLowerCase(),
-                    'Vehicle'.toLowerCase(),
-                    'Updated'.toLowerCase(),
-                    globalSelectedCarName.toLowerCase(),
-                    globalSelectedVehicleReferenceNumber.toLowerCase(),
-                    nameVariable.text.toLowerCase(),
-                    year.toLowerCase(),
-                    month.toLowerCase(),
-                    monthWithDay.toLowerCase(),
-                    date.toLowerCase(),
-                    day.toLowerCase(),
-                    time.toLowerCase(),
-                    timeWithMinutesSeconds.toLowerCase(),
-                ],
-            };
-            addLogToCollection(logData);
-
-            // console.log(`Images uploaded to folder ${globalCurrentStockID}`);
-        } catch (error) {
-            console.error('Error uploading images:', error);
-        }
-    }, []);
-
-
-    const handleUploadImages = async () => {
-
-        dispatch(setUploadImagesButtonLoading(true));
-
-        if (globalSelectedImages.length > 0) {
-            toast.closeAll();
-            try {
-                await uploadImages();
-                dispatch(setUploadImagesButtonLoading(false));
-                fetchImageCounts();
-                handleUploadImagesModalClose();
-                toast.show({
-                    render: () => {
-                        return <View style={{ backgroundColor: '#16A34A', padding: 5, borderRadius: 5 }}>
-                            <Text style={{ color: 'white' }}>Uploaded Images successfully!</Text>
-                        </View>;
-                    }
-                })
-
-            } catch (error) {
-                console.error(error);
-                dispatch(setUploadImagesButtonLoading(false));
-                handleUploadImagesModalClose();
-
-                toast.show({
-                    render: () => {
-                        return <View style={{ backgroundColor: '#16A34A', padding: 5, borderRadius: 5 }}>
-                            <Text style={{ color: 'white' }}>Uploaded Error: {error}</Text>
-                        </View>;
-                    }
-                })
-            }
-        }
-
-        else {
-            dispatch(setUploadImagesButtonLoading(false));
-        }
-
-
-
-    };
-
-    return (
-
-        <>
-            <ImageUploadModal
-                handleUploadImagesModalClose={handleUploadImagesModalClose}
-                screenWidth={screenWidth}
-                dragSortableViewRef={dragSortableViewRef}
-                handleClearImagesExtra={handleClearImagesExtra}
-                handleUploadImages={handleUploadImages} />
-        </>
-    );
-
-};
-
-
-const SupplyChainsCosts = ({ data }) => {
-
-    const dispatch = useDispatch();
-
-
-
-    const handleModalSupplyChainsCostsOpen = useCallback((data) => {
-        dispatch(setSupplyChainsCostsModalVisible(true));
-        dispatch(setVehicleListSupplyChainsCostsData(data.supplyChainsCostsData ? data.supplyChainsCostsData : []));
-        globalSupplyChainCostsData = data.supplyChainsCostsData;
-        globalCurrentSupplyChainCostsData = data.supplyChainsCostsData;
-        globalCurrentStockID = data.stockID;
-        globalSelectedVehicle = `${data.referenceNumber} / ${data.carName}`;
-        globalSelectedVehicleReferenceNumber = data.referenceNumber;
-        globalSelectedCarName = data.carName;
-
-    }, []);
-
-    return (
-        <><TouchableOpacity
-            onPress={() => handleModalSupplyChainsCostsOpen(data)}
-            style={{
-                backgroundColor: '#12293F',
-                borderRadius: 5,
-                padding: 2,
-                // flex: 1,
-                width: '90%',
-                justifyContent: 'center',
-                alignItems: 'center'
-            }}
-        >
-            {/* <Text style={{ textAlign: 'center', }}>Expense</Text> */}
-            <MaterialIcons name="payments" size={22} color="white" />
-        </TouchableOpacity>
-
-
-        </>
-
-
-    );
-}
-
-const AllSccModals = ({ supplyChainsCostsModalVisible, supplyChainsCostsData, expenseNameData, paidToData, currentDate, vehicleListSupplyChainsCostsData }) => {
+const AllSccModals = ({ supplyChainsCostsModalVisible, expenseNameData, paidToData, currentDate, vehicleListSupplyChainsCostsData }) => {
     const screenWidth = Dimensions.get('window').width;
 
     const dispatch = useDispatch();
@@ -1440,7 +933,6 @@ const AllSccModals = ({ supplyChainsCostsModalVisible, supplyChainsCostsData, ex
     // const selectedPaidTo = useSelector((state) => state.selectedPaidTo);
     const [selectResetKey, setSelectResetKey] = useState(nanoid());
     const selectExpenseNameRef = useRef(null);
-    const selectPaidToRef = useRef(null);
     const expenseViewRef = useRef(null);
 
     const textAreaAddExpenseName = useRef(null);
@@ -1480,13 +972,7 @@ const AllSccModals = ({ supplyChainsCostsModalVisible, supplyChainsCostsData, ex
     };
 
 
-    const handleClearModalOpen = () => {
-        setClearModalVisible(true);
-    };
 
-    const handleClearModalClose = () => {
-        setClearModalVisible(false);
-    };
 
     useEffect(() => {
         const amounts = vehicleListSupplyChainsCostsData.map((item) => {
@@ -2585,7 +2071,7 @@ const ModalCalendar = ({ selectedDate, setSelectedDate }) => {
 
 }
 
-const SelectExpenseName = ({ expenseNameIsError, selectExpenseNameRef, selectResetKey }) => {
+const SelectExpenseName = ({ expenseNameIsError }) => {
 
     const dispatch = useDispatch();
     const expenseNameData = useSelector((state) => state.expenseNameData);
@@ -2662,214 +2148,10 @@ const EditVehicleModal = () => {
 
 };
 
-const EditVehicle = ({ data }) => {
-
-    const dispatch = useDispatch();
-
-
-    const handleModalOpen = () => {
-
-        dispatch(setEditVehicleModalVisible(true));
-        globalCurrentStockID = data.stockID;
-        globalSelectedVehicle = `${data.referenceNumber} / ${data.carName}`;
-        globalSelectedVehicleReferenceNumber = data.referenceNumber;
-        globalSelectedCarName = data.carName;
-
-    }
-
-
-    return (
-        <>
-            <TouchableOpacity
-                onPress={handleModalOpen}
-                style={{
-                    backgroundColor: '#7B9CFF',
-                    marginHorizontal: 5,
-                    borderRadius: 5,
-                    padding: 2,
-                    flex: 1,
-                    justifyContent: 'center',
-                    alignItems: 'center'
-                }}
-            >
-                {/* <Text style={{ textAlign: 'center',  color: 'white', }}>Edit</Text> */}
-                <MaterialIcons name={"edit"} color='white' size={22} />
-            </TouchableOpacity>
-        </>
-    );
-};
 
 
 
 
-const ViewImagesModal = ({ handleViewImagesModalClose }) => {
-
-    const screenWidth = Dimensions.get('window').width;
-    const viewImagesModalVisible = useSelector((state) => state.viewImagesModalVisible);
-    const viewImagesData = useSelector((state) => state.viewImagesData);
-
-    const [modalImageUri, setModalImageUri] = useState('');
-    const [imageModalVisible, setImageModalVisible] = useState(false);
-
-    const handleImagePress = useCallback((uri) => {
-        // const base64Image = toString(uri);
-        // setIsLoading(true);
-        setModalImageUri(uri);
-        setImageModalVisible(true);
-        // console.log("URI: ", uri);
-
-    }, []);
-
-
-
-    const getImagesRenderItem = useCallback((item) => {
-
-        const styles = StyleSheet.create({
-            dropdown: {
-                margin: 16,
-                height: 50,
-                borderBottomColor: 'gray',
-                borderBottomWidth: 0.5,
-            },
-            icon: {
-                marginRight: 5,
-            },
-            placeholderStyle: {
-                fontSize: 16,
-            },
-            selectedTextStyle: {
-                fontSize: 16,
-            },
-            iconStyle: {
-                width: 20,
-                height: 20,
-            },
-            inputSearchStyle: {
-                height: 40,
-                fontSize: 16,
-            },
-            container: {
-                flex: 1,
-                paddingTop: 20,
-
-            },
-            txt: {
-                fontSize: 18,
-                lineHeight: 24,
-                padding: 5
-            },
-            sort: {
-            },
-            item_children: {
-                width: 90,
-                height: 90,
-                backgroundColor: 'black',
-                justifyContent: "center",
-                alignItems: "center",
-            },
-            item_delete_icon: {
-                width: 14,
-                height: 14,
-                position: "absolute",
-                right: 1,
-                top: 1
-            },
-            item_icon: {
-                width: 90,
-                height: 90,
-                resizeMode: "contain",
-                position: "absolute"
-            }
-        });
-
-        return (
-
-            <Box key={item.id} style={styles.item}>
-                <Box style={styles.item_children}>
-
-                    <FastImage
-                        style={styles.item_icon}
-                        source={{
-                            uri: item.uri,
-                            priority: FastImage.priority.normal,
-                        }}
-                        resizeMode={FastImage.resizeMode.contain}
-
-                    />
-
-                </Box>
-            </Box>
-        );
-
-
-
-    }, []);
-
-    return (
-
-        <>
-            <Modal isOpen={viewImagesModalVisible} onClose={handleViewImagesModalClose} size={'full'} useRNModal>
-                <Modal.Content bgColor={'white'} w={screenWidth <= 1100 ? '90%' : '60%'} h={'100%'}>
-                    <Modal.CloseButton />
-                    <Modal.Header bgColor={'#7B9CFF'} flexDir={screenWidth <= 960 ? 'column' : 'row'} alignItems={screenWidth <= 960 ? 'center' : ''}>
-                        <Text color={'white'} fontSize={20} bold>View Images for </Text><Text color={'cyan.200'} fontSize={20} bold textAlign={screenWidth <= 960 ? 'center' : ''}>{globalSelectedVehicle}</Text>
-                    </Modal.Header>
-
-
-                    <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', margin: '5%', marginLeft: '10%' }}>
-
-                        <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
-                            <ScrollView style={{ height: '90%' }}>
-                                <DragSortableView
-                                    sortable={false}
-                                    // ref={dragSortableViewRef}
-                                    dataSource={viewImagesData}
-                                    parentWidth={width * 0.33}
-                                    childrenWidth={100}
-                                    childrenHeight={100}
-                                    marginChildrenTop={3}
-                                    marginChildrenBottom={0}
-                                    marginChildrenLeft={0}
-                                    marginChildrenRight={0}
-                                    onClickItem={(item, index) => {
-                                        handleImagePress(index.uri);
-                                    }}
-                                    keyExtractor={(item) => item.uri}
-                                    renderItem={useCallback((item, index) => getImagesRenderItem(item, index), [])}
-                                />
-                            </ScrollView>
-                        </View>
-
-
-                    </View>
-
-
-                </Modal.Content>
-
-
-            </Modal>
-
-            <Modal isOpen={imageModalVisible} onClose={() => setImageModalVisible(false)} size={'100%'} useRNModal>
-
-                <Box w={'80%'} h={'80%'} bgColor={'rgba(0, 0, 0, 0.7)'} borderRadius={10} display="flex" alignItems="center" justifyContent="center" alignContent={'center'}>
-                    <Modal.CloseButton color={'white'} />
-                    <NativeImage
-                        key={modalImageUri}
-                        source={{ uri: modalImageUri }}
-                        resizeMode='contain'
-                        flex={1}
-                        alt={modalImageUri}
-                        h={720}
-                        w={1280}
-                    />
-
-                </Box>
-
-            </Modal>
-        </>
-
-    );
-};
 
 
 const FobPriceHistoryModal = ({ handleFobPriceHistoryClose }) => {
@@ -3037,240 +2319,15 @@ const FobPriceHistory = () => {
 }
 
 
-const ImageCountComponent = ({ item, handleViewImagesModalOpen, handleUploadImagesModalOpen }) => {
-    // State for the image count
-    const [imageCount, setImageCount] = useState(item.imageCount || 0);
 
-    useEffect(() => {
-        const unsubscribe = onSnapshot(doc(projectExtensionFirestore, 'accounts', item.stockID), (doc) => {
-            if (doc.exists()) {
-                const data = doc.data();
-                setImageCount(data.imageCount || 0); // Update the image count with the new value from Firestore
-            }
-        });
-
-        // Clean up the listener when the component unmounts
-        return () => unsubscribe();
-    }, [item.stockID]); // useEffect will re-run if item.stockID changes
-
-    // Function placeholders
-    // const handleViewImagesModalOpen = (item) => {
-    //   console.log('View images', item);
-    // };
-
-    // const handleUploadImagesModalOpen = (item) => {
-    //   console.log('Upload images', item);
-    // };
-
-    return (
-        <View style={{ flex: 1, flexDirection: 'row' }}>
-            {imageCount > 0 ? (
-                <TouchableOpacity onPress={() => handleViewImagesModalOpen(item)}>
-                    <Text style={{ textDecorationLine: 'underline' }}>
-                        {imageCount} image/s
-                    </Text>
-                </TouchableOpacity>
-            ) : (
-                <Text>{imageCount} image/s</Text>
-            )}
-
-            <TouchableOpacity onPress={() => handleUploadImagesModalOpen(item)}>
-                {imageCount > 0 ? null : (
-                    <MaterialIcons name="add-photo-alternate" size={22} color={'white'} />
-                )}
-            </TouchableOpacity>
-        </View>
-    );
-};
-
-const FobPriceInput = ({ item, index, }) => {
-    const dispatch = useDispatch();
-    const toast = useToast();
-    const [fobPrice, setFobPrice] = useState(item.fobPrice ? parseFloat(item.fobPrice).toLocaleString() : '');
-    const inputFobJpy = useRef([]);
-
-    useEffect(() => {
-        // Assume you have a collection named 'stocks' and the document ID is `item.stockID`
-        const unsubscribe = onSnapshot(doc(projectExtensionFirestore, 'accounts', item.stockID), (doc) => {
-            // console.log(`Read ${doc.size} documents from accounts`);
-
-            if (doc.exists()) {
-                const data = doc.data();
-                // Update the fobPrice state with the new value from Firestore
-                setFobPrice(data.fobPrice ? parseFloat(data.fobPrice).toLocaleString() : '');
-            }
-        });
-
-        // Clean up the listener when the component unmounts
-        return () => unsubscribe();
-    }, []);
-
-    // ... rest of your component
-    const formatValueWithCommas = (value) => {
-        const numericValue = value.replace(/[^0-9]/g, '');
-        const truncatedValue = numericValue.slice(0, 9);
-        const formattedValue = truncatedValue.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
-        return formattedValue;
-    };
-
-    const handleTextChange = (text) => {
-        const numericValue = text.replace(/[^0-9]/g, '');
-        const currentNumericValue = fobPrice.replace(/[^0-9]/g, '');
-
-        // Update state only if the numeric value has changed
-        if (numericValue !== currentNumericValue) {
-            setFobPrice(numericValue);
-        }
-    };
-
-    // This function will format the displayed text
-    const handleInputFobJpyChange = (text, stockID) => {
-        const formattedValue = formatValueWithCommas(text);
-
-        // Apply the formatted value to the input without resetting the state
-        if (inputFobJpy.current[stockID]) {
-            inputFobJpy.current[stockID].setNativeProps({ text: formattedValue });
-        }
-    };
-
-    const handleSaveFob = async (item, index,) => {
-        dispatch(setLoadingModalVisible(true));
-
-        const response = await axios.get('https://worldtimeapi.org/api/timezone/Asia/Tokyo');
-        const { datetime } = response.data;
-        const formattedTime = moment(datetime).format('YYYY/MM/DD [at] HH:mm:ss');
-        const year = moment(datetime).format('YYYY');
-        const month = moment(datetime).format('MM');
-        const monthWithDay = moment(datetime).format('MM/DD');
-        const date = moment(datetime).format('YYYY/MM/DD');
-        const day = moment(datetime).format('DD');
-        const time = moment(datetime).format('HH:mm');
-        const timeWithMinutesSeconds = moment(datetime).format('HH:mm:ss');
-
-        const fobValue = inputFobJpy.current[item.stockID].value.replace(/,/g, ''); // Remove commas
-
-
-
-
-
-
-
-        toast.closeAll();
-        // if (item.fobPrice == fobValue || fobValue == '') {
-        //   dispatch(setLoadingModalVisible(false));
-
-        //   console.log('same');
-        //   console.log(item.fobPrice);
-
-        // }
-        // else {
-
-        const fobHistoryData = {
-            date: formattedTime,
-            fobPrice: fobValue,
-            changedBy: nameVariable.text,
-        };
-        const vehicleProductRef = doc(collection(projectExtensionFirestore, 'accounts'), item.stockID);
-
-        try {
-            await updateDoc(vehicleProductRef, {
-                fobPrice: fobValue,
-                fobHistory: arrayUnion(fobHistoryData)
-            });
-            const logData = {
-                message: `Vehicle FOB Price Updated: "${nameVariable.text}" updated "${item.carName}" FOB price with a reference number of "${item.referenceNumber}" using Vehicle List.`,
-                timestamp: formattedTime,
-                colorScheme: true,
-                keywords: [
-                    formattedTime.toLowerCase(),
-                    globalCurrentStockID.toLowerCase(),
-                    `Vehicle FOB Price Updated: "${nameVariable.text}" updated "${item.carName}" FOB price with a reference number of "${item.referenceNumber}" using Vehicle List`.toLowerCase(),
-                    'Vehicle List'.toLowerCase(),
-                    'Vehicle FOB Price Updated'.toLowerCase(),
-                    'Vehicle FOB Price'.toLowerCase(),
-                    'Vehicle FOB'.toLowerCase(),
-                    'Vehicle'.toLowerCase(),
-                    'FOB Price Updated'.toLowerCase(),
-                    'FOB Price'.toLowerCase(),
-                    'FOB'.toLowerCase(),
-                    'Updated'.toLowerCase(),
-                    globalSelectedCarName.toLowerCase(),
-                    globalSelectedVehicleReferenceNumber.toLowerCase(),
-                    nameVariable.text.toLowerCase(),
-                    year.toLowerCase(),
-                    month.toLowerCase(),
-                    monthWithDay.toLowerCase(),
-                    date.toLowerCase(),
-                    day.toLowerCase(),
-                    time.toLowerCase(),
-                    timeWithMinutesSeconds.toLowerCase(),
-                ],
-            };
-            addLogToCollection(logData);
-            dispatch(setLoadingModalVisible(false));
-
-            // console.log('FOB Price updated successfully');
-            toast.show({
-                render: () => {
-                    return <View style={{ backgroundColor: '#16A34A', padding: 5, borderRadius: 5 }}>
-                        <Text style={{ color: 'white' }}>FOB Price updated successfully!</Text>
-                    </View>;
-                }
-            })
-        } catch (error) {
-            console.error(error);
-            toast.show({
-                render: () => {
-                    return <View style={{ backgroundColor: '#DC2626', padding: 5, borderRadius: 5 }}>
-                        <Text style={{ color: 'white' }}>Error updating: {error}</Text>
-                    </View>;
-                }
-            })
-        }
-        // }
-
-        // Reference the Firestore document and update the 'fobPrice' field
-
-    };
-
-    return (
-        <>
-            <TextInput
-                ref={(ref) => (inputFobJpy.current[item.stockID] = ref)}
-                value={formatValueWithCommas(fobPrice)} // Display the formatted value
-                style={{ outlineStyle: 'none', flex: 1, padding: 5, borderRadius: 5, width: '90%' }}
-                key={item.id}
-                onChangeText={(text) => {
-                    handleTextChange(text); // This sets the numeric value state
-                    handleInputFobJpyChange(text, item.stockID); // This formats the display
-                }}
-                onSubmitEditing={() => handleSaveFob(item, index)} />
-            <TouchableHighlight
-                underlayColor={'rgba(22, 163, 74, 0.3)'}
-                onPress={() => handleSaveFob(item, index)}
-                style={{
-                    backgroundColor: '#16A34A',
-                    borderRadius: 5,
-                    padding: 5,
-                    margin: 2,
-                    alignSelf: 'center',
-                }}>
-                {/* <Text style={{ textAlign: 'center', }}>Save</Text> */}
-                <MaterialIcons name='update' color='white' size={22} />
-            </TouchableHighlight>
-        </>
-    );
-};
 
 
 const CustomerListTable = () => {
-    const toast = useToast();
     const screenWidth = Dimensions.get('window').width;
     const dispatch = useDispatch();
     const [currentPage, setCurrentPage] = useState(1);
     // const [data, setData] = useState([]);
     const [pageSize, setPageSize] = useState(10);
-    const customerListData = useSelector((state) => state.customerListData);
     const [searchQuery, setSearchQuery] = useState('');
     const searchInputRef = useRef(null);
 
@@ -3278,11 +2335,9 @@ const CustomerListTable = () => {
     const [stockIDs, setStockIDs] = useState([]);
     const [imageCounts, setImageCounts] = useState([]);
 
-    const inputExpenseAmount = useRef(null);
     const [pageIndex, setPageIndex] = useState(0);
 
     const [itemsPerPage, setItemsPerPage] = useState(10);
-    const inputFobJpy = useRef([]);
     const [pageClicked, setPageClicked] = useState('');
     const [lastVisible, setLastVisible] = useState(null);
     const [firstVisible, setFirstVisible] = useState(null);
@@ -3292,35 +2347,15 @@ const CustomerListTable = () => {
     const [sortField, setSortField] = useState('textEmail'); // null when sorting is off
     const [isSortActive, setIsSortActive] = useState(false);
     const loginName = useSelector((state) => state.loginName);
+    const customerListData = useSelector((state) => state.customerListData);
+
     nameVariable.text = loginName;
 
-    const handleSortChange = (field) => {
-        setCurrentPage(1);
-        // If the field is the same as the current sortField, toggle sorting
-        setSearchText('');
-        searchInputRef.current.clear();
-        if (field === sortField) {
-            setIsSortActive(!isSortActive); // Toggle sorting for the same field
-            if (!isSortActive) {
-                // If it was off, we turn it on and keep the same field
-                setSortField(field);
-            } else {
-                // If it was on, we turn it off and reset to default 'textEmail'
-                setSortField('textEmail');
-            }
-        } else {
-            // If the field is different, turn sorting on and change the field
-            setSortField(field);
-            setIsSortActive(true); // Always turn on sorting when a new field is clicked
-        }
-        // You might want to dispatch setLoadingModalVisible(true) when you start a new query
-        dispatch(setLoadingModalVisible(true));
-    };
 
 
     const fetchWithSort = async () => {
         const fieldToSortBy = isSortActive && sortField ? sortField : 'textEmail';
-        const sortDirection = isSortActive ? 'asc' : 'desc';
+        const sortDirection = isSortActive ? 'desc' : 'asc';
         let q;
 
         if (searchText === '') {
@@ -3333,7 +2368,7 @@ const CustomerListTable = () => {
             q = query(
                 collection(projectExtensionFirestore, 'accounts'),
                 orderBy(fieldToSortBy, sortDirection),
-                where('keywords', 'array-contains', searchText.toUpperCase()),
+                where('textEmail', 'array-contains', searchText.toUpperCase()),
                 limit(pageSize)
             );
         }
@@ -3347,6 +2382,7 @@ const CustomerListTable = () => {
                     ...document.data(),
                 });
             });
+
             dispatch(setCustomerListData(accountsData));
             setLastVisible(documents.docs[documents.docs.length - 1]);
             setFirstVisible(documents.docs[0]);
@@ -3367,7 +2403,7 @@ const CustomerListTable = () => {
     useEffect(() => {
         // Determine the field and direction to sort by
         const fieldToSortBy = isSortActive && sortField ? sortField : 'textEmail';
-        const sortDirection = isSortActive ? 'asc' : 'desc';
+        const sortDirection = isSortActive ? 'desc' : 'asc';
 
         // Define the query
         const q = query(
@@ -3386,6 +2422,8 @@ const CustomerListTable = () => {
                         ...document.data(),
                     });
                 });
+                console.log(accountsData);
+
                 dispatch(setCustomerListData(accountsData));
                 setLastVisible(documents.docs[documents.docs.length - 1]);
                 setFirstVisible(documents.docs[0]);
@@ -3402,7 +2440,7 @@ const CustomerListTable = () => {
 
     const fetchNextData = async () => {
         const fieldToSortBy = isSortActive && sortField ? sortField : 'textEmail';
-        const sortDirection = isSortActive ? 'asc' : 'desc';
+        const sortDirection = isSortActive ? 'desc' : 'asc';
 
 
         if (searchText === '') {
@@ -3429,7 +2467,7 @@ const CustomerListTable = () => {
             const q = query(
                 collection(projectExtensionFirestore, 'accounts'),
                 orderBy(fieldToSortBy, sortDirection),
-                where('keywords', 'array-contains', searchText.toUpperCase()),
+                where('textEmail', 'array-contains', searchText.toUpperCase()),
                 startAfter(lastVisible),
                 limit(pageSize)
             );
@@ -3447,7 +2485,7 @@ const CustomerListTable = () => {
 
     const fetchPreviousData = async () => {
         const fieldToSortBy = isSortActive && sortField ? sortField : 'textEmail';
-        const sortDirection = isSortActive ? 'asc' : 'desc';
+        const sortDirection = isSortActive ? 'desc' : 'asc';
 
         if (searchText === '') {
 
@@ -3470,7 +2508,7 @@ const CustomerListTable = () => {
             const q = query(
                 collection(projectExtensionFirestore, 'accounts'),
                 orderBy(fieldToSortBy, sortDirection),
-                where('keywords', 'array-contains', searchText.toUpperCase()),
+                where('textEmail', 'array-contains', searchText.toUpperCase()),
                 endBefore(firstVisible),
                 limitToLast(pageSize)
             );
@@ -3550,7 +2588,7 @@ const CustomerListTable = () => {
 
         else {
             const fieldToSortBy = isSortActive && sortField ? sortField : 'textEmail';
-            const sortDirection = isSortActive ? 'asc' : 'desc';
+            const sortDirection = isSortActive ? 'desc' : 'asc';
 
             if (searchText == '') {
                 setCurrentPage(1);
@@ -3570,7 +2608,7 @@ const CustomerListTable = () => {
 
                 const q = query(
                     collection(projectExtensionFirestore, 'accounts'),
-                    where('keywords', 'array-contains', searchText.toUpperCase()),
+                    where('textEmail', 'array-contains', searchText.toUpperCase()),
                     orderBy(fieldToSortBy, sortDirection),
                     limit(pageSize)
                 );
@@ -3618,7 +2656,7 @@ const CustomerListTable = () => {
             setCurrentPage(1);
             const q = query(
                 collection(projectExtensionFirestore, 'accounts'),
-                orderBy('textEmail', 'desc'),
+                orderBy('textEmail', 'asc'),
                 limit(pageSize)
             );
 
@@ -3634,8 +2672,8 @@ const CustomerListTable = () => {
             setCurrentPage(1);
             const q = query(
                 collection(projectExtensionFirestore, 'accounts'),
-                where('keywords', 'array-contains', searchText.toUpperCase()),
-                orderBy('textEmail', 'desc'),
+                where('textEmail', 'array-contains', searchText.toUpperCase()),
+                orderBy('textEmail', 'asc'),
                 limit(pageSize)
             );
 
@@ -3647,84 +2685,8 @@ const CustomerListTable = () => {
 
 
 
-    const formatValueWithCommas = (value) => {
-        const numericValue = value.replace(/[^0-9]/g, '');
-        const truncatedValue = numericValue.slice(0, 9);
-        const formattedValue = truncatedValue.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
-        return formattedValue;
-    };
 
     // Function to handle input changes for each item
-    const handleInputFobJpyChange = (text, index) => {
-        const formattedValue = formatValueWithCommas(text);
-
-        if (inputFobJpy.current[index]) {
-            inputFobJpy.current[index].value = formattedValue;
-        }
-    };
-
-
-
-
-    const getImageCountInFolder = async (folderPath) => {
-        try {
-            const folderRef = ref(storage, folderPath);
-            const listResult = await listAll(folderRef);
-
-            return listResult.items.length;
-        } catch (error) {
-            console.error('Error getting image count:', error);
-            return -1; // Handle the error accordingly
-        }
-    };
-
-
-    const handleTextChange = (text) => {
-        setSearchQuery(text);
-    };
-
-    const handleFobPriceHistoryOpen = async (item) => {
-        dispatch(setLoadingModalVisible(true));
-        dispatch(setFobPriceHistoryModalVisible(true));
-        if (item.stockID) {
-            const docRef = doc(projectExtensionFirestore, 'accounts', item.stockID);
-            try {
-                const docSnap = await getDoc(docRef);
-
-                if (docSnap.exists()) {
-                    // Assuming you have an action to set the FOB history like setFobHistory
-                    dispatch(setFobHistoryData(docSnap.data().fobHistory || []));
-                    dispatch(setLoadingModalVisible(false));
-
-                } else {
-                    console.log("No such document!");
-                }
-            } catch (error) {
-                console.error("Error fetching document: ", error);
-            }
-        }
-        // globalFobPriceHistoryData = item.fobHistory ? item.fobHistory : [];
-        globalCurrentStockID = item.stockID ? item.stockID : '';
-        globalSelectedVehicle = `${item.referenceNumber} / ${item.carName} `;
-        globalSelectedVehicleReferenceNumber = item.referenceNumber;
-
-    }
-
-    const handleSaveFob = async (item, index,) => {
-        dispatch(setLoadingModalVisible(true));
-
-        const response = await axios.get('https://worldtimeapi.org/api/timezone/Asia/Tokyo');
-        const { datetime } = response.data;
-        const formattedTime = moment(datetime).format('YYYY/MM/DD [at] HH:mm:ss');
-        const year = moment(datetime).format('YYYY');
-        const month = moment(datetime).format('MM');
-        const monthWithDay = moment(datetime).format('MM/DD');
-        const date = moment(datetime).format('YYYY/MM/DD');
-        const day = moment(datetime).format('DD');
-        const time = moment(datetime).format('HH:mm');
-        const timeWithMinutesSeconds = moment(datetime).format('HH:mm:ss');
-
-        const fobValue = inputFobJpy.current[item.stockID].value.replace(/,/g, ''); // Remove commas
 
 
 
@@ -3732,178 +2694,13 @@ const CustomerListTable = () => {
 
 
 
-        toast.closeAll();
-        // if (item.fobPrice == fobValue || fobValue == '') {
-        //   dispatch(setLoadingModalVisible(false));
-
-        // }
-        // else {
-
-        const fobHistoryData = {
-            date: formattedTime,
-            fobPrice: fobValue,
-            changedBy: nameVariable.text,
-        };
-        const vehicleProductRef = doc(collection(projectExtensionFirestore, 'accounts'), item.stockID);
-
-        try {
-            await updateDoc(vehicleProductRef, {
-                fobPrice: fobValue,
-                fobHistory: arrayUnion(fobHistoryData)
-            });
-            const logData = {
-                message: `Vehicle FOB Price Updated: "${nameVariable.text}" updated "${item.carName}" FOB price with a reference number of "${item.referenceNumber}" using Vehicle List.`,
-                timestamp: formattedTime,
-                colorScheme: true,
-                keywords: [
-                    formattedTime.toLowerCase(),
-                    globalCurrentStockID.toLowerCase(),
-                    `Vehicle FOB Price Updated: "${nameVariable.text}" updated "${item.carName}" FOB price with a reference number of "${item.referenceNumber}" using Vehicle List`.toLowerCase(),
-                    'Vehicle List'.toLowerCase(),
-                    'Vehicle FOB Price Updated'.toLowerCase(),
-                    'Vehicle FOB Price'.toLowerCase(),
-                    'Vehicle FOB'.toLowerCase(),
-                    'Vehicle'.toLowerCase(),
-                    'FOB Price Updated'.toLowerCase(),
-                    'FOB Price'.toLowerCase(),
-                    'FOB'.toLowerCase(),
-                    'Updated'.toLowerCase(),
-                    globalSelectedCarName.toLowerCase(),
-                    globalSelectedVehicleReferenceNumber.toLowerCase(),
-                    nameVariable.text.toLowerCase(),
-                    year.toLowerCase(),
-                    month.toLowerCase(),
-                    monthWithDay.toLowerCase(),
-                    date.toLowerCase(),
-                    day.toLowerCase(),
-                    time.toLowerCase(),
-                    timeWithMinutesSeconds.toLowerCase(),
-                ],
-            };
-            addLogToCollection(logData);
-            dispatch(setLoadingModalVisible(false));
-
-            // console.log('FOB Price updated successfully');
-            toast.show({
-                render: () => {
-                    return <View style={{ backgroundColor: '#16A34A', padding: 5, borderRadius: 5 }}>
-                        <Text style={{ color: 'white' }}>FOB Price updated successfully!</Text>
-                    </View>;
-                }
-            })
-        } catch (error) {
-            console.error(error);
-            toast.show({
-                render: () => {
-                    return <View style={{ backgroundColor: '#DC2626', padding: 5, borderRadius: 5 }}>
-                        <Text style={{ color: 'white' }}>Error updating: {error}</Text>
-                    </View>;
-                }
-            })
-        }
-        // }
-
-        // Reference the Firestore document and update the 'fobPrice' field
-
-    };
-
-    const handleUploadImagesModalOpen = (item) => {
-        dispatch(setUploadImagesModalVisible(true));
-        globalCurrentStockID = item.stockID;
-        globalSelectedVehicle = `${item.referenceNumber} / ${item.carName} `;
-        globalSelectedVehicleReferenceNumber = item.referenceNumber;
-        globalSelectedCarName = item.carName;
-
-    }
-
-    const handleViewImagesModalOpen = async (item) => {
-        dispatch(setLoadingModalVisible(true));
-        try {
-            await getImages(item.stockID);
-            globalCurrentStockID = item.stockID;
-            globalSelectedVehicle = `${item.referenceNumber} / ${item.carName} `;
-            globalSelectedVehicleReferenceNumber = item.referenceNumber;
-            dispatch(setLoadingModalVisible(false));
-            dispatch(setViewImagesModalVisible(true));
-        } catch (error) {
-            console.error(error);
-            dispatch(setLoadingModalVisible(false));
-
-        }
-    }
-
-    const handleViewImagesModalClose = () => {
-        dispatch(setViewImagesModalVisible(false));
-        globalCurrentStockID = '';
-        globalSelectedVehicle = ``;
-        globalSelectedVehicleReferenceNumber = '';
-        globalSelectedCarName = '';
-        dispatch(setViewImagesData([]));
-    };
-
-    const getImages = useCallback(async (folderName) => {
-        try {
-
-            const imageRefs = await listAll(ref(storage, `${folderName}/`)); // Use the provided folderName
-            // selectModelRef.current.selectIndex(globalModelDataVariable.indexOf(modelVariable.text));
-
-            const urls = await Promise.all(
-                imageRefs.items.map(async (itemRef) => {
-                    const uri = await getDownloadURL(itemRef);
-                    return { uri, fileName: itemRef.name };
-                })
-            );
-            // Sort the URLs array in ascending order based on the fileName (which is a number)
-            urls.sort((a, b) => {
-                const fileNameA = parseInt(a.fileName);
-                const fileNameB = parseInt(b.fileName);
-                return fileNameA - fileNameB;
-            });
-
-            if (urls.length > 0) {
-                dispatch(setViewImagesData(urls));
-
-            }
-
-            else {
-                dispatch(setViewImagesData([]));
-            }
-
-            // console.log(urls);
-
-        } catch (error) {
-            // Handle any errors that may occur during the Firebase operations
-            console.error('Error getting image URLs:', error);
-        }
-    }, []);
 
 
-    const addStockStatusToAccounts = async () => {
-        const vehicleProductsRef = collection(projectExtensionFirestore, "accounts");
 
-        try {
-            const querySnapshot = await getDocs(vehicleProductsRef);
-            querySnapshot.forEach(async (doc) => {
-                const data = doc.data();
 
-                // Check if the imageCount field does not exist
-                if (data.stockStatus === undefined) {
-                    try {
-                        // If the imageCount field doesn't exist, initialize it to 0
-                        await updateDoc(doc.ref, {
-                            stockStatus: ''
-                        });
-                        console.log(`stockStatus initialized to 0 for document ID: ${doc.id}`);
-                    } catch (error) {
-                        console.error('Error initializing stockStatus field:', error);
-                    }
-                }
-            });
-        } catch (error) {
-            console.error("Error reading accounts collection:", error);
-        }
 
-    }
+
+
 
 
     const handleSearchEnter = () => {
@@ -3957,38 +2754,25 @@ const CustomerListTable = () => {
                                 borderRadius: 5,
                             }}>
                             <View style={{ flex: 1, padding: 2 }}>
-                                <Text style={{ color: 'white', }} bold>Ref #</Text>
+                                <Text style={{ color: 'white', }} bold>Email</Text>
                             </View>
                             <View style={{ flex: 1, padding: 2 }}>
-                                <Text style={{ color: 'white', }} bold>Car Name</Text>
+                                <Text style={{ color: 'white', }} bold>Name</Text>
                             </View>
                             <View style={{ flex: 1, padding: 2 }}>
-                                <Text style={{ color: 'white', }} bold>Chassis #</Text>
+                                <Text style={{ color: 'white', }} bold>Phone Number</Text>
                             </View>
-
-                            <View style={{ flex: 1, padding: 2, flexDirection: 'row', alignItems: 'center' }}>
-                                <TouchableOpacity onPress={() => handleSortChange('imageCount')}>
-                                    <Text style={{ color: isSortActive && sortField === 'imageCount' ? '#FBBC04' : 'white', }} bold underline>Images</Text>
-                                </TouchableOpacity></View>
-
-
-
-                            <View style={{ flex: 1, padding: 2, flexDirection: 'row', alignItems: 'center' }}>
-                                <TouchableOpacity onPress={() => handleSortChange('stockStatus')}>
-                                    <Text style={{ color: isSortActive && sortField === 'stockStatus' ? '#FBBC04' : 'white', }} bold underline>Stock Status</Text>
-                                </TouchableOpacity>
-                            </View>
-
-                            <View style={{ flex: 1, padding: 2, flexDirection: 'row', alignItems: 'center' }}>
-                                <TouchableOpacity onPress={() => handleSortChange('fobPrice')}>
-                                    <Text style={{ color: isSortActive && sortField === 'fobPrice' ? '#FBBC04' : 'white', }} bold underline>FOB Price</Text>
-                                </TouchableOpacity></View>
-
                             <View style={{ flex: 1, padding: 2 }}>
-                                <Text style={{ color: 'white', alignSelf: 'center', }} bold>Operate</Text>
+                                <Text style={{ color: 'white', }} bold>Address</Text>
+                            </View>
+                            <View style={{ flex: 1, padding: 2 }}>
+                                <Text style={{ color: 'white', }} bold>City</Text>
+                            </View>
+                            <View style={{ flex: 1, padding: 2 }}>
+                                <Text style={{ color: 'white', }} bold>Country</Text>
                             </View>
                         </View>
-                        {customerListData.map((item, index) => (
+                        {customerListData.map((item) => (
                             <View
                                 key={item.id}
                                 style={{
@@ -4002,64 +2786,24 @@ const CustomerListTable = () => {
                                     paddingVertical: 10,
                                 }}>
                                 <View style={{ flex: 1 }}>
-                                    <Text selectable style={{ width: '90%', marginLeft: 3, }}>{item.referenceNumber}</Text>
+                                    <Text selectable style={{ width: '90%', marginLeft: 3, }}>{item.textEmail}</Text>
                                 </View>
                                 <View style={{ flex: 1 }}>
-                                    <Text selectable style={{ width: '90%', }}>{item.carName} </Text>
+                                    <Text selectable style={{ width: '90%', marginLeft: 3, }}>{`${item.textFirst} ${item.textLast}`}</Text>
                                 </View>
                                 <View style={{ flex: 1 }}>
-                                    <Text selectable style={{ width: '90%', }}>{item.chassisNumber}</Text>
+                                    <Text selectable style={{ width: '90%', marginLeft: 3, }}>{item.textPhoneNumber}</Text>
                                 </View>
-                                <ImageCountComponent item={item} handleViewImagesModalOpen={handleViewImagesModalOpen} handleUploadImagesModalOpen={handleUploadImagesModalOpen} />
-                                {/* <View style={{ flex: 1, flexDirection: 'row' }}>
-  
-                    {item.imageCount > 0 ?
-                      (<TouchableOpacity onPress={() => handleViewImagesModalOpen(item)}>
-                        <Text underline>
-                          {item.imageCount ? item.imageCount : 0} image/s
-                        </Text>
-                      </TouchableOpacity>) :
-                      (<Text>
-                        {item.imageCount ? item.imageCount : 0} image/s
-                      </Text>)
-                    }
-  
-  
-                    <TouchableOpacity onPress={() => handleUploadImagesModalOpen(item)}>
-                      {item.imageCount > 0 ? null : (
-                        <MaterialIcons name="add-photo-alternate" size={22} color={'white'} />
-                      )}
-                    </TouchableOpacity>
-                  </View> */}
-                                <View style={{ flex: 1, }}>
-                                    <SelectStockStatus key={item.stockID} selectedValue={item.stockStatus} id={item.stockID} item={item} />
-                                    {/* <Text style={{ width: '90%', }}>{item.stockStatus}</Text> */}
+                                <View style={{ flex: 1 }}>
+                                    <Text selectable style={{ width: '90%', marginLeft: 3, }}>{`${item.textStreet} ${item.textZip}`}</Text>
+                                </View>
+                                <View style={{ flex: 1 }}>
+                                    <Text selectable style={{ width: '90%', marginLeft: 3, }}>{item.city}</Text>
+                                </View>
+                                <View style={{ flex: 1 }}>
+                                    <Text selectable style={{ width: '90%', marginLeft: 3, }}>{item.country}</Text>
                                 </View>
 
-                                <View style={{ width: '90%', flex: 1, flexDirection: 'row', backgroundColor: 'white', borderRadius: 5, }}>
-                                    <TouchableOpacity
-                                        onPress={() => handleFobPriceHistoryOpen(item)}
-                                        style={{
-                                            margin: 5,
-                                            alignSelf: 'center',
-                                        }}>
-                                        {/* <Text style={{ textAlign: 'center', }}>Save</Text> */}
-                                        <FontAwesome name='clock-o' color='black' size={22} />
-                                    </TouchableOpacity>
-                                    <FobPriceInput item={item} index={index} handleInputFobJpyChange={handleInputFobJpyChange} handleSaveFob={handleSaveFob} />
-                                    {/* <TextInput
-                      ref={(ref) => (inputFobJpy.current[item.stockID] = ref)}
-                      defaultValue={item.fobPrice ? parseFloat(item.fobPrice).toLocaleString() : ''}
-                      style={{ flex: 1, padding: 5, borderRadius: 5, width: '90%', }}
-                      key={item.id}
-                      onChangeText={(text) => handleInputFobJpyChange(text, item.stockID)}
-                      onSubmitEditing={() => handleSaveFob(item, index)} /> */}
-
-                                </View>
-                                <View style={{ flexDirection: 'row', flex: 1, alignItems: 'center', justifyContent: 'center', }}>
-                                    <SupplyChainsCosts data={item} />
-                                    {/* <EditVehicle data={item} /> */}
-                                </View>
                             </View>
                         ))}
 
@@ -4111,7 +2855,7 @@ const CustomerListTable = () => {
                             />
                         </View>
 
-                        {customerListData.map((item, index) => (
+                        {customerListData.map((item) => (
                             <View
                                 key={item.id}
                                 style={{
@@ -4125,114 +2869,32 @@ const CustomerListTable = () => {
 
                                 <View style={{ flexDirection: 'row' }}>
                                     <View style={{ width: '30%', padding: 2, backgroundColor: '#0642F4', borderBottomWidth: 1, borderBottomColor: '#E4E4E7', }}>
-                                        <Text style={{ color: 'white', }} bold>Ref #</Text>
+                                        <Text style={{ color: 'white', }} bold>Email</Text>
                                     </View>
                                     <View style={{ flex: 1, borderBottomWidth: 1, borderBottomColor: '#E4E4E7', }}>
-                                        <Text selectable style={{ marginLeft: 3 }}>{item.referenceNumber}</Text>
+                                        <Text selectable style={{ marginLeft: 3 }}>{item.textEmail}</Text>
                                     </View>
                                 </View>
 
                                 <View style={{ flexDirection: 'row' }}>
                                     <View style={{ width: '30%', padding: 2, backgroundColor: '#0642F4', borderBottomWidth: 1, borderBottomColor: '#E4E4E7', }}>
-                                        <Text style={{ color: 'white', }} bold>Car Name</Text>
+                                        <Text style={{ color: 'white', }} bold>Name</Text>
                                     </View>
                                     <View style={{ flex: 1, borderBottomWidth: 1, borderBottomColor: '#E4E4E7', }}>
-                                        <Text selectable style={{ marginLeft: 3 }}>{item.carName} </Text>
+                                        <Text selectable style={{ marginLeft: 3 }}>{`${item.textFirst} ${item.textLast}`}</Text>
                                     </View>
                                 </View>
 
                                 <View style={{ flexDirection: 'row' }}>
                                     <View style={{ width: '30%', padding: 2, backgroundColor: '#0642F4', borderBottomWidth: 1, borderBottomColor: '#E4E4E7', }}>
-                                        <Text style={{ color: 'white', }} bold>Chassis #</Text>
+                                        <Text style={{ color: 'white', }} bold>Phone Number</Text>
                                     </View>
                                     <View style={{ flex: 1, borderBottomWidth: 1, borderBottomColor: '#E4E4E7', }}>
-                                        <Text selectable style={{ marginLeft: 3 }}>{item.chassisNumber}</Text>
+                                        <Text selectable style={{ marginLeft: 3 }}>{`${item.textPhoneNumber}`}</Text>
                                     </View>
                                 </View>
 
 
-                                <View style={{ flexDirection: 'row' }}>
-                                    <View style={{ width: '30%', padding: 2, backgroundColor: '#0642F4', borderBottomWidth: 1, borderBottomColor: '#E4E4E7', }}>
-                                        <Text style={{ color: 'white', }} bold>Images</Text>
-                                    </View>
-                                    <View style={{ flex: 1, flexDirection: 'row', borderBottomWidth: 1, borderBottomColor: '#E4E4E7', }}>
-                                        {item.imageCount > 0 ?
-                                            (<TouchableOpacity onPress={() => handleViewImagesModalOpen(item)}>
-                                                <Text underline style={{ marginLeft: 3 }}>
-                                                    {item.imageCount ? item.imageCount : 0} image/s
-                                                </Text>
-                                            </TouchableOpacity>) :
-                                            (<Text style={{ marginLeft: 3 }}>
-                                                {item.imageCount ? item.imageCount : 0} image/s
-                                            </Text>)
-                                        }
-
-
-                                        <TouchableOpacity onPress={() => handleUploadImagesModalOpen(item)}>
-                                            {item.imageCount > 0 ? null : (
-                                                <MaterialIcons name="add-photo-alternate" size={22} color={'white'} />
-                                            )}
-                                        </TouchableOpacity>
-                                    </View>
-                                </View>
-
-                                <View style={{ flexDirection: 'row' }}>
-                                    <View style={{ width: '30%', padding: 2, backgroundColor: '#0642F4', borderBottomWidth: 1, borderBottomColor: '#E4E4E7', justifyContent: 'center', }}>
-                                        <Text style={{ color: 'white', }} bold>Stock Status</Text>
-                                    </View>
-                                    <View style={{ flex: 1, paddingVertical: 1, borderBottomWidth: 1, borderBottomColor: '#E4E4E7', }}>
-                                        <SelectStockStatus key={item.stockID} selectedValue={item.stockStatus} id={item.stockID} item={item} />
-                                    </View>
-                                </View>
-
-
-                                <View style={{ flexDirection: 'row' }}>
-                                    <View style={{ width: '30%', padding: 2, backgroundColor: '#0642F4', borderBottomWidth: 1, borderBottomColor: '#E4E4E7', justifyContent: 'center', }}>
-                                        <Text style={{ color: 'white', }} bold>FOB Price ¥</Text>
-                                    </View>
-                                    <View style={{ flex: 1, flexDirection: 'row', backgroundColor: 'white', borderRadius: 5, borderBottomWidth: 1, borderBottomColor: '#E4E4E7', justifyContent: 'center', }}>
-                                        <TouchableOpacity
-                                            onPress={() => handleFobPriceHistoryOpen(item)}
-                                            style={{
-                                                margin: 5,
-                                                alignSelf: 'center',
-                                            }}>
-                                            {/* <Text style={{ textAlign: 'center', }}>Save</Text> */}
-                                            <FontAwesome name='clock-o' color='black' size={22} />
-                                        </TouchableOpacity>
-                                        <FobPriceInput item={item} index={index} handleInputFobJpyChange={handleInputFobJpyChange} handleSaveFob={handleSaveFob} />
-
-                                        {/* <TextInput
-                        ref={(ref) => (inputFobJpy.current[item.stockID] = ref)}
-                        defaultValue={item.fobPrice ? parseFloat(item.fobPrice).toLocaleString() : ''}
-                        style={{ width: '90%', borderRadius: 5, }}
-                        key={item.id}
-                        onChangeText={(text) => handleInputFobJpyChange(text, item.stockID)}
-                        onSubmitEditing={() => handleSaveFob(item, index)} /> */}
-                                        {/* <TouchableHighlight
-                        underlayColor={'rgba(22, 163, 74, 0.3)'}
-                        onPress={() => handleSaveFob(item, index)}
-                        style={{
-                          backgroundColor: '#16A34A',
-                          margin: 2,
-                          marginLeft: 2,
-                          alignSelf: 'center',
-                          borderRadius: 5,
-                        }}>
-                        <MaterialIcons name='update' color='white' size={22} />
-                      </TouchableHighlight> */}
-                                    </View>
-                                </View>
-
-                                <View style={{ flexDirection: 'row' }}>
-                                    <View style={{ width: '30%', padding: 2, backgroundColor: '#0642F4', borderBottomWidth: 1, borderBottomColor: '#E4E4E7', justifyContent: 'center', }}>
-                                        <Text style={{ color: 'white', }} bold>Operate</Text>
-                                    </View>
-                                    <View style={{ flexDirection: 'row', flex: 1, margin: 5, }}>
-                                        <SupplyChainsCosts data={item} />
-                                        {/* <EditVehicle data={item} /> */}
-                                    </View>
-                                </View>
                             </View>
                         ))}
 
@@ -4288,8 +2950,6 @@ const CustomerListTable = () => {
 
 export default function CustomerList() {
     const [email, setEmail] = useState('');
-    const logo = require('../../assets/C-Hub.png');
-    const logo2 = require('../../assets/C-Hub Logo Only.png');
     const [isMobileView, setIsMobileView] = useState(false);
     const [isDrawerOpen, setIsDrawerOpen] = useState(false);
     // const navigation = useNavigation();
@@ -4328,22 +2988,6 @@ export default function CustomerList() {
     }, []);
 
 
-    // useEffect(() => {
-    //   const handleWidthChange = ({ window }) => {
-    //     setWidthState(window.width);
-    //   };
-
-    //   Dimensions.addEventListener('change', handleWidthChange);
-
-    //   return () => {
-    //     Dimensions.removeEventListener('change', handleWidthChange);
-    //   };
-    // }, []);
-
-    // useEffect(() => {
-    //   reloadData();
-    // }, [reloadData]);
-
 
     // useEffect(() => {
     // }, [typeOfAccount]);
@@ -4363,15 +3007,6 @@ export default function CustomerList() {
 
         return unsubscribe
     }, [])
-
-
-
-
-
-
-
-
-
 
 
 
@@ -4439,7 +3074,7 @@ export default function CustomerList() {
     }, []);
 
 
-    const listenForNameChange = (documentId) => {
+    const listenForNameChange = () => {
 
 
         // To stop listening for updates, you can call unsubscribe()
@@ -4455,8 +3090,6 @@ export default function CustomerList() {
 
             if (accountDocSnapshot.exists()) {
                 const data = accountDocSnapshot.data();
-                const fieldType = data.type;
-                const fieldName = data.name;
                 dispatch(setLoginName(data.name));
 
             } else {
@@ -4466,16 +3099,6 @@ export default function CustomerList() {
             console.error('Error fetching field value:', error);
         }
     };
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -4493,38 +3116,6 @@ export default function CustomerList() {
 
 
     }
-
-    // useEffect(() => {
-    //   const handleScreenResize = () => {
-    //     const screenWidth = Dimensions.get('window').width;
-    //     setIsMobileView(screenWidth < 1200);
-    //   };
-
-    //   // Initial check on component mount
-    //   handleScreenResize();
-
-    //   // Listen for screen dimension changes
-    //   Dimensions.addEventListener('change', handleScreenResize);
-
-    //   // Cleanup event listener on component unmount
-    //   return () => {
-    //     Dimensions.removeEventListener('change', handleScreenResize);
-    //   };
-    // }, []);
-
-
-    // const showDrawerIcon = useBreakpointValue([true, true, true, false]);
-
-
-
-
-
-
-
-
-
-
-
 
 
     const NamePopover = ({ name, handleSignOut }) => {
@@ -4571,52 +3162,6 @@ export default function CustomerList() {
         },
     });
 
-    const SuccessModal = ({ isOpen, onClose, bodyText, headerText }) => {
-
-
-
-
-        return (
-            <>
-                <Modal isOpen={isOpen} onClose={onClose} useRNModal>
-                    <Modal.Content bgColor={'green.100'}>
-                        <Modal.Header borderBottomWidth={0} bgColor={'green.100'}>
-                            <Text textAlign={'center'} color={'#102A43'} bold>
-                                😊😎 Success! 😎😊
-                            </Text>
-                        </Modal.Header>
-                        <Modal.Body
-                            justifyContent={'center'}
-                            alignItems={'center'}
-                            bgColor={'green.200'}
-                            borderLeftWidth={4}
-                            borderLeftColor={'green.600'}
-                            margin={5}
-                        >
-                            <Box flex={1}>
-                                <Text color={'green.600'} bold>
-                                    {headerText}
-                                    {/* Vehicle Added! */}
-                                </Text>
-                                <Text color={'green.600'}>
-                                    {bodyText}
-                                    {/* Vehicle was successfully added! You can view it in the vehicle list. */}
-                                </Text>
-                            </Box>
-                        </Modal.Body>
-                        <Modal.Footer borderTopWidth={0} bgColor={'green.100'}>
-                            <HStack space={5} flex={1}>
-                                <Button colorScheme={'success'} flex="1" onPress={onClose} _text={{ color: 'white' }}>
-                                    Ok
-                                </Button>
-                            </HStack>
-                        </Modal.Footer>
-                    </Modal.Content>
-                </Modal>
-            </>
-
-        );
-    };
 
 
 
