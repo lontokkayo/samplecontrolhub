@@ -144,7 +144,6 @@ const getEmailOfCurrentUser = () => {
 // const Drawer = createDrawerNavigator();
 
 
-const storage = getStorage(projectExtensionFirebase);
 
 
 
@@ -286,623 +285,6 @@ const ClearImagesModal = ({ modalDeleteImagesVisible, setModalDeleteImagesVisibl
     );
 };
 
-const ImageUploader = ({ dragSortableViewRef, handleClearImagesExtra }) => {
-    const dispatch = useDispatch();
-    const { width } = Dimensions.get('window');
-
-    const deleteImageVisible = useSelector((state) => state.deleteImageVisible);
-    const [boolean, setBoolean] = useState(true);
-    const selectedImages = useSelector((state) => state.selectedImages);
-    // const [selectedImages, setSelectedImages] = useState([]);
-    const isAddPhotoVisible = useSelector((state) => state.isAddPhotoVisible);
-    const addAnotherImages = useSelector((state) => state.addAnotherImages);
-    // const [IsAddPhotoVisible, setIsAddPhotoVisible] = useState(true);
-    // const [addAnotherImages, setAddAnotherImages] = useState(false);
-    // const modalDeleteImagesVisible = useSelector((state) => state.modalDeleteImagesVisible);
-    const [modalDeleteImagesVisible, setModalDeleteImagesVisible] = useState(false);
-    const [scrollEnabled, setscrollEnabled] = useState(true);
-    const [isEnterEdit, setisEnterEdit] = useState(false);
-    const [widthState, setWidthState] = useState(Dimensions.get('window').width);
-    const [isCursorLoading, setIsCursorLoading] = useState(false);
-    const [modalImageUri, setModalImageUri] = useState('');
-    const [imageModalVisible, setImageModalVisible] = useState(false);
-    const [isFileSizeLimitModal, setIsFileSizeLimitModal] = useState(false);
-
-    const handleImagePress = useCallback((uri) => {
-        // const base64Image = toString(uri);
-        // setIsLoading(true);
-        setIsCursorLoading(true);
-        setModalImageUri(uri);
-        setImageModalVisible(true);
-        // console.log("URI: ", uri);
-
-    }, []);
-
-    const styles = StyleSheet.create({
-        dropdown: {
-            margin: 16,
-            height: 50,
-            borderBottomColor: 'gray',
-            borderBottomWidth: 0.5,
-        },
-        icon: {
-            marginRight: 5,
-        },
-        placeholderStyle: {
-            fontSize: 16,
-        },
-        selectedTextStyle: {
-            fontSize: 16,
-        },
-        iconStyle: {
-            width: 20,
-            height: 20,
-        },
-        inputSearchStyle: {
-            height: 40,
-            fontSize: 16,
-        },
-        container: {
-            flex: 1,
-            paddingTop: 20,
-
-        },
-        txt: {
-            fontSize: 18,
-            lineHeight: 24,
-            padding: 5
-        },
-        sort: {
-        },
-        item_children: {
-            width: 90,
-            height: 90,
-            backgroundColor: 'black',
-            justifyContent: "center",
-            alignItems: "center",
-        },
-        item_delete_icon: {
-            width: 14,
-            height: 14,
-            position: "absolute",
-            right: 1,
-            top: 1
-        },
-        item_icon: {
-            width: 90,
-            height: 90,
-            resizeMode: "contain",
-            position: "absolute"
-        }
-    });
-
-    const handleImageAddToSelection = async () => {
-        dispatch(setDeleteImageVisible(true));
-        if (selectedImages.length === 40) {
-            return; // Limit reached, do not add a new image
-        }
-
-        const options = {
-            mediaType: 'photo',
-            // quality: 10,
-            maxWidth: 1000,
-            maxHeight: 1000,
-            selectionLimit: 40 - selectedImages.length, // Adjust the selection limit based on the remaining slots
-            storageOptions: {
-                skipBackup: true,
-                path: 'images',
-            },
-        };
-
-        try {
-            const response = await launchImageLibrary(options);
-            if (response.didCancel) {
-                // console.log('User cancelled image picker');
-                return;
-            } else if (response.error) {
-                // console.log('ImagePicker Error: ', response.error);
-                return;
-            } else if (!response.assets || response.assets.length === 0) {
-                // console.log('No images selected.');
-                return;
-            }
-
-            // Filter out images larger than 10MB
-            const newImages = [...selectedImages];
-            const promises = response.assets.map(async (asset) => {
-                const file = await fetch(asset.uri).then((res) => res.blob());
-                const fileSize = file.size;
-                if (fileSize / 1024 / 1024 < 10) {
-                    const exists = newImages.some((image) => image.uri === asset.uri);
-                    if (!exists) {
-                        newImages.push(asset); // Add the asset to the array if it doesn't exist
-                    }
-                } else {
-                    setIsFileSizeLimitModal(true);
-                }
-            });
-
-            await Promise.all(promises);
-
-            const limitedImages = newImages.slice(0, 40);
-            dispatch(setSelectedImages(limitedImages));
-            globalSelectedImages = limitedImages;
-
-            if (limitedImages.length >= 40) {
-                dispatch(setAddAnotherImages(false));
-            }
-
-            // limitedImages.forEach((image) => {
-            //   console.log(`File size: ${image.fileSize}`);
-            // });
-
-        } catch (error) {
-            // console.log('ImagePicker Error: ', error);
-        }
-    };
-
-    const reloadData = useCallback(() => {
-        if (selectedImages.length > 0) {
-            // ... Logic to reload data using selectedImages and width
-
-            // Assuming your logic has updated selectedImages, you can directly use it here
-            const updatedSelectedImages = [...selectedImages];
-
-            // Dispatch the updatedSelectedImages array to the state
-            dispatch(setSelectedImages(updatedSelectedImages));
-        }
-
-    }, [widthState]);
-
-    useEffect(() => {
-        const handleWidthChange = ({ window }) => {
-            setWidthState(window.width);
-        };
-
-        Dimensions.addEventListener('change', handleWidthChange);
-
-        return () => {
-            Dimensions.removeEventListener('change', handleWidthChange);
-        };
-    }, []);
-
-    useEffect(() => {
-        reloadData();
-    }, [reloadData]);
-
-
-
-    const handleClearImages = useCallback(() => {
-        setModalDeleteImagesVisible(false);
-        // dispatch(setSelectedImages([]));
-        // globalSelectedImages = [];
-        // dispatch(setIsAddPhotoVisible(true));
-        // dispatch(setAddAnotherImages(false));
-        // dispatch(setDeleteImageVisible(true));
-        handleClearImagesExtra();
-
-    }, []);
-
-
-
-    const renderItem = useCallback((item) => {
-
-        // console.log(item.id);
-        // console.log(index)
-        if (isEnterEdit) {
-
-            return (
-
-                <Box key={item.uri} style={styles.item}>
-                    <Box style={styles.item_children}>
-
-                        <FastImage
-                            style={styles.item_icon}
-                            source={{
-                                uri: item.uri,
-                                priority: FastImage.priority.normal,
-                            }}
-                            resizeMode={FastImage.resizeMode.contain}
-                        />
-                        <Box
-                            position="absolute"
-                            top={-3}
-                            right={-3}
-                            bg="rgba(0, 0, 0, 0.5)"
-                            borderRadius={10}
-                            alignItems="center"
-                            justifyContent="center"
-                        >
-                            <Pressable onPress={() => handleDeleteImagePress(item.uri)} display={boolean ? 'block' : 'none'}>
-                                <Icon as={<Entypo name="circle-with-cross" />} size={4} color={"white"} cursor={'pointer'} />
-                            </Pressable>
-                        </Box>
-                    </Box>
-                </Box>
-
-            );
-        } else {
-
-            return (
-
-                <Box key={item.id} style={styles.item}>
-                    <Box style={styles.item_children}>
-
-                        <FastImage
-                            style={styles.item_icon}
-                            source={{
-                                uri: item.uri,
-                                priority: FastImage.priority.normal,
-                            }}
-                            resizeMode={FastImage.resizeMode.contain}
-
-                        />
-
-                        <Box
-                            position="absolute"
-                            top={-3}
-                            right={-3}
-                            bg="rgba(0, 0, 0, 0.5)"
-                            borderRadius={10}
-                            alignItems="center"
-                            justifyContent="center"
-                        >
-                            <Pressable onPress={() => handleDeleteImagePress(item.uri)} display={boolean ? 'block' : 'none'}>
-                                <Icon as={<Entypo name="circle-with-cross" />} size={4} color={"white"} cursor={'pointer'} />
-                            </Pressable>
-                        </Box>
-                    </Box>
-                </Box>
-            );
-        }
-
-
-    }, []);
-
-    const getImagesRenderItem = useCallback((item) => {
-
-        // console.log(item.id);
-        // console.log(index)
-        if (isEnterEdit) {
-
-            return (
-
-                <Box key={item.uri} style={styles.item}>
-                    <Box style={styles.item_children}>
-
-                        <FastImage
-                            style={styles.item_icon}
-                            source={{
-                                uri: item.uri,
-                                priority: FastImage.priority.normal,
-                            }}
-                            resizeMode={FastImage.resizeMode.contain}
-                        />
-
-
-                    </Box>
-                </Box>
-
-            );
-        } else {
-
-            return (
-
-                <Box key={item.id} style={styles.item}>
-                    <Box style={styles.item_children}>
-
-                        <FastImage
-                            style={styles.item_icon}
-                            source={{
-                                uri: item.uri,
-                                priority: FastImage.priority.normal,
-                            }}
-                            resizeMode={FastImage.resizeMode.contain}
-
-                        />
-
-                    </Box>
-                </Box>
-            );
-        }
-
-
-    }, []);
-
-
-    const handleImageSelection = async () => {
-        const options = {
-            mediaType: 'photo',
-            // quality: 10,
-            maxWidth: 1000,
-            maxHeight: 1000,
-            selectionLimit: 40,
-            storageOptions: {
-                skipBackup: true,
-                path: 'images',
-            },
-        };
-
-        try {
-            const response = await launchImageLibrary(options);
-            if (response.didCancel) {
-                // console.log('User cancelled image picker');
-                return;
-            } else if (response.error) {
-                // console.log('ImagePicker Error: ', response.error);
-                return;
-            } else if (!response.assets || response.assets.length === 0) {
-                // console.log('No images selected.');
-                return;
-            }
-
-            // Remove duplicates from the selected images
-            const uniqueImages = response.assets.filter(
-                (asset, index, self) => index === self.findIndex((a) => a.uri === asset.uri)
-            );
-
-            // Filter out images larger than 10MB
-            const filteredImages = [];
-            const imageOrder = [];
-            for (let index = 0; index < uniqueImages.length; index++) {
-                const image = uniqueImages[index];
-                const file = await fetch(image.uri).then((res) => res.blob());
-                const fileSize = file.size;
-                if (fileSize / 1024 / 1024 < 10) {
-                    filteredImages.push(image);
-                    imageOrder.push(index);
-                } else {
-                    setIsFileSizeLimitModal(true);
-                }
-            }
-
-
-            // Sort the filtered images based on their original order
-            const sortedImages = filteredImages.sort((a, b) => {
-                const indexA = imageOrder[filteredImages.indexOf(a)];
-                const indexB = imageOrder[filteredImages.indexOf(b)];
-                return indexA - indexB;
-            });
-
-
-
-            // Limit the number of selected images to 40
-            const limitedImages = sortedImages.slice(0, 40);
-
-            globalSelectedImages = limitedImages;
-            if (limitedImages.length > 0) {
-                dispatch(setIsAddPhotoVisible(false));
-                dispatch(setAddAnotherImages(true));
-            }
-
-            if (limitedImages.length >= 40) {
-                dispatch(setIsAddPhotoVisible(false));
-                dispatch(setAddAnotherImages(false));
-            }
-
-            dispatch(setSelectedImages(globalSelectedImages));
-
-        } catch (error) {
-            // console.log('ImagePicker Error: ', error);
-        }
-    };
-
-
-
-
-
-    const handleDeleteImagePress = useCallback((uri) => {
-
-        globalSelectedImages = globalSelectedImages.filter((item) => {
-            // Replace 'uriToDelete' with the URI you want to delete
-            return item.uri !== uri;
-        });
-
-        if (globalSelectedImages.length < 40) {
-            dispatch(setAddAnotherImages(true));
-        }
-
-        if (globalSelectedImages.length == 0) {
-            dispatch(setAddAnotherImages(false));
-            dispatch(setIsAddPhotoVisible(true));
-        }
-        dispatch(setSelectedImages(globalSelectedImages));
-        // dispatch(setSelectedImages((prevImages) => {
-        //   const updatedImages = prevImages.filter((image) => image.uri !== uri);
-
-        //   if (updatedImages.length < 40) {
-        //     dispatch(setAddAnotherImages(true));
-        //   }
-        //   if (updatedImages.length == 0) {
-        //    dispatch(setAddAnotherImages(false));
-        //     dispatch(setIsAddPhotoVisible(true));
-        //   }
-        //   return updatedImages;
-        // }));
-
-        // console.log(globalSelectedImages.map((item) => item.uri));
-    }, []);
-
-
-
-
-
-    return (
-        <>
-            {/* <Box flex={1} flexDir={['column', 'column', 'column', 'row', 'row', 'row']}> */}
-
-
-            <Box flex={1} borderColor={'white'} borderWidth={1}>
-                <ScrollView flex={1} contentContainerStyle={{ flexGrow: 1 }}>
-                    <Box justifyContent={'center'} alignItems={'center'} h={'full'} w={'full'}>
-
-                        <ClearImagesModal
-                            modalDeleteImagesVisible={modalDeleteImagesVisible}
-                            setModalDeleteImagesVisible={setModalDeleteImagesVisible}
-                            handleClearImages={handleClearImages}
-                            selectedImages={selectedImages}
-                            isAddPhotoVisible={isAddPhotoVisible} />
-
-                        <Box justifyContent={'center'} alignSelf={'center'} alignItems={'center'} margin={3}>
-
-                            <Icon display={isAddPhotoVisible ? 'block' : 'none'} onPress={handleImageSelection} as={<MaterialIcons name="add-photo-alternate" />} size={100} ml="2" color="#12293F" />
-
-
-                            <ScrollView
-                                scrollEnabled={scrollEnabled}
-                                flex={1}
-                            >
-                                <Box flex={1} display={deleteImageVisible ? 'flex' : 'none'} width={'full'} alignItems={'center'} justifyContent={'center'}>
-
-
-                                    <DragSortableView
-                                        ref={dragSortableViewRef}
-                                        dataSource={selectedImages}
-                                        delayLongPress={100}
-                                        parentWidth={width * 0.33}
-                                        childrenWidth={100}
-                                        childrenHeight={100}
-                                        marginChildrenTop={3}
-                                        marginChildrenBottom={0}
-                                        marginChildrenLeft={0}
-                                        marginChildrenRight={0}
-                                        onDragStart={useCallback(() => {
-                                            if (!isEnterEdit) {
-                                                setisEnterEdit(true);
-                                                setscrollEnabled(false);
-                                            } else {
-                                                setscrollEnabled(false);
-                                            }
-                                        }, [])}
-                                        onDragEnd={useCallback(() => {
-                                            setscrollEnabled(true);
-                                        }, [])}
-                                        onDataChange={useCallback((data) => {
-
-                                            if (data.length !== data) {
-                                                dispatch(setSelectedImages(data));
-                                                globalSelectedImages = data;
-                                            }
-
-                                        }, [])}
-                                        onClickItem={(item, index) => {
-                                            handleImagePress(index.uri);
-                                        }}
-                                        keyExtractor={(item) => item.uri} // FlatList作用一样，优化
-                                        renderItem={
-                                            useCallback((item, index) => renderItem(item, index), [])} />
-
-                                    <Center>
-                                        <Icon display={addAnotherImages ? 'block' : 'none'} onPress={handleImageAddToSelection} as={<Entypo name="plus" />} ml={'2'} size={50} color="#12293F" />
-                                    </Center>
-
-                                </Box>
-
-
-
-                                <Box flex={1} display={deleteImageVisible ? 'none' : 'flex'} width={'full'}>
-
-
-                                    <DragSortableView
-                                        sortable={false}
-                                        ref={dragSortableViewRef}
-                                        dataSource={selectedImages}
-                                        parentWidth={width * 0.33}
-                                        childrenWidth={100}
-                                        childrenHeight={100}
-                                        marginChildrenTop={3}
-                                        marginChildrenBottom={0}
-                                        marginChildrenLeft={0}
-                                        marginChildrenRight={0}
-                                        onClickItem={(item, index) => {
-                                            handleImagePress(index.uri);
-                                        }}
-                                        keyExtractor={(item) => item.uri} // FlatList作用一样，优化
-                                        renderItem={
-                                            useCallback((item, index) => getImagesRenderItem(item, index), [])} />
-
-                                </Box>
-                            </ScrollView>
-
-
-
-
-                        </Box>
-
-
-                        <Box
-                            position="absolute"
-                            top={0}
-                            left={0}
-                            borderRadius={3}
-                            bgColor={'rgba(0, 0, 0, 0.5)'}
-                            alignItems="center"
-                            justifyContent="center"
-                            display={isAddPhotoVisible ? 'none' : 'block'}>
-                            <Text marginLeft={1} marginRight={1} color={'white'} bold italic fontSize={12}>Selected {selectedImages.length} image(s) (Maximum of 40)</Text>
-                        </Box>
-                    </Box>
-
-                </ScrollView>
-
-
-
-            </Box>
-
-            {/* </Box> */}
-
-            <Modal isOpen={imageModalVisible} onClose={() => setImageModalVisible(false)} size={'100%'} useRNModal>
-
-                <Box w={'80%'} h={'80%'} bgColor={'rgba(0, 0, 0, 0.7)'} borderRadius={10} display="flex" alignItems="center" justifyContent="center" alignContent={'center'}>
-                    <Modal.CloseButton color={'white'} />
-                    <NativeImage
-                        key={modalImageUri}
-                        source={{ uri: modalImageUri }}
-                        resizeMode='contain'
-                        flex={1}
-                        alt={modalImageUri}
-                        h={720}
-                        w={1280}
-                    />
-
-                </Box>
-
-            </Modal>
-
-            <Modal isOpen={isFileSizeLimitModal} onClose={() => setIsFileSizeLimitModal(false)} useRNModal>
-                <Modal.Content bgColor={'danger.100'}>
-                    <Modal.Header borderBottomWidth={0} bgColor={'danger.100'}>
-                        <Text color={'#102A43'} bold>
-                            Failed!
-                        </Text>
-                    </Modal.Header>
-                    <Modal.Body
-                        bgColor={'danger.200'}
-                        borderLeftWidth={4}
-                        borderLeftColor={'danger.600'}
-                        margin={5}
-                    >
-                        <Box flex={1}>
-                            <Text color={'danger.600'} bold>
-                                Failed!
-                            </Text>
-                            <Text color={'danger.600'}>
-                                Please select image(s) smaller than 10MB!
-                            </Text>
-                        </Box>
-                    </Modal.Body>
-                    <Modal.Footer borderTopWidth={0} bgColor={'danger.100'}>
-                        <HStack space={5} flex={1}>
-                            <Button colorScheme={'primary'} flex="1" onPress={() => setIsFileSizeLimitModal(false)} _text={{ color: 'white' }}>
-                                Ok
-                            </Button>
-                        </HStack>
-                    </Modal.Footer>
-                </Modal.Content>
-            </Modal>
-        </>
-    );
-};
 
 
 
@@ -1639,12 +1021,6 @@ const SupplyChainsCostsSortAndAddModal = ({ headerText, data, title, dataName, d
         []
     );
 
-    // useEffect(() => {
-
-    //   fetchData();
-
-    // }, [modalSortOpen]);
-
 
 
     const fetchData = useCallback(async () => {
@@ -1656,13 +1032,6 @@ const SupplyChainsCostsSortAndAddModal = ({ headerText, data, title, dataName, d
         }
     }, [databaseInit, modalData]);
 
-    // useEffect(() => {
-    //   const unsubscribe = onSnapshot(doc(collection(databaseInit, docName), docName), (snapshot) => {
-    //     setModalData(snapshot.data()?.[dataName] || []);
-    //   });
-
-    //   return () => unsubscribe();
-    // }, [dataName, databaseInit, docName]);
 
     const handleSave = useCallback(async () => {
         setModalSaveLoading(true);
@@ -2368,7 +1737,7 @@ const CustomerListTable = () => {
             q = query(
                 collection(projectExtensionFirestore, 'accounts'),
                 orderBy(fieldToSortBy, sortDirection),
-                where('textEmail', 'array-contains', searchText.toUpperCase()),
+                where('keywords', 'array-contains', searchText),
                 limit(pageSize)
             );
         }
@@ -2467,7 +1836,7 @@ const CustomerListTable = () => {
             const q = query(
                 collection(projectExtensionFirestore, 'accounts'),
                 orderBy(fieldToSortBy, sortDirection),
-                where('textEmail', 'array-contains', searchText.toUpperCase()),
+                where('keywords', 'array-contains', searchText),
                 startAfter(lastVisible),
                 limit(pageSize)
             );
@@ -2508,7 +1877,7 @@ const CustomerListTable = () => {
             const q = query(
                 collection(projectExtensionFirestore, 'accounts'),
                 orderBy(fieldToSortBy, sortDirection),
-                where('textEmail', 'array-contains', searchText.toUpperCase()),
+                where('keywords', 'array-contains', searchText),
                 endBefore(firstVisible),
                 limitToLast(pageSize)
             );
@@ -2608,7 +1977,7 @@ const CustomerListTable = () => {
 
                 const q = query(
                     collection(projectExtensionFirestore, 'accounts'),
-                    where('textEmail', 'array-contains', searchText.toUpperCase()),
+                    where('keywords', 'array-contains', searchText),
                     orderBy(fieldToSortBy, sortDirection),
                     limit(pageSize)
                 );
@@ -2672,7 +2041,7 @@ const CustomerListTable = () => {
             setCurrentPage(1);
             const q = query(
                 collection(projectExtensionFirestore, 'accounts'),
-                where('textEmail', 'array-contains', searchText.toUpperCase()),
+                where('keywords', 'array-contains', searchText),
                 orderBy('textEmail', 'asc'),
                 limit(pageSize)
             );
@@ -2973,6 +2342,7 @@ export default function CustomerList() {
     const [screenWidth, setScreenWidth] = useState(Dimensions.get('window').width);
 
     useEffect(() => {
+
         const updateWidth = () => {
             const newWidth = Dimensions.get('window').width;
             setScreenWidth(newWidth); // Update the screenWidth state

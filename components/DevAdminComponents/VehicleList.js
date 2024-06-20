@@ -3333,7 +3333,7 @@ const VehicleListTable = () => {
       q = query(
         collection(projectExtensionFirestore, 'VehicleProducts'),
         orderBy(fieldToSortBy, sortDirection),
-        where('keywords', 'array-contains', searchText.toUpperCase()),
+        where('keywords', 'array-contains', searchText.toLowerCase()),
         limit(pageSize)
       );
     }
@@ -3429,7 +3429,7 @@ const VehicleListTable = () => {
       const q = query(
         collection(projectExtensionFirestore, 'VehicleProducts'),
         orderBy(fieldToSortBy, sortDirection),
-        where('keywords', 'array-contains', searchText.toUpperCase()),
+        where('keywords', 'array-contains', searchText.toLowerCase()),
         startAfter(lastVisible),
         limit(pageSize)
       );
@@ -3470,7 +3470,7 @@ const VehicleListTable = () => {
       const q = query(
         collection(projectExtensionFirestore, 'VehicleProducts'),
         orderBy(fieldToSortBy, sortDirection),
-        where('keywords', 'array-contains', searchText.toUpperCase()),
+        where('keywords', 'array-contains', searchText.toLowerCase()),
         endBefore(firstVisible),
         limitToLast(pageSize)
       );
@@ -3570,7 +3570,7 @@ const VehicleListTable = () => {
 
         const q = query(
           collection(projectExtensionFirestore, 'VehicleProducts'),
-          where('keywords', 'array-contains', searchText.toUpperCase()),
+          where('keywords', 'array-contains', searchText.toLowerCase()),
           orderBy(fieldToSortBy, sortDirection),
           limit(pageSize)
         );
@@ -3634,7 +3634,7 @@ const VehicleListTable = () => {
       setCurrentPage(1);
       const q = query(
         collection(projectExtensionFirestore, 'VehicleProducts'),
-        where('keywords', 'array-contains', searchText.toUpperCase()),
+        where('keywords', 'array-contains', searchText.toLowerCase()),
         orderBy('dateAdded', 'desc'),
         limit(pageSize)
       );

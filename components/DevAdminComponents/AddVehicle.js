@@ -135,6 +135,30 @@ let globalFobPrice = '';
 
 const firestore = getFirestore();
 
+const generateKeywords = (fields) => {
+  const keywords = new Set();
+
+  fields.forEach(field => {
+    const words = field.toLowerCase().split(' ');
+
+    // Generate substrings for each word
+    words.forEach((word) => {
+      for (let i = 1; i <= word.length; i++) {
+        keywords.add(word.substring(0, i));
+      }
+    });
+    const maxSubstringLength = 50;
+    // Generate all possible substrings within a reasonable length limit
+    for (let i = 0; i < field.length; i++) {
+      for (let j = i + 1; j <= field.length && j - i <= maxSubstringLength; j++) {
+        keywords.add(field.substring(i, j).toLowerCase());
+      }
+    }
+  });
+
+  return Array.from(keywords);
+};
+
 const UpdateSuccessModal = ({ onClose, bodyText, headerText }) => {
 
   const isUpdateSuccessModalOpen = useSelector((state) => state.isUpdateSuccessModalOpen);
@@ -1077,6 +1101,8 @@ const ImageUploader = ({ dragSortableViewRef, handleClearImagesExtra }) => {
   }, [widthState]);
 
   useEffect(() => {
+
+
     const handleWidthChange = ({ window }) => {
       setWidthState(window.width);
     };
@@ -1683,19 +1709,7 @@ const StockIDAndMakeAndModel = ({
   const [fetchedData, setFetchedData] = useState([]);
   const [model, setModel] = useState('');
   const [key, setKey] = useState(0);
-  // useEffect(() => {
 
-  //   selectModelRef.current.selectIndex(modelData.indexOf(model));
-  //   console.log(model);
-  // }, [modelData]);
-
-  // const exportFunction = () => {
-  //   const clearModelData = () =>{
-  //       setModelData([]);
-  //   };
-
-  //   return clearModelData;
-  // }
 
   const handleInputFobJpyChange = (text) => {
     const numericValue = text.replace(/[^0-9]/g, '');
@@ -2023,14 +2037,6 @@ const StockIDAndMakeAndModel = ({
   }, []);;
 
 
-  // useEffect(() => {
-
-  //   if (isFailedOpen == false) {
-  //     handleClearIfError();
-  //   }
-
-
-  // }, [isFailedOpen])
   const handleFailModalClose = useCallback(() => {
     setIsFailedOpen(false);
 
@@ -2338,11 +2344,6 @@ const SupplyChainsCostsSortAndAddModal = ({ headerText, data, title, dataName, d
     []
   );
 
-  // useEffect(() => {
-
-  //   fetchData();
-
-  // }, [modalSortOpen]);
 
   const addLogToCollection = async (data) => {
     try {
@@ -2366,13 +2367,6 @@ const SupplyChainsCostsSortAndAddModal = ({ headerText, data, title, dataName, d
     }
   }, [databaseInit, modalData]);
 
-  // useEffect(() => {
-  //   const unsubscribe = onSnapshot(doc(collection(databaseInit, docName), docName), (snapshot) => {
-  //     setModalData(snapshot.data()?.[dataName] || []);
-  //   });
-
-  //   return () => unsubscribe();
-  // }, [dataName, databaseInit, docName]);
 
   const handleSave = useCallback(async () => {
     setModalSaveLoading(true);
@@ -2399,22 +2393,10 @@ const SupplyChainsCostsSortAndAddModal = ({ headerText, data, title, dataName, d
         message: `"${title}" updated: "${nameVariable.text}" updated "${title}"`,
         timestamp: formattedTime,
         colorScheme: true,
-        keywords: [
-          formattedTime.toLowerCase(),
-          `"${title}" updated: "${nameVariable.text}" updated "${title}"`.toLowerCase(),
-          `${title} updated`.toLowerCase(),
-          `"${title}" updated`.toLowerCase(),
-          'updated'.toLowerCase(),
-          title.toLowerCase(),
-          nameVariable.text.toLowerCase(),
-          year.toLowerCase(),
-          month.toLowerCase(),
-          monthWithDay.toLowerCase(),
-          date.toLowerCase(),
-          day.toLowerCase(),
-          time.toLowerCase(),
-          timeWithMinutesSeconds.toLowerCase(),
-        ],
+        keywords: generateKeywords([
+          `"${title}" updated: "${nameVariable.text}" updated "${title}"`,
+          `${formattedTime}`,
+        ]),
       };
 
       addLogToCollection(logData);
@@ -2516,22 +2498,7 @@ const SupplyChainsCostsSortAndAddModal = ({ headerText, data, title, dataName, d
           message: `"${title}" added: "${nameVariable.text}" added "${title}"(s).`,
           timestamp: formattedTime,
           colorScheme: true,
-          keywords: [
-            formattedTime.toLowerCase(),
-            `"${title}" added: "${nameVariable.text}" added "${title}"(s).`.toLowerCase(),
-            `${title} added`.toLowerCase(),
-            `"${title}" added`.toLowerCase(),
-            'added'.toLowerCase(),
-            title.toLowerCase(),
-            nameVariable.text.toLowerCase(),
-            year.toLowerCase(),
-            month.toLowerCase(),
-            monthWithDay.toLowerCase(),
-            date.toLowerCase(),
-            day.toLowerCase(),
-            time.toLowerCase(),
-            timeWithMinutesSeconds.toLowerCase(),
-          ],
+          keywords: generateKeywords([`"${title}" added: "${nameVariable.text}" added "${title}"(s).`, `${formattedTime}`]),
         };
         addLogToCollection(logData);
         setModalSaveLoading(false);
@@ -2729,11 +2696,7 @@ const SortAndAddModal = ({ headerText, data, title, dataName, databaseInit, text
     []
   );
 
-  // useEffect(() => {
 
-  //   fetchData();
-
-  // }, [modalSortOpen]);
 
   const addLogToCollection = async (data) => {
     try {
@@ -2757,13 +2720,6 @@ const SortAndAddModal = ({ headerText, data, title, dataName, databaseInit, text
     }
   }, [databaseInit, modalData]);
 
-  // useEffect(() => {
-  //   const unsubscribe = onSnapshot(doc(collection(databaseInit, docName), docName), (snapshot) => {
-  //     setModalData(snapshot.data()?.[dataName] || []);
-  //   });
-
-  //   return () => unsubscribe();
-  // }, [dataName, databaseInit, docName]);
 
   const handleSave = useCallback(async () => {
     setModalSaveLoading(true);
@@ -2790,22 +2746,7 @@ const SortAndAddModal = ({ headerText, data, title, dataName, databaseInit, text
         message: `"${title}" updated: "${nameVariable.text}" updated "${title}"`,
         timestamp: formattedTime,
         colorScheme: true,
-        keywords: [
-          formattedTime.toLowerCase(),
-          `"${title}" updated: "${nameVariable.text}" updated "${title}"`.toLowerCase(),
-          `${title} updated`.toLowerCase(),
-          `"${title}" updated`.toLowerCase(),
-          'updated'.toLowerCase(),
-          title.toLowerCase(),
-          nameVariable.text.toLowerCase(),
-          year.toLowerCase(),
-          month.toLowerCase(),
-          monthWithDay.toLowerCase(),
-          date.toLowerCase(),
-          day.toLowerCase(),
-          time.toLowerCase(),
-          timeWithMinutesSeconds.toLowerCase(),
-        ],
+        keywords: generateKeywords([`"${title}" updated: "${nameVariable.text}" updated "${title}" ${formattedTime}`, `${formattedTime}`]),
       };
 
       addLogToCollection(logData);
@@ -2903,22 +2844,7 @@ const SortAndAddModal = ({ headerText, data, title, dataName, databaseInit, text
           message: `"${title}" added: "${nameVariable.text}" added "${title}"(s).`,
           timestamp: formattedTime,
           colorScheme: true,
-          keywords: [
-            formattedTime.toLowerCase(),
-            `"${title}" added: "${nameVariable.text}" added "${title}"(s).`.toLowerCase(),
-            `${title} added`.toLowerCase(),
-            `"${title}" added`.toLowerCase(),
-            'added'.toLowerCase(),
-            title.toLowerCase(),
-            nameVariable.text.toLowerCase(),
-            year.toLowerCase(),
-            month.toLowerCase(),
-            monthWithDay.toLowerCase(),
-            date.toLowerCase(),
-            day.toLowerCase(),
-            time.toLowerCase(),
-            timeWithMinutesSeconds.toLowerCase(),
-          ],
+          keywords: generateKeywords([`"${title}" added: "${nameVariable.text}" added "${title}"(s).`, `${formattedTime}`]),
         };
         addLogToCollection(logData);
         setModalSaveLoading(false);
@@ -3116,11 +3042,6 @@ const PSBSortAndAddModal = ({ headerText, data, title, dataName, databaseInit, t
     []
   );
 
-  // useEffect(() => {
-
-  //   fetchData();
-
-  // }, [modalSortOpen]);
 
   const addLogToCollection = async (data) => {
     try {
@@ -3143,14 +3064,6 @@ const PSBSortAndAddModal = ({ headerText, data, title, dataName, databaseInit, t
       setModalData(modalDocSnap.data()?.[dataName] || []);
     }
   }, [databaseInit, modalData]);
-
-  // useEffect(() => {
-  //   const unsubscribe = onSnapshot(doc(collection(databaseInit, docName), docName), (snapshot) => {
-  //     setModalData(snapshot.data()?.[dataName] || []);
-  //   });
-
-  //   return () => unsubscribe();
-  // }, [dataName, databaseInit, docName]);
 
   const handleSave = useCallback(async () => {
     setModalSaveLoading(true);
@@ -3177,22 +3090,7 @@ const PSBSortAndAddModal = ({ headerText, data, title, dataName, databaseInit, t
         message: `"${title}" updated: "${nameVariable.text}" updated "${title}"`,
         timestamp: formattedTime,
         colorScheme: true,
-        keywords: [
-          formattedTime.toLowerCase(),
-          `"${title}" updated: "${nameVariable.text}" updated "${title}"`.toLowerCase(),
-          `${title} updated`.toLowerCase(),
-          `"${title}" updated`.toLowerCase(),
-          'updated'.toLowerCase(),
-          title.toLowerCase(),
-          nameVariable.text.toLowerCase(),
-          year.toLowerCase(),
-          month.toLowerCase(),
-          monthWithDay.toLowerCase(),
-          date.toLowerCase(),
-          day.toLowerCase(),
-          time.toLowerCase(),
-          timeWithMinutesSeconds.toLowerCase(),
-        ],
+        keywords: generateKeywords([`"${title}" updated: "${nameVariable.text}" updated "${title}".`, `${formattedTime}`]),
       };
 
       addLogToCollection(logData);
@@ -3307,22 +3205,7 @@ const PSBSortAndAddModal = ({ headerText, data, title, dataName, databaseInit, t
           message: `"${title}" added: "${nameVariable.text}" added "${title}"(s).`,
           timestamp: formattedTime,
           colorScheme: true,
-          keywords: [
-            formattedTime.toLowerCase(),
-            `"${title}" added: "${nameVariable.text}" added "${title}"(s).`.toLowerCase(),
-            `${title} added`.toLowerCase(),
-            `"${title}" added`.toLowerCase(),
-            'added'.toLowerCase(),
-            title.toLowerCase(),
-            nameVariable.text.toLowerCase(),
-            year.toLowerCase(),
-            month.toLowerCase(),
-            monthWithDay.toLowerCase(),
-            date.toLowerCase(),
-            day.toLowerCase(),
-            time.toLowerCase(),
-            timeWithMinutesSeconds.toLowerCase(),
-          ],
+          keywords: generateKeywords([`"${title}" added: "${nameVariable.text}" added "${title}"(s).`, `${formattedTime}`]),
         };
         addLogToCollection(logData);
         setModalSaveLoading(false);
@@ -3570,18 +3453,7 @@ const ModelSortAndAddModal = ({ selectMakeForAddModelRef, selectMakeForModelRef,
 
   };
 
-  // useEffect(() => {
 
-  //   if (selectMakeForModelRef.current?.value !== '__NativebasePlaceholder__') {
-
-  //     const unsubscribe = onSnapshot(doc(collection(projectExtensionFirestore, 'Model'), selectMakeForModelRef.current?.value), (snapshot) => {
-  //       setModelSortData(snapshot.data()?.model || []);
-  //       return () => unsubscribe();
-  //     });
-
-  //   }
-
-  // }, []);
 
   const handleDeleteModelPress = useCallback(
     (item) => {
@@ -3630,22 +3502,7 @@ const ModelSortAndAddModal = ({ selectMakeForAddModelRef, selectMakeForModelRef,
           message: `Model updated: "${nameVariable.text}" updated the Model(s) for "${selectMakeForModelRef.current?.value}"`,
           timestamp: formattedTime,
           colorScheme: true,
-          keywords: [
-            formattedTime.toLowerCase(),
-            `Model updated: "${nameVariable.text}" updated the Model(s) for "${selectMakeForModelRef.current?.value}"`.toLowerCase(),
-            'Model Update'.toLowerCase(),
-            'Model'.toLowerCase(),
-            'Update'.toLowerCase(),
-            selectMakeForModelRef.current.value.toLowerCase(),
-            nameVariable.text.toLowerCase(),
-            year.toLowerCase(),
-            month.toLowerCase(),
-            monthWithDay.toLowerCase(),
-            date.toLowerCase(),
-            day.toLowerCase(),
-            time.toLowerCase(),
-            timeWithMinutesSeconds.toLowerCase(),
-          ],
+          keywords: generateKeywords([`Model updated: "${nameVariable.text}" updated the Model(s) for "${selectMakeForModelRef.current?.value}"`, `${formattedTime}`]),
         };
 
         addLogToCollection(logData);
@@ -3780,25 +3637,10 @@ const ModelSortAndAddModal = ({ selectMakeForAddModelRef, selectMakeForModelRef,
         await setDoc(makeDocRef, { model: arrayUnion(...dataArray) }, { merge: true });
 
         const logData = {
-          message: `Model Added: "${nameVariable.text}" added Model(s) for "${selectMakeForAddModelRef.current?.value}" .`,
+          message: `Model Added: "${nameVariable.text}" added Model(s) for "${selectMakeForAddModelRef.current?.value}".`,
           timestamp: formattedTime,
           colorScheme: true,
-          keywords: [
-            formattedTime.toLowerCase(),
-            `Model Added: "${nameVariable.text}" added Model(s) for "${selectMakeForAddModelRef.current?.value}" .`.toLowerCase(),
-            'Model Added'.toLowerCase(),
-            'Model'.toLowerCase(),
-            'Added'.toLowerCase(),
-            selectMakeForAddModelRef.current.value.toLowerCase(),
-            nameVariable.text.toLowerCase(),
-            year.toLowerCase(),
-            month.toLowerCase(),
-            monthWithDay.toLowerCase(),
-            date.toLowerCase(),
-            day.toLowerCase(),
-            time.toLowerCase(),
-            timeWithMinutesSeconds.toLowerCase(),
-          ],
+          keywords: generateKeywords([`Model Added: "${nameVariable.text}" added Model(s) for "${selectMakeForAddModelRef.current?.value}".`, `${formattedTime}`]),
         };
         setModalSaveLoading(false);
         addLogToCollection(logData);
@@ -4128,7 +3970,6 @@ const featuresState = {
 const CheckBoxButton = ({ label, onChange, variable }) => {
   const [checked, setChecked] = useState(variable);
 
-  // useEffect(() => {console.log(checked)}, [checked])
 
   const handlePress = () => {
 
@@ -4168,6 +4009,8 @@ const CheckBoxButton = ({ label, onChange, variable }) => {
     </TouchableOpacity>
   );
 };
+
+
 
 
 
@@ -4336,6 +4179,17 @@ export default function AddVehicle() {
 
   useEffect(() => {
 
+    const keywordsData = [
+      inputRefNum.current?.value,
+      inputCarName.current?.value,
+      inputStockIDNumber.current?.value,
+      regYearVariable.text,
+      inputChassis.current?.value,
+      bodyTypeVariable.text,
+      salesVariable.text,
+      buyerVariable.text,
+    ]
+
     handleClearImages();
 
     dispatch(setSupplyChainsCostsData([]));
@@ -4362,6 +4216,7 @@ export default function AddVehicle() {
     });
 
     console.log('Sample');
+
 
     const currentUserEmail = getEmailOfCurrentUser();
     if (currentUserEmail) {
@@ -4482,76 +4337,9 @@ export default function AddVehicle() {
 
   }, []);
 
-  // const uploadImages = useCallback(async () => {
-  //   const storageRef = ref(storage, `${globalVehicleFolderName}`);
-  //   const ImageFormat = { jpg: 'jpg' };
-
-  //   try {
-  //     // Get the names of the images to keep
-  //     const imageNamesToKeep = globalSelectedImages.map((asset, index) => index.toString());
-
-  //     // Delete existing files in the folder that do not match the names of the images to keep
-  //     const listResult = await listAll(storageRef);
-  //     await Promise.all(
-  //       listResult.items
-  //         .filter((itemRef) => !imageNamesToKeep.includes(itemRef.name))
-  //         .map((itemRef) => deleteObject(itemRef))
-  //     );
-
-  //     // Upload new images with or without watermarks based on the platform
-  //     function blobToArrayBuffer(blob) {
-  //       return new Promise((resolve, reject) => {
-  //         const reader = new FileReader();
-  //         reader.onload = () => resolve(reader.result);
-  //         reader.onerror = reject;
-  //         reader.readAsArrayBuffer(blob);
-  //       });
-  //     }
-
-  //     // ...
-
-  //     await Promise.all(
-  //       globalSelectedImages.map(async (asset, index) => {
-  //         const { uri } = asset;
-  //         const imageName = index.toString();
-
-  //         const response = await fetch(uri);
-  //         const blob = await response.blob();
-
-  //         const imageRef = ref(storage, `${globalVehicleFolderName}/${imageName}`);
-
-  //         // Define your watermark options
-  //         const watermarkOptions = {
-  //           text: 'Real Motor Japan',
-  //           color: '#FFFFFF', // Text color
-  //           fontSize: 20,
-  //           opacity: 50, // Set opacity if needed
-  //         };
-
-  //         // Convert the blob to an ArrayBuffer
-  //         const arrayBuffer = await blobToArrayBuffer(blob);
-
-  //         // Use watermark.js to add the watermark
-  //         const watermarkedArrayBuffer = await watermark([arrayBuffer, watermarkOptions])
-  //           .image(watermark.image.bottomCenter())
-  //           .then((img) => img.arrayBuffer());
-
-  //         // Convert the ArrayBuffer back to a Blob
-  //         const watermarkedBlob = new Blob([watermarkedArrayBuffer]);
-
-  //         await uploadBytes(imageRef, watermarkedBlob, { contentType: 'image/jpeg' });
-  //       })
-  //     );
-
-  //     console.log(`Images uploaded to folder ${globalVehicleFolderName}`);
-  //   } catch (error) {
-  //     console.error('Error uploading images:', error);
-  //   }
-  // }, []);
-
   const uploadImages = useCallback(async () => {
 
-    const storageRef = ref(storage, `${globalVehicleFolderName}`);
+    const storageRef = ref(storage, `${globalVehicleFolderName} `);
     const ImageFormat = { jpg: 'jpg' };
 
 
@@ -4626,7 +4414,7 @@ export default function AddVehicle() {
             ctx.lineWidth = 2;
 
             // Calculate the position for the watermark text
-            const watermarkText = `Real Motor Japan ${globalReferenceNumber}`;
+            const watermarkText = `Real Motor Japan ${globalReferenceNumber} `;
             const textWidth = ctx.measureText(watermarkText).width;
             const textHeight = fontSize; // Font size determines the text height
 
@@ -4935,16 +4723,16 @@ export default function AddVehicle() {
 
 
       const keywordsData = [
-        inputRefNum.current?.value,
-        inputCarName.current?.value,
-        inputStockIDNumber.current?.value,
-        regYearVariable.text,
-        makeVariable.text,
-        modelVariable.text,
-        inputChassis.current?.value,
-        `${makeVariable.text} ${modelVariable.text}`,
-        `${regYearVariable.text} ${makeVariable.text}`,
+        `${inputRefNum.current?.value}`,
+        `${inputCarName.current?.value}`,
+        `${inputStockIDNumber.current?.value}`,
+        `${regYearVariable.text}`,
+        `${inputChassis.current?.value}`,
+        `${bodyTypeVariable.text}`,
+        `${salesVariable.text}`,
+        `${buyerVariable.text}`,
       ]
+
       const fobHistoryData = {
         date: formattedTime,
         fobPrice: inputFobJpy.current.value.replace(/,/g, ''),
@@ -4958,7 +4746,7 @@ export default function AddVehicle() {
       }
 
       const data = {
-        keywords: keywordsData,
+        keywords: generateKeywords(keywordsData),
         imageCount: globalSelectedImages.length,
         supplyChainsCostsData: globalSupplyChainCostsData,
         ...(fobHistoryValue && { fobHistory: fobHistoryValue }),
@@ -5159,6 +4947,7 @@ export default function AddVehicle() {
         }
       };
 
+
       // Check if the document exists
       if (docSnap.exists()) {
         setDoc(docRef, data, { merge: true })
@@ -5221,25 +5010,9 @@ export default function AddVehicle() {
                 message: `Vehicle Updated: "${nameVariable.text}" updated "${inputCarName.current?.value}" with a reference number of "${inputRefNum.current?.value}"`,
                 timestamp: formattedTime,
                 colorScheme: true,
-                keywords: [
-                  formattedTime.toLowerCase(),
-                  inputStockIDNumber.current.value.toLowerCase(),
-                  `Vehicle Updated: "${nameVariable.text}" updated "${inputCarName.current?.value}" with a reference number of "${inputRefNum.current?.value}"`.toLowerCase(),
-                  'Vehicle Updated'.toLowerCase(),
-                  'Vehicle'.toLowerCase(),
-                  'Updated'.toLowerCase(),
-                  inputCarName.current.value.toLowerCase(),
-                  inputRefNum.current.value.toLowerCase(),
-                  nameVariable.text.toLowerCase(),
-                  year.toLowerCase(),
-                  month.toLowerCase(),
-                  monthWithDay.toLowerCase(),
-                  date.toLowerCase(),
-                  day.toLowerCase(),
-                  time.toLowerCase(),
-                  timeWithMinutesSeconds.toLowerCase(),
-                ],
+                keywords: generateKeywords([`Vehicle Updated: "${nameVariable.text}" updated "${inputCarName.current?.value}" with a reference number of "${inputRefNum.current?.value}"`, `${formattedTime}`]),
               };
+
               dispatch(setLoadingModalVisible(false));
               handleClearImages();
               addLogToCollection(logData);
@@ -5274,24 +5047,7 @@ export default function AddVehicle() {
                 message: `Vehicle Added: "${nameVariable.text}" added "${inputCarName.current?.value}" with a reference number of "${inputRefNum.current?.value}"`,
                 timestamp: formattedTime,
                 colorScheme: true,
-                keywords: [
-                  formattedTime.toLowerCase(),
-                  inputStockIDNumber.current.value.toLowerCase(),
-                  `Vehicle Added: "${nameVariable.text}" added "${inputCarName.current?.value}" with a reference number of "${inputRefNum.current?.value}"`.toLowerCase(),
-                  'Vehicle Added'.toLowerCase(),
-                  'Vehicle'.toLowerCase(),
-                  'Added'.toLowerCase(),
-                  inputCarName.current.value.toLowerCase(),
-                  inputRefNum.current.value.toLowerCase(),
-                  nameVariable.text.toLowerCase(),
-                  year.toLowerCase(),
-                  month.toLowerCase(),
-                  monthWithDay.toLowerCase(),
-                  date.toLowerCase(),
-                  day.toLowerCase(),
-                  time.toLowerCase(),
-                  timeWithMinutesSeconds.toLowerCase(),
-                ],
+                keywords: generateKeywords([`Vehicle Added: "${nameVariable.text}" added "${inputCarName.current?.value}" with a reference number of "${inputRefNum.current?.value}".`, `${formattedTime}`]),
               };
 
               handleClearImages();
@@ -5995,17 +5751,6 @@ export default function AddVehicle() {
 
 
 
-  // useEffect(() => {
-
-  //   let makeValue = makeVariable.text;
-
-  //   if (makeValue !== '') {
-  //     setCarNameFromSelects();
-  //   }
-
-  // }, [modelData]);
-
-
   const setRefNumFromSelects = () => {
     let portValue = portVariable.id;
     let stockIDValue = inputStockIDNumber.current?.value;
@@ -6091,14 +5836,8 @@ export default function AddVehicle() {
 
 
   };
-  // const [selectedMake, setSelectedMake] = useState();
 
 
-  // useEffect(() => {
-
-
-
-  // }, []);
 
   const clearSelect = () => {
     // setModelData([]);

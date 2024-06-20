@@ -15421,6 +15421,7 @@ const ChatMessageBox = ({ activeButtonValue, userEmail }) => {
     const location = useLocation();
 
     useEffect(() => {
+        console.log(chatMessagesData,selectedChatData);
         // Store the current path
         const handlePopState = () => {
             if (screenWidth < mobileViewBreakpoint && activeChatId !== '') {
@@ -16055,7 +16056,6 @@ const ChatMessageBox = ({ activeButtonValue, userEmail }) => {
                                         </View>
 
                                     }
-
 
 
                                 </Animated.View>

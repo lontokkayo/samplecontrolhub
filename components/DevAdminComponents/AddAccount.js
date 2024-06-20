@@ -172,8 +172,29 @@ export default function AddAccount() {
 
   const [showNamePopover, setShowNamePopover] = useState(false);
 
+  const generateKeywords = (fields) => {
+    const keywords = new Set();
 
+    fields.forEach(field => {
+      const words = field.toLowerCase().split(' ');
 
+      // Generate substrings for each word
+      words.forEach((word) => {
+        for (let i = 1; i <= word.length; i++) {
+          keywords.add(word.substring(0, i));
+        }
+      });
+      const maxSubstringLength = 50;
+      // Generate all possible substrings within a reasonable length limit
+      for (let i = 0; i < field.length; i++) {
+        for (let j = i + 1; j <= field.length && j - i <= maxSubstringLength; j++) {
+          keywords.add(field.substring(i, j).toLowerCase());
+        }
+      }
+    });
+
+    return Array.from(keywords);
+  };
 
   useEffect(() => {
 
@@ -342,22 +363,22 @@ export default function AddAccount() {
               const logData = {
                 message: `Account Added: "${name}" added an account for "${inputName.current?.value}" with "${typeOfAccountDisplay}" privilege.`,
                 timestamp: formattedTime,
-                keywords: [
-                  formattedTime.toLowerCase(),
-                  `Account Added: "${name}" added an account for "${inputName.current?.value}" with "${typeOfAccountDisplay}" privilege.`.toLowerCase(),
-                  'Account Added'.toLowerCase(),
-                  'Added'.toLowerCase(),
-                  inputName.current.value.toLowerCase(),
-                  typeOfAccountDisplay.toLowerCase(),
-                  name.toLowerCase(),
-                  year.toLowerCase(),
-                  month.toLowerCase(),
-                  monthWithDay.toLowerCase(),
-                  date.toLowerCase(),
-                  day.toLowerCase(),
-                  time.toLowerCase(),
-                  timeWithMinutesSeconds.toLowerCase(),
-                ],
+                keywords: generateKeywords([
+                  formattedTime,
+                  `Account Added: "${name}" added an account for "${inputName.current?.value}" with "${typeOfAccountDisplay}" privilege.`,
+                  'Account Added',
+                  'Added',
+                  inputName.current.value,
+                  typeOfAccountDisplay,
+                  name,
+                  year,
+                  month,
+                  monthWithDay,
+                  date,
+                  day,
+                  time,
+                  timeWithMinutesSeconds,
+                ]),
                 colorScheme: true,
               };
 
