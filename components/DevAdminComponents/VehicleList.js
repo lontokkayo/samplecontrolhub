@@ -3321,6 +3321,8 @@ const VehicleListTable = () => {
   const fetchWithSort = async () => {
     const fieldToSortBy = isSortActive && sortField ? sortField : 'dateAdded';
     const sortDirection = isSortActive ? 'asc' : 'desc';
+    dispatch(setLoadingModalVisible(true));
+
     let q;
 
     if (searchText === '') {
@@ -3330,26 +3332,41 @@ const VehicleListTable = () => {
         limit(pageSize)
       );
     } else {
+      const keywords = searchText.toLowerCase().split(' ');
       q = query(
         collection(projectExtensionFirestore, 'VehicleProducts'),
+        where('keywords', 'array-contains-any', keywords),
         orderBy(fieldToSortBy, sortDirection),
-        where('keywords', 'array-contains', searchText.toLowerCase()),
         limit(pageSize)
       );
     }
 
     try {
       const documents = await getDocs(q);
-      const vehicleProductData = [];
-      documents.forEach((document) => {
-        vehicleProductData.push({
+      let vehicleProductData = [];
+
+      if (searchText !== '') {
+        const keywords = searchText.toLowerCase().split(' ');
+        const filteredDocuments = documents.docs.filter(doc => {
+          const docKeywords = doc.data().keywords || [];
+          return keywords.every(keyword => docKeywords.includes(keyword));
+        });
+        vehicleProductData = filteredDocuments.map((document) => ({
           id: document.id,
           ...document.data(),
-        });
-      });
+        }));
+      } else {
+        vehicleProductData = documents.docs.map((document) => ({
+          id: document.id,
+          ...document.data(),
+        }));
+      }
+
       dispatch(setVehicleListData(vehicleProductData));
-      setLastVisible(documents.docs[documents.docs.length - 1]);
-      setFirstVisible(documents.docs[0]);
+      if (documents.docs.length > 0) {
+        setLastVisible(documents.docs[documents.docs.length - 1]);
+        setFirstVisible(documents.docs[0]);
+      }
     } catch (error) {
       console.error("Error fetching vehicle products:", error);
     } finally {
@@ -3403,86 +3420,101 @@ const VehicleListTable = () => {
   const fetchNextData = async () => {
     const fieldToSortBy = isSortActive && sortField ? sortField : 'dateAdded';
     const sortDirection = isSortActive ? 'asc' : 'desc';
+    dispatch(setLoadingModalVisible(true));
 
+    let q;
 
     if (searchText === '') {
-
-
-      const q = query(
+      q = query(
         collection(projectExtensionFirestore, 'VehicleProducts'),
         orderBy(fieldToSortBy, sortDirection),
         startAfter(lastVisible),
         limit(pageSize)
       );
 
-      const documents = await getDocs(q);
-      updateState(documents, 'next');
-
-
-
-      dispatch(setLoadingModalVisible(false));
-
-
-    }
-
-    else {
-      const q = query(
+      try {
+        const documents = await getDocs(q);
+        updateState(documents, 'next');
+      } catch (error) {
+        console.error("Error fetching next vehicle products:", error);
+      } finally {
+        dispatch(setLoadingModalVisible(false));
+      }
+    } else {
+      const keywords = searchText.toLowerCase().split(' ');
+      q = query(
         collection(projectExtensionFirestore, 'VehicleProducts'),
+        where('keywords', 'array-contains-any', keywords),
         orderBy(fieldToSortBy, sortDirection),
-        where('keywords', 'array-contains', searchText.toLowerCase()),
         startAfter(lastVisible),
         limit(pageSize)
       );
 
-      const documents = await getDocs(q);
-      updateState(documents, 'next');
-
-
-
-      dispatch(setLoadingModalVisible(false));
+      try {
+        const documents = await getDocs(q);
+        const filteredDocuments = documents.docs.filter(doc => {
+          const docKeywords = doc.data().keywords || [];
+          return keywords.every(keyword => docKeywords.includes(keyword));
+        });
+        updateState(filteredDocuments, 'next');
+      } catch (error) {
+        console.error("Error fetching next vehicle products:", error);
+      } finally {
+        dispatch(setLoadingModalVisible(false));
+      }
     }
-
   };
+
 
 
   const fetchPreviousData = async () => {
     const fieldToSortBy = isSortActive && sortField ? sortField : 'dateAdded';
     const sortDirection = isSortActive ? 'asc' : 'desc';
+    dispatch(setLoadingModalVisible(true));
+
+    let q;
 
     if (searchText === '') {
-
-      const q = query(
+      q = query(
         collection(projectExtensionFirestore, 'VehicleProducts'),
         orderBy(fieldToSortBy, sortDirection),
         endBefore(firstVisible),
         limitToLast(pageSize)
       );
 
-
-      const documents = await getDocs(q);
-      updateState(documents, 'prev')
-      dispatch(setLoadingModalVisible(false));
-
-    }
-
-    else {
-
-      const q = query(
+      try {
+        const documents = await getDocs(q);
+        updateState(documents, 'prev');
+      } catch (error) {
+        console.error("Error fetching previous vehicle products:", error);
+      } finally {
+        dispatch(setLoadingModalVisible(false));
+      }
+    } else {
+      const keywords = searchText.toLowerCase().split(' ');
+      q = query(
         collection(projectExtensionFirestore, 'VehicleProducts'),
+        where('keywords', 'array-contains-any', keywords),
         orderBy(fieldToSortBy, sortDirection),
-        where('keywords', 'array-contains', searchText.toLowerCase()),
         endBefore(firstVisible),
         limitToLast(pageSize)
       );
 
-      const documents = await getDocs(q);
-      updateState(documents, 'prev');
-      dispatch(setLoadingModalVisible(false));
-
+      try {
+        const documents = await getDocs(q);
+        const filteredDocuments = documents.docs.filter(doc => {
+          const docKeywords = doc.data().keywords || [];
+          return keywords.every(keyword => docKeywords.includes(keyword));
+        });
+        updateState(filteredDocuments, 'prev');
+      } catch (error) {
+        console.error("Error fetching previous vehicle products:", error);
+      } finally {
+        dispatch(setLoadingModalVisible(false));
+      }
     }
+  };
 
-
-  }
 
 
 
@@ -3514,9 +3546,7 @@ const VehicleListTable = () => {
   }
 
   const updateState = async (documents, pageClicked) => {
-
-
-    if (!documents.empty) {
+    if (documents && !documents.empty) {
       const vehicleProductData = [];
       documents.forEach((document) => {
         vehicleProductData.push({
@@ -3525,63 +3555,62 @@ const VehicleListTable = () => {
         });
       });
 
-
-
-      if (documents?.docs[0]) {
+      if (documents.docs && documents.docs.length > 0) {
         setFirstVisible(documents.docs[0]);
-      }
-      if (documents?.docs[documents.docs.length - 1]) {
         setLastVisible(documents.docs[documents.docs.length - 1]);
       }
 
-      if (pageClicked == 'next') {
+      if (pageClicked === 'next') {
         setCurrentPage(currentPage + 1);
-      }
-      if (pageClicked == 'prev') {
+      } else if (pageClicked === 'prev') {
         setCurrentPage(currentPage - 1);
       }
-      if (vehicleProductData.length < 1) {
+
+      if (vehicleProductData.length > 0) {
+        dispatch(setVehicleListData(vehicleProductData));
+      } else {
         dispatch(setLoadingModalVisible(false));
-
       }
-
-      dispatch(setVehicleListData(vehicleProductData));
-    }
-
-    else {
+    } else {
       const fieldToSortBy = isSortActive && sortField ? sortField : 'dateAdded';
       const sortDirection = isSortActive ? 'asc' : 'desc';
 
-      if (searchText == '') {
-        setCurrentPage(1);
+      setCurrentPage(1);
 
-        const q = query(
+      let q;
+      if (searchText === '') {
+        q = query(
           collection(projectExtensionFirestore, 'VehicleProducts'),
           orderBy(fieldToSortBy, sortDirection),
           limit(pageSize)
         );
-        const firstPageDocuments = await getDocs(q);
-        fetchFirstPage(firstPageDocuments);
-
-      }
-      else {
-
-        setCurrentPage(1);
-
-        const q = query(
+      } else {
+        const keywords = searchText.toLowerCase().split(' ');
+        q = query(
           collection(projectExtensionFirestore, 'VehicleProducts'),
-          where('keywords', 'array-contains', searchText.toLowerCase()),
+          where('keywords', 'array-contains-any', keywords),
           orderBy(fieldToSortBy, sortDirection),
           limit(pageSize)
         );
-        const firstPageDocuments = await getDocs(q);
-        fetchFirstPage(firstPageDocuments);
-
       }
 
-
+      try {
+        const keywords = searchText.toLowerCase().split(' ');
+        const firstPageDocuments = await getDocs(q);
+        const filteredDocuments = firstPageDocuments.docs.filter(doc => {
+          const docKeywords = doc.data().keywords || [];
+          return keywords.every(keyword => docKeywords.includes(keyword));
+        });
+        fetchFirstPage(filteredDocuments);
+      } catch (error) {
+        console.error("Error fetching vehicle products:", error);
+      } finally {
+        dispatch(setLoadingModalVisible(false));
+      }
     }
   };
+
+
 
   const handleNextPage = async () => {
     // setPageClicked('next');
@@ -3632,16 +3661,26 @@ const VehicleListTable = () => {
 
     else {
       setCurrentPage(1);
+      const keywords = searchText.toLowerCase().split(' ');
       const q = query(
         collection(projectExtensionFirestore, 'VehicleProducts'),
-        where('keywords', 'array-contains', searchText.toLowerCase()),
+        where('keywords', 'array-contains-any', keywords),
         orderBy('dateAdded', 'desc'),
         limit(pageSize)
       );
 
-      const firstPageDocuments = await getDocs(q);
-      fetchFirstPage(firstPageDocuments);
-      dispatch(setLoadingModalVisible(false));
+      try {
+        const firstPageDocuments = await getDocs(q);
+        const filteredDocuments = firstPageDocuments.docs.filter(doc => {
+          const docKeywords = doc.data().keywords || [];
+          return keywords.every(keyword => docKeywords.includes(keyword));
+        });
+        fetchFirstPage(filteredDocuments);
+      } catch (error) {
+        console.error("Error fetching vehicle products:", error);
+      } finally {
+        dispatch(setLoadingModalVisible(false));
+      }
     }
   };
 

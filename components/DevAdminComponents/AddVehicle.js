@@ -4724,13 +4724,17 @@ export default function AddVehicle() {
 
       const keywordsData = [
         `${inputRefNum.current?.value}`,
+        `${regYearVariable.text}`,
         `${inputCarName.current?.value}`,
         `${inputStockIDNumber.current?.value}`,
-        `${regYearVariable.text}`,
         `${inputChassis.current?.value}`,
         `${bodyTypeVariable.text}`,
+        `${inputModelCode.current?.value}`,
+        `${fuelVariable.text}`,
         `${salesVariable.text}`,
         `${buyerVariable.text}`,
+        `${makeVariable.text}`,
+        `${modelVariable.text}`,
       ]
 
       const fobHistoryData = {
@@ -4746,7 +4750,7 @@ export default function AddVehicle() {
       }
 
       const data = {
-        keywords: generateKeywords(keywordsData),
+        keywords: arrayUnion(...generateKeywords(keywordsData)),
         imageCount: globalSelectedImages.length,
         supplyChainsCostsData: globalSupplyChainCostsData,
         ...(fobHistoryValue && { fobHistory: fobHistoryValue }),

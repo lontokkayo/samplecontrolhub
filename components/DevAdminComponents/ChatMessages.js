@@ -223,6 +223,30 @@ let globalSelectedFileType = '';
 
 const firestore = getFirestore();
 
+const generateKeywords = (fields) => {
+    const keywords = new Set();
+
+    fields.forEach(field => {
+        const words = field.toLowerCase().split(' ');
+
+        // Generate substrings for each word
+        words.forEach((word) => {
+            for (let i = 1; i <= word.length; i++) {
+                keywords.add(word.substring(0, i));
+            }
+        });
+        const maxSubstringLength = 50;
+        // Generate all possible substrings within a reasonable length limit
+        for (let i = 0; i < field.length; i++) {
+            for (let j = i + 1; j <= field.length && j - i <= maxSubstringLength; j++) {
+                keywords.add(field.substring(i, j).toLowerCase());
+            }
+        }
+    });
+
+    return Array.from(keywords);
+};
+
 
 
 const getEmailOfCurrentUser = () => {
@@ -15421,7 +15445,7 @@ const ChatMessageBox = ({ activeButtonValue, userEmail }) => {
     const location = useLocation();
 
     useEffect(() => {
-        console.log(chatMessagesData,selectedChatData);
+        console.log(chatMessagesData, selectedChatData);
         // Store the current path
         const handlePopState = () => {
             if (screenWidth < mobileViewBreakpoint && activeChatId !== '') {
