@@ -30,6 +30,7 @@ import {
     Pressable,
     Linking,
     Platform,
+    Modal as RnModal,
 } from 'react-native';
 import 'react-native-gesture-handler';
 import {
@@ -451,7 +452,7 @@ const HeaderButton = ({ title, onPress, isActive, headerCount }) => {
             onPress={onPress}
             style={{ backgroundColor: isHovered ? '#f2f2f2' : 'transparent', padding: 12, marginVertical: screenWidth > 1818 ? 10 : 2, borderWidth: 5, borderColor: 'transparent', marginLeft: 8, width: 195, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', borderRadius: 5, ...activeStyle }}
         >
-            <Text color={isActive ? '#0A78BE' : '#1C2B33'} fontSize={14} style={{ fontWeight: isActive ? 700 : 400, alignSelf: 'center', textAlign: 'center', }}>{title}</Text>
+            <Text selectable={screenWidth > mobileViewBreakpoint} color={isActive ? '#0A78BE' : '#1C2B33'} fontSize={14} style={{ fontWeight: isActive ? 700 : 400, alignSelf: 'center', textAlign: 'center', }}>{title}</Text>
             {headerCount}
 
         </Pressable>
@@ -1805,9 +1806,20 @@ const ChatListItem = ({ item, onPress, onPressNewTab, isActive, messageUnread, f
     const [isUnreadVisible, setIsUnreadVisible] = useState(false);
     const [isHovered, setIsHovered] = useState(false);
     const [customerData, setCustomerData] = useState({});
+    const [isPopoverVisible, setIsPopoverVisible] = useState(false);
+    const [holdTimeout, setHoldTimeout] = useState(null);
+    const [popoverPosition, setPopoverPosition] = useState({ top: 0, left: 0 });
+    const selectedChatData = useSelector((state) => state.selectedChatData);
+
+    const pressableRef = useRef(null);
 
     const carName = item.carData && item.carData.carName ? item.carData.carName : (item.vehicle && item.vehicle.carName ? item.vehicle.carName : '');
+
+    const screenWidth = Dimensions.get('window').width;
+
     const updateChatToUnread = async () => {
+        setIsPopoverVisible(false)
+
         dispatch(setActiveChatId(''));
         dispatch(setChatMessagesData([]));
         dispatch(setSelectedChatData([]));
@@ -1821,6 +1833,26 @@ const ChatListItem = ({ item, onPress, onPressNewTab, isActive, messageUnread, f
             console.error("Error updating document: ", error);
         }
     };
+
+    const handlePressIn = () => {
+        hoverIn();
+        const timeout = setTimeout(() => {
+            pressableRef.current.measure((fx, fy, width, height, px, py) => {
+                setPopoverPosition({ top: py, right: px + width + 10 });
+                if (Object.keys(selectedChatData).length == 0) {
+                    setIsPopoverVisible(true);
+                }
+
+            });
+        }, 500); // 500ms for hold duration
+        setHoldTimeout(timeout);
+    };
+
+    const handlePressOut = () => {
+        clearTimeout(holdTimeout);
+        setHoldTimeout(null);
+    };
+
 
     const hoverIn = () => {
         setIsHovered(true)
@@ -1901,8 +1933,10 @@ const ChatListItem = ({ item, onPress, onPressNewTab, isActive, messageUnread, f
 
 
     const handlePress = () => {
-        onPress()
+        setIsPopoverVisible(false)
 
+        onPress();
+        handlePressOut();
         // dispatch(setSelectedCustomerData(customerData));
         globalCustomerFirstName = textFirst ? textFirst : '';
         globalCustomerLastName = textLast ? textLast : '';
@@ -1913,10 +1947,16 @@ const ChatListItem = ({ item, onPress, onPressNewTab, isActive, messageUnread, f
         setIsHovered(false);
         setIsUnreadHovered(false)
 
+        if (holdTimeout) {
+            clearTimeout(holdTimeout);
+            setHoldTimeout(null);
+        }
 
     }
 
     const handlePressNewTab = () => {
+        setIsPopoverVisible(false)
+
         onPressNewTab()
 
         // dispatch(setSelectedCustomerData(customerData));
@@ -1937,142 +1977,213 @@ const ChatListItem = ({ item, onPress, onPressNewTab, isActive, messageUnread, f
     }
     else {
         return (
-            <Pressable
-                onHoverIn={hoverIn}
-                onHoverOut={hoverOut}
-                focusable={false}
-                style={{
-                    padding: 12,
-                    alignItems: 'flex-start', // Align items to the start of the button
-                    flexDirection: 'row',
-                    backgroundColor: isActive ? '#f2f2f2' : (isHovered ? '#f2f2f2' : 'white'),
-                    borderLeftColor: isActive ? '#0A9FDC' : 'transparent',
-                    borderRightColor: isActive ? '#0A9FDC' : 'transparent',
-                    borderLeftWidth: 2,
-                    borderRightWidth: 2,
+            <>
+                <Pressable
+                    ref={pressableRef}
+                    onHoverIn={hoverIn}
+                    onHoverOut={hoverOut}
+                    focusable={false}
+                    onPressIn={handlePressIn}
+                    onPressOut={handlePressOut}
+                    style={({ hovered }) => ({
+                        padding: 12,
+                        alignItems: 'flex-start', // Align items to the start of the button
+                        flexDirection: 'row',
+                        backgroundColor: isActive ? '#f2f2f2' : (hovered || isHovered ? '#f2f2f2' : 'white'),
+                        borderLeftColor: isActive ? '#0A9FDC' : 'transparent',
+                        borderRightColor: isActive ? '#0A9FDC' : 'transparent',
+                        borderLeftWidth: 2,
+                        borderRightWidth: 2,
 
-                }}
-                onPress={handlePress}
-            >
-                {item.isCancelled && <CancelledView />}
+                    })}
+                    onPress={handlePress}
+                >
 
-                <View style={{ paddingRight: 10, justifyContent: 'center', }}>
-                    {imageUrl ? (
-                        <FastImage
-                            source={{ uri: imageUrl, priority: FastImage.priority.normal }}
-                            style={{
-                                width: 60,
-                                height: 60,
-                                borderRadius: 30,
-                            }}
-                            resizeMode={FastImage.resizeMode.stretch}
-                        />
-                    ) : (
-                        <View
-                            style={{
-                                width: 60,
-                                height: 60,
-                                borderRadius: 30,
-                                backgroundColor: '#e0e0e0',
-                                marginRight: 12,
-                            }}
-                        />
-                    )}
-                </View>
-                <View style={{ flex: 1 }}>
-                    {!isHovered ? (<Text style={{ fontSize: 12, position: 'absolute', right: 10, color: messageUnread ? '#0A78BE' : '#90949C', fontWeight: messageUnread ? 700 : 400, }}>{formattedDate}</Text>) : (!item.read ? (<Text style={{ fontSize: 12, position: 'absolute', right: 10, color: messageUnread ? '#0A78BE' : '#90949C', fontWeight: messageUnread ? 700 : 400, }}>{formattedDate}</Text>) : null)}
-                    <Text numberOfLines={1} ellipsizeMode='tail' style={{ fontSize: 14, width: '70%', overflow: 'hidden', fontWeight: messageUnread ? 700 : 400, color: messageUnread ? '#1C2B33' : '#586369', }}>{carName}</Text>
-                    <Text numberOfLines={1} ellipsizeMode='tail' style={{ fontSize: 14, width: '80%', overflow: 'hidden', flex: 1, fontWeight: messageUnread ? 700 : 400, color: messageUnread ? '#1C2B33' : '#586369', }}>{`${textFirst} ${textLast}`}</Text>
-                    <Text numberOfLines={1} ellipsizeMode='tail' style={{ fontSize: 12, width: '80%', overflow: 'hidden', flex: 1, fontWeight: messageUnread ? 700 : 400, color: messageUnread ? '#0A78BE' : '#90949c', }}>{item.lastMessageSender == item.participants.customer ? (item.lastMessage ? item.lastMessage : 'No message found') : (item.lastMessage ? `Sales: ${item.lastMessage}` : `Sales: No message found`)}</Text>
-                    {!item.read ? (
-                        <FastImage
-                            source={{ uri: chatStepIconOn, priority: FastImage.priority.normal }}
-                            style={{
-                                tintColor: 'rgba(128, 128, 128, 1)',
-                                width: 22,
-                                height: 20,
-                                position: 'absolute',
-                                right: 10,
-                                bottom: 0,
-                            }}
-                            resizeMode={FastImage.resizeMode.stretch}
-                        />
-                    ) : (
-                        <FastImage
-                            source={{ uri: chatStepIconOff, priority: FastImage.priority.normal }}
-                            style={{
-                                tintColor: 'rgba(128, 128, 128, 1)',
-                                width: 22,
-                                height: 20,
-                                position: 'absolute',
-                                right: 10,
-                                bottom: 0,
-                            }}
-                            resizeMode={FastImage.resizeMode.stretch}
-                        />
-                    )}
+                    {item.isCancelled && <CancelledView />}
 
-                    <Text numberOfLines={1} ellipsizeMode='tail' style={{
-                        position: 'absolute',
-                        right: 0,
-                        top: 10,
-                        padding: 10,
-                        alignSelf: 'center',
-                        fontSize: 12,
-                        overflow: 'hidden',
-                        flex: 1,
-                        fontWeight: messageUnread ? 700 : 400,
-                        color: messageUnread ? '#FF0000' : '#90949c',
-                    }}>
-                        {item.invoiceNumber && item.stepIndicator.value > 2 ? item.invoiceNumber : ''}
-                    </Text>
-
-                    {isHovered && item.read && (
-                        <Tooltip label="Mark as unread" placement='right' openDelay={200} bgColor={'#FAFAFA'} _text={{ color: '#1C2B33', }}>
-                            <Pressable
-                                focusable={false}
-                                onHoverIn={hoverUnreadIn}
-                                onHoverOut={hoverUnreadOut}
-                                onPress={updateChatToUnread}
+                    <View style={{ paddingRight: 10, justifyContent: 'center', }}>
+                        {imageUrl ? (
+                            <FastImage
+                                source={{ uri: imageUrl, priority: FastImage.priority.normal }}
                                 style={{
-                                    position: 'absolute',
-                                    right: 0,
-                                    top: -10,
-                                    padding: 10,
-                                    alignSelf: 'center',
+                                    width: 60,
+                                    height: 60,
+                                    borderRadius: 30,
                                 }}
-
-                            >
-                                <MaterialIcons name="mark-as-unread" size={22} color={isUnreadHovered ? "#1B81C2" : "#BABABA"} />
-                            </Pressable>
-                        </Tooltip>
-                    )}
-
-                    {isHovered && (
-                        <Tooltip label="Open in new tab" placement='right' openDelay={200} bgColor={'#FAFAFA'} _text={{ color: '#1C2B33', }}>
-                            <Pressable
-                                focusable={false}
-                                onHoverIn={hoverOpenNewTabIn}
-                                onHoverOut={hoverOpenNewTabOut}
-                                onPress={handlePressNewTab}
+                                resizeMode={FastImage.resizeMode.stretch}
+                            />
+                        ) : (
+                            <View
                                 style={{
-                                    position: 'absolute',
-                                    right: -22,
-                                    top: -22,
-                                    padding: 10,
-                                    alignSelf: 'center',
+                                    width: 60,
+                                    height: 60,
+                                    borderRadius: 30,
+                                    backgroundColor: '#e0e0e0',
+                                    marginRight: 12,
                                 }}
+                            />
+                        )}
+                    </View>
+                    <View style={{ flex: 1 }}>
+                        {!isHovered ? (<Text selectable={screenWidth > mobileViewBreakpoint} style={{ fontSize: 12, position: 'absolute', right: 10, color: messageUnread ? '#0A78BE' : '#90949C', fontWeight: messageUnread ? 700 : 400, }}>{formattedDate}</Text>) : (!item.read ? (<Text style={{ fontSize: 12, position: 'absolute', right: 10, color: messageUnread ? '#0A78BE' : '#90949C', fontWeight: messageUnread ? 700 : 400, }}>{formattedDate}</Text>) : null)}
+                        <Text selectable={screenWidth > mobileViewBreakpoint} numberOfLines={1} ellipsizeMode='tail' style={{ fontSize: 14, width: '70%', overflow: 'hidden', fontWeight: messageUnread ? 700 : 400, color: messageUnread ? '#1C2B33' : '#586369', }}>{carName}</Text>
+                        <Text selectable={screenWidth > mobileViewBreakpoint} numberOfLines={1} ellipsizeMode='tail' style={{ fontSize: 14, width: '80%', overflow: 'hidden', flex: 1, fontWeight: messageUnread ? 700 : 400, color: messageUnread ? '#1C2B33' : '#586369', }}>{`${textFirst} ${textLast}`}</Text>
+                        <Text selectable={screenWidth > mobileViewBreakpoint} numberOfLines={1} ellipsizeMode='tail' style={{ fontSize: 12, width: '80%', overflow: 'hidden', flex: 1, fontWeight: messageUnread ? 700 : 400, color: messageUnread ? '#0A78BE' : '#90949c', }}>{item.lastMessageSender == item.participants.customer ? (item.lastMessage ? item.lastMessage : 'No message found') : (item.lastMessage ? `Sales: ${item.lastMessage}` : `Sales: No message found`)}</Text>
+                        {!item.read ? (
+                            <FastImage
+                                source={{ uri: chatStepIconOn, priority: FastImage.priority.normal }}
+                                style={{
+                                    tintColor: 'rgba(128, 128, 128, 1)',
+                                    width: 22,
+                                    height: 20,
+                                    position: 'absolute',
+                                    right: 10,
+                                    bottom: 0,
+                                }}
+                                resizeMode={FastImage.resizeMode.stretch}
+                            />
+                        ) : (
+                            <FastImage
+                                source={{ uri: chatStepIconOff, priority: FastImage.priority.normal }}
+                                style={{
+                                    tintColor: 'rgba(128, 128, 128, 1)',
+                                    width: 22,
+                                    height: 20,
+                                    position: 'absolute',
+                                    right: 10,
+                                    bottom: 0,
+                                }}
+                                resizeMode={FastImage.resizeMode.stretch}
+                            />
+                        )}
 
-                            >
-                                <MaterialIcons name="open-in-new" size={16} color={isOpenNewTabHovered ? "#1B81C2" : "#BABABA"} />
-                            </Pressable>
-                        </Tooltip>
-                    )}
-                </View>
+                        <Text selectable={screenWidth > mobileViewBreakpoint} numberOfLines={1} ellipsizeMode='tail' style={{
+                            position: 'absolute',
+                            right: 0,
+                            top: 10,
+                            padding: 10,
+                            alignSelf: 'center',
+                            fontSize: 12,
+                            overflow: 'hidden',
+                            flex: 1,
+                            fontWeight: messageUnread ? 700 : 400,
+                            color: messageUnread ? '#FF0000' : '#90949c',
+                        }}>
+                            {item.invoiceNumber && item.stepIndicator.value > 2 ? item.invoiceNumber : ''}
+                        </Text>
+
+                        {((screenWidth > mobileViewBreakpoint) && isHovered) && item.read && (
+                            <Tooltip label="Mark as unread" placement='right' openDelay={200} bgColor={'#FAFAFA'} _text={{ color: '#1C2B33', }}>
+                                <Pressable
+                                    focusable={false}
+                                    onHoverIn={hoverUnreadIn}
+                                    onHoverOut={hoverUnreadOut}
+                                    onPress={updateChatToUnread}
+                                    style={{
+                                        position: 'absolute',
+                                        right: 0,
+                                        top: -10,
+                                        padding: 10,
+                                        alignSelf: 'center',
+                                    }}
+
+                                >
+                                    <MaterialIcons name="mark-as-unread" size={22} color={isUnreadHovered ? "#1B81C2" : "#BABABA"} />
+                                </Pressable>
+                            </Tooltip>
+                        )}
+
+                        {((screenWidth > mobileViewBreakpoint) && isHovered) && (
+                            <Tooltip label="Open in new tab" placement='right' openDelay={200} bgColor={'#FAFAFA'} _text={{ color: '#1C2B33', }}>
+                                <Pressable
+                                    focusable={false}
+                                    onHoverIn={hoverOpenNewTabIn}
+                                    onHoverOut={hoverOpenNewTabOut}
+                                    onPress={handlePressNewTab}
+                                    style={{
+                                        position: 'absolute',
+                                        right: -22,
+                                        top: -22,
+                                        padding: 10,
+                                        alignSelf: 'center',
+                                    }}
+
+                                >
+                                    <MaterialIcons name="open-in-new" size={16} color={isOpenNewTabHovered ? "#1B81C2" : "#BABABA"} />
+                                </Pressable>
+                            </Tooltip>
+                        )}
+                    </View>
 
 
 
-            </Pressable>
+                </Pressable>
+
+                {((screenWidth < mobileViewBreakpoint) && isPopoverVisible) && (
+                    <Modal
+                        isOpen={isPopoverVisible}
+                        onClose={() => {
+                            setIsPopoverVisible(false)
+                            hoverOut();
+                        }}
+                        useRNModal
+
+                    >
+                        <View style={[
+                            {
+                                position: 'absolute',
+                                zIndex: 1000,
+                            },
+                            { top: popoverPosition.top, left: popoverPosition.left }
+                        ]}>
+                            <View style={{
+                                width: 200,
+                                padding: 20,
+                                backgroundColor: 'white',
+                                borderRadius: 10,
+                                shadowColor: '#000',
+                                shadowOffset: { width: 0, height: 2 },
+                                shadowOpacity: 0.8,
+                                shadowRadius: 2,
+                                elevation: 5,
+                            }}>
+
+                                <Pressable
+                                    focusable={false}
+                                    onHoverIn={hoverUnreadIn}
+                                    onHoverOut={hoverUnreadOut}
+                                    onPress={updateChatToUnread}
+                                    style={{
+                                        padding: 10,
+                                        flexDirection: 'row',
+                                    }}
+
+                                >
+                                    <MaterialIcons name="mark-as-unread" size={22} color={isUnreadHovered ? "#1B81C2" : "#BABABA"} />
+                                    <Text selectable={false}> Unread</Text>
+
+                                </Pressable>
+
+                                <Pressable
+                                    focusable={false}
+                                    onHoverIn={hoverOpenNewTabIn}
+                                    onHoverOut={hoverOpenNewTabOut}
+                                    onPress={handlePressNewTab}
+                                    style={{
+                                        padding: 10,
+                                        flexDirection: 'row',
+                                    }}
+
+                                >
+                                    <MaterialIcons name="open-in-new" size={22} color={isOpenNewTabHovered ? "#1B81C2" : "#BABABA"} />
+                                    <Text selectable={false}> Open in new tab </Text>
+
+                                </Pressable>
+                            </View>
+                        </View>
+                    </Modal>
+                )}
+            </>
         );
     }
 
