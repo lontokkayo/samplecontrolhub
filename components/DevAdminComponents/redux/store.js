@@ -232,6 +232,15 @@ const chatListSearchTextSlice = createSlice({
   },
 })
 
+const pressableHoldMenuVisibleSlice = createSlice({
+  name: 'pressableHoldMenuVisible',
+  initialState: false,
+  reducers: {
+    setPressableHoldMenuVisible: (state, action) => {
+      return action.payload
+    },
+  },
+})
 
 const activeChatIdSlice = createSlice({
   name: 'activeChatId',
@@ -957,6 +966,7 @@ export const { setSelectedChatData } = selectedChatDataSlice.actions
 export const { setChatMessageBoxLoading } = chatMessageBoxLoadingSlice.actions
 export const { setChatMessagesData } = chatMessagesDataSlice.actions
 export const { setActiveChatId } = activeChatIdSlice.actions
+export const { setPressableHoldMenuVisible } = pressableHoldMenuVisibleSlice.actions
 export const { setChatListSearchText } = chatListSearchTextSlice.actions
 export const { setLoadMoreLoading } = loadMoreLoadingSlice.actions
 export const { setNoMoreData } = noMoreDataSlice.actions
@@ -1080,7 +1090,8 @@ const store = configureStore({
     readByListModalVisible: readByListModalVisibleSlice.reducer,
     selectedChatData: selectedChatDataSlice.reducer,
     chatMessageBoxLoading: chatMessageBoxLoadingSlice.reducer,
-    chatMessagesData: chatMessagesDataSlice.reducer,
+    chatMessagesData: chatMessagesDataSlice.reducer,    
+    pressableHoldMenuVisible: pressableHoldMenuVisibleSlice.reducer,
     chatListSearchText: chatListSearchTextSlice.reducer,
     activeChatId: activeChatIdSlice.reducer,
     loadMoreLoading: loadMoreLoadingSlice.reducer,

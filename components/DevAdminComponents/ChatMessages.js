@@ -101,6 +101,7 @@ import {
     setCustomInvoiceVisible,
     setMessageTextInputHeight,
     setProfitCalculatorTotalAmountDollars,
+    setPressableHoldMenuVisible,
 } from './redux/store';
 // import { TextInput } from 'react-native-gesture-handler';
 import Hyperlink from 'react-native-hyperlink';
@@ -1676,26 +1677,6 @@ const ChatInputText = () => {
                             resizeMode={FastImage.resizeMode.cover}
                         />
                     </View>
-                    {/* <TextInput
-                        ref={textInputRef}
-                        multiline
-                        placeholder='Send a message...'
-                        placeholderTextColor='#9B9E9F'
-                        onChange={handleContentSizeChange}
-                        onKeyPress={handleKeyPress}
-                        style={{
-                            outlineStyle: 'none',
-                            width: '100%',
-                            minHeight: 50, // Set your desired minHeight
-                            maxHeight: 200, // Set your desired maxHeight
-                            height: inputHeight, // Dynamic height
-                            alignSelf: 'center',
-                            padding: 10,
-                            overflow: 'auto',
-                            marginBottom: 25,
-                            marginRight: 50,
-                        }}
-                    /> */}
 
                     <MessageTextInput handleSendMessage={handleSendMessage} textInputRef={textInputRef} />
 
@@ -1810,6 +1791,8 @@ const ChatListItem = ({ item, onPress, onPressNewTab, isActive, messageUnread, f
     const [holdTimeout, setHoldTimeout] = useState(null);
     const [popoverPosition, setPopoverPosition] = useState({ top: 0, left: 0 });
     const selectedChatData = useSelector((state) => state.selectedChatData);
+    const chatMessageBoxLoading = useSelector((state) => state.chatMessageBoxLoading);
+    const activeChatId = useSelector((state) => state.activeChatId);
 
     const pressableRef = useRef(null);
 
@@ -1819,6 +1802,7 @@ const ChatListItem = ({ item, onPress, onPressNewTab, isActive, messageUnread, f
 
     const updateChatToUnread = async () => {
         setIsPopoverVisible(false)
+        dispatch(setPressableHoldMenuVisible(false));
 
         dispatch(setActiveChatId(''));
         dispatch(setChatMessagesData([]));
@@ -1832,25 +1816,6 @@ const ChatListItem = ({ item, onPress, onPressNewTab, isActive, messageUnread, f
         } catch (error) {
             console.error("Error updating document: ", error);
         }
-    };
-
-    const handlePressIn = () => {
-        hoverIn();
-        const timeout = setTimeout(() => {
-            pressableRef.current.measure((fx, fy, width, height, px, py) => {
-                setPopoverPosition({ top: py, right: px + width + 10 });
-                if (Object.keys(selectedChatData).length == 0) {
-                    setIsPopoverVisible(true);
-                }
-
-            });
-        }, 500); // 500ms for hold duration
-        setHoldTimeout(timeout);
-    };
-
-    const handlePressOut = () => {
-        clearTimeout(holdTimeout);
-        setHoldTimeout(null);
     };
 
 
@@ -1933,10 +1898,11 @@ const ChatListItem = ({ item, onPress, onPressNewTab, isActive, messageUnread, f
 
 
     const handlePress = () => {
-        setIsPopoverVisible(false)
-
         onPress();
-        handlePressOut();
+        setHoldTimeout(null);
+        setIsPopoverVisible(false);
+        dispatch(setPressableHoldMenuVisible(false));
+
         // dispatch(setSelectedCustomerData(customerData));
         globalCustomerFirstName = textFirst ? textFirst : '';
         globalCustomerLastName = textLast ? textLast : '';
@@ -1945,17 +1911,40 @@ const ChatListItem = ({ item, onPress, onPressNewTab, isActive, messageUnread, f
 
         globalCustomerCarName = carName;
         setIsHovered(false);
-        setIsUnreadHovered(false)
+        setIsUnreadHovered(false);
+    };
 
-        if (holdTimeout) {
-            clearTimeout(holdTimeout);
-            setHoldTimeout(null);
+    const handleLongPress = () => {
+
+        hoverIn();
+
+        if (screenWidth < mobileViewBreakpoint && activeChatId == '' && !chatMessageBoxLoading && Object.keys(selectedChatData).length == 0) {
+            pressableRef.current.measure((fx, fy, width, height, px, py) => {
+                setPopoverPosition({ top: py, right: px + width });
+                setIsPopoverVisible(true);
+                dispatch(setPressableHoldMenuVisible(true));
+            });
+        } else {
+            setIsPopoverVisible(false);
+            dispatch(setPressableHoldMenuVisible(false));
+
+            hoverOut();
         }
 
-    }
+
+    };
+
+
+    const handlePressOut = () => {
+
+        clearTimeout(holdTimeout);
+        setHoldTimeout(null);
+    };
 
     const handlePressNewTab = () => {
         setIsPopoverVisible(false)
+        dispatch(setPressableHoldMenuVisible(false));
+
 
         onPressNewTab()
 
@@ -1983,13 +1972,14 @@ const ChatListItem = ({ item, onPress, onPressNewTab, isActive, messageUnread, f
                     onHoverIn={hoverIn}
                     onHoverOut={hoverOut}
                     focusable={false}
-                    onPressIn={handlePressIn}
+                    onLongPress={handleLongPress}
+                    onPressIn={hoverIn}
                     onPressOut={handlePressOut}
-                    style={({ hovered }) => ({
+                    style={({ hovered, pressed }) => ({
                         padding: 12,
                         alignItems: 'flex-start', // Align items to the start of the button
                         flexDirection: 'row',
-                        backgroundColor: isActive ? '#f2f2f2' : (hovered || isHovered ? '#f2f2f2' : 'white'),
+                        backgroundColor: isActive ? '#f2f2f2' : (hovered || isHovered || pressed ? '#f2f2f2' : 'white'),
                         borderLeftColor: isActive ? '#0A9FDC' : 'transparent',
                         borderRightColor: isActive ? '#0A9FDC' : 'transparent',
                         borderLeftWidth: 2,
@@ -2025,7 +2015,12 @@ const ChatListItem = ({ item, onPress, onPressNewTab, isActive, messageUnread, f
                         )}
                     </View>
                     <View style={{ flex: 1 }}>
-                        {!isHovered ? (<Text selectable={screenWidth > mobileViewBreakpoint} style={{ fontSize: 12, position: 'absolute', right: 10, color: messageUnread ? '#0A78BE' : '#90949C', fontWeight: messageUnread ? 700 : 400, }}>{formattedDate}</Text>) : (!item.read ? (<Text style={{ fontSize: 12, position: 'absolute', right: 10, color: messageUnread ? '#0A78BE' : '#90949C', fontWeight: messageUnread ? 700 : 400, }}>{formattedDate}</Text>) : null)}
+                        {!isHovered ? (<Text selectable={screenWidth > mobileViewBreakpoint} style={{ fontSize: 12, position: 'absolute', right: 10, color: messageUnread ? '#0A78BE' : '#90949C', fontWeight: messageUnread ? 700 : 400, }}>{formattedDate}</Text>)
+                            :
+                            (!item.read ? (<Text style={{ fontSize: 12, position: 'absolute', right: 10, color: messageUnread ? '#0A78BE' : '#90949C', fontWeight: messageUnread ? 700 : 400, }}>{formattedDate}</Text>)
+                                : null
+                            )
+                        }
                         <Text selectable={screenWidth > mobileViewBreakpoint} numberOfLines={1} ellipsizeMode='tail' style={{ fontSize: 14, width: '70%', overflow: 'hidden', fontWeight: messageUnread ? 700 : 400, color: messageUnread ? '#1C2B33' : '#586369', }}>{carName}</Text>
                         <Text selectable={screenWidth > mobileViewBreakpoint} numberOfLines={1} ellipsizeMode='tail' style={{ fontSize: 14, width: '80%', overflow: 'hidden', flex: 1, fontWeight: messageUnread ? 700 : 400, color: messageUnread ? '#1C2B33' : '#586369', }}>{`${textFirst} ${textLast}`}</Text>
                         <Text selectable={screenWidth > mobileViewBreakpoint} numberOfLines={1} ellipsizeMode='tail' style={{ fontSize: 12, width: '80%', overflow: 'hidden', flex: 1, fontWeight: messageUnread ? 700 : 400, color: messageUnread ? '#0A78BE' : '#90949c', }}>{item.lastMessageSender == item.participants.customer ? (item.lastMessage ? item.lastMessage : 'No message found') : (item.lastMessage ? `Sales: ${item.lastMessage}` : `Sales: No message found`)}</Text>
@@ -2107,7 +2102,6 @@ const ChatListItem = ({ item, onPress, onPressNewTab, isActive, messageUnread, f
                                         padding: 10,
                                         alignSelf: 'center',
                                     }}
-
                                 >
                                     <MaterialIcons name="open-in-new" size={16} color={isOpenNewTabHovered ? "#1B81C2" : "#BABABA"} />
                                 </Pressable>
@@ -2119,70 +2113,72 @@ const ChatListItem = ({ item, onPress, onPressNewTab, isActive, messageUnread, f
 
                 </Pressable>
 
-                {((screenWidth < mobileViewBreakpoint) && isPopoverVisible) && (
-                    <Modal
-                        isOpen={isPopoverVisible}
-                        onClose={() => {
-                            setIsPopoverVisible(false)
-                            hoverOut();
-                        }}
-                        useRNModal
 
-                    >
-                        <View style={[
-                            {
-                                position: 'absolute',
-                                zIndex: 1000,
-                            },
-                            { top: popoverPosition.top, left: popoverPosition.left }
-                        ]}>
-                            <View style={{
-                                width: 200,
-                                padding: 20,
-                                backgroundColor: 'white',
-                                borderRadius: 10,
-                                shadowColor: '#000',
-                                shadowOffset: { width: 0, height: 2 },
-                                shadowOpacity: 0.8,
-                                shadowRadius: 2,
-                                elevation: 5,
-                            }}>
+                <Modal
+                    isOpen={isPopoverVisible}
+                    onClose={() => {
+                        setIsPopoverVisible(false)
+                        dispatch(setPressableHoldMenuVisible(false));
+                        hoverOut();
+                    }}
+                    useRNModal
+                >
+                    <View style={[
+                        {
+                            position: 'absolute',
+                            zIndex: 1000,
+                        },
+                        { top: popoverPosition.top, left: popoverPosition.left }
+                    ]}>
+                        <View style={{
+                            width: 200,
+                            padding: 20,
+                            backgroundColor: 'white',
+                            borderRadius: 10,
+                            shadowColor: '#000',
+                            shadowOffset: { width: 0, height: 2 },
+                            shadowOpacity: 0.8,
+                            shadowRadius: 2,
+                            elevation: 5,
+                        }}>
 
-                                <Pressable
-                                    focusable={false}
-                                    onHoverIn={hoverUnreadIn}
-                                    onHoverOut={hoverUnreadOut}
-                                    onPress={updateChatToUnread}
-                                    style={{
-                                        padding: 10,
-                                        flexDirection: 'row',
-                                    }}
+                            <Pressable
+                                focusable={false}
+                                onHoverIn={hoverUnreadIn}
+                                onHoverOut={hoverUnreadOut}
+                                onPress={updateChatToUnread}
+                                style={{
+                                    padding: 10,
+                                    flexDirection: 'row',
+                                    outlineStyle: 'none',
+                                }}
+                            >
 
-                                >
-                                    <MaterialIcons name="mark-as-unread" size={22} color={isUnreadHovered ? "#1B81C2" : "#BABABA"} />
-                                    <Text selectable={false}> Unread</Text>
+                                <MaterialIcons name="mark-as-unread" size={22} color={isUnreadHovered ? "#1B81C2" : "#BABABA"} />
+                                <Text selectable={false}> Unread</Text>
 
-                                </Pressable>
+                            </Pressable>
 
-                                <Pressable
-                                    focusable={false}
-                                    onHoverIn={hoverOpenNewTabIn}
-                                    onHoverOut={hoverOpenNewTabOut}
-                                    onPress={handlePressNewTab}
-                                    style={{
-                                        padding: 10,
-                                        flexDirection: 'row',
-                                    }}
+                            <Pressable
+                                focusable={false}
+                                onHoverIn={hoverOpenNewTabIn}
+                                onHoverOut={hoverOpenNewTabOut}
+                                onPress={handlePressNewTab}
+                                style={{
+                                    padding: 10,
+                                    flexDirection: 'row',
+                                    outlineStyle: 'none',
+                                }}
+                            >
 
-                                >
-                                    <MaterialIcons name="open-in-new" size={22} color={isOpenNewTabHovered ? "#1B81C2" : "#BABABA"} />
-                                    <Text selectable={false}> Open in new tab </Text>
+                                <MaterialIcons name="open-in-new" size={22} color={isOpenNewTabHovered ? "#1B81C2" : "#BABABA"} />
+                                <Text selectable={false}> Open in new tab </Text>
 
-                                </Pressable>
-                            </View>
+                            </Pressable>
                         </View>
-                    </Modal>
-                )}
+                    </View>
+                </Modal>
+
             </>
         );
     }
@@ -2198,6 +2194,7 @@ const ChatList = ({ unreadButtonValue, activeButtonValue, }) => {
     const chatListLastVisible = useSelector((state) => state.chatListLastVisible);
     const activeChatId = useSelector((state) => state.activeChatId);
     const loadMoreLoading = useSelector((state) => state.loadMoreLoading);
+    const pressableHoldMenuVisible = useSelector((state) => state.pressableHoldMenuVisible);
     const noMoreData = useSelector((state) => state.noMoreData);
     const renderFooterRef = useRef(null);
     const dispatch = useDispatch();
@@ -2769,6 +2766,7 @@ const ChatList = ({ unreadButtonValue, activeButtonValue, }) => {
         return (
             <>
                 <FlatList
+                    scrollEnabled={!pressableHoldMenuVisible}
                     style={{ height: 100, borderBottomLeftRadius: 5, }}
                     renderItem={renderItem}
                     keyExtractor={item => item.id.toString()}
@@ -2894,8 +2892,6 @@ const SearchChat = ({ lastVisible, setLastVisible, unreadButtonValue, activeButt
                     );
 
                     dispatch(setLoadingModalVisible(false));
-
-
                 }
 
                 else {
@@ -12701,6 +12697,255 @@ const TransactionList = ({ displayedTransactions, handleChatPress, selectedCusto
     });
 };
 
+
+const ManageOverbalance = () => {
+
+    const [manageOverbalanceVisible, setManageOverbalanceVisible] = useState(false);
+    const selectedCustomerData = useSelector((state) => state.selectedCustomerData);
+    const screenWidth = Dimensions.get('window').width;
+
+    const overbalanceRef = useRef(null);
+    const amountInputRef = useRef(null);
+
+    const [amount, setAmount] = useState('');
+    const [reason, setReason] = useState('');
+    const [activeButton, setActiveButton] = useState(null);
+
+
+
+    const handleAmountChange = (value) => {
+        let numericValue = value.replace(/[^0-9]/g, '');
+
+        if (numericValue.startsWith('0') && numericValue.length > 1) {
+            numericValue = numericValue.slice(1);
+        }
+
+        setAmount(numericValue);
+
+        if (amountInputRef.current) {
+            amountInputRef.current.value = Number(numericValue).toLocaleString('en-US');
+        }
+
+        if (activeButton === 'add') {
+            const newBalance = Math.round(Number(numericValue) + Number(selectedCustomerData.overBalance));
+            overbalanceRef.current.value = `$${newBalance.toLocaleString('en-US')}`;
+            console.log(newBalance.toLocaleString('en-US'));
+        }
+
+        if (activeButton === 'reduce') {
+            const newBalance = Math.round(Number(selectedCustomerData.overBalance) - Number(numericValue));
+            overbalanceRef.current.value = `$${newBalance.toLocaleString('en-US')}`;
+            console.log(newBalance.toLocaleString('en-US'));
+        }
+    };
+
+    const handleConfirm = (type) => {
+        //   onConfirm(type, amount, reason);
+        setAmount('');
+        setReason('');
+        setActiveButton(null);
+
+    };
+
+
+
+    const handleManageOverbalanceModalOpen = () => {
+        setManageOverbalanceVisible(true);
+
+    };
+
+    const handleManageOverbalanceModalClose = () => {
+        setManageOverbalanceVisible(false);
+        setAmount('');
+        setReason('');
+        setActiveButton(null);
+    };
+
+    useEffect(() => {
+
+        if (amountInputRef.current !== null) {
+            handleAmountChange(amountInputRef.current.value)
+        }
+    }, [activeButton])
+
+
+
+    return (
+
+        <>
+
+            <Pressable onPress={handleManageOverbalanceModalOpen}>
+                <Text selectable={false} style={{ fontSize: screenWidth < mobileViewBreakpoint ? 10 : 14, color: '#0A78BE', textAlign: 'center', }} underline>
+                    {`Manage Overbalance`}
+                </Text>
+            </Pressable>
+
+            <Modal isOpen={manageOverbalanceVisible} onClose={handleManageOverbalanceModalClose} useRNModal>
+                <Modal.Content style={{ backgroundColor: 'white', borderRadius: 10 }}>
+                    <Modal.CloseButton />
+                    <Modal.Header style={{ backgroundColor: 'white', textAlign: 'center', fontSize: 18, fontWeight: 'bold', color: '#333' }}>
+                        Manage Overbalance
+                    </Modal.Header>
+                    <Modal.Body>
+                        <ScrollView
+                            style={{ flex: 1, paddingHorizontal: 15, maxHeight: 500 }}
+
+
+                        >
+                            <View style={{
+                                flex: 1,
+                                justifyContent: 'center',
+                                alignItems: 'center',
+                                backgroundColor: 'white'
+                            }}>
+                                <Text style={{ fontWeight: 'bold', fontSize: screenWidth < mobileViewBreakpoint ? 12 : 18, }}>Total</Text>
+                                <TextInput
+                                    disabled={screenWidth > mobileViewBreakpoint}
+                                    ref={overbalanceRef}
+                                    editable={false}
+                                    defaultValue={`$${selectedCustomerData.overBalance ? Number(selectedCustomerData.overBalance).toLocaleString('en-US', {
+                                        minimumFractionDigits: 0,
+                                        maximumFractionDigits: 0,
+                                        useGrouping: true
+                                    }) : 0}`}
+                                    style={{ fontWeight: 'bold', fontSize: screenWidth < mobileViewBreakpoint ? 14 : 24, color: '#990000', textAlign: 'center', }} />
+
+                                <View style={{
+                                    width: '100%',
+                                    backgroundColor: 'white',
+                                    padding: 20,
+                                }}>
+
+                                    <View style={{
+                                        flexDirection: 'row',
+                                        justifyContent: 'space-between',
+                                        marginBottom: 20
+                                    }}>
+                                        <Pressable
+                                            style={({ hovered }) => ({
+                                                flex: 1,
+                                                padding: 10,
+                                                marginHorizontal: 5,
+                                                borderRadius: 5,
+                                                alignItems: 'center',
+                                                borderWidth: 1,
+                                                borderColor: activeButton === 'add' ? 'transparent' : '#899c89',
+                                                backgroundColor: activeButton === 'add' ? 'green' : (hovered ? '#e6faeb' : 'white'),
+                                            })}
+                                            onPress={() => {
+                                                setActiveButton('add')
+                                            }}
+                                        >
+                                            <Text selectable={false} style={{
+                                                color: activeButton === 'add' ? 'white' : '#899c89',
+                                                fontWeight: 'bold'
+                                            }}>(+) Add</Text>
+                                        </Pressable>
+                                        <Pressable
+                                            style={({ hovered }) => ({
+                                                flex: 1,
+                                                padding: 10,
+                                                marginHorizontal: 5,
+                                                borderRadius: 5,
+                                                borderWidth: 1,
+                                                borderColor: activeButton === 'reduce' ? 'transparent' : '#9c8181',
+                                                alignItems: 'center',
+                                                backgroundColor: activeButton === 'reduce' ? 'red' : (hovered ? '#fae6e6' : 'white'),
+                                            })}
+                                            onPress={() => {
+                                                setActiveButton('reduce')
+                                            }}
+                                        >
+                                            <Text selectable={false} style={{
+                                                color: activeButton === 'reduce' ? 'white' : '#9c8181',
+                                                fontWeight: 'bold'
+                                            }}>(-) Reduce</Text>
+                                        </Pressable>
+                                    </View>
+                                    {(activeButton == 'add' || activeButton == 'reduce') && <>
+                                        <TextInput
+                                            ref={amountInputRef}
+                                            onChangeText={handleAmountChange}
+                                            placeholderTextColor='#9B9E9F'
+                                            style={{
+                                                borderWidth: 1,
+                                                borderColor: '#ccc',
+                                                padding: 10,
+                                                borderRadius: 5,
+                                                marginBottom: 20,
+                                                outlineStyle: 'none',
+                                            }}
+                                            placeholder="Amount"
+                                            keyboardType="numeric"
+                                        // value={amount}
+                                        // onChangeText={setAmount}
+                                        />
+                                        <TextInput
+                                            placeholderTextColor='#9B9E9F'
+                                            style={{
+                                                borderWidth: 1,
+                                                borderColor: '#ccc',
+                                                padding: 10,
+                                                borderRadius: 5,
+                                                marginBottom: 20,
+                                                outlineStyle: 'none',
+                                            }}
+                                            placeholder="Reason (optional)"
+                                        // value={reason}
+                                        // onChangeText={setReason}
+                                        />
+                                    </>}
+                                    <View style={{
+                                        flexDirection: 'row',
+                                        justifyContent: 'space-between'
+                                    }}>
+                                        <Pressable
+                                            style={({ hovered }) => ({
+                                                flex: 1,
+                                                padding: 5,
+                                                marginHorizontal: 5,
+                                                borderRadius: 5,
+                                                alignItems: 'center',
+                                                backgroundColor: hovered ? '#616060' : 'grey',
+                                            })}
+                                            onPress={handleManageOverbalanceModalClose}
+
+                                        >
+                                            <Text selectable={false} style={{
+                                                color: 'white',
+                                                fontWeight: 'bold'
+                                            }}>Cancel</Text>
+                                        </Pressable>
+                                        <Pressable
+                                            style={({ hovered }) => ({
+                                                flex: 1,
+                                                padding: 5,
+                                                marginHorizontal: 5,
+                                                borderRadius: 5,
+                                                alignItems: 'center',
+                                                backgroundColor: hovered ? '#030380' : 'blue',
+                                            })}
+                                        // onPress={() => handleConfirm('confirm')}
+                                        >
+                                            <Text selectable={false} style={{
+                                                color: 'white',
+                                                fontWeight: 'bold'
+                                            }}>Confirm</Text>
+                                        </Pressable>
+                                    </View>
+                                </View>
+                            </View>
+                        </ScrollView>
+
+
+                    </Modal.Body>
+                </Modal.Content>
+            </Modal>
+        </>
+
+    )
+}
+
 const TransactionHistoryModal = () => {
 
     const [transactionHistoryVisible, setTransactionHistoryVisible] = useState(false);
@@ -12813,7 +13058,6 @@ const PaymentHistoryModal = () => {
     const [paymentHistoryVisible, setPaymentHistoryVisible] = useState(false);
     const selectedCustomerData = useSelector((state) => state.selectedCustomerData);
     const screenWidth = Dimensions.get('window').width;
-    const mobileViewBreakpoint = 768; // Define your mobile view breakpoint
 
     const sortedPayments = selectedCustomerData.paymentsHistory
         ? [...selectedCustomerData.paymentsHistory].sort((a, b) => {
@@ -13097,10 +13341,7 @@ const CustomerProfileModal = () => {
                                     {`Overbalance`}
                                 </Text>
 
-                                <Text style={{ fontSize: 14, color: 'transparent', textAlign: 'center', }} underline selectable={false}>
-                                    {`-----`}
-                                </Text>
-
+                                <ManageOverbalance />
 
                             </View>
 
@@ -17649,6 +17890,7 @@ export default function ChatMessages() {
     const handlePressBack = () => {
         dispatch(setMessageTextInputValue(''));
         dispatch(setChatMessagesData([]));
+        dispatch(setSelectedChatData([]));
         dispatch(setActiveChatId(''));
         navigate(`/top/chat-messages`);
     }
@@ -17827,21 +18069,7 @@ export default function ChatMessages() {
                                             {/* Chat Search */}
                                             <View style={{ flex: 1, paddingHorizontal: 10 }}>
                                                 <SearchChat lastVisible={lastVisible} setLastVisible={setLastVisible} unreadButtonValue={unreadButtonValue} activeButtonValue={activeButtonValue} />
-                                                {/* <Pressable
-                                                variant="ghost"
-                                                style={{
-                                                    padding: 3,
-                                                    width: 100,
-                                                    flexDirection: 'row', // Align items in a row
-                                                    alignItems: 'center', // Center items vertically
-                                                    borderRadius: 5,
-                                                }}
-                                                backgroundColor='#ECEDF0'
-                                                _hover={{ backgroundColor: '#d7d7d9' }}
-                                            >
-                                                <MaterialIcons name="mark-email-unread" color="#1C2B33" size={20} />
-                                                <Text style={{ color: '#1C2B33', marginLeft: 5 }}>Unreplied</Text>
-                                            </Pressable> */}
+
                                                 <View style={{ flex: 1, flexDirection: 'row', }}>
                                                     <FilterButton
                                                         key={'Unread'}
