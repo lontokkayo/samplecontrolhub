@@ -4426,6 +4426,7 @@ export default function VehicleList() {
 
 
   const loginName = useSelector((state) => state.loginName);
+  const loginAccountType = useSelector((state) => state.loginAccountType);
   const [name, setName] = useState(loginName);
   const [time, setTime] = useState('');
 
@@ -4769,7 +4770,8 @@ export default function VehicleList() {
           >
 
             <SideDrawer
-              selectedScreen={selectedScreen} />
+              selectedScreen={selectedScreen}
+              loginAccountType={loginAccountType} />
 
             <Box w={screenWidth <= 960 ? 0 : 850} h={[10, 10, 10, 10]} marginBottom={1.5} marginTop={1.5} paddingLeft={5}>
               <FastImage

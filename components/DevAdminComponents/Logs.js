@@ -1809,8 +1809,9 @@ const NavigatePage = () => {
 
 export default function Logs() {
     const [email, setEmail] = useState('');
-    const [name, setName] = useState('');
+    const [name, setName] = useState('');    
     const loginName = useSelector((state) => state.loginName);
+    const loginAccountType = useSelector((state) => state.loginAccountType);
     const selectedLogsButton = useSelector((state) => state.selectedLogsButton);
     const [screenWidth, setScreenWidth] = useState(Dimensions.get('window').width);
 
@@ -2142,7 +2143,9 @@ export default function Logs() {
                     borderBottomColor={'cyan.500'} >
 
                     <SideDrawer
-                        selectedScreen={selectedScreen} />
+                        selectedScreen={selectedScreen}
+                        loginAccountType={loginAccountType}
+                    />
 
                     <Box w={[0, 0, 0, 850]} h={[10, 10, 10, 10]} marginBottom={1.5} marginTop={1.5} paddingLeft={5}>
                         <FastImage

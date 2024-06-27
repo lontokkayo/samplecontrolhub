@@ -31,6 +31,7 @@ import {
     Linking,
     Platform,
     Modal as RnModal,
+    TouchableWithoutFeedback
 } from 'react-native';
 import 'react-native-gesture-handler';
 import {
@@ -220,6 +221,7 @@ let globalInvoiceVariable = {
 const mobileViewBreakpoint = 1367;
 
 let globalSelectedPDFUrl = '';
+let globalSelectedFileName = '';
 let globalSelectedFileType = '';
 
 
@@ -1898,20 +1900,50 @@ const ChatListItem = ({ item, onPress, onPressNewTab, isActive, messageUnread, f
 
 
     const handlePress = () => {
-        onPress();
-        setHoldTimeout(null);
-        setIsPopoverVisible(false);
-        dispatch(setPressableHoldMenuVisible(false));
 
-        // dispatch(setSelectedCustomerData(customerData));
-        globalCustomerFirstName = textFirst ? textFirst : '';
-        globalCustomerLastName = textLast ? textLast : '';
-        globalImageUrl = imageUrl ? imageUrl : '';
-        dispatch(setCarImageUrl(imageUrl ? imageUrl : ''));
 
-        globalCustomerCarName = carName;
-        setIsHovered(false);
-        setIsUnreadHovered(false);
+        if (screenWidth < mobileViewBreakpoint) {
+            hoverIn();
+
+            setTimeout(() => {
+                onPress();
+
+                setHoldTimeout(null);
+                setIsPopoverVisible(false);
+                dispatch(setPressableHoldMenuVisible(false));
+
+                // dispatch(setSelectedCustomerData(customerData));
+                globalCustomerFirstName = textFirst ? textFirst : '';
+                globalCustomerLastName = textLast ? textLast : '';
+                globalImageUrl = imageUrl ? imageUrl : '';
+                dispatch(setCarImageUrl(imageUrl ? imageUrl : ''));
+
+                globalCustomerCarName = carName;
+                setIsHovered(false);
+                setIsUnreadHovered(false);
+            }, 20); // Adjust the duration as needed
+
+        }
+        else {
+            onPress();
+
+            setHoldTimeout(null);
+            setIsPopoverVisible(false);
+            dispatch(setPressableHoldMenuVisible(false));
+
+            // dispatch(setSelectedCustomerData(customerData));
+            globalCustomerFirstName = textFirst ? textFirst : '';
+            globalCustomerLastName = textLast ? textLast : '';
+            globalImageUrl = imageUrl ? imageUrl : '';
+            dispatch(setCarImageUrl(imageUrl ? imageUrl : ''));
+
+            globalCustomerCarName = carName;
+            setIsHovered(false);
+            setIsUnreadHovered(false);
+        }
+
+
+
     };
 
     const handleLongPress = () => {
@@ -1936,7 +1968,7 @@ const ChatListItem = ({ item, onPress, onPressNewTab, isActive, messageUnread, f
 
 
     const handlePressOut = () => {
-
+        hoverOut();
         clearTimeout(holdTimeout);
         setHoldTimeout(null);
     };
@@ -1961,6 +1993,10 @@ const ChatListItem = ({ item, onPress, onPressNewTab, isActive, messageUnread, f
 
     }
 
+    const handleContextMenu = (event) => {
+        event.preventDefault();
+    };
+
     if (loadingCondition) {
         return <SkeletonChatListLayout />
     }
@@ -1973,13 +2009,14 @@ const ChatListItem = ({ item, onPress, onPressNewTab, isActive, messageUnread, f
                     onHoverOut={hoverOut}
                     focusable={false}
                     onLongPress={handleLongPress}
+                    onBlur={hoverOut}
                     onPressIn={hoverIn}
                     onPressOut={handlePressOut}
                     style={({ hovered, pressed }) => ({
                         padding: 12,
                         alignItems: 'flex-start', // Align items to the start of the button
                         flexDirection: 'row',
-                        backgroundColor: isActive ? '#f2f2f2' : (hovered || isHovered || pressed ? '#f2f2f2' : 'white'),
+                        backgroundColor: isActive ? '#f2f2f2' : (hovered || isHovered || pressed || isPopoverVisible ? '#f2f2f2' : 'white'),
                         borderLeftColor: isActive ? '#0A9FDC' : 'transparent',
                         borderRightColor: isActive ? '#0A9FDC' : 'transparent',
                         borderLeftWidth: 2,
@@ -1991,8 +2028,9 @@ const ChatListItem = ({ item, onPress, onPressNewTab, isActive, messageUnread, f
 
                     {item.isCancelled && <CancelledView />}
 
-                    <View style={{ paddingRight: 10, justifyContent: 'center', }}>
+                    <View pointerEvents="none" onContextMenu={handleContextMenu} style={{ paddingRight: 10, justifyContent: 'center', userSelect: 'none' }}>
                         {imageUrl ? (
+
                             <FastImage
                                 source={{ uri: imageUrl, priority: FastImage.priority.normal }}
                                 style={{
@@ -2002,6 +2040,8 @@ const ChatListItem = ({ item, onPress, onPressNewTab, isActive, messageUnread, f
                                 }}
                                 resizeMode={FastImage.resizeMode.stretch}
                             />
+
+
                         ) : (
                             <View
                                 style={{
@@ -2017,39 +2057,43 @@ const ChatListItem = ({ item, onPress, onPressNewTab, isActive, messageUnread, f
                     <View style={{ flex: 1 }}>
                         {!isHovered ? (<Text selectable={screenWidth > mobileViewBreakpoint} style={{ fontSize: 12, position: 'absolute', right: 10, color: messageUnread ? '#0A78BE' : '#90949C', fontWeight: messageUnread ? 700 : 400, }}>{formattedDate}</Text>)
                             :
-                            (!item.read ? (<Text style={{ fontSize: 12, position: 'absolute', right: 10, color: messageUnread ? '#0A78BE' : '#90949C', fontWeight: messageUnread ? 700 : 400, }}>{formattedDate}</Text>)
-                                : null
+                            (!item.read ? (<Text selectable={screenWidth > mobileViewBreakpoint} style={{ fontSize: 12, position: 'absolute', right: 10, color: messageUnread ? '#0A78BE' : '#90949C', fontWeight: messageUnread ? 700 : 400, }}>{formattedDate}</Text>)
+                                : (screenWidth > mobileViewBreakpoint ? null : <Text selectable={screenWidth > mobileViewBreakpoint} style={{ fontSize: 12, position: 'absolute', right: 10, color: messageUnread ? '#0A78BE' : '#90949C', fontWeight: messageUnread ? 700 : 400, }}>{formattedDate}</Text>)
                             )
                         }
                         <Text selectable={screenWidth > mobileViewBreakpoint} numberOfLines={1} ellipsizeMode='tail' style={{ fontSize: 14, width: '70%', overflow: 'hidden', fontWeight: messageUnread ? 700 : 400, color: messageUnread ? '#1C2B33' : '#586369', }}>{carName}</Text>
                         <Text selectable={screenWidth > mobileViewBreakpoint} numberOfLines={1} ellipsizeMode='tail' style={{ fontSize: 14, width: '80%', overflow: 'hidden', flex: 1, fontWeight: messageUnread ? 700 : 400, color: messageUnread ? '#1C2B33' : '#586369', }}>{`${textFirst} ${textLast}`}</Text>
-                        <Text selectable={screenWidth > mobileViewBreakpoint} numberOfLines={1} ellipsizeMode='tail' style={{ fontSize: 12, width: '80%', overflow: 'hidden', flex: 1, fontWeight: messageUnread ? 700 : 400, color: messageUnread ? '#0A78BE' : '#90949c', }}>{item.lastMessageSender == item.participants.customer ? (item.lastMessage ? item.lastMessage : 'No message found') : (item.lastMessage ? `Sales: ${item.lastMessage}` : `Sales: No message found`)}</Text>
+                        <Text selectable={screenWidth > mobileViewBreakpoint} numberOfLines={1} ellipsizeMode='tail' style={{ fontSize: 12, width: '80%', overflow: 'hidden', flex: 1, fontWeight: messageUnread ? 700 : 400, color: messageUnread ? '#0A78BE' : '#90949c', }}>{item.lastMessageSender == item.participants.customer ? (item.lastMessage ? `${item.lastMessage}` : 'No message found') : (item.lastMessage ? `Sales: ${item.lastMessage}` : `Sales: No message found`)}</Text>
                         {!item.read ? (
-                            <FastImage
-                                source={{ uri: chatStepIconOn, priority: FastImage.priority.normal }}
-                                style={{
-                                    tintColor: 'rgba(128, 128, 128, 1)',
-                                    width: 22,
-                                    height: 20,
-                                    position: 'absolute',
-                                    right: 10,
-                                    bottom: 0,
-                                }}
-                                resizeMode={FastImage.resizeMode.stretch}
-                            />
+                            <View pointerEvents="none" onContextMenu={handleContextMenu} style={{ userSelect: 'none' }}>
+                                <FastImage
+                                    source={{ uri: chatStepIconOn, priority: FastImage.priority.normal }}
+                                    style={{
+                                        tintColor: 'rgba(128, 128, 128, 1)',
+                                        width: 22,
+                                        height: 20,
+                                        position: 'absolute',
+                                        right: 10,
+                                        bottom: 0,
+                                    }}
+                                    resizeMode={FastImage.resizeMode.stretch}
+                                />
+                            </View>
                         ) : (
-                            <FastImage
-                                source={{ uri: chatStepIconOff, priority: FastImage.priority.normal }}
-                                style={{
-                                    tintColor: 'rgba(128, 128, 128, 1)',
-                                    width: 22,
-                                    height: 20,
-                                    position: 'absolute',
-                                    right: 10,
-                                    bottom: 0,
-                                }}
-                                resizeMode={FastImage.resizeMode.stretch}
-                            />
+                            <View pointerEvents="none" onContextMenu={handleContextMenu} style={{ userSelect: 'none' }}>
+                                <FastImage
+                                    source={{ uri: chatStepIconOff, priority: FastImage.priority.normal }}
+                                    style={{
+                                        tintColor: 'rgba(128, 128, 128, 1)',
+                                        width: 22,
+                                        height: 20,
+                                        position: 'absolute',
+                                        right: 10,
+                                        bottom: 0,
+                                    }}
+                                    resizeMode={FastImage.resizeMode.stretch}
+                                />
+                            </View>
                         )}
 
                         <Text selectable={screenWidth > mobileViewBreakpoint} numberOfLines={1} ellipsizeMode='tail' style={{
@@ -14275,7 +14319,7 @@ const ImagePreviewModal = ({ isVisible, onClose, imageUrl }) => {
 };
 
 
-const HoverablePressable = ({ url, printComponent }) => {
+const HoverablePressable = ({ url, fileName, printComponent }) => {
     const [isHoveredDownload, setIsHoveredDownload] = useState(false);
     const [isHoveredPrint, setIsHoveredPrint] = useState(false);
     const baseStyle = {
@@ -14293,6 +14337,27 @@ const HoverablePressable = ({ url, printComponent }) => {
         backgroundColor: '#ddd', // Example hover style
     };
 
+    const downloadFile = async () => {
+        try {
+            const response = await fetch(url);
+            const blob = await response.blob();
+            const blobUrl = window.URL.createObjectURL(blob);
+
+            const a = document.createElement('a');
+            a.href = blobUrl;
+            a.download = fileName; // Allows the browser to use the original filename
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+
+            // Revoke the object URL after download
+            window.URL.revokeObjectURL(blobUrl);
+        } catch (error) {
+            console.error('Error downloading the file:', error);
+        }
+    };
+
+
     return (
         <>
             <Tooltip label="Download" openDelay={200} bgColor={'white'} _text={{ color: '#1C2B33', }}>
@@ -14307,7 +14372,7 @@ const HoverablePressable = ({ url, printComponent }) => {
                         backgroundColor: isHoveredDownload ? '#424649' : 'transparent',
                     }}
                     onPress={async () => {
-                        await Linking.openURL(url);
+                        await downloadFile();
                     }}
                     onMouseEnter={() => setIsHoveredDownload(true)}
                     onMouseLeave={() => setIsHoveredDownload(false)}
@@ -14348,15 +14413,37 @@ const DocumentPreviewModal = () => {
     const [iframeKey, setIframeKey] = useState(0);
 
 
-    const url = 'https://firebasestorage.googleapis.com/v0/b/samplermj.appspot.com/o/ChatFiles%2Fchat_2023090239_marcvan14%40gmail.com%2FC-HUB_01312024153002.887%2FDAILY%20REPORT%202024-01-29.pdf?alt=media&token=88b7be9b-17ef-48d3-b5b3-6f7f0d317b7c'
-    const urlDocx = 'https://firebasestorage.googleapis.com/v0/b/samplermj.appspot.com/o/ChatFiles%2Fchat_2023090239_marcvan14%40gmail.com%2FC-HUB_01312024170117.701%2FDAILY%20REPORT%202024-01-29.docx?alt=media&token=9bf45632-e192-45bf-8b40-9fd5cdb9368e';
+
     const [isLoading, setLoading] = useState(true); // Loading state
 
     // console.log(`https://docs.google.com/viewer?url=${encodeURIComponent(urlDocx)}&embedded=true`);
 
-
     const handleIframeLoad = () => {
-        setLoading(false); // Set loading to false when iframe content is loaded
+        setLoading(false);
+
+        const iframe = document.getElementById('mobilePdfIframe');
+
+        if (iframe) {
+            const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
+
+            // Check if the document title is empty and reload the iframe if necessary
+            if (iframeDoc && iframeDoc.title === '') {
+                setLoading(true);
+                setTimeout(() => {
+                    iframe.src = iframe.src;
+                }, 500); // Optional delay to avoid rapid reloads
+            } else {
+                setLoading(false);
+            }
+        } else {
+            console.error('Iframe element not found');
+        }
+    };
+
+    const handleIframeError = () => {
+        setIframeKey(prevKey => prevKey + 1);
+        dispatch(setSelectedFileUrl(globalSelectedPDFUrl));
+        setLoading(true);
     };
 
     const handleModalClose = () => {
@@ -14366,6 +14453,7 @@ const DocumentPreviewModal = () => {
         setLoading(true);
         globalSelectedFileType = '';
         globalSelectedPDFUrl = '';
+        globalSelectedFileName = '';
     }
 
     const printIframe = () => {
@@ -14399,7 +14487,8 @@ const DocumentPreviewModal = () => {
     }, [isLoading,]);
 
 
-
+    // const docUrl = `https://view.officeapps.live.com/op/embed.aspx?src=${encodeURIComponent(selectedFileUrl)}`;
+    const docUrl = `https://docs.google.com/viewer?url=${encodeURIComponent(selectedFileUrl)}&embedded=true`;
     return (
         <Modal isOpen={pdfViewerModalVisible}
             onClose={() => {
@@ -14431,20 +14520,45 @@ const DocumentPreviewModal = () => {
                         {selectedFileUrl !== '' &&
                             <>
                                 {!isLoading &&
-                                    <View style={{ flexDirection: 'row', width: '100%', height: 57, borderRadius: 0, backgroundColor: '#323639', justifyContent: 'flex-end', alignItems: 'center', }}>
-                                        <HoverablePressable url={globalSelectedPDFUrl} printComponent={printIframe} />
+                                    <View
+                                        style={{
+                                            flexDirection: 'row',
+                                            width: '100%',
+                                            height: 57,
+                                            borderRadius: 0,
+                                            backgroundColor: '#323639',
+                                            alignItems: 'center',
+                                        }}
+                                    >
+                                        <Pressable
+                                            style={({ hovered, pressed }) => ({
+                                                marginLeft: 8,
+                                                borderRadius: 16,
+                                                width: 32,
+                                                height: 32,
+                                                justifyContent: 'center',
+                                                alignItems: 'center',
+                                                backgroundColor: hovered || pressed ? '#424649' : 'transparent',
+                                            })}
+                                            onPress={handleIframeError}
+                                        >
+                                            <MaterialCommunityIcons name="reload" size={20} color={'#F1F1F1'} />
+                                        </Pressable>
+                                        <View style={{ flex: 1 }} /> {/* This View takes up the remaining space */}
+                                        <HoverablePressable url={globalSelectedPDFUrl} fileName={globalSelectedFileName} printComponent={printIframe} />
                                     </View>
                                 }
 
                                 <iframe
                                     key={iframeKey}
-                                    src={`https://docs.google.com/viewer?url=${encodeURIComponent(selectedFileUrl)}&embedded=true`}
+                                    src={docUrl}
                                     id='documentIframe'
                                     style={{ width: '100%', height: '700px' }}
                                     title="Document Viewer"
                                     onLoad={() => {
                                         handleIframeLoad();
                                     }}
+                                    onError={handleIframeError}
                                 />
                             </>
                         }
@@ -14476,19 +14590,44 @@ const DocumentPreviewModal = () => {
                                     screenWidth < mobileViewBreakpoint ?
                                         (<>
                                             {!isLoading &&
-                                                <View style={{ flexDirection: 'row', width: '100%', height: 57, borderRadius: 0, backgroundColor: '#323639', justifyContent: 'flex-end', alignItems: 'center', }}>
-
-                                                    <HoverablePressable url={globalSelectedPDFUrl} printComponent={printIframe} />
+                                                <View
+                                                    style={{
+                                                        flexDirection: 'row',
+                                                        width: '100%',
+                                                        height: 57,
+                                                        borderRadius: 0,
+                                                        backgroundColor: '#323639',
+                                                        alignItems: 'center',
+                                                    }}
+                                                >
+                                                    <Pressable
+                                                        style={({ hovered, pressed }) => ({
+                                                            marginLeft: 8,
+                                                            borderRadius: 16,
+                                                            width: 32,
+                                                            height: 32,
+                                                            justifyContent: 'center',
+                                                            alignItems: 'center',
+                                                            backgroundColor: hovered || pressed ? '#424649' : 'transparent',
+                                                        })}
+                                                        onPress={handleIframeError}
+                                                    >
+                                                        <MaterialCommunityIcons name="reload" size={20} color={'#F1F1F1'} />
+                                                    </Pressable>
+                                                    <View style={{ flex: 1 }} /> {/* This View takes up the remaining space */}
+                                                    <HoverablePressable url={globalSelectedPDFUrl} fileName={globalSelectedFileName} printComponent={printIframe} />
                                                 </View>
                                             }
 
                                             <iframe
                                                 key={iframeKey}
-                                                src={`https://docs.google.com/viewer?url=${encodeURIComponent(selectedFileUrl)}&embedded=true`}
+                                                src={`${docUrl}`}
                                                 id='mobilePdfIframe'
                                                 style={{ width: '100%', height: '700px' }}
                                                 title="PDF Viewer"
                                                 onLoad={handleIframeLoad}
+                                                onError={handleIframeError}
+
                                             />
                                         </>) :
                                         (<iframe
@@ -14496,6 +14635,8 @@ const DocumentPreviewModal = () => {
                                             style={{ width: '100%', height: '700px' }}
                                             title="PDF Viewer"
                                             onLoad={handleIframeLoad} // Event when iframe has loaded
+                                            onError={handleIframeError}
+
                                         />)
                                 )
                             }
@@ -16932,6 +17073,8 @@ const ChatMessageBox = ({ activeButtonValue, userEmail }) => {
                                                 dispatch(setPdfViewerModalVisible(true));
                                                 dispatch(setSelectedFileUrl(item.file.url));
                                                 globalSelectedPDFUrl = item.file.url;
+                                                globalSelectedFileName = item.file.name;
+
 
                                             }
                                             else {
@@ -16939,6 +17082,7 @@ const ChatMessageBox = ({ activeButtonValue, userEmail }) => {
                                                 dispatch(setPdfViewerModalVisible(true));
                                                 dispatch(setSelectedFileUrl(item.file.url));
                                                 globalSelectedPDFUrl = item.file.url;
+                                                globalSelectedFileName = item.file.name;
 
 
 
@@ -17492,6 +17636,7 @@ export default function ChatMessages() {
     const chatListSearchText = useSelector((state) => state.chatListSearchText);
     const chatMessagesData = useSelector((state) => state.chatMessagesData);
     const loginName = useSelector((state) => state.loginName);
+    const loginAccountType = useSelector((state) => state.loginAccountType);
 
     const [name, setName] = useState(loginName);
 
@@ -17927,7 +18072,9 @@ export default function ChatMessages() {
                     >
 
                         <SideDrawer
-                            selectedScreen={selectedScreen} />
+                            selectedScreen={selectedScreen}
+                            loginAccountType={loginAccountType}
+                        />
 
                         <Box w={screenWidth <= 960 ? 0 : 850} h={[10, 10, 10, 10]} marginBottom={1.5} marginTop={1.5} paddingLeft={5}>
 

@@ -4021,6 +4021,7 @@ export default function AddVehicle() {
 
 
   const loginName = useSelector((state) => state.loginName);
+  const loginAccountType = useSelector((state) => state.loginAccountType);
 
   const [renderLoading, setRenderLoading] = useState(false);
   const [email, setEmail] = useState('');
@@ -6406,7 +6407,9 @@ export default function AddVehicle() {
           borderBottomColor={'cyan.500'} >
 
           <SideDrawer
-            selectedScreen={selectedScreen} />
+            selectedScreen={selectedScreen}
+            loginAccountType={loginAccountType}
+          />
 
           <Box w={[0, 0, 0, 850]} h={[10, 10, 10, 10]} marginBottom={1.5} marginTop={1.5} paddingLeft={5}>
             <FastImage

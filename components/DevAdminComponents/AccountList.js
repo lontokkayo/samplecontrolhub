@@ -121,6 +121,7 @@ const getEmailOfCurrentUser = () => {
 export default function AccountList() {
     const dispatch = useDispatch();
     const loginName = useSelector((state) => state.loginName);
+    const loginAccountType = useSelector((state) => state.loginAccountType);
     const [email, setEmail] = useState('');
     const [emailError, setEmailError] = useState('');
     const [showModal, setShowModal] = useState('');
@@ -1699,7 +1700,9 @@ export default function AccountList() {
 
                 >
                     <SideDrawer
-                        selectedScreen={selectedScreen} />
+                        selectedScreen={selectedScreen}
+                        loginAccountType={loginAccountType}
+                    />
 
                     <Box w={[0, 0, 0, 850]} h={[10, 10, 10, 10]} marginBottom={1.5} marginTop={1.5} paddingLeft={5}>
                         <FastImage

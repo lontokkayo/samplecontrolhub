@@ -26,9 +26,8 @@ import { useSelector } from 'react-redux';
 
 
 
-const SideDrawer = ({ selectedScreen }) => {
+const SideDrawer = ({ selectedScreen, loginAccountType }) => {
 
-    const loginAccountType = useSelector((state) => state.loginAccountType);
 
     const [isOpen, setIsOpen] = useState(false);
     const logo2 = require('../../../assets/C-Hub Logo Only.png');
@@ -122,10 +121,22 @@ const SideDrawer = ({ selectedScreen }) => {
                 onHoverOut={() =>
                     setTimeout(() => setOnHover(false), [100])
                 }
-                onPress={() => handleOpen()} onPressOut={() => handleOpen()} underlayColor="#5a7bc9" style={{
-                    backgroundColor: onHover ? '#5a7bc9' : 'transparent',
+                onPress={() => {
+
+                    setOnHover(true);
+                    setTimeout(() => {
+                        handleOpen()
+                        setOnHover(false);
+                    }, 20);
+                }}
+
+                onPressOut={() => handleOpen()}
+
+                underlayColor="#5a7bc9"
+                style={({ hovered, pressed }) => ({
+                    backgroundColor: hovered || pressed || onHover ? '#5a7bc9' : 'transparent',
                     borderRadius: 5,
-                }}>
+                })}>
                 <FontAwesome name="navicon" size={30} color="white" style={{ margin: 2 }} />
             </Pressable>
 
