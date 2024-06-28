@@ -1809,7 +1809,7 @@ const NavigatePage = () => {
 
 export default function Logs() {
     const [email, setEmail] = useState('');
-    const [name, setName] = useState('');    
+    const [name, setName] = useState('');
     const loginName = useSelector((state) => state.loginName);
     const loginAccountType = useSelector((state) => state.loginAccountType);
     const selectedLogsButton = useSelector((state) => state.selectedLogsButton);

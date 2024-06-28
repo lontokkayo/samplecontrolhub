@@ -116,17 +116,10 @@ const SideDrawer = ({ selectedScreen, loginAccountType }) => {
             <Pressable
                 onHoverIn={() => {
                     handleOpen()
-                    setOnHover(true);
                 }}
-                onHoverOut={() =>
-                    setTimeout(() => setOnHover(false), [100])
-                }
                 onPress={() => {
-
-                    setOnHover(true);
                     setTimeout(() => {
                         handleOpen()
-                        setOnHover(false);
                     }, 20);
                 }}
 
@@ -134,7 +127,7 @@ const SideDrawer = ({ selectedScreen, loginAccountType }) => {
 
                 underlayColor="#5a7bc9"
                 style={({ hovered, pressed }) => ({
-                    backgroundColor: hovered || pressed || onHover ? '#5a7bc9' : 'transparent',
+                    backgroundColor: hovered || pressed ? '#5a7bc9' : 'transparent',
                     borderRadius: 5,
                 })}>
                 <FontAwesome name="navicon" size={30} color="white" style={{ margin: 2 }} />

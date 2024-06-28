@@ -31,7 +31,8 @@ import {
     Linking,
     Platform,
     Modal as RnModal,
-    TouchableWithoutFeedback
+    TouchableWithoutFeedback,
+    Keyboard
 } from 'react-native';
 import 'react-native-gesture-handler';
 import {
@@ -9298,6 +9299,8 @@ const PreviewInvoice = () => {
     const [featuresTrueCount, setFeaturesTrueCount] = useState(0);
     const [rerenderState, setRerenderState] = useState(0);
     const [imagePreviewKey, setImagePreviewKey] = useState(0);
+
+
     const handlePreviewInvoiceModalOpen = () => {
         dispatch(setPreviewInvoiceVisible(true));
     };
@@ -9331,6 +9334,9 @@ const PreviewInvoice = () => {
         if (previewInvoiceVisible) {
             setRerenderState(rerenderState + 1);
         }
+
+
+
     }, [previewInvoiceVisible])
 
 
@@ -9367,6 +9373,7 @@ const PreviewInvoice = () => {
 
 
         captureImageAsync();
+
 
 
     }, [invoiceRef.current, invoiceData]);
@@ -9476,8 +9483,8 @@ const PreviewInvoice = () => {
     const newWidth = 2480;
     const newHeight = 3508;
 
-    const smallWidth = 377;
-    const smallHeight = 541;
+    const smallWidth = 320;
+    const smallHeight = 459;
 
     const smallWidthScaleFactor = smallWidth / originalSmallWidth;
     const smallHeightScaleFactor = smallHeight / originalSmallHeight;
@@ -10324,7 +10331,12 @@ const PreviewInvoice = () => {
                                     marginBottom: 3 * smallHeightScaleFactor,
                                     alignSelf: 'center',
                                 }}>
-                                {invoiceData.paymentDetails.additionalPrice && invoiceData.paymentDetails.additionalPrice.length > 0
+                                {invoiceData.paymentDetails.additionalPrice && invoiceData.paymentDetails.additionalPrice.length > 0 &&
+                                    invoiceData.paymentDetails.additionalPrice.reduce((total, price) => {
+                                        const converted = Number(price);
+                                        const numericPart = price.replace(/[^0-9.]/g, '');
+                                        return total + parseFloat(numericPart);
+                                    }, 0) > 0
                                     ? invoiceData.paymentDetails.additionalPrice.map(price => {
                                         const converted = convertedCurrency(Number(price));
                                         return converted;
@@ -11375,7 +11387,12 @@ const PreviewInvoice = () => {
                                                         marginBottom: 3 * heightScaleFactor,
                                                         alignSelf: 'center',
                                                     }}>
-                                                    {invoiceData.paymentDetails.additionalPrice && invoiceData.paymentDetails.additionalPrice.length > 0
+                                                    {invoiceData.paymentDetails.additionalPrice && invoiceData.paymentDetails.additionalPrice.length > 0 &&
+                                                        invoiceData.paymentDetails.additionalPrice.reduce((total, price) => {
+                                                            const converted = Number(price);
+                                                            const numericPart = price.replace(/[^0-9.]/g, '');
+                                                            return total + parseFloat(numericPart);
+                                                        }, 0) > 0
                                                         ? invoiceData.paymentDetails.additionalPrice.map(price => {
                                                             const converted = convertedCurrency(Number(price));
                                                             return converted;
@@ -12741,6 +12758,104 @@ const TransactionList = ({ displayedTransactions, handleChatPress, selectedCusto
     });
 };
 
+let manageOverbalanceActiveButton;
+const ManageOverbalanceForm = ({ amountInputRef, reasonInputRef, handleAmountChange }) => {
+
+    const [activeButton, setActiveButton] = useState(null);
+
+    const handleAddPress = useCallback(() => {
+        setActiveButton('add');
+        manageOverbalanceActiveButton = 'add';
+
+
+    }, [activeButton, setActiveButton]);
+
+    const handleReducePress = useCallback(() => {
+        setActiveButton('reduce');
+        manageOverbalanceActiveButton = 'reduce';
+
+    }, [activeButton, setActiveButton]);
+
+    return (
+        <>
+            <View style={{
+                flexDirection: 'row',
+                justifyContent: 'space-between',
+                marginBottom: 20
+            }}>
+                <Pressable
+                    style={({ hovered }) => ({
+                        flex: 1,
+                        padding: 10,
+                        marginHorizontal: 5,
+                        borderRadius: 5,
+                        alignItems: 'center',
+                        borderWidth: 1,
+                        borderColor: activeButton === 'add' ? 'transparent' : '#899c89',
+                        backgroundColor: activeButton === 'add' ? 'green' : (hovered ? '#e6faeb' : 'white'),
+                    })}
+                    onPress={handleAddPress}
+
+                >
+                    <Text selectable={false} style={{
+                        color: activeButton === 'add' ? 'white' : '#899c89',
+                        fontWeight: 'bold'
+                    }}>(+) Add</Text>
+                </Pressable>
+                <Pressable
+                    style={({ hovered }) => ({
+                        flex: 1,
+                        padding: 10,
+                        marginHorizontal: 5,
+                        borderRadius: 5,
+                        borderWidth: 1,
+                        borderColor: activeButton === 'reduce' ? 'transparent' : '#9c8181',
+                        alignItems: 'center',
+                        backgroundColor: activeButton === 'reduce' ? 'red' : (hovered ? '#fae6e6' : 'white'),
+                    })}
+                    onPress={handleReducePress}
+
+                >
+                    <Text selectable={false} style={{
+                        color: activeButton === 'reduce' ? 'white' : '#9c8181',
+                        fontWeight: 'bold'
+                    }}>(-) Reduce</Text>
+                </Pressable>
+            </View>
+
+            {(activeButton == 'add' || activeButton == 'reduce') && <>
+                <TextInput
+                    ref={amountInputRef}
+                    onChangeText={handleAmountChange}
+                    placeholderTextColor='#9B9E9F'
+                    style={{
+                        borderWidth: 1,
+                        borderColor: '#ccc',
+                        padding: 10,
+                        borderRadius: 5,
+                        marginBottom: 20,
+                        outlineStyle: 'none',
+                    }}
+                    placeholder="Amount"
+                    keyboardType="numeric"
+                />
+                <TextInput
+                    ref={reasonInputRef}
+                    placeholderTextColor='#9B9E9F'
+                    style={{
+                        borderWidth: 1,
+                        borderColor: '#ccc',
+                        padding: 10,
+                        borderRadius: 5,
+                        marginBottom: 20,
+                        outlineStyle: 'none',
+                    }}
+                    placeholder="Reason (optional)"
+                />
+            </>}
+        </>
+    )
+}
 
 const ManageOverbalance = () => {
 
@@ -12750,10 +12865,8 @@ const ManageOverbalance = () => {
 
     const overbalanceRef = useRef(null);
     const amountInputRef = useRef(null);
+    const reasonInputRef = useRef(null);
 
-    const [amount, setAmount] = useState('');
-    const [reason, setReason] = useState('');
-    const [activeButton, setActiveButton] = useState(null);
 
 
 
@@ -12764,19 +12877,18 @@ const ManageOverbalance = () => {
             numericValue = numericValue.slice(1);
         }
 
-        setAmount(numericValue);
 
         if (amountInputRef.current) {
             amountInputRef.current.value = Number(numericValue).toLocaleString('en-US');
         }
 
-        if (activeButton === 'add') {
+        if (manageOverbalanceActiveButton === 'add') {
             const newBalance = Math.round(Number(numericValue) + Number(selectedCustomerData.overBalance));
             overbalanceRef.current.value = `$${newBalance.toLocaleString('en-US')}`;
             console.log(newBalance.toLocaleString('en-US'));
         }
 
-        if (activeButton === 'reduce') {
+        if (manageOverbalanceActiveButton === 'reduce') {
             const newBalance = Math.round(Number(selectedCustomerData.overBalance) - Number(numericValue));
             overbalanceRef.current.value = `$${newBalance.toLocaleString('en-US')}`;
             console.log(newBalance.toLocaleString('en-US'));
@@ -12785,11 +12897,10 @@ const ManageOverbalance = () => {
 
     const handleConfirm = (type) => {
         //   onConfirm(type, amount, reason);
-        setAmount('');
-        setReason('');
-        setActiveButton(null);
+
 
     };
+
 
 
 
@@ -12800,17 +12911,15 @@ const ManageOverbalance = () => {
 
     const handleManageOverbalanceModalClose = () => {
         setManageOverbalanceVisible(false);
-        setAmount('');
-        setReason('');
-        setActiveButton(null);
+        manageOverbalanceActiveButton = null;
     };
 
-    useEffect(() => {
+    // useEffect(() => {
 
-        if (amountInputRef.current !== null) {
-            handleAmountChange(amountInputRef.current.value)
-        }
-    }, [activeButton])
+    //     if (amountInputRef.current !== null) {
+    //         handleAmountChange(amountInputRef.current.value)
+    //     }
+    // }, [activeButton])
 
 
 
@@ -12825,16 +12934,14 @@ const ManageOverbalance = () => {
             </Pressable>
 
             <Modal isOpen={manageOverbalanceVisible} onClose={handleManageOverbalanceModalClose} useRNModal>
-                <Modal.Content style={{ backgroundColor: 'white', borderRadius: 10 }}>
+                <Modal.Content style={{ backgroundColor: 'white', borderRadius: 10, }}>
                     <Modal.CloseButton />
                     <Modal.Header style={{ backgroundColor: 'white', textAlign: 'center', fontSize: 18, fontWeight: 'bold', color: '#333' }}>
                         Manage Overbalance
                     </Modal.Header>
                     <Modal.Body>
                         <ScrollView
-                            style={{ flex: 1, paddingHorizontal: 15, maxHeight: 500 }}
-
-
+                            style={{ flex: 1, maxHeight: 720 }}
                         >
                             <View style={{
                                 flex: 1,
@@ -12860,85 +12967,10 @@ const ManageOverbalance = () => {
                                     padding: 20,
                                 }}>
 
-                                    <View style={{
-                                        flexDirection: 'row',
-                                        justifyContent: 'space-between',
-                                        marginBottom: 20
-                                    }}>
-                                        <Pressable
-                                            style={({ hovered }) => ({
-                                                flex: 1,
-                                                padding: 10,
-                                                marginHorizontal: 5,
-                                                borderRadius: 5,
-                                                alignItems: 'center',
-                                                borderWidth: 1,
-                                                borderColor: activeButton === 'add' ? 'transparent' : '#899c89',
-                                                backgroundColor: activeButton === 'add' ? 'green' : (hovered ? '#e6faeb' : 'white'),
-                                            })}
-                                            onPress={() => {
-                                                setActiveButton('add')
-                                            }}
-                                        >
-                                            <Text selectable={false} style={{
-                                                color: activeButton === 'add' ? 'white' : '#899c89',
-                                                fontWeight: 'bold'
-                                            }}>(+) Add</Text>
-                                        </Pressable>
-                                        <Pressable
-                                            style={({ hovered }) => ({
-                                                flex: 1,
-                                                padding: 10,
-                                                marginHorizontal: 5,
-                                                borderRadius: 5,
-                                                borderWidth: 1,
-                                                borderColor: activeButton === 'reduce' ? 'transparent' : '#9c8181',
-                                                alignItems: 'center',
-                                                backgroundColor: activeButton === 'reduce' ? 'red' : (hovered ? '#fae6e6' : 'white'),
-                                            })}
-                                            onPress={() => {
-                                                setActiveButton('reduce')
-                                            }}
-                                        >
-                                            <Text selectable={false} style={{
-                                                color: activeButton === 'reduce' ? 'white' : '#9c8181',
-                                                fontWeight: 'bold'
-                                            }}>(-) Reduce</Text>
-                                        </Pressable>
-                                    </View>
-                                    {(activeButton == 'add' || activeButton == 'reduce') && <>
-                                        <TextInput
-                                            ref={amountInputRef}
-                                            onChangeText={handleAmountChange}
-                                            placeholderTextColor='#9B9E9F'
-                                            style={{
-                                                borderWidth: 1,
-                                                borderColor: '#ccc',
-                                                padding: 10,
-                                                borderRadius: 5,
-                                                marginBottom: 20,
-                                                outlineStyle: 'none',
-                                            }}
-                                            placeholder="Amount"
-                                            keyboardType="numeric"
-                                        // value={amount}
-                                        // onChangeText={setAmount}
-                                        />
-                                        <TextInput
-                                            placeholderTextColor='#9B9E9F'
-                                            style={{
-                                                borderWidth: 1,
-                                                borderColor: '#ccc',
-                                                padding: 10,
-                                                borderRadius: 5,
-                                                marginBottom: 20,
-                                                outlineStyle: 'none',
-                                            }}
-                                            placeholder="Reason (optional)"
-                                        // value={reason}
-                                        // onChangeText={setReason}
-                                        />
-                                    </>}
+
+                                    <ManageOverbalanceForm amountInputRef={amountInputRef} reasonInputRef={reasonInputRef} handleAmountChange={handleAmountChange} />
+
+
                                     <View style={{
                                         flexDirection: 'row',
                                         justifyContent: 'space-between'
@@ -12969,7 +13001,6 @@ const ManageOverbalance = () => {
                                                 alignItems: 'center',
                                                 backgroundColor: hovered ? '#030380' : 'blue',
                                             })}
-                                        // onPress={() => handleConfirm('confirm')}
                                         >
                                             <Text selectable={false} style={{
                                                 color: 'white',
@@ -14411,6 +14442,7 @@ const DocumentPreviewModal = () => {
     const screenWidth = Dimensions.get('window').width;
 
     const [iframeKey, setIframeKey] = useState(0);
+    const [isDelayed, setIsDelayed] = useState(true);
 
 
 
@@ -14421,29 +14453,16 @@ const DocumentPreviewModal = () => {
     const handleIframeLoad = () => {
         setLoading(false);
 
-        const iframe = document.getElementById('mobilePdfIframe');
-
-        if (iframe) {
-            const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
-
-            // Check if the document title is empty and reload the iframe if necessary
-            if (iframeDoc && iframeDoc.title === '') {
-                setLoading(true);
-                setTimeout(() => {
-                    iframe.src = iframe.src;
-                }, 500); // Optional delay to avoid rapid reloads
-            } else {
-                setLoading(false);
-            }
-        } else {
-            console.error('Iframe element not found');
-        }
     };
 
-    const handleIframeError = () => {
-        setIframeKey(prevKey => prevKey + 1);
-        dispatch(setSelectedFileUrl(globalSelectedPDFUrl));
+    const handleIframeReload = () => {
+        // setIframeKey(prevKey => prevKey + 1);
+        // dispatch(setSelectedFileUrl(globalSelectedPDFUrl));
+        // setLoading(true);
         setLoading(true);
+        setTimeout(() => {
+            setIframeKey(prevKey => prevKey + 1); // Change the key to force re-render
+        }, 100);
     };
 
     const handleModalClose = () => {
@@ -14486,6 +14505,15 @@ const DocumentPreviewModal = () => {
 
     }, [isLoading,]);
 
+    useEffect(() => {
+        if (selectedFileUrl !== '') {
+            const timer = setTimeout(() => {
+                setIsDelayed(false);
+            }, 100);
+
+            return () => clearTimeout(timer);
+        }
+    }, [selectedFileUrl]);
 
     // const docUrl = `https://view.officeapps.live.com/op/embed.aspx?src=${encodeURIComponent(selectedFileUrl)}`;
     const docUrl = `https://docs.google.com/viewer?url=${encodeURIComponent(selectedFileUrl)}&embedded=true`;
@@ -14519,47 +14547,53 @@ const DocumentPreviewModal = () => {
                         )}
                         {selectedFileUrl !== '' &&
                             <>
-                                {!isLoading &&
-                                    <View
-                                        style={{
-                                            flexDirection: 'row',
-                                            width: '100%',
-                                            height: 57,
-                                            borderRadius: 0,
-                                            backgroundColor: '#323639',
-                                            alignItems: 'center',
-                                        }}
-                                    >
-                                        <Pressable
-                                            style={({ hovered, pressed }) => ({
-                                                marginLeft: 8,
-                                                borderRadius: 16,
-                                                width: 32,
-                                                height: 32,
-                                                justifyContent: 'center',
-                                                alignItems: 'center',
-                                                backgroundColor: hovered || pressed ? '#424649' : 'transparent',
-                                            })}
-                                            onPress={handleIframeError}
-                                        >
-                                            <MaterialCommunityIcons name="reload" size={20} color={'#F1F1F1'} />
-                                        </Pressable>
-                                        <View style={{ flex: 1 }} /> {/* This View takes up the remaining space */}
-                                        <HoverablePressable url={globalSelectedPDFUrl} fileName={globalSelectedFileName} printComponent={printIframe} />
-                                    </View>
-                                }
+                                {!isDelayed && (
+                                    <>
+                                        {!isLoading && (
+                                            <View
+                                                style={{
+                                                    flexDirection: 'row',
+                                                    width: '100%',
+                                                    height: 57,
+                                                    borderRadius: 0,
+                                                    backgroundColor: '#323639',
+                                                    alignItems: 'center',
+                                                }}
+                                            >
+                                                <Pressable
+                                                    style={({ hovered, pressed }) => ({
+                                                        marginLeft: 8,
+                                                        borderRadius: 16,
+                                                        width: 32,
+                                                        height: 32,
+                                                        justifyContent: 'center',
+                                                        alignItems: 'center',
+                                                        backgroundColor: hovered || pressed ? '#424649' : 'transparent',
+                                                    })}
+                                                    onPress={handleIframeReload}
+                                                >
+                                                    <MaterialCommunityIcons name="reload" size={20} color={'#F1F1F1'} />
+                                                </Pressable>
+                                                <View style={{ flex: 1 }} /> {/* This View takes up the remaining space */}
+                                                <HoverablePressable url={globalSelectedPDFUrl} fileName={globalSelectedFileName} printComponent={printIframe} />
+                                            </View>
+                                        )}
 
-                                <iframe
-                                    key={iframeKey}
-                                    src={docUrl}
-                                    id='documentIframe'
-                                    style={{ width: '100%', height: '700px' }}
-                                    title="Document Viewer"
-                                    onLoad={() => {
-                                        handleIframeLoad();
-                                    }}
-                                    onError={handleIframeError}
-                                />
+                                        <iframe
+                                            key={iframeKey}
+                                            src={docUrl}
+                                            id='documentIframe'
+                                            style={{ width: '100%', height: '700px' }}
+                                            title="Document Viewer"
+                                            onLoad={() => {
+                                                handleIframeLoad();
+                                            }}
+                                            onError={handleIframeReload}
+                                        />
+                                    </>
+                                )}
+
+
                             </>
                         }
                     </>
@@ -14610,7 +14644,7 @@ const DocumentPreviewModal = () => {
                                                             alignItems: 'center',
                                                             backgroundColor: hovered || pressed ? '#424649' : 'transparent',
                                                         })}
-                                                        onPress={handleIframeError}
+                                                        onPress={handleIframeReload}
                                                     >
                                                         <MaterialCommunityIcons name="reload" size={20} color={'#F1F1F1'} />
                                                     </Pressable>
@@ -14622,11 +14656,11 @@ const DocumentPreviewModal = () => {
                                             <iframe
                                                 key={iframeKey}
                                                 src={`${docUrl}`}
-                                                id='mobilePdfIframe'
+                                                id='documentIframe'
                                                 style={{ width: '100%', height: '700px' }}
                                                 title="PDF Viewer"
                                                 onLoad={handleIframeLoad}
-                                                onError={handleIframeError}
+                                                onError={handleIframeReload}
 
                                             />
                                         </>) :
@@ -14635,7 +14669,7 @@ const DocumentPreviewModal = () => {
                                             style={{ width: '100%', height: '700px' }}
                                             title="PDF Viewer"
                                             onLoad={handleIframeLoad} // Event when iframe has loaded
-                                            onError={handleIframeError}
+                                            onError={handleIframeReload}
 
                                         />)
                                 )

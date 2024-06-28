@@ -118,9 +118,8 @@ const QRCodeScanner = () => {
 
     const newWidth = 2480;
     const newHeight = 3508;
-
-    const smallWidth = screenWidth < mobileViewBreakpoint ? 377 : 574;
-    const smallHeight = screenWidth < mobileViewBreakpoint ? 541 : 903;
+    const smallWidth = screenWidth < mobileViewBreakpoint ? 320 : 574;
+    const smallHeight = screenWidth < mobileViewBreakpoint ? 459 : 903;
 
     const smallWidthScaleFactor = smallWidth / originalSmallWidth;
     const smallHeightScaleFactor = smallHeight / originalSmallHeight;
@@ -762,7 +761,8 @@ const QRCodeScanner = () => {
                                     alignSelf: 'center',
                                 }}>
                                 {invoiceData.paymentDetails.inspectionIsChecked ? `${convertedCurrency(Number(invoiceData.paymentDetails.inspectionPrice).toLocaleString('en-US', { useGrouping: true })).split('.')[0]}` : ' '}
-                            </Text>}
+                            </Text>
+                            }
 
                             {invoiceData.paymentDetails.inspectionIsChecked && invoiceData.paymentDetails.incoterms == "CIF" &&
                                 <Text
@@ -841,12 +841,18 @@ const QRCodeScanner = () => {
                                     marginBottom: 3 * smallHeightScaleFactor,
                                     alignSelf: 'center',
                                 }}>
-                                {invoiceData.paymentDetails.additionalPrice && invoiceData.paymentDetails.additionalPrice.length > 0
+                                {invoiceData.paymentDetails.additionalPrice && invoiceData.paymentDetails.additionalPrice.length > 0 &&
+                                    invoiceData.paymentDetails.additionalPrice.reduce((total, price) => {
+                                        const converted = Number(price);
+                                        const numericPart = price.replace(/[^0-9.]/g, '');
+                                        return total + parseFloat(numericPart);
+                                    }, 0) > 0
                                     ? invoiceData.paymentDetails.additionalPrice.map(price => {
                                         const converted = convertedCurrency(Number(price));
                                         return converted;
                                     }).join(' + ')
-                                    : ' '}
+                                    : ' '
+                                }
                             </Text>
                         </View>
 
