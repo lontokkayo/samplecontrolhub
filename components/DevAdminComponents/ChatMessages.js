@@ -12783,6 +12783,7 @@ const ManageOverbalanceForm = ({ amountInputRef, reasonInputRef, handleAmountCha
                 justifyContent: 'space-between',
                 marginBottom: 20
             }}>
+
                 <Pressable
                     style={({ hovered }) => ({
                         flex: 1,
@@ -12795,13 +12796,13 @@ const ManageOverbalanceForm = ({ amountInputRef, reasonInputRef, handleAmountCha
                         backgroundColor: activeButton === 'add' ? 'green' : (hovered ? '#e6faeb' : 'white'),
                     })}
                     onPress={handleAddPress}
-
                 >
                     <Text selectable={false} style={{
                         color: activeButton === 'add' ? 'white' : '#899c89',
                         fontWeight: 'bold'
                     }}>(+) Add</Text>
                 </Pressable>
+                
                 <Pressable
                     style={({ hovered }) => ({
                         flex: 1,
@@ -12814,13 +12815,13 @@ const ManageOverbalanceForm = ({ amountInputRef, reasonInputRef, handleAmountCha
                         backgroundColor: activeButton === 'reduce' ? 'red' : (hovered ? '#fae6e6' : 'white'),
                     })}
                     onPress={handleReducePress}
-
                 >
                     <Text selectable={false} style={{
                         color: activeButton === 'reduce' ? 'white' : '#9c8181',
                         fontWeight: 'bold'
                     }}>(-) Reduce</Text>
                 </Pressable>
+
             </View>
 
             {(activeButton == 'add' || activeButton == 'reduce') && <>

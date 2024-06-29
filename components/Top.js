@@ -66,6 +66,7 @@ import Freight from './DevAdminComponents/Freight';
 import ChatMessages from './DevAdminComponents/ChatMessages';
 import CustomerList from './DevAdminComponents/CustomerList';
 import ParseCSV from './DevAdminComponents/ParseCSV';
+import RegisterSuccessNotif from './DevAdminComponents/RegisterSuccessNotif';
 import { setLoginAccountType, setLoginName } from './DevAdminComponents/redux/store';
 import { useDispatch } from 'react-redux';
 import { useSelector } from 'react-redux';
@@ -266,88 +267,10 @@ export default function Top({ navigation }) {
 
   return (
 
-
-    // <Drawer.Navigator
-    //   // useLegacyImplementation
-    //   screenOptions={{
-    //     headerShown: false,
-    //     drawerStyle: { backgroundColor: '#7B9CFF' },
-    //     drawerContentOptions: {
-    //       activeTintColor: '#7B9CFF',
-    //       inactiveTintColor: '#7B9CFF',
-    //       activeLabelStyle: { color: '#7B9CFF' },
-    //       inactiveLabelStyle: { color: '#7B9CFF' },
-    //     },
-    //   }}
-    // >
-
-    //   <Drawer.Screen
-    //     name="CHAT MESSAGES"
-    //     component={() => (
-    //       <LazyScreen importFunc={() => import('./DevAdminComponents/ChatMessages')} />
-    //     )}
-    //     options={{ unmountOnBlur: true }}
-    //   />
-    // <Drawer.Screen
-    //   name="LOGS"
-    //   component={() => (
-    //     <LazyScreen importFunc={() => import('./DevAdminComponents/Logs')} />
-    //   )}
-    //   options={{ unmountOnBlur: true }}
-    // />
-
-    //   <Drawer.Screen
-    //     name="FREIGHT"
-    //     component={() => (
-    //       <LazyScreen importFunc={() => import('./DevAdminComponents/Freight')} />
-    //     )}
-    //     options={{ unmountOnBlur: true }}
-    //   />
-    //   <Drawer.Screen
-    //     name="VEHICLE LIST"
-    //     component={() => (
-    //       <LazyScreen importFunc={() => import('./DevAdminComponents/VehicleList')} />
-    //     )}
-    //     options={{ unmountOnBlur: true }}
-    //   />
-    //   <Drawer.Screen
-    //     name="ACCOUNT LIST"
-    //     component={() => (
-    //       <LazyScreen importFunc={() => import('./DevAdminComponents/AccountList')} />
-    //     )}
-    //     options={{ unmountOnBlur: true }}
-    //   />
-
-    //   <Drawer.Screen
-    //     name="ADD NEW VEHICLE"
-    //     component={() => (
-    //       <LazyScreen importFunc={() => import('./DevAdminComponents/AddVehicle')} />
-    //     )}
-    //     options={{ unmountOnBlur: true }}
-    //   />
-    //   <Drawer.Screen
-    //     name="ADD C-HUB ACCOUNT"
-    //     component={() => (
-    //       <LazyScreen importFunc={() => import('./DevAdminComponents/AddAccount')} />
-    //     )}
-    //     options={{ unmountOnBlur: true }}
-    //   />
-    // </Drawer.Navigator>
-
-    // <StackNavigator.Navigator screenOptions={{ headerShown: false }}>
-
-    //   <StackNavigator.Screen name="CHAT MESSAGES" component={ChatMessagesComponent} />
-    //   <StackNavigator.Screen name="FREIGHT" component={FreightComponent} />
-    //   <StackNavigator.Screen name="ADD NEW VEHICLE" component={AddVehicleComponent} />
-    //   <StackNavigator.Screen name="LOGS" component={LogsComponent} />
-    //   <StackNavigator.Screen name="VEHICLE LIST" component={VehicleListComponent} />
-    //   <StackNavigator.Screen name="ACCOUNT LIST" component={AccountListComponent} />
-    //   <StackNavigator.Screen name="ADD C-HUB ACCOUNT" component={AddAccountComponent} />
-
-    // </StackNavigator.Navigator>
     <NativeBaseProvider>
       <Routes>
         <Route path="*" element={<Navigate to="logs" replace />} />
+        <Route path="register-notif" element={<RegisterSuccessNotif />} />
         <Route path="parse-csv" element={<ParseCSV />} />
         <Route path="customer-list" element={<CustomerList />} />
         <Route path="chat-messages" element={<ChatMessages />} />
