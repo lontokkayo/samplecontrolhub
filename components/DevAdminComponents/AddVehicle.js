@@ -2132,7 +2132,7 @@ const StockIDAndMakeAndModel = ({
 
   return (
     <>
-      <Box flexDir={'row'} borderBottomColor={'white'} borderBottomWidth={'1'} bgColor={'#8096D7'}>
+      <Box flexDir={'row'} borderBottomColor={'white'} borderBottomWidth={'1'} bgColor={'#0642F4'}>
         <Box flexDir={'row'} alignSelf={'center'} flex={1} alignItems={'flex-start'}><Text color={'white'} fontSize={[14, 14, 12, 12, 16, 18]}> Stock ID Number</Text><Text color={'#D96437'} fontSize={[14, 14, 12, 12, 16, 18]}> *</Text></Box>
         <Box bgColor={'white'} flex={1} borderColor={stockIDNumError} borderWidth={1}><Input onSubmitEditing={handleSearchPress} defaultValue="" ref={inputStockIDNumber} onChangeText={handleInputStockIDNumberChange} placeholder=" Stock ID Number"
           InputRightElement={
@@ -2151,7 +2151,7 @@ const StockIDAndMakeAndModel = ({
 
       </Box>
 
-      <Box flexDir={'row'} borderColor={'white'} borderBottomWidth={'1'} bgColor={'#8096D7'} >
+      <Box flexDir={'row'} borderColor={'white'} borderBottomWidth={'1'} bgColor={'#0642F4'} >
         <Box flexDir={'row'} alignSelf={'center'} flex={1} alignItems={'flex-start'}><Text color={'white'} fontSize={[14, 14, 12, 12, 16, 18]}> Purchase Price</Text><Text color={'#D96437'} fontSize={[14, 14, 12, 12, 16, 18]}> *</Text></Box>
         <Box bgColor={'white'} flex={1} borderColor={purchasedPriceError} borderWidth={1}>
           <Input keyboardType="numeric" flex={1} ref={inputPurchasedPrice} onChangeText={handleInputPurchasedPriceChange} bgColor={'white'} InputLeftElement={<Icon as={<FontAwesome name="yen" />} size={5} ml="2" color="muted.400" />} placeholder="Purchase Price" placeholderTextColor={'muted.400'} />
@@ -2159,7 +2159,7 @@ const StockIDAndMakeAndModel = ({
       </Box>
 
       <Box flexDir={'row'} borderBottomColor={'white'} borderBottomWidth={'1'}>
-        <Box bgColor={'#8096D7'} flex={1} flexDir={'row'}><Text color={'white'} alignSelf={'center'} fontSize={[14, 14, 12, 12, 16, 18]}> Make</Text><Text color={'#D96437'} fontSize={[14, 14, 12, 12, 16, 18]}> *</Text>
+        <Box bgColor={'#0642F4'} flex={1} flexDir={'row'}><Text color={'white'} alignSelf={'center'} fontSize={[14, 14, 12, 12, 16, 18]}> Make</Text><Text color={'#D96437'} fontSize={[14, 14, 12, 12, 16, 18]}> *</Text>
           <SortAndAddModal docName='Make' handleAddTextChange={handleAddMakeTextChange} textAreaAdd={textAreaAddMake} title='Make' dataName={'make'} databaseInit={projectExtensionFirestore} headerText="Rearrange/Add Make" data={makeData} />
         </Box>
 
@@ -2236,7 +2236,7 @@ const StockIDAndMakeAndModel = ({
       </Box>
 
       <Box flexDir={'row'} borderBottomColor={'white'} borderBottomWidth={'1'} >
-        <Box bgColor={'#8096D7'} flex={1} flexDir={'row'}><Text color={'white'} alignSelf={'center'} fontSize={[14, 14, 12, 12, 16, 18]}> Model</Text><Text color={'#D96437'} fontSize={[14, 14, 12, 12, 16, 18]}> *</Text>
+        <Box bgColor={'#0642F4'} flex={1} flexDir={'row'}><Text color={'white'} alignSelf={'center'} fontSize={[14, 14, 12, 12, 16, 18]}> Model</Text><Text color={'#D96437'} fontSize={[14, 14, 12, 12, 16, 18]}> *</Text>
 
           <ModelSortAndAddModal
             selectMakeForAddModelRef={selectMakeForAddModelRef}
@@ -6503,11 +6503,11 @@ export default function AddVehicle() {
 
                           <Box borderColor={'white'} borderWidth={1} ref={inputVehicleBoxRef}>
 
-                            <Box flex={1} bgColor={'#7b9cff'} borderBottomColor={'white'} borderBottomWidth={'1'}>
+                            <Box flex={1} bgColor={'#0642F4'} borderBottomColor={'white'} borderBottomWidth={'1'}>
                               <Text color={'white'} marginLeft={1} bold fontSize={20} width={'full'}>Input Vehicle Specification</Text>
                             </Box>
 
-                            {/* <Box flexDir={'row'} borderBottomColor={'white'} borderBottomWidth={'1'} bgColor={'#8096D7'}>
+                            {/* <Box flexDir={'row'} borderBottomColor={'white'} borderBottomWidth={'1'} bgColor={'#0642F4'}>
                             <Box flexDir={'row'} alignSelf={'center'} flex={1} alignItems={'flex-start'}><Text color={'white'} fontSize={[14, 14, 12, 12, 16, 18]}> Stock ID Number</Text><Text color={'#D96437'} fontSize={[14, 14, 12, 12, 16, 18]}> *</Text></Box>
                             <Box bgColor={'white'} flex={1} borderColor={stockIDNumError} borderWidth={1}><Input onSubmitEditing={() => buttonSearchRef.current?.handlePress()} defaultValue="" ref={inputStockIDNumber} onChangeText={handleInputStockIDNumberChange} placeholder=" Stock ID Number"
                               InputRightElement={
@@ -6590,7 +6590,7 @@ export default function AddVehicle() {
 
 
                             <Box flexDir={'row'} borderBottomColor={'white'} borderBottomWidth={'1'}>
-                              <Box flexDir={'row'} bgColor={'#8096D7'} flex={2} alignItems={'flex-start'}><Text color={'white'} fontSize={[14, 14, 12, 12, 16, 18]}> Registration Year & Month</Text><Text color={'#D96437'} fontSize={[14, 14, 12, 12, 16, 18]}> *</Text></Box>
+                              <Box flexDir={'row'} bgColor={'#0642F4'} flex={2} alignItems={'flex-start'}><Text color={'white'} fontSize={[14, 14, 12, 12, 16, 18]}> Registration Year & Month</Text><Text color={'#D96437'} fontSize={[14, 14, 12, 12, 16, 18]}> *</Text></Box>
                               <Box ref={selectRegYearBoxRef} bgColor={'white'} flex={1} borderColor={regYearError} borderWidth={1}>
 
                                 <SelectDropdown
@@ -6741,7 +6741,7 @@ export default function AddVehicle() {
                               </Box>
                             </Box>
 
-                            <Box flexDir={'row'} borderBottomColor={'white'} borderBottomWidth={'1'} bgColor={'#8096D7'} >
+                            <Box flexDir={'row'} borderBottomColor={'white'} borderBottomWidth={'1'} bgColor={'#0642F4'} >
                               <Box alignSelf={'center'} flex={1} flexDir={'row'} ><Text color={'white'} alignSelf={'center'} fontSize={[14, 14, 12, 12, 16, 18]}> Port</Text><Text color={'#D96437'} fontSize={[14, 14, 12, 12, 16, 18]}> *</Text>
                                 {/* <Box flex={1} justifyContent="center" alignItems={'flex-end'} marginRight={1} ><TouchableOpacity onPress={handleModalPortOpen}><Icon as={<MaterialCommunityIcons name="playlist-edit" />} size={5} color="white" /></TouchableOpacity></Box> */}
                                 <PSBSortAndAddModal
@@ -6828,7 +6828,7 @@ export default function AddVehicle() {
                               </Box>
                             </Box>
 
-                            <Box flexDir={'row'} borderBottomColor={'white'} borderBottomWidth={'1'} bgColor={'#8096D7'} >
+                            <Box flexDir={'row'} borderBottomColor={'white'} borderBottomWidth={'1'} bgColor={'#0642F4'} >
                               <Box alignSelf={'center'} flex={1} flexDir={'row'} ><Text color={'white'} alignSelf={'center'} fontSize={[14, 14, 12, 12, 16, 18]}> Sales In Charge</Text><Text color={'#D96437'} fontSize={[14, 14, 12, 12, 16, 18]}> *</Text>
                                 {/* <Box flex={1} justifyContent="center" alignItems={'flex-end'} marginRight={1} ><TouchableOpacity onPress={handleModalPortOpen}><Icon as={<MaterialCommunityIcons name="playlist-edit" />} size={5} color="white" /></TouchableOpacity></Box> */}
                                 <PSBSortAndAddModal
@@ -6915,7 +6915,7 @@ export default function AddVehicle() {
                               </Box>
                             </Box>
 
-                            <Box flexDir={'row'} borderBottomColor={'white'} borderBottomWidth={'1'} bgColor={'#8096D7'} >
+                            <Box flexDir={'row'} borderBottomColor={'white'} borderBottomWidth={'1'} bgColor={'#0642F4'} >
                               <Box alignSelf={'center'} flex={1} flexDir={'row'} ><Text color={'white'} alignSelf={'center'} fontSize={[14, 14, 12, 12, 16, 18]}> Buyer In Charge</Text><Text color={'#D96437'} fontSize={[14, 14, 12, 12, 16, 18]}> *</Text>
                                 {/* <Box flex={1} justifyContent="center" alignItems={'flex-end'} marginRight={1} ><TouchableOpacity onPress={handleModalBuyerOpen}><Icon as={<MaterialCommunityIcons name="playlist-edit" />} size={5} color="white" /></TouchableOpacity></Box> */}
                                 <PSBSortAndAddModal
@@ -7005,37 +7005,37 @@ export default function AddVehicle() {
 
 
                             {/* <Box flexDir={'row'} borderBottomColor={'white'} borderBottomWidth={'1'}>
-                            <Box bgColor={'#8096D7'} flex={1} justifyContent="center" alignItems={'flex-start'}><Text color={'white'} fontSize={[14, 14, 12, 12, 16, 18]}> Registration Month</Text></Box>
+                            <Box bgColor={'#0642F4'} flex={1} justifyContent="center" alignItems={'flex-start'}><Text color={'white'} fontSize={[14, 14, 12, 12, 16, 18]}> Registration Month</Text></Box>
                             <Box bgColor={'white'} flex={1}><Input placeholder="Registration Month" /></Box>
                           </Box> */}
 
-                            <Box flexDir={'row'} borderBottomColor={'white'} borderBottomWidth={'1'} bgColor={'#8096D7'}>
+                            <Box flexDir={'row'} borderBottomColor={'white'} borderBottomWidth={'1'} bgColor={'#0642F4'}>
                               <Box flexDir={'row'} alignSelf={'center'} flex={1} alignItems={'flex-start'}><Text color={'white'} fontSize={[14, 14, 12, 12, 16, 18]}> Reference Number</Text><Text color={'#D96437'} fontSize={[14, 14, 12, 12, 16, 18]}> *</Text></Box>
                               <Box bgColor={'white'} flex={1} borderColor={refNumError} borderWidth={1}><Input defaultValue="" ref={inputRefNum} onChangeText={handleInputRefNumChange} placeholder=" Reference Number" /></Box>
                             </Box>
 
-                            <Box flexDir={'row'} borderBottomColor={'white'} borderBottomWidth={'1'} bgColor={'#8096D7'}>
+                            <Box flexDir={'row'} borderBottomColor={'white'} borderBottomWidth={'1'} bgColor={'#0642F4'}>
                               <Box flexDir={'row'} alignSelf={'center'} flex={1} alignItems={'flex-start'}><Text color={'white'} fontSize={[14, 14, 12, 12, 16, 18]}> Chassis / Frame Number</Text><Text color={'#D96437'} fontSize={[14, 14, 12, 12, 16, 18]}> *</Text></Box>
                               <Box bgColor={'white'} flex={1} borderColor={chassisError} borderWidth={1}><Input defaultValue="" ref={inputChassis} onChangeText={handleInputChassisChange} placeholder=" Chassis / Frame Number" /></Box>
                             </Box>
 
-                            <Box flexDir={'row'} borderBottomColor={'white'} borderBottomWidth={'1'} bgColor={'#8096D7'}>
+                            <Box flexDir={'row'} borderBottomColor={'white'} borderBottomWidth={'1'} bgColor={'#0642F4'}>
                               <Box flexDir={'row'} alignSelf={'center'} flex={1} alignItems={'flex-start'}><Text color={'white'} fontSize={[14, 14, 12, 12, 16, 18]}> Model Code</Text><Text color={'#D96437'} fontSize={[14, 14, 12, 12, 16, 18]}> *</Text></Box>
                               <Box bgColor={'white'} flex={1} borderColor={modelCodeError} borderWidth={1}><Input defaultValue="" ref={inputModelCode} onChangeText={handleInputModelCodeChange} placeholder=" Model Code" /></Box>
                             </Box>
 
-                            <Box flexDir={'row'} borderBottomColor={'white'} borderBottomWidth={'1'} bgColor={'#8096D7'}>
+                            <Box flexDir={'row'} borderBottomColor={'white'} borderBottomWidth={'1'} bgColor={'#0642F4'}>
                               <Box flexDir={'row'} alignSelf={'center'} flex={1} alignItems={'flex-start'}><Text color={'white'} fontSize={[14, 14, 12, 12, 16, 18]}> Engine Code</Text></Box>
                               <Box bgColor={'white'} flex={1} borderColor={'white'} borderWidth={1}><Input defaultValue="" ref={inputEngineCode} onChangeText={handleInputEngineCodeChange} placeholder=" Engine Code" /></Box>
                             </Box>
 
-                            <Box flexDir={'row'} borderBottomColor={'white'} borderBottomWidth={'1'} bgColor={'#8096D7'} >
+                            <Box flexDir={'row'} borderBottomColor={'white'} borderBottomWidth={'1'} bgColor={'#0642F4'} >
                               <Box flexDir={'row'} alignSelf={'center'} flex={1} alignItems={'flex-start'}><Text color={'white'} fontSize={[14, 14, 12, 12, 16, 18]}> Engine Displacement</Text><Text color={'#D96437'} fontSize={[14, 14, 12, 12, 16, 18]}> *</Text></Box>
                               <Box bgColor={'white'} flex={1} borderColor={engineDisError} borderWidth={1}><InputGroup><Input defaultValue="" keyboardType="numeric" ref={inputEngineDis} onChangeText={handleInputEngineDisChange} flex={1} placeholder=" Engine Displacement" /><InputRightAddon children={"cc"} /></InputGroup></Box>
                             </Box>
 
                             <Box flexDir={'row'} borderBottomColor={'white'} borderBottomWidth={'1'}>
-                              <Box bgColor={'#8096D7'} flex={1} flexDir={'row'}><Text color={'white'} alignSelf={'center'} fontSize={[14, 14, 12, 12, 16, 18]}> Steering</Text><Text color={'#D96437'} fontSize={[14, 14, 12, 12, 16, 18]}> *</Text>
+                              <Box bgColor={'#0642F4'} flex={1} flexDir={'row'}><Text color={'white'} alignSelf={'center'} fontSize={[14, 14, 12, 12, 16, 18]}> Steering</Text><Text color={'#D96437'} fontSize={[14, 14, 12, 12, 16, 18]}> *</Text>
                                 <Box flex={1} justifyContent="center" alignItems={'flex-end'} marginRight={1}></Box>
                               </Box>
                               <Box ref={selectSteeringBoxRef} bgColor={'white'} flex={1} borderColor={steeringError} borderWidth={1}>
@@ -7118,13 +7118,13 @@ export default function AddVehicle() {
                               </Box>
                             </Box>
 
-                            <Box flexDir={'row'} borderBottomColor={'white'} borderBottomWidth={'1'} bgColor={'#8096D7'}>
-                              <Box flexDir={'row'} alignSelf={'center'} bgColor={'#8096D7'} flex={1} alignItems={'flex-start'}><Text color={'white'} fontSize={[14, 14, 12, 12, 16, 18]}> Mileage</Text><Text color={'#D96437'} fontSize={[14, 14, 12, 12, 16, 18]}> *</Text></Box>
+                            <Box flexDir={'row'} borderBottomColor={'white'} borderBottomWidth={'1'} bgColor={'#0642F4'}>
+                              <Box flexDir={'row'} alignSelf={'center'} bgColor={'#0642F4'} flex={1} alignItems={'flex-start'}><Text color={'white'} fontSize={[14, 14, 12, 12, 16, 18]}> Mileage</Text><Text color={'#D96437'} fontSize={[14, 14, 12, 12, 16, 18]}> *</Text></Box>
                               <Box bgColor={'white'} flex={1} borderColor={mileageError} borderWidth={1}><InputGroup><Input defaultValue="" keyboardType="numeric" ref={inputMileage} onChangeText={handleInputMileageChange} flex={1} placeholder=" Mileage" /><InputRightAddon children={"km"} /></InputGroup></Box>
                             </Box>
 
                             <Box flexDir={'row'} borderBottomColor={'white'} borderBottomWidth={'1'}>
-                              <Box flexDir={'row'} bgColor={'#8096D7'} flex={1} ><Text color={'white'} alignSelf={'center'} fontSize={[14, 14, 12, 12, 16, 18]}> Transmission</Text><Text color={'#D96437'} fontSize={[14, 14, 12, 12, 16, 18]}> *</Text>
+                              <Box flexDir={'row'} bgColor={'#0642F4'} flex={1} ><Text color={'white'} alignSelf={'center'} fontSize={[14, 14, 12, 12, 16, 18]}> Transmission</Text><Text color={'#D96437'} fontSize={[14, 14, 12, 12, 16, 18]}> *</Text>
                                 {/* <Box flex={1} justifyContent="center" alignItems={'flex-end'} marginRight={1}><TouchableOpacity onPress={handleModalTransmissionOpen}><Icon as={<MaterialCommunityIcons name="playlist-edit" />} size={5} color="white" /></TouchableOpacity></Box> */}
                                 <SortAndAddModal docName={'Transmission'} handleAddTextChange={handleAddTransmissionTextChange} textAreaAdd={textAreaAddTransmission} title='Transmission' dataName={'transmission'} databaseInit={projectExtensionFirestore} headerText="Rearrange/Add Transmission" data={transmissionData} />
                               </Box>
@@ -7211,7 +7211,7 @@ export default function AddVehicle() {
                             </Box>
 
                             <Box flexDir={'row'} borderBottomColor={'white'} borderBottomWidth={'1'}>
-                              <Box bgColor={'#8096D7'} flex={1} flexDir={'row'} ><Text color={'white'} alignSelf={'center'} fontSize={[14, 14, 12, 12, 16, 18]}> Exterior Color</Text><Text color={'#D96437'} fontSize={[14, 14, 12, 12, 16, 18]}> *</Text>
+                              <Box bgColor={'#0642F4'} flex={1} flexDir={'row'} ><Text color={'white'} alignSelf={'center'} fontSize={[14, 14, 12, 12, 16, 18]}> Exterior Color</Text><Text color={'#D96437'} fontSize={[14, 14, 12, 12, 16, 18]}> *</Text>
                                 {/* <Box flex={1} justifyContent="center" alignItems={'flex-end'} marginRight={1}><TouchableOpacity onPress={handleModalExteriorColorOpen}><Icon as={<MaterialCommunityIcons name="playlist-edit" />} size={5} color="white" /></TouchableOpacity></Box> */}
                                 <SortAndAddModal
                                   docName='ExteriorColor'
@@ -7297,18 +7297,18 @@ export default function AddVehicle() {
                               </Box>
                             </Box>
 
-                            <Box flexDir={'row'} borderBottomColor={'white'} borderBottomWidth={'1'} bgColor={'#8096D7'} >
+                            <Box flexDir={'row'} borderBottomColor={'white'} borderBottomWidth={'1'} bgColor={'#0642F4'} >
                               <Box flexDir={'row'} alignSelf={'center'} flex={1} alignItems={'flex-start'}><Text color={'white'} fontSize={[14, 14, 12, 12, 16, 18]}> Number of Seats</Text><Text color={'#D96437'} fontSize={[14, 14, 12, 12, 16, 18]}> *</Text></Box>
                               <Box bgColor={'white'} flex={1} borderColor={numOfSeatsError} borderWidth={1}><Input defaultValue="" keyboardType="numeric" ref={inputNumOfSeats} onChangeText={handleInputNumOfSeatsChange} placeholder=" Number of Seats" /></Box>
                             </Box>
 
-                            <Box flexDir={'row'} borderBottomColor={'white'} borderBottomWidth={'1'} bgColor={'#8096D7'}>
+                            <Box flexDir={'row'} borderBottomColor={'white'} borderBottomWidth={'1'} bgColor={'#0642F4'}>
                               <Box flexDir={'row'} alignSelf={'center'} flex={1} alignItems={'flex-start'}><Text color={'white'} fontSize={[14, 14, 12, 12, 16, 18]}> Doors</Text><Text color={'#D96437'} fontSize={[14, 14, 12, 12, 16, 18]}> *</Text></Box>
                               <Box bgColor={'white'} flex={1} borderColor={doorsError} borderWidth={1}><Input defaultValue="" keyboardType="numeric" ref={inputDoors} onChangeText={handleInputDoorsChange} placeholder=" Doors" /></Box>
                             </Box>
 
 
-                            <Box flexDir={'row'} borderBottomColor={'white'} borderBottomWidth={'1'} bgColor={'#8096D7'} >
+                            <Box flexDir={'row'} borderBottomColor={'white'} borderBottomWidth={'1'} bgColor={'#0642F4'} >
                               <Box alignSelf={'center'} flex={1} flexDir={'row'} ><Text color={'white'} alignSelf={'center'} fontSize={[14, 14, 12, 12, 16, 18]}> Fuel</Text><Text color={'#D96437'} fontSize={[14, 14, 12, 12, 16, 18]}> *</Text>
                                 {/* <Box flex={1} justifyContent="center" alignItems={'flex-end'} marginRight={1} ><TouchableOpacity onPress={handleModalFuelOpen}><Icon as={<MaterialCommunityIcons name="playlist-edit" />} size={5} color="white" /></TouchableOpacity></Box> */}
                                 <SortAndAddModal
@@ -7373,7 +7373,6 @@ export default function AddVehicle() {
                                   onSelect={useCallback((selectedItem) => {
                                     fuelVariable.text = selectedItem;
                                     // console.log(fuelVariable.text);
-
                                   }, [])}
                                   defaultButtonText="-- Choose Fuel --"
                                   buttonTextAfterSelection={(selectedItem) => {
@@ -7404,8 +7403,8 @@ export default function AddVehicle() {
                               </Box>
                             </Box>
 
-                            <Box flexDir={'row'} borderBottomColor={'white'} borderBottomWidth={'1'} bgColor={'#8096D7'}>
-                              <Box flexDir={'row'} bgColor={'#8096D7'} alignSelf={'center'} flex={[1, 1, 1, 1, 2, 2]} alignItems={'flex-start'}><Text color={'white'} fontSize={[14, 14, 12, 12, 16, 18]}> Dimension</Text><Text color={'#D96437'} fontSize={[14, 14, 12, 12, 16, 18]}> *</Text></Box>
+                            <Box flexDir={'row'} borderBottomColor={'white'} borderBottomWidth={'1'} bgColor={'#0642F4'}>
+                              <Box flexDir={'row'} bgColor={'#0642F4'} alignSelf={'center'} flex={[1, 1, 1, 1, 2, 2]} alignItems={'flex-start'}><Text color={'white'} fontSize={[14, 14, 12, 12, 16, 18]}> Dimension</Text><Text color={'#D96437'} fontSize={[14, 14, 12, 12, 16, 18]}> *</Text></Box>
                               <Box bgColor={'white'} flex={1} borderColor={dimensionLengthError} borderWidth={1}><InputGroup><Input defaultValue="" keyboardType="numeric" ref={inputDimensionLength} onChangeText={handleInputDimensionLengthChange} flex={1} placeholder="Length" /><InputRightAddon children={"cm"} /></InputGroup></Box>
                               <Box bgColor={'white'} flex={1} borderColor={dimensionWidthError} borderWidth={1}><InputGroup><Input defaultValue="" keyboardType="numeric" ref={inputDimensionWidth} onChangeText={handleInputDimensionWidthChange} flex={1} placeholder="Width" /><InputRightAddon children={"cm"} /></InputGroup></Box>
                               <Box bgColor={'white'} flex={1} borderColor={dimensionHeightError} borderWidth={1}><InputGroup><Input defaultValue="" keyboardType="numeric" ref={inputDimensionHeight} onChangeText={handleInputDimensionHeightChange} flex={1} placeholder="Height" /><InputRightAddon children={"cm"} /></InputGroup></Box>
@@ -7413,7 +7412,7 @@ export default function AddVehicle() {
                             </Box>
 
                             <Box flexDir={'row'} borderBottomColor={'white'} borderBottomWidth={'1'}>
-                              <Box bgColor={'#8096D7'} flex={1} flexDir={'row'} ><Text color={'white'} alignSelf={'center'} fontSize={[14, 14, 12, 12, 16, 18]}> Drive Type</Text><Text color={'#D96437'} fontSize={[14, 14, 12, 12, 16, 18]}> *</Text>
+                              <Box bgColor={'#0642F4'} flex={1} flexDir={'row'} ><Text color={'white'} alignSelf={'center'} fontSize={[14, 14, 12, 12, 16, 18]}> Drive Type</Text><Text color={'#D96437'} fontSize={[14, 14, 12, 12, 16, 18]}> *</Text>
                                 {/* <Box flex={1} justifyContent="center" alignItems={'flex-end'} marginRight={1}><TouchableOpacity onPress={handleModalDriveTypeOpen}><Icon as={<MaterialCommunityIcons name="playlist-edit" />} size={5} color="white" /></TouchableOpacity></Box> */}
                                 <SortAndAddModal
                                   docName='DriveType'
@@ -7427,16 +7426,7 @@ export default function AddVehicle() {
                                 />
                               </Box>
                               <Box ref={selectDriveTypeBoxRef} bgColor={'white'} flex={1} borderColor={driveTypeError} borderWidth={1}>
-                                {/* <Select key={keySelectDriveType} accessibilityLabel="Choose Drive Type" placeholder="Choose Drive Type" _selectedItem={{
-                                bg: "teal.600",
-                                endIcon: <CheckIcon size="5" />
-                              }}>
-                                {driveTypeData.map((item, index) => (
 
-                                  <Select.Item key={item} label={item} value={item} />
-
-                                ))}
-                              </Select> */}
                                 <SelectDropdown
                                   ref={selectDriveType}
                                   buttonStyle={{
@@ -7507,13 +7497,13 @@ export default function AddVehicle() {
                                 />
                               </Box>
                             </Box>
-                            <Box flexDir={'row'} borderBottomColor={'white'} borderBottomWidth={'1'} bgColor={'#8096D7'} >
+                            <Box flexDir={'row'} borderBottomColor={'white'} borderBottomWidth={'1'} bgColor={'#0642F4'} >
                               <Box flexDir={'row'} alignSelf={'center'} flex={1} alignItems={'flex-start'}><Text color={'white'} fontSize={[14, 14, 12, 12, 16, 18]}> Weight</Text></Box>
                               <Box bgColor={'white'} flex={1} borderColor={weightError} borderWidth={1}><InputGroup><Input defaultValue="" ref={inputWeight} keyboardType="numeric" onChangeText={handleInputWeightChange} flex={1} placeholder=" Weight" /><InputRightAddon children={"kg"} /></InputGroup></Box>
                             </Box>
 
                             <Box flexDir={'row'} borderBottomColor={'white'} borderBottomWidth={'0'}>
-                              <Box bgColor={'#8096D7'} flex={1} flexDir={'row'} ><Text color={'white'} alignSelf={'center'} fontSize={[14, 14, 12, 12, 16, 18]}> Body Type</Text><Text color={'#D96437'} fontSize={[14, 14, 12, 12, 16, 18]}> *</Text>
+                              <Box bgColor={'#0642F4'} flex={1} flexDir={'row'} ><Text color={'white'} alignSelf={'center'} fontSize={[14, 14, 12, 12, 16, 18]}> Body Type</Text><Text color={'#D96437'} fontSize={[14, 14, 12, 12, 16, 18]}> *</Text>
 
                                 <SortAndAddModal
                                   docName='BodyType'
@@ -7598,7 +7588,7 @@ export default function AddVehicle() {
                                 />
                               </Box>
                             </Box>
-                            <Box flexDir={'row'} borderTopColor={'white'} borderTopWidth={'1'} bgColor={'#8096D7'} >
+                            <Box flexDir={'row'} borderTopColor={'white'} borderTopWidth={'1'} bgColor={'#0642F4'} >
                               <Box flexDir={'row'} alignSelf={'center'} flex={1} alignItems={'flex-start'}><Text color={'white'} fontSize={[14, 14, 12, 12, 16, 18]}> Supply Chains Costs</Text></Box>
                               <Box bgColor={'white'} flex={1} borderColor={'white'} borderWidth={1}>
                                 <SupplyChainsCosts
@@ -7612,14 +7602,14 @@ export default function AddVehicle() {
                                 /></Box>
                             </Box>
 
-                            <Box flexDir={'row'} borderTopColor={'white'} borderTopWidth={'1'} bgColor={'#8096D7'} >
+                            <Box flexDir={'row'} borderTopColor={'white'} borderTopWidth={'1'} bgColor={'#0642F4'} >
                               <Box flexDir={'row'} alignSelf={'center'} flex={1} alignItems={'flex-start'}><Text color={'white'} fontSize={[14, 14, 12, 12, 16, 18]}> Select Features</Text><Text color={'#D96437'} fontSize={[14, 14, 12, 12, 16, 18]}> *</Text></Box>
                               <Box bgColor={'white'} flex={1} borderColor={isNoFeaturesSelected} borderWidth={1}><SelectFeaturesButton /></Box>
                             </Box>
 
 
-                            <Box flexDir={'row'} borderTopColor={'white'} borderTopWidth={'1'} bgColor={'#8096D7'} >
-                              <Box bgColor={'#8096D7'} flex={1} flexDir={'row'} ><Text color={'white'} alignSelf={'center'} fontSize={[14, 14, 12, 12, 16, 18]}> Stock Status</Text>
+                            <Box flexDir={'row'} borderTopColor={'white'} borderTopWidth={'1'} bgColor={'#0642F4'} >
+                              <Box bgColor={'#0642F4'} flex={1} flexDir={'row'} ><Text color={'white'} alignSelf={'center'} fontSize={[14, 14, 12, 12, 16, 18]}> Stock Status</Text>
 
                               </Box>
                               <Box ref={selectStockStatusBoxRef} bgColor={'white'} flex={1} borderColor={stockStatusError} borderWidth={1}>
@@ -7726,7 +7716,7 @@ export default function AddVehicle() {
                           placeholder="Car Name" margin={1} bgColor={'white'} borderWidth={1} placeholderTextColor={'muted.400'} flex={1} />
                         <HStack flex={1}>
                           <InputGroup flex={1}>
-                            <InputLeftAddon bgColor={'#7B9CFF'} borderWidth={1} borderColor={'white'} _text={{ color: 'white' }} children={"Notes "} />
+                            <InputLeftAddon bgColor={'#0642F4'} borderWidth={1} borderColor={'white'} _text={{ color: 'white' }} children={"Notes "} />
                             <Input flex={1} ref={inputCarNotes} borderColor={carNameError} placeholder="Note" bgColor={'white'} borderWidth={1} placeholderTextColor={'muted.400'} />
                           </InputGroup>
                         </HStack>
@@ -7736,12 +7726,11 @@ export default function AddVehicle() {
                         <TextArea flex={1} ref={inputCarDesc} borderColor='muted.500' bgColor={'white'} placeholder="Car Description / Salespoint" borderWidth={1} placeholderTextColor={'muted.400'} margin={1} />
                         <HStack marginTop={1} flex={1}>
                           <InputGroup flex={1}>
-                            <InputLeftAddon bgColor={'#7B9CFF'} borderWidth={1} borderColor={'white'} _text={{ color: 'white' }} color={'white'} children={"Memo"} />
+                            <InputLeftAddon bgColor={'#0642F4'} borderWidth={1} borderColor={'white'} _text={{ color: 'white' }} color={'white'} children={"Memo"} />
                             <Input multiline flex={1} ref={inputCarMemo} borderColor={carNameError} placeholder="Memo" bgColor={'white'} borderWidth={1} placeholderTextColor={'muted.400'} />
                           </InputGroup>
                         </HStack>
                       </HStack>
-
 
                       <HStack>
                         <Input keyboardType="numeric" flex={1} ref={inputFobJpy} onChangeText={handleInputFobJpyChange} borderColor='muted.500' bgColor={'white'} InputLeftElement={<Icon as={<FontAwesome name="yen" />} size={5} ml="2" color="muted.400" />} placeholder="FOB Price" margin={1} borderWidth={1} placeholderTextColor={'muted.400'} />

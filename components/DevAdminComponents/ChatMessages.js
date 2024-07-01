@@ -5300,7 +5300,7 @@ const appendSalesInfoDataToCSV = async ({
 
 
 
-const InputPaymentModalContent = () => { //Input Payment
+const InputPaymentModalContent = ({ isConfirmLoading, setIsConfirmLoading }) => { //Input Payment
     const dispatch = useDispatch();
     const invoiceData = useSelector((state) => state.invoiceData);
     const selectedChatData = useSelector((state) => state.selectedChatData);
@@ -5312,7 +5312,6 @@ const InputPaymentModalContent = () => { //Input Payment
 
     const [historyModalVisible, setHistoryModalVisible] = useState(false);
 
-    const [isConfirmLoading, setIsConfirmLoading] = useState(false);
 
     const totalAmountString = invoiceData.paymentDetails.totalAmount;
     const totalAmountNumber = parseFloat(totalAmountString.replace(/,/g, ''));
@@ -5980,13 +5979,13 @@ Real Motor Japan`,
                     // await delay(10); //10ms delay
                     if (numericInputAmount > amountNeeded) {
                         // Calculate overbalance and execute overBalanceMessage
-                        const overBalance = numericInputAmount - amountNeeded;
-                        const formattedOverbalanceAmount = Number(Number(selectedCustomerData.overBalance) + Number(parseDollars(overBalance))).toLocaleString('en-US', inputAmountFormatOptions);
-                        if (overBalance > 0) {
+                        const overbalance = numericInputAmount - amountNeeded;
+                        const formattedOverbalanceAmount = Number(Number(selectedCustomerData.overbalance) + Number(parseDollars(overbalance))).toLocaleString('en-US', inputAmountFormatOptions);
+                        if (overbalance > 0) {
 
                             // Call the function to handle the message with the formatted total                            
                             await updateDoc(docRefCustomer, {
-                                overBalance: increment(parseDollars(overBalance)),
+                                overbalance: increment(parseDollars(overbalance)),
                             });
                             // await delay(10); //10ms delay
                             await overBalanceMessage(formattedOverbalanceAmount);
@@ -6229,7 +6228,7 @@ Real Motor Japan`,
 
 }
 
-const IssueProformaInvoiceModalContent = () => { // Issue Invoice && Update Invoice
+const IssueProformaInvoiceModalContent = ({ isConfirmLoading, setIsConfirmLoading }) => { // Issue Invoice && Update Invoice
 
     const dispatch = useDispatch();
     const selectedChatData = useSelector((state) => state.selectedChatData);
@@ -6237,7 +6236,6 @@ const IssueProformaInvoiceModalContent = () => { // Issue Invoice && Update Invo
     const invoiceData = useSelector((state) => state.invoiceData);
     const currentDate = useSelector((state) => state.currentDate);
     const [isConfirmHovered, setIsConfirmHovered] = useState(false);
-    const [isConfirmLoading, setIsConfirmLoading] = useState(false);
 
     const cfsInputRef = useRef(null);
     const placeOfDeliveryInputRef = useRef(null);
@@ -12603,10 +12601,13 @@ const ExtendDueDateButton = () => {
 const TransactionModal = () => {
     const transactionModalVisible = useSelector((state) => state.transactionModalVisible);
     const dispatch = useDispatch();
+    const [isConfirmLoading, setIsConfirmLoading] = useState(false);
 
 
     const handleTransactionModalClose = () => {
-        dispatch(setTransactionModalVisible(false));
+        if (isConfirmLoading == false) {
+            dispatch(setTransactionModalVisible(false));
+        }
     }
     return (
 
@@ -12625,11 +12626,11 @@ const TransactionModal = () => {
                     <Modal.Header style={{ borderBottomWidth: 2, borderColor: '#0A9FDC', }} >{transactionModalTitle}</Modal.Header>
 
                     {transactionModalContentValue == 1 || transactionModalContentValue == 2 &&
-                        <IssueProformaInvoiceModalContent />
+                        <IssueProformaInvoiceModalContent isConfirmLoading={isConfirmLoading} setIsConfirmLoading={setIsConfirmLoading} />
                     }
 
                     {transactionModalContentValue == 3 &&
-                        <InputPaymentModalContent />
+                        <InputPaymentModalContent isConfirmLoading={isConfirmLoading} setIsConfirmLoading={setIsConfirmLoading} />
                     }
                 </Modal.Content>
             }
@@ -12759,6 +12760,9 @@ const TransactionList = ({ displayedTransactions, handleChatPress, selectedCusto
 };
 
 let manageOverbalanceActiveButton;
+let manageOverbalanceAmountInput;
+let manageOverbalanceReasonInput;
+
 const ManageOverbalanceForm = ({ amountInputRef, reasonInputRef, handleAmountChange }) => {
 
     const [activeButton, setActiveButton] = useState(null);
@@ -12775,6 +12779,7 @@ const ManageOverbalanceForm = ({ amountInputRef, reasonInputRef, handleAmountCha
         manageOverbalanceActiveButton = 'reduce';
 
     }, [activeButton, setActiveButton]);
+
 
     return (
         <>
@@ -12802,7 +12807,7 @@ const ManageOverbalanceForm = ({ amountInputRef, reasonInputRef, handleAmountCha
                         fontWeight: 'bold'
                     }}>(+) Add</Text>
                 </Pressable>
-                
+
                 <Pressable
                     style={({ hovered }) => ({
                         flex: 1,
@@ -12842,6 +12847,9 @@ const ManageOverbalanceForm = ({ amountInputRef, reasonInputRef, handleAmountCha
                 />
                 <TextInput
                     ref={reasonInputRef}
+                    onChangeText={(text) => {
+                        manageOverbalanceReasonInput = text;
+                    }}
                     placeholderTextColor='#9B9E9F'
                     style={{
                         borderWidth: 1,
@@ -12861,14 +12869,61 @@ const ManageOverbalanceForm = ({ amountInputRef, reasonInputRef, handleAmountCha
 const ManageOverbalance = () => {
 
     const [manageOverbalanceVisible, setManageOverbalanceVisible] = useState(false);
+    const [confirmIsLoading, setConfirmIsLoading] = useState(false);
     const selectedCustomerData = useSelector((state) => state.selectedCustomerData);
+    const selectedChatData = useSelector((state) => state.selectedChatData);
     const screenWidth = Dimensions.get('window').width;
+
 
     const overbalanceRef = useRef(null);
     const amountInputRef = useRef(null);
     const reasonInputRef = useRef(null);
 
 
+    const handleConfirm = async () => {
+        setConfirmIsLoading(true);
+        const response = await axios.get('https://worldtimeapi.org/api/timezone/Asia/Tokyo');
+        const { datetime } = response.data;
+        const formattedTime = moment(datetime).format('YYYY/MM/DD [at] HH:mm:ss.SSS');
+        const docRefCustomer = doc(projectExtensionFirestore, 'accounts', selectedChatData.participants.customer);
+
+        if (manageOverbalanceActiveButton === 'add' && Number(manageOverbalanceAmountInput) > 0 && amountInputRef.current.value !== '') {
+            await updateDoc(docRefCustomer, {
+                overbalance: increment(Number(manageOverbalanceAmountInput)),
+                overbalanceHistory: arrayUnion({
+                    date: formattedTime,
+                    type: 'Added',
+                    amount: manageOverbalanceAmountInput,
+                    reason: manageOverbalanceReasonInput,
+                }),
+            });
+            console.log('overbalance added');
+            setConfirmIsLoading(false);
+            handleManageOverbalanceModalClose();
+        }
+
+        else if (manageOverbalanceActiveButton === 'reduce' && Number(manageOverbalanceAmountInput) > 0 && amountInputRef.current.value !== '') {
+            await updateDoc(docRefCustomer, {
+                overbalance: increment(-Number(manageOverbalanceAmountInput)), // decrement the overbalance
+                overbalanceHistory: arrayUnion({
+                    date: formattedTime,
+                    type: 'Reduced',
+                    amount: manageOverbalanceAmountInput,
+                    reason: manageOverbalanceReasonInput,
+                }),
+            });
+            console.log('overbalance reduced');
+            setConfirmIsLoading(false);
+            handleManageOverbalanceModalClose();
+
+        }
+
+        else {
+            setConfirmIsLoading(false);
+            console.log('Error Adding/Reducing overbalance');
+            return null;
+        }
+    }
 
 
     const handleAmountChange = (value) => {
@@ -12881,25 +12936,20 @@ const ManageOverbalance = () => {
 
         if (amountInputRef.current) {
             amountInputRef.current.value = Number(numericValue).toLocaleString('en-US');
+            manageOverbalanceAmountInput = Number(numericValue);
         }
 
         if (manageOverbalanceActiveButton === 'add') {
-            const newBalance = Math.round(Number(numericValue) + Number(selectedCustomerData.overBalance));
+            const newBalance = Math.round(Number(numericValue) + Number(selectedCustomerData.overbalance));
             overbalanceRef.current.value = `$${newBalance.toLocaleString('en-US')}`;
             console.log(newBalance.toLocaleString('en-US'));
         }
 
         if (manageOverbalanceActiveButton === 'reduce') {
-            const newBalance = Math.round(Number(selectedCustomerData.overBalance) - Number(numericValue));
+            const newBalance = Math.round(Number(selectedCustomerData.overbalance) - Number(numericValue));
             overbalanceRef.current.value = `$${newBalance.toLocaleString('en-US')}`;
             console.log(newBalance.toLocaleString('en-US'));
         }
-    };
-
-    const handleConfirm = (type) => {
-        //   onConfirm(type, amount, reason);
-
-
     };
 
 
@@ -12911,16 +12961,13 @@ const ManageOverbalance = () => {
     };
 
     const handleManageOverbalanceModalClose = () => {
-        setManageOverbalanceVisible(false);
-        manageOverbalanceActiveButton = null;
+        if (confirmIsLoading == false) {
+            setManageOverbalanceVisible(false);
+            manageOverbalanceActiveButton = null;
+        }
+
     };
 
-    // useEffect(() => {
-
-    //     if (amountInputRef.current !== null) {
-    //         handleAmountChange(amountInputRef.current.value)
-    //     }
-    // }, [activeButton])
 
 
 
@@ -12955,7 +13002,7 @@ const ManageOverbalance = () => {
                                     disabled={screenWidth > mobileViewBreakpoint}
                                     ref={overbalanceRef}
                                     editable={false}
-                                    defaultValue={`$${selectedCustomerData.overBalance ? Number(selectedCustomerData.overBalance).toLocaleString('en-US', {
+                                    defaultValue={`$${selectedCustomerData.overbalance ? Number(selectedCustomerData.overbalance).toLocaleString('en-US', {
                                         minimumFractionDigits: 0,
                                         maximumFractionDigits: 0,
                                         useGrouping: true
@@ -12968,9 +13015,7 @@ const ManageOverbalance = () => {
                                     padding: 20,
                                 }}>
 
-
                                     <ManageOverbalanceForm amountInputRef={amountInputRef} reasonInputRef={reasonInputRef} handleAmountChange={handleAmountChange} />
-
 
                                     <View style={{
                                         flexDirection: 'row',
@@ -12986,7 +13031,6 @@ const ManageOverbalance = () => {
                                                 backgroundColor: hovered ? '#616060' : 'grey',
                                             })}
                                             onPress={handleManageOverbalanceModalClose}
-
                                         >
                                             <Text selectable={false} style={{
                                                 color: 'white',
@@ -12994,6 +13038,7 @@ const ManageOverbalance = () => {
                                             }}>Cancel</Text>
                                         </Pressable>
                                         <Pressable
+                                            onPress={handleConfirm}
                                             style={({ hovered }) => ({
                                                 flex: 1,
                                                 padding: 5,
@@ -13003,10 +13048,22 @@ const ManageOverbalance = () => {
                                                 backgroundColor: hovered ? '#030380' : 'blue',
                                             })}
                                         >
-                                            <Text selectable={false} style={{
-                                                color: 'white',
-                                                fontWeight: 'bold'
-                                            }}>Confirm</Text>
+                                            {confirmIsLoading ?
+                                                (
+                                                    <Spinner
+                                                        animating
+                                                        size="sm"
+                                                        color={'white'}
+                                                    />
+                                                ) :
+
+                                                (<Text selectable={false} style={{
+                                                    color: 'white',
+                                                    fontWeight: 'bold'
+                                                }}>Confirm</Text>
+
+                                                )
+                                            }
                                         </Pressable>
                                     </View>
                                 </View>
@@ -13128,6 +13185,141 @@ const TransactionHistoryModal = () => {
     )
 }
 
+const OverbalanceHistoryModal = () => {
+    const [overbalanceHistoryVisible, setOverbalanceHistoryVisible] = useState(false);
+    const selectedCustomerData = useSelector((state) => state.selectedCustomerData);
+    const screenWidth = Dimensions.get('window').width;
+
+    const sortedOverbalances = selectedCustomerData.overbalanceHistory
+        ? [...selectedCustomerData.overbalanceHistory].sort((a, b) => {
+            const dateA = new Date(a.date.replace(' at ', ' '));
+            const dateB = new Date(b.date.replace(' at ', ' '));
+            return dateB - dateA; // Sorts in descending order
+        })
+        : [];
+
+    const [displayedOverbalance, setDisplayedOverbalance] = useState(sortedOverbalances.slice(0, 5));
+    const [loadingMore, setLoadingMore] = useState(false);
+
+    const loadMorePayments = () => {
+        if (loadingMore) return; // Prevent multiple loads
+
+        setLoadingMore(true);
+        const nextItems = sortedOverbalances.slice(
+            displayedOverbalance.length,
+            displayedOverbalance.length + 5
+        );
+
+        setTimeout(() => { // Simulate network request
+            setDisplayedOverbalance([...displayedOverbalance, ...nextItems]);
+            setLoadingMore(false);
+        }, 500); // Adjust the timeout as needed
+    };
+
+    const handlePaymentHistoryModalOpen = () => {
+        setDisplayedOverbalance(sortedOverbalances.slice(0, 5));
+        setOverbalanceHistoryVisible(true);
+    };
+
+    const handlePaymentHistoryModalClose = () => {
+        setOverbalanceHistoryVisible(false);
+    };
+
+    function formatDate(dateString) {
+        const cleanedDateString = dateString.replace(' at ', ' ');
+        const date = new Date(cleanedDateString);
+
+        if (isNaN(date.getTime())) {
+            console.error("Invalid Date:", dateString);
+            return "Invalid Date";
+        }
+
+        const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+        const year = date.getFullYear();
+        const month = months[date.getMonth()];
+        const day = date.getDate().toString().padStart(2, '0');
+
+        return `${year} ${month} ${day}`;
+    }
+
+    const isCloseToBottom = ({ layoutMeasurement, contentOffset, contentSize }) => {
+        return layoutMeasurement.height + contentOffset.y >= contentSize.height - 20;
+    };
+
+    return (
+        <>
+            <Pressable onPress={handlePaymentHistoryModalOpen}>
+                <MaterialCommunityIcons size={screenWidth < mobileViewBreakpoint ? 10 : 14} name={'history'} color={'#2C8AC7'} />
+            </Pressable>
+
+            <Modal isOpen={overbalanceHistoryVisible} onClose={handlePaymentHistoryModalClose} useRNModal>
+                <Modal.Content style={{ backgroundColor: 'white', borderRadius: 10 }}>
+                    <Modal.CloseButton />
+                    <Modal.Header style={{ backgroundColor: 'white', textAlign: 'center', fontSize: 18, fontWeight: 'bold', color: '#333' }}>
+                        Overbalance History
+                    </Modal.Header>
+                    <Modal.Body>
+                        <ScrollView
+                            style={{ flex: 1, paddingHorizontal: 15, maxHeight: 500 }}
+                            onScroll={({ nativeEvent }) => {
+                                if (isCloseToBottom(nativeEvent)) {
+                                    loadMorePayments();
+                                }
+                            }}
+                            scrollEventThrottle={400} // Adjust as needed
+                        >
+                            {
+                                Array.isArray(sortedOverbalances) && sortedOverbalances.length > 0 ?
+                                    displayedOverbalance.map((payment, index) => (
+
+                                        <View key={index} style={{
+                                            marginBottom: 15,
+                                            backgroundColor: payment.type === 'Added' ? '#BBF7D0' : (payment.type === 'Reduced' ? '#EAC7D6' : '#F8F9FF'), // Card background color
+                                            borderRadius: 10, // Rounded corners for the card
+                                            shadowColor: '#000', // Shadow color
+                                            shadowOffset: { width: 0, height: 2 },
+                                            shadowOpacity: 0.1,
+                                            shadowRadius: 2,
+                                            elevation: 3, // Elevation for Android
+                                            padding: 15, // Padding inside the card
+                                            borderBottomWidth: 1,
+                                            borderBottomColor: '#eee',
+                                        }}>
+
+                                            <Text style={{ fontSize: 14, fontWeight: 'bold', color: 'black', marginBottom: 5 }}>
+                                                <Text style={{ fontWeight: 'bold', color: '#0A78BE' }}>Date: </Text>
+                                                <Text style={{ color: '#333' }}>
+                                                    {formatDate(payment.date)}
+                                                </Text>
+                                            </Text>
+
+                                            <Text style={{ fontSize: 14, fontWeight: 'bold', color: 'black', marginBottom: 5 }}>
+                                                <Text style={{ fontWeight: 'bold', color: '#0A78BE' }}>Amount: </Text>
+                                                <Text style={{ color: payment.type === 'Added' ? '#16A34A' : (payment.type === 'Reduced' ? '#FF0000' : '#000') }}>
+                                                    ${Number(payment.amount).toLocaleString()}
+                                                </Text>
+                                            </Text>
+
+                                            <Text style={{ fontSize: 14, fontWeight: 'bold', color: 'black', marginBottom: 5 }}>
+                                                <Text style={{ fontWeight: 'bold', color: '#0A78BE' }}>Reason: </Text>
+                                                <Text style={{ color: '#333' }}>{payment.reason}</Text>
+                                            </Text>
+
+
+                                        </View>
+                                    )) :
+                                    <Text style={{ fontWeight: 'bold', alignSelf: 'center' }} italic>No history to show</Text>
+                            }
+                            <View style={{ height: 20 }}>
+                                {loadingMore && <Spinner size='sm' color="#7B9CFF" />}
+                            </View>
+                        </ScrollView>
+                    </Modal.Body>
+                </Modal.Content>
+            </Modal>
+        </>
+    );
+}
 
 
 const PaymentHistoryModal = () => {
@@ -13407,15 +13599,20 @@ const CustomerProfileModal = () => {
 
                             <View style={{ flex: 1, alignItems: 'center', }}>
                                 <Text style={{ fontWeight: 'bold', fontSize: screenWidth < mobileViewBreakpoint ? 14 : 24, color: '#990000', textAlign: 'center', }} selectable>
-                                    {`$${selectedCustomerData.overBalance ? Number(selectedCustomerData.overBalance).toLocaleString('en-US', {
+                                    {`$${selectedCustomerData.overbalance ? Number(selectedCustomerData.overbalance).toLocaleString('en-US', {
                                         minimumFractionDigits: 0,
                                         maximumFractionDigits: 0,
                                         useGrouping: true
                                     }) : 0}`}
                                 </Text>
-                                <Text style={{ fontWeight: 'bold', fontSize: screenWidth < mobileViewBreakpoint ? 12 : 16, color: '#5E4343', textAlign: 'center', }}>
-                                    {`Overbalance`}
-                                </Text>
+
+                                <View style={{ flexDirection: 'row', justifyContent: 'center', alignItems: 'center', }}>
+                                    <Text style={{ fontWeight: 'bold', fontSize: screenWidth < mobileViewBreakpoint ? 12 : 16, color: '#5E4343', textAlign: 'center', marginRight: 2, }}>
+                                        {`Overbalance`}
+                                    </Text>
+                                    <OverbalanceHistoryModal />
+                                </View>
+
 
                                 <ManageOverbalance />
 

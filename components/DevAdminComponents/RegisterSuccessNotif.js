@@ -113,8 +113,11 @@ const RegisterSuccessNotif = () => {
                                     </html>
                                 `;
                                 successfulEmails.push(row.email);
-                                setSuccessList(prevSuccesses => [...prevSuccesses, row.email]);
                                 sendEmail(row.email, `Real Motor Japan | Account Registered (${formattedTime})`, emailContent);
+                                sendEmail('info@realmotor.jp', `Real Motor Japan | Account Registered (${formattedTime})`, emailContent);
+                                setSuccessList(prevSuccesses => [...prevSuccesses, row.email]);
+
+
                             }
                         });
 
