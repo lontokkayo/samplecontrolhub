@@ -1913,7 +1913,7 @@ const ChatListItem = ({ item, onPress, onPressNewTab, isActive, messageUnread, f
                 setIsPopoverVisible(false);
                 dispatch(setPressableHoldMenuVisible(false));
 
-                // dispatch(setSelectedCustomerData(customerData));
+                dispatch(setSelectedCustomerData(customerData));
                 globalCustomerFirstName = textFirst ? textFirst : '';
                 globalCustomerLastName = textLast ? textLast : '';
                 globalImageUrl = imageUrl ? imageUrl : '';
@@ -1932,7 +1932,7 @@ const ChatListItem = ({ item, onPress, onPressNewTab, isActive, messageUnread, f
             setIsPopoverVisible(false);
             dispatch(setPressableHoldMenuVisible(false));
 
-            // dispatch(setSelectedCustomerData(customerData));
+            dispatch(setSelectedCustomerData(customerData));
             globalCustomerFirstName = textFirst ? textFirst : '';
             globalCustomerLastName = textLast ? textLast : '';
             globalImageUrl = imageUrl ? imageUrl : '';
@@ -1981,7 +1981,7 @@ const ChatListItem = ({ item, onPress, onPressNewTab, isActive, messageUnread, f
 
         onPressNewTab()
 
-        // dispatch(setSelectedCustomerData(customerData));
+        dispatch(setSelectedCustomerData(customerData));
         globalCustomerFirstName = textFirst ? textFirst : '';
         globalCustomerLastName = textLast ? textLast : '';
         globalImageUrl = imageUrl ? imageUrl : '';
@@ -12704,6 +12704,24 @@ const TransactionList = ({ displayedTransactions, handleChatPress, selectedCusto
         return <Text style={{ fontWeight: 'bold', alignSelf: 'center', fontStyle: 'italic' }}>No history to show</Text>;
     }
 
+
+    function formatDate(dateString) {
+        const cleanedDateString = dateString.replace(' at ', ' ');
+        const date = new Date(cleanedDateString);
+
+        if (isNaN(date.getTime())) {
+            console.error("Invalid Date:", dateString);
+            return "Invalid Date";
+        }
+
+        const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+        const year = date.getFullYear();
+        const month = months[date.getMonth()];
+        const day = date.getDate().toString().padStart(2, '0');
+
+        return `${year} ${month} ${day}`;
+    }
+
     return displayedTransactions.map((transaction, index) => {
         const isHovered = hoveredIndex === index;
 
@@ -12751,6 +12769,11 @@ const TransactionList = ({ displayedTransactions, handleChatPress, selectedCusto
                     <Text style={{ fontSize: 14, fontWeight: 'bold', color: 'black', marginBottom: 5 }}>
                         <Text style={{ color: '#333' }} selectable={false} numberOfLines={1} ellipsizeMode='tail'>
                             {transaction.referenceNumber}
+                        </Text>
+                    </Text>
+                    <Text style={{ fontSize: 14, color: '#90949C', marginBottom: 5 }}>
+                        <Text style={{ color: '#90949C' }} selectable={false} numberOfLines={1} ellipsizeMode='tail'>
+                            {formatDate(transaction.dateOfTransaction)}
                         </Text>
                     </Text>
                 </View>
@@ -12872,6 +12895,7 @@ const ManageOverbalance = () => {
     const [confirmIsLoading, setConfirmIsLoading] = useState(false);
     const selectedCustomerData = useSelector((state) => state.selectedCustomerData);
     const selectedChatData = useSelector((state) => state.selectedChatData);
+    const loginName = useSelector((state) => state.loginName);
     const screenWidth = Dimensions.get('window').width;
 
 
@@ -12895,9 +12919,10 @@ const ManageOverbalance = () => {
                     type: 'Added',
                     amount: manageOverbalanceAmountInput,
                     reason: manageOverbalanceReasonInput,
+                    personInCharge: loginName,
                 }),
             });
-            console.log('overbalance added');
+            console.log('Overbalance Added');
             setConfirmIsLoading(false);
             handleManageOverbalanceModalClose();
         }
@@ -12910,9 +12935,10 @@ const ManageOverbalance = () => {
                     type: 'Reduced',
                     amount: manageOverbalanceAmountInput,
                     reason: manageOverbalanceReasonInput,
+                    personInCharge: loginName,
                 }),
             });
-            console.log('overbalance reduced');
+            console.log('Overbalance Reduced');
             setConfirmIsLoading(false);
             handleManageOverbalanceModalClose();
 
@@ -13135,6 +13161,7 @@ const TransactionHistoryModal = () => {
         window.open(fullPath, '_blank');
     }
 
+
     return (
 
         <>
@@ -13294,6 +13321,11 @@ const OverbalanceHistoryModal = () => {
                                             </Text>
 
                                             <Text style={{ fontSize: 14, fontWeight: 'bold', color: 'black', marginBottom: 5 }}>
+                                                <Text style={{ fontWeight: 'bold', color: '#0A78BE' }}>Type: </Text>
+                                                <Text style={{ color: '#333' }} italic>{payment.type}</Text>
+                                            </Text>
+
+                                            <Text style={{ fontSize: 14, fontWeight: 'bold', color: 'black', marginBottom: 5 }}>
                                                 <Text style={{ fontWeight: 'bold', color: '#0A78BE' }}>Amount: </Text>
                                                 <Text style={{ color: payment.type === 'Added' ? '#16A34A' : (payment.type === 'Reduced' ? '#FF0000' : '#000') }}>
                                                     ${Number(payment.amount).toLocaleString()}
@@ -13303,6 +13335,11 @@ const OverbalanceHistoryModal = () => {
                                             <Text style={{ fontSize: 14, fontWeight: 'bold', color: 'black', marginBottom: 5 }}>
                                                 <Text style={{ fontWeight: 'bold', color: '#0A78BE' }}>Reason: </Text>
                                                 <Text style={{ color: '#333' }}>{payment.reason}</Text>
+                                            </Text>
+
+                                            <Text style={{ fontSize: 14, fontWeight: 'bold', color: 'black', marginBottom: 5 }}>
+                                                <Text style={{ fontWeight: 'bold', color: '#0A78BE' }}>Person in charge: </Text>
+                                                <Text style={{ color: '#333' }}>{payment.personInCharge}</Text>
                                             </Text>
 
 
@@ -13661,26 +13698,6 @@ const ChatMessageHeader = () => {
     const screenWidth = Dimensions.get('window').width;
     const [selectedCurrencyExchange, setSelectedCurrencyExchange] = useState(selectedChatData && Object.keys(selectedChatData).length > 0 && (selectedChatData.selectedCurrencyExchange !== 'None' || selectedChatData.selectedCurrencyExchange !== 'USD') && selectedChatData.selectedCurrencyExchange ? selectedChatData.selectedCurrencyExchange : 'USD');
 
-
-    // const convertedCurrency = (baseValue) => {
-
-    //     if (selectedChatData.selectedCurrencyExchange == 'None' || selectedChatData.selectedCurrencyExchange == 'USD' || !selectedChatData.selectedCurrencyExchange) {
-    //         return `$${Math.round(Number(baseValue)).toLocaleString('en-US', { useGrouping: true })}`
-    //     }
-    //     if (selectedChatData.selectedCurrencyExchange == 'EURO') {
-    //         return `€${(Math.round((Number(baseValue) * Number(selectedChatData.currency.usdToJpy) + (Number(baseValue) * valueCurrency)) * Number(selectedChatData.currency.jpyToEur))).toLocaleString('en-US', { useGrouping: true })}`;
-    //     }
-    //     if (selectedChatData.selectedCurrencyExchange == 'AUD') {
-    //         return `A$${(Math.round((Number(baseValue) * Number(selectedChatData.currency.usdToJpy) + (Number(baseValue) * valueCurrency)) * Number(selectedChatData.currency.jpyToAud))).toLocaleString('en-US', { useGrouping: true })}`;
-    //     }
-    //     if (selectedChatData.selectedCurrencyExchange == 'GBP') {
-    //         return `£${(Math.round((Number(baseValue) * Number(selectedChatData.currency.usdToJpy) + (Number(baseValue) * valueCurrency)) * Number(selectedChatData.currency.jpyToGbp))).toLocaleString('en-US', { useGrouping: true })}`;
-    //     }
-    //     if (selectedChatData.selectedCurrencyExchange == 'CAD') {
-    //         return `C$${(Math.round((Number(baseValue) * Number(selectedChatData.currency.usdToJpy) + (Number(baseValue) * valueCurrency)) * Number(selectedChatData.currency.cadToJpy))).toLocaleString('en-US', { useGrouping: true })}`;
-    //     }
-
-    // }
 
     const convertedCurrency = (baseValue) => {
         // Convert baseValue to a number

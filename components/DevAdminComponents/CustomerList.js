@@ -1,110 +1,87 @@
 import {
     Box,
     Button,
-    Center,
     Flex,
-    HStack,
-    Icon,
     Image as NativeImage,
-    Input,
     Modal,
     NativeBaseProvider,
     Popover,
-    Pressable,
     Spinner,
-    Stack,
     Text,
     VStack,
-    useBreakpointValue,
-    TextArea,
-    InputRightAddon,
-    InputGroup,
-    InputLeftAddon,
     Select,
     CheckIcon,
-    PresenceTransition,
-    CloseIcon,
-    ScrollView as ScrollViewNative,
-    Divider,
-    useDisclosure,
-    useDisclose,
-    FormControl,
     Checkbox,
-    useToast
+    Tooltip,
+    Progress,
+    Pressable as NativePressable,
 } from 'native-base';
-import React, { useEffect, useRef, useState, useMemo, useCallback, useReducer } from 'react';
+import React, { useEffect, useRef, useState, useCallback } from 'react';
 import {
     Dimensions,
-    ImageBackground,
-    TouchableOpacity,
-    TouchableWithoutFeedback,
     StyleSheet,
     View,
-    PanResponder,
     Animated,
-    InputAccessoryView,
+    Easing,
     FlatList,
     ScrollView,
-    TouchableHighlight,
     TextInput,
-    Image as RNImage
+    Image as RNImage,
+    Pressable,
+    Linking,
+    Platform,
+    Modal as RnModal,
+    TouchableWithoutFeedback,
+    Keyboard
 } from 'react-native';
 import 'react-native-gesture-handler';
+import Hyperlink from 'react-native-hyperlink';
+
 import {
-    AntDesign,
-    FontAwesome,
     Ionicons,
     MaterialCommunityIcons,
-    MaterialIcons,
-    Entypo,
-    FontAwesome5,
-    EvilIcons
+    MaterialIcons
 } from 'react-native-vector-icons';
 // import { createDrawerNavigator } from '@react-navigation/drawer';
-import { useNavigation } from '@react-navigation/core';
-import axios from 'axios';
-import { createUserWithEmailAndPassword, fetchSignInMethodsForEmail, signOut } from 'firebase/auth';
-import { addDoc, collection, doc, getDoc, getFirestore, onSnapshot, setDoc, arrayUnion, updateDoc, query, getDocs, orderBy, startAfter, limit, where, endBefore, endAt, limitToLast, collectionGroup } from 'firebase/firestore';
+import { signOut } from 'firebase/auth';
+import {
+    addDoc,
+    collection,
+    doc,
+    getDoc,
+    getFirestore,
+    onSnapshot,
+    setDoc,
+    arrayUnion,
+    updateDoc,
+    query,
+    getDocs,
+    orderBy,
+    startAfter,
+    limit,
+    where,
+    increment,
+    runTransaction,
+    endBefore,
+    limitToLast
+} from 'firebase/firestore';
 import moment from 'moment';
-import { authForCreateUser } from '../../firebasecontrolCreateUser';
 import './../style.css';
-import { projectControlFirestore, projectControlAuth, projectExtensionFirestore, projectExtensionAuth, projectControlFirebase, projectExtensionFirebase } from "../../crossFirebase";
-import { launchImageLibrary } from 'react-native-image-picker';
-import { getStorage, ref, uploadBytes, getDownloadURL, listAll, deleteObject } from 'firebase/storage';
+import { projectControlFirestore, projectControlAuth, projectExtensionFirestore } from "../../crossFirebase";
 import FastImage from 'react-native-fast-image-web-support';
-import MobileViewDrawer from './SideDrawer/MobileViewDrawer';
 import SideDrawer from './SideDrawer/SideDrawer';
 import { useSelector, useDispatch } from 'react-redux';
-import DraggableFlatList from "react-native-draggable-flatlist";
-import { Calendar, LocaleConfig } from 'react-native-calendars';
-import { DragSortableView } from 'react-native-drag-sort';
 import {
     setCustomerListData,
-    setSupplyChainsCostsData,
-    setSelectedPaidTo,
-    setSelectedExpenseName,
-    setSupplyChainsCostsModalVisible,
-    setVehicleListSupplyChainsCostsData,
-    setDeleteImageVisible,
-    setSelectedImages,
-    setAddAnotherImages,
-    setIsAddPhotoVisible,
-    setUploadImagesModalVisible,
-    setUploadImagesButtonLoading,
-    setViewImagesModalVisible,
-    setViewImagesData,
     setLoadingModalVisible,
-    setAddVehicleListData,
-    setEditVehicleModalVisible,
-    setFobPriceHistoryModalVisible,
-    setFobHistoryData,
-    setLoginName
+    setLoginName,
+    setSelectedCustomerData
 } from './redux/store';
+import { HmacSHA256, enc } from 'crypto-js';
+import { AES } from 'crypto-js';
+import { CRYPTO_KEY, CRYPTO_KEY_API } from '@env';
+import axios from 'axios';
 // import { TextInput } from 'react-native-gesture-handler';
-import { nanoid } from 'nanoid';
-import { cloneDeep } from 'lodash';
-import StickyHeader from './Header/StickyHeader';
-import { UsePagination } from './VehicleListComponent/UsePagination';
 import { useNavigate } from 'react-router-dom';
 import QRCodeScanner from './QrCodeScanner/QrCodeScanner';
 
@@ -112,18 +89,12 @@ import QRCodeScanner from './QrCodeScanner/QrCodeScanner';
 const { width } = Dimensions.get('window');
 let selectedScreen = 'CUSTOMER LIST'
 
-let globalSupplyChainCostsData = [];
-let globalCurrentSupplyChainCostsData = [];
-let globalFobPriceHistoryData = [];
-let globalCurrentStockID = '';
-let globalSelectedPaidTo = '';
-let globalSPCSelectedDate = '';
-let globalSelectedExpenseName = '';
-let globalSupplyChainCostsAmount = 0;
-let globalSelectedImages = [];
-let globalSelectedVehicle = '';
-let globalSelectedVehicleReferenceNumber = '';
-let globalSelectedCarName = '';
+let globalCustomerCarName = '';
+let globalCustomerFirstName = '';
+let globalCustomerLastName = '';
+
+const mobileViewBreakpoint = 1367;
+
 const nameVariable = {
     text: "",
 };
@@ -142,9 +113,6 @@ const getEmailOfCurrentUser = () => {
 };
 
 // const Drawer = createDrawerNavigator();
-
-
-
 
 
 const addLogToCollection = async (data) => {
@@ -190,1506 +158,1048 @@ const LoadingModal = () => {
 
 }
 
-const ClearImagesModal = ({ modalDeleteImagesVisible, setModalDeleteImagesVisible, handleClearImages, selectedImages, isAddPhotoVisible }) => {
-    // const [modalDeleteImagesVisible, setModalDeleteImagesVisible] = useState(false);
+const encryptData = (data) => {
+    try {
+        const secretKey = CRYPTO_KEY.toString();
+        return AES.encrypt(data, secretKey).toString();
+    } catch (error) {
+        console.error("Error encrypting data:", error);
+        // useNavigate(`/devadmin/chat-messages`);
 
-    const handleModalDeleteOpen = () => {
-        setModalDeleteImagesVisible(true);
-    };
+        // Handle the encryption error or return a fallback
+        return null; // or handle it in another appropriate way
+    }
+};
 
-    const handleModalDeleteClose = () => {
-        setModalDeleteImagesVisible(false);
-    };
+const decryptData = (ciphertext) => {
+    try {
+        const secretKey = CRYPTO_KEY.toString();
 
-    return (
-        <>
-            <View
+        const bytes = AES.decrypt(ciphertext, secretKey);
+        return bytes.toString(enc.Utf8);
+    } catch (error) {
+        console.error("Error decrypting data:", error);
+        // useNavigate(`/devadmin/chat-messages`);
+
+        // Handle the decryption error or return a fallback
+        return null; // or handle it in another appropriate way
+    }
+};
+
+const TransactionList = ({ displayedTransactions, handleChatPress, selectedCustomerData }) => {
+    const [hoveredIndex, setHoveredIndex] = useState(null);
+
+    if (!Array.isArray(selectedCustomerData.transactions) || selectedCustomerData.transactions.length === 0) {
+        return <Text style={{ fontWeight: 'bold', alignSelf: 'center', fontStyle: 'italic' }}>No history to show</Text>;
+    }
+
+
+    function formatDate(dateString) {
+        const cleanedDateString = dateString.replace(' at ', ' ');
+        const date = new Date(cleanedDateString);
+
+        if (isNaN(date.getTime())) {
+            console.error("Invalid Date:", dateString);
+            return "Invalid Date";
+        }
+
+        const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+        const year = date.getFullYear();
+        const month = months[date.getMonth()];
+        const day = date.getDate().toString().padStart(2, '0');
+
+        return `${year} ${month} ${day}`;
+    }
+
+    return displayedTransactions.map((transaction, index) => {
+        const isHovered = hoveredIndex === index;
+
+        return (
+            <Pressable
+                key={index}
+                onPress={() => handleChatPress(`chat_${transaction.stockId}_${selectedCustomerData.textEmail}`)}
+                onMouseEnter={() => setHoveredIndex(index)}
+                onMouseLeave={() => setHoveredIndex(null)}
                 style={{
-                    position: 'absolute',
-                    top: 0,
-                    right: 0,
-                    backgroundColor: '#FF4136',
-                    borderRadius: 3,
+                    marginBottom: 15,
+                    backgroundColor: isHovered ? '#F2F2F2' : '#FFFFFF',
+                    borderRadius: 10,
+                    shadowColor: '#000',
+                    shadowOffset: { width: 0, height: 2 },
+                    shadowOpacity: 0.1,
+                    shadowRadius: 2,
+                    elevation: 3,
+                    padding: 5,
+                    borderBottomWidth: 1,
+                    borderBottomColor: '#eee',
+                    flexDirection: 'row',
                     alignItems: 'center',
-                    justifyContent: 'center',
-                    display: isAddPhotoVisible ? 'none' : 'flex',
                 }}
             >
-                <TouchableHighlight onPress={handleModalDeleteOpen} style={{ flex: 1 }}>
-                    <Ionicons name="trash-sharp" size={20} color="white" />
-                </TouchableHighlight>
-            </View>
-
-            <Modal isOpen={modalDeleteImagesVisible} onClose={handleModalDeleteClose} useRNModal>
-                <Modal.Content bgColor={'error.100'}>
-                    <Modal.CloseButton />
-                    <Modal.Header borderBottomWidth={0} bgColor={'error.100'}>
-                        <Text color={'#102A43'} bold>
-                            Clear Images
+                <View>
+                    <FastImage
+                        source={{ uri: transaction.imageUrl, priority: FastImage.priority.normal }}
+                        style={{
+                            width: 60,
+                            height: 60,
+                            borderRadius: 30,
+                            alignSelf: 'center',
+                            margin: 10,
+                        }}
+                        resizeMode={FastImage.resizeMode.stretch}
+                    />
+                </View>
+                <View>
+                    <Text style={{ fontSize: 14, fontWeight: 'bold', color: 'black', marginBottom: 5 }}>
+                        <Text style={{ color: '#0A78BE' }} selectable={false} numberOfLines={1} ellipsizeMode='tail'>
+                            {transaction.carName}
                         </Text>
+                    </Text>
+                    <Text style={{ fontSize: 14, fontWeight: 'bold', color: 'black', marginBottom: 5 }}>
+                        <Text style={{ color: '#333' }} selectable={false} numberOfLines={1} ellipsizeMode='tail'>
+                            {transaction.referenceNumber}
+                        </Text>
+                    </Text>
+                    <Text style={{ fontSize: 14, color: '#90949C', marginBottom: 5 }}>
+                        <Text style={{ color: '#90949C' }} selectable={false} numberOfLines={1} ellipsizeMode='tail'>
+                            {formatDate(transaction.dateOfTransaction)}
+                        </Text>
+                    </Text>
+                </View>
+            </Pressable>
+        );
+    });
+};
+
+
+const TransactionHistoryModal = () => {
+
+    const [transactionHistoryVisible, setTransactionHistoryVisible] = useState(false);
+    const selectedCustomerData = useSelector((state) => state.selectedCustomerData);
+    const screenWidth = Dimensions.get('window').width;
+
+    const navigate = useNavigate();
+    const [displayedTransactions, setDisplayedTransactions] = useState(selectedCustomerData.transactions ? selectedCustomerData.transactions.slice(0, 5) : null);
+    const [loadingMore, setLoadingMore] = useState(false);
+    const [isHovered, setIsHovered] = useState(false);
+
+    const hoverStyle = isHovered ? {
+        backgroundColor: '#E8EAF6', // Lighter background color on hover
+        // Any other style changes on hover
+    } : {};
+
+    const loadMorePayments = () => {
+        if (loadingMore) return; // Prevent multiple loads
+
+        setLoadingMore(true);
+        const nextItems = selectedCustomerData.transactions.slice(
+            displayedTransactions.length,
+            displayedTransactions.length + 5
+        );
+
+        setTimeout(() => { // Simulate network request
+            setDisplayedTransactions([...displayedTransactions, ...nextItems]);
+            setLoadingMore(false);
+        }, 500); // Adjust the timeout as needed
+    };
+
+    const handleTransactionHistoryModalOpen = () => {
+        setDisplayedTransactions(selectedCustomerData.transactions ? selectedCustomerData.transactions.slice(0, 5) : null);
+        setTransactionHistoryVisible(true);
+
+    };
+
+    const handleTransactionHistoryModalClose = () => {
+        setTransactionHistoryVisible(false);
+    };
+
+    const isCloseToBottom = ({ layoutMeasurement, contentOffset, contentSize }) => {
+        return layoutMeasurement.height + contentOffset.y >= contentSize.height - 20;
+    };
+
+    const handleChatPress = (chatId) => {
+        const encryptedChatId = encryptData(chatId);
+        const encodedChatId = encodeURIComponent(encryptedChatId); // URL-encode the encrypted data
+        // navigate(`/top/chat-messages/${encodedChatId}`);
+        const path = `/top/chat-messages/${encodedChatId}`;
+        // Construct the URL for hash-based routing
+        const baseUrl = window.location.origin + window.location.pathname;
+        const fullPath = `${baseUrl}#${path}`;
+        window.open(fullPath, '_blank');
+    }
+
+
+    return (
+
+        <>
+
+
+            <Pressable onPress={handleTransactionHistoryModalOpen}>
+                <Text style={{ fontSize: screenWidth < mobileViewBreakpoint ? 10 : 14, color: '#0A78BE', textAlign: 'center', }} underline>
+                    {`View Transactions`}
+                </Text>
+            </Pressable>
+
+            <Modal isOpen={transactionHistoryVisible} onClose={handleTransactionHistoryModalClose} useRNModal>
+                <Modal.Content style={{ backgroundColor: 'white', borderRadius: 10 }}>
+                    <Modal.CloseButton />
+                    <Modal.Header style={{ backgroundColor: 'white', textAlign: 'center', fontSize: 18, fontWeight: 'bold', color: '#333' }}>
+                        Transactions History
                     </Modal.Header>
-                    <Modal.Body
-                        justifyContent={'center'}
-                        alignItems={'center'}
-                        bgColor={'error.200'}
-                        borderLeftWidth={4}
-                        borderLeftColor={'danger.400'}
-                        margin={5}
-                    >
-                        <View style={{ flex: 1 }}>
-                            <Text style={{ color: '#FF4136', fontWeight: 'bold' }}>Alert!</Text>
-                            <Text style={{ color: '#FF4136' }}>
-                                Are you sure you want to clear{' '}
-                                <Text style={{ color: '#FF4136', fontWeight: 'bold' }}>
-                                    {selectedImages.length}
-                                </Text>{' '}
-                                selected image(s)?
-                            </Text>
-                        </View>
+                    <Modal.Body>
+                        <ScrollView
+                            style={{ flex: 1, paddingHorizontal: 15, maxHeight: 500 }}
+                            onScroll={({ nativeEvent }) => {
+                                if (isCloseToBottom(nativeEvent)) {
+                                    loadMorePayments();
+                                }
+                            }}
+                            scrollEventThrottle={400} // Adjust as needed
+                        >
+
+                            <TransactionList
+                                displayedTransactions={displayedTransactions}
+                                handleChatPress={handleChatPress}
+                                selectedCustomerData={selectedCustomerData}
+                            />
+
+                            <View style={{ height: 20, }}>
+                                {loadingMore && <Spinner size='sm' color="#7B9CFF" />}
+                            </View>
+
+                        </ScrollView>
+
+
+
                     </Modal.Body>
-                    <Modal.Footer borderTopWidth={0} bgColor={'error.100'}>
-                        <View style={{ flexDirection: 'row', flex: 1 }}>
-                            <TouchableOpacity
-                                onPress={handleModalDeleteClose}
-                                style={{
-                                    flex: 1,
-                                    backgroundColor: '#57534E', // Replace with your desired color
-                                    borderRadius: 5,
-                                    alignItems: 'center',
-                                    justifyContent: 'center',
-                                    margin: 5,
-                                    padding: 5,
-                                }}
-                            >
-                                <Text style={{ fontSize: 14, color: 'white' }}>No</Text>
-                            </TouchableOpacity>
-                            <TouchableOpacity
-                                onPress={handleClearImages}
-                                style={{
-                                    flex: 1,
-                                    backgroundColor: '#DC2626', // Replace with your desired color
-                                    borderRadius: 5,
-                                    alignItems: 'center',
-                                    justifyContent: 'center',
-                                    margin: 5,
-                                    padding: 5,
-                                }}
-                            >
-                                <Text style={{ fontSize: 14, color: 'white' }}>Clear Images</Text>
-                            </TouchableOpacity>
-                        </View>
-                    </Modal.Footer>
                 </Modal.Content>
             </Modal>
         </>
-    );
-};
 
+    )
+}
 
-
-
-
-
-const AllSccModals = ({ supplyChainsCostsModalVisible, expenseNameData, paidToData, currentDate, vehicleListSupplyChainsCostsData }) => {
+const OverbalanceHistoryModal = () => {
+    const [overbalanceHistoryVisible, setOverbalanceHistoryVisible] = useState(false);
+    const selectedCustomerData = useSelector((state) => state.selectedCustomerData);
     const screenWidth = Dimensions.get('window').width;
 
-    const dispatch = useDispatch();
+    const sortedOverbalances = selectedCustomerData.overbalanceHistory
+        ? [...selectedCustomerData.overbalanceHistory].sort((a, b) => {
+            const dateA = new Date(a.date.replace(' at ', ' '));
+            const dateB = new Date(b.date.replace(' at ', ' '));
+            return dateB - dateA; // Sorts in descending order
+        })
+        : [];
 
-    const toast = useToast();
+    const [displayedOverbalance, setDisplayedOverbalance] = useState(sortedOverbalances.slice(0, 5));
+    const [loadingMore, setLoadingMore] = useState(false);
 
-    const [sccData, setSccData] = useState([]);
+    const loadMorePayments = () => {
+        if (loadingMore) return; // Prevent multiple loads
 
-    // const supplyChainsCostsModalVisible = useSelector((state) => state.supplyChainsCostsModalVisible);
-    const [modalCalendarVisible, setModalCalendarVisible] = useState(false);
+        setLoadingMore(true);
+        const nextItems = sortedOverbalances.slice(
+            displayedOverbalance.length,
+            displayedOverbalance.length + 5
+        );
 
-
-    const [clearModalVisible, setClearModalVisible] = useState(false);
-    const [data, setData] = useState([]);
-
-    const [selectedDate, setSelectedDate] = useState(currentDate);
-    const [inputAmountIsError, setInputAmountIsError] = useState(false);
-    const [expenseNameIsError, setExpenseNameIsError] = useState(false);
-    const [paidToIsError, setPaidToIsError] = useState(false);
-    const [totalAmount, setTotalAmount] = useState(globalSupplyChainCostsAmount);
-    // const selectedExpenseName = useSelector((state) => state.selectedExpenseName);
-    // const selectedPaidTo = useSelector((state) => state.selectedPaidTo);
-    const [selectResetKey, setSelectResetKey] = useState(nanoid());
-    const selectExpenseNameRef = useRef(null);
-    const expenseViewRef = useRef(null);
-
-    const textAreaAddExpenseName = useRef(null);
-    const textAreaAddPaidTo = useRef(null);
-    const inputExpenseAmount = useRef(null);
-    const handleInputExpenseAmountChange = (text) => {
-        // Remove any non-numeric characters
-        const numericValue = text.replace(/[^0-9]/g, '');
-
-        // Limit the numeric value to a maximum of 4 characters
-        const truncatedValue = numericValue.slice(0, 6);
-
-        // Format the truncated numeric value with comma separator
-        const formattedValue = Number(truncatedValue).toLocaleString();
-
-        inputExpenseAmount.current.value = formattedValue;
+        setTimeout(() => { // Simulate network request
+            setDisplayedOverbalance([...displayedOverbalance, ...nextItems]);
+            setLoadingMore(false);
+        }, 500); // Adjust the timeout as needed
     };
 
-
-
-
-
-    const handleModalSupplyChainsCostsClose = () => {
-        dispatch(setSupplyChainsCostsModalVisible(false));
-        inputExpenseAmount.current?.clear();
-        globalSelectedExpenseName = '';
-        setSelectResetKey(nanoid());
-        globalSelectedPaidTo = '';
-        setSelectedDate(currentDate);
-        globalSPCSelectedDate = currentDate;
-        dispatch(setSelectedExpenseName(''));
-        dispatch(setSelectedPaidTo(''));
-        setInputAmountIsError(false);
-        setExpenseNameIsError(false);
-        setPaidToIsError(false);
-        globalSelectedVehicle = '';
+    const handlePaymentHistoryModalOpen = () => {
+        setDisplayedOverbalance(sortedOverbalances.slice(0, 5));
+        setOverbalanceHistoryVisible(true);
     };
 
+    const handlePaymentHistoryModalClose = () => {
+        setOverbalanceHistoryVisible(false);
+    };
 
+    function formatDate(dateString) {
+        const cleanedDateString = dateString.replace(' at ', ' ');
+        const date = new Date(cleanedDateString);
 
-
-    useEffect(() => {
-        const amounts = vehicleListSupplyChainsCostsData.map((item) => {
-            const expenseName = Object.keys(item)[0];
-            const expenseData = item[expenseName];
-            return parseFloat(expenseData.amount.replace(',', '')) || 0;
-        });
-
-        // Use reduce to add up all the amounts
-        const totalAmount = amounts.reduce((accumulator, currentValue) => accumulator + currentValue, 0);
-        const formattedTotalAmount = totalAmount.toLocaleString();
-        setTotalAmount(formattedTotalAmount);
-        globalSupplyChainCostsAmount = formattedTotalAmount;
-
-    }, [vehicleListSupplyChainsCostsData]);
-
-    const handleSave = useCallback(() => {
-
-
-
-        if (inputExpenseAmount.current?.value == ''
-            || inputExpenseAmount.current?.value == 0
-            || globalSelectedExpenseName == ''
-            || globalSelectedPaidTo == ''
-        ) {
-
-            if (inputExpenseAmount.current?.value == '' || inputExpenseAmount.current?.value == 0) {
-                setInputAmountIsError(true);
-            }
-
-            if (globalSelectedExpenseName == '') {
-                setExpenseNameIsError(true);
-            }
-
-            if (globalSelectedPaidTo == '') {
-                setPaidToIsError(true);
-            }
+        if (isNaN(date.getTime())) {
+            console.error("Invalid Date:", dateString);
+            return "Invalid Date";
         }
 
-        else {
-            const existingIndex = globalSupplyChainCostsData.findIndex(item => item[globalSelectedExpenseName]);
+        const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+        const year = date.getFullYear();
+        const month = months[date.getMonth()];
+        const day = date.getDate().toString().padStart(2, '0');
 
-            if (existingIndex !== -1) {
-                // If an entry with the same expense name exists, update it
-                const updatedData = cloneDeep(globalSupplyChainCostsData);
-                updatedData[existingIndex][globalSelectedExpenseName] = {
-                    expenseName: globalSelectedExpenseName,
-                    amount: inputExpenseAmount.current?.value,
-                    date: globalSPCSelectedDate,
-                    paidName: globalSelectedPaidTo,
-                };
-                globalSupplyChainCostsData = updatedData;
-                dispatch(setVehicleListSupplyChainsCostsData(globalSupplyChainCostsData));
-                dispatch(setSelectedExpenseName(''));
-                dispatch(setSelectedPaidTo(''));
-                inputExpenseAmount.current.clear();
-                globalSelectedExpenseName = '';
-                globalSelectedPaidTo = '';
-                setSelectedDate(currentDate);
-                globalSPCSelectedDate = currentDate;
-
-            } else {
-                setInputAmountIsError(false);
-                setExpenseNameIsError(false);
-                setPaidToIsError(false);
-                // If no entry with the same expense name exists, add a new entry
-                const newData = {
-                    [globalSelectedExpenseName]: {
-                        expenseName: globalSelectedExpenseName,
-                        amount: inputExpenseAmount.current?.value,
-                        date: globalSPCSelectedDate,
-                        paidName: globalSelectedPaidTo,
-                    },
-                };
-                globalSupplyChainCostsData = [...globalSupplyChainCostsData, newData];
-                // console.log(globalSupplyChainCostsData);
-                // const updatedData = { ...supplyChainsCostsData, ...newData };
-                dispatch(setVehicleListSupplyChainsCostsData(globalSupplyChainCostsData));
-                // globalSupplyChainCostsData = [...supplyChainsCostsData, newData];
-                setSelectResetKey(nanoid());
-                inputExpenseAmount.current.clear();
-                globalSelectedExpenseName = '';
-                globalSelectedPaidTo = '';
-                setSelectedDate(currentDate);
-                globalSPCSelectedDate = currentDate;
-                dispatch(setSelectedExpenseName(''));
-                dispatch(setSelectedPaidTo(''));
-
-
-            }
-
-        }
-
-
-
-    }, []);
-
-
-
-    const handleEditPress = useCallback((item) => {
-        // console.log(item.amount);
-        inputExpenseAmount.current.setNativeProps({ text: item.amount });
-        dispatch(setSelectedExpenseName(item.expenseName));
-        globalSelectedExpenseName = item.expenseName;
-        dispatch(setSelectedPaidTo(item.paidName));
-        globalSelectedPaidTo = item.paidName;
-        globalSPCSelectedDate = item.date;
-        setSelectedDate(item.date);
-        expenseViewRef.current.scrollIntoView({ behavior: 'smooth' });
-
-    }, [])
-
-
-    const handleDeleteItem = (expenseName) => {
-        // Find the index of the item to be deleted
-        const itemIndex = globalSupplyChainCostsData.findIndex((item) => Object.keys(item)[0] === expenseName);
-
-        if (itemIndex !== -1) {
-            // Create a copy of the data array and remove the item at the found index
-            const newData = [...globalSupplyChainCostsData];
-            newData.splice(itemIndex, 1);
-
-            // Update the state with the new array
-            dispatch(setVehicleListSupplyChainsCostsData(newData));
-            globalSupplyChainCostsData = newData;
-        }
-    };
-
-    const handleFirstModalClose = () => {
-        dispatch(setSupplyChainsCostsModalVisible(false));
-
-    };
-    const handleFirstModalOpen = () => {
-        dispatch(setSupplyChainsCostsModalVisible(true));
-
+        return `${year} ${month} ${day}`;
     }
 
-    const handleAddExpenseNameTextChange = () => {
-        const textAreaValue = textAreaAddExpenseName.current?.value;
-        if (textAreaValue) {
-            const newText = textAreaValue
-                .split('\n')
-                .map((line) => line.charAt(0).toUpperCase() + line.slice(1))
-                .join('\n');
-            textAreaAddExpenseName.current.setNativeProps({ text: newText });
-        }
-    };
-
-    const handleAddPaidToTextChange = () => {
-        const textAreaValue = textAreaAddPaidTo.current?.value;
-        if (textAreaValue) {
-            const newText = textAreaValue
-                .split('\n')
-                .map((line) => line.charAt(0).toUpperCase() + line.slice(1))
-                .join('\n');
-            textAreaAddPaidTo.current.setNativeProps({ text: newText });
-        }
-    };
-
-    const handleSaveSupplyChainsCosts = async () => {
-
-        toast.closeAll();
-        if (globalCurrentSupplyChainCostsData == globalSupplyChainCostsData) {
-            // console.log('Same price, will not update')
-            dispatch(setSupplyChainsCostsModalVisible(false));
-            toast.show({
-                render: () => {
-                    return <View style={{ backgroundColor: '#16A34A', padding: 5, borderRadius: 5 }}>
-                        <Text style={{ color: 'white' }}>Supply Chains Costs updated successfully!</Text>
-                    </View>;
-                }
-            })
-        }
-        else {
-            const vehicleProductRef = doc(collection(projectExtensionFirestore, 'accounts'), globalCurrentStockID);
-
-            try {
-                await updateDoc(vehicleProductRef, { supplyChainsCostsData: globalSupplyChainCostsData });
-                dispatch(setSupplyChainsCostsModalVisible(false));
-                // console.log('Supply Chains Costs updated successfully');
-                toast.show({
-                    render: () => {
-                        return <View style={{ backgroundColor: '#16A34A', padding: 5, borderRadius: 5 }}>
-                            <Text style={{ color: 'white' }}>Supply Chains Costs updated successfully!</Text>
-                        </View>;
-                    }
-                })
-
-                dispatch(setSupplyChainsCostsModalVisible(false));
-                dispatch(setVehicleListSupplyChainsCostsData([]));
-                globalSupplyChainCostsData = [];
-                globalCurrentSupplyChainCostsData = [];
-                globalCurrentStockID = '';
-
-
-            } catch (error) {
-                console.error(error);
-                toast.show({
-                    render: () => {
-                        return <View style={{ backgroundColor: '#DC2626', padding: 5, borderRadius: 5 }}>
-                            <Text style={{ color: 'white' }}>Error updating: {error}</Text>
-                        </View>;
-                    }
-                })
-            }
-        }
-
-        // Reference the Firestore document and update the 'fobPrice' field
-
-    };
-    return (
-
-        <><Modal isOpen={supplyChainsCostsModalVisible} onClose={handleModalSupplyChainsCostsClose} size={'full'}>
-            <Modal.Content bgColor={'white'} w={screenWidth <= 960 ? '90%' : '50%'} h={'auto'}>
-                <Modal.CloseButton />
-                <Modal.Header bgColor={'#7B9CFF'} flexDir={screenWidth <= 1380 ? 'column' : 'row'} alignItems={screenWidth <= 1380 ? 'center' : ''}>
-                    <Text color={'white'} fontSize={20} bold>Supply Chains Costs</Text>
-                    <Text color={'cyan.200'} fontSize={20} bold textAlign={screenWidth <= 1380 ? 'center' : ''}> {globalSelectedVehicle}</Text>
-                </Modal.Header>
-                <Modal.Body>
-                    <View style={{ height: '100%' }}>
-                        <View paddingBottom={5}>
-                            <View style={{ flexDirection: screenWidth <= 960 ? 'column' : 'row', paddingBottom: 1, }} ref={expenseViewRef}>
-                                <View style={{
-                                    backgroundColor: '#7B9CFF', flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', borderRadius: 3,
-                                    padding: screenWidth <= 960 ? 5 : 0,
-                                }}
-                                    bgColor={'#7B9CFF'} flex={1} flexDir={'row'} alignItems={'center'} justifyContent={'center'} borderRadius={3}>
-                                    <Text color={'white'} alignSelf={'center'} marginLeft={2} flex={1}>Expense</Text>
-                                    <SupplyChainsCostsSortAndAddModal
-                                        docName='ExpenseName'
-                                        handleAddTextChange={handleAddExpenseNameTextChange}
-                                        textAreaAdd={textAreaAddExpenseName}
-                                        title='Expense Name'
-                                        dataName={'expenseName'}
-                                        databaseInit={projectExtensionFirestore}
-                                        headerText="Rearrange/Add Expense Name"
-                                        data={expenseNameData}
-                                        handleFirstModalClose={handleFirstModalClose}
-                                        handleFirstModalOpen={handleFirstModalOpen} />
-                                </View>
-                                <SelectExpenseName expenseNameIsError={expenseNameIsError} selectExpenseNameRef={selectExpenseNameRef} selectResetKey={selectResetKey} setSelectResetKey={setSelectResetKey} />
-                            </View>
-
-
-                            <View style={{ flexDirection: screenWidth <= 960 ? 'column' : 'row', paddingBottom: screenWidth <= 960 ? 8 : 1, }} flexDir={'row'} paddingBottom={1}>
-                                <View style={{
-                                    backgroundColor: '#7B9CFF', flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', borderRadius: 3,
-                                    padding: screenWidth <= 960 ? 5 : 0,
-                                }}
-                                    bgColor={'#7B9CFF'} flex={1} flexDir={'row'} alignItems={'center'} justifyContent={'center'} borderRadius={3}>
-                                    <Text color={'white'} alignSelf={'center'} marginLeft={2} flex={2}>Amount</Text>
-                                </View>
-                                <Input
-                                    borderColor={inputAmountIsError ? 'error.400' : 'muted.300'}
-                                    flex={3}
-                                    ref={inputExpenseAmount}
-                                    onChangeText={handleInputExpenseAmountChange}
-                                    placeholder="Amount"
-                                    bgColor={'white'}
-                                    placeholderTextColor={'muted.400'}
-                                    InputLeftElement={<Icon as={<FontAwesome name="yen" />} size={5} ml="2" color="muted.400" />} />
-                            </View>
-
-                            <View style={{ flexDirection: screenWidth <= 960 ? 'column' : 'row', paddingBottom: 1, }} flexDir={'row'} paddingBottom={1}>
-                                <View style={{
-                                    backgroundColor: '#7B9CFF', flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', borderRadius: 3,
-                                    padding: screenWidth <= 960 ? 5 : 0,
-                                }}
-                                    bgColor={'#7B9CFF'} flex={1} flexDir={'row'} alignItems={'center'} justifyContent={'center'} borderRadius={3}>
-                                    <Text color={'white'} alignSelf={'center'} marginLeft={2} flex={1}>Date</Text>
-                                </View>
-                                <ModalCalendar setSelectedDate={setSelectedDate} selectedDate={selectedDate} />
-                            </View>
-
-                            <View style={{ flexDirection: screenWidth <= 960 ? 'column' : 'row', paddingBottom: 1, }} flexDir={'row'} paddingBottom={1}>
-                                <View style={{
-                                    backgroundColor: '#7B9CFF', flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', borderRadius: 3,
-                                    padding: screenWidth <= 960 ? 5 : 0,
-                                }}
-                                    bgColor={'#7B9CFF'} flex={1} flexDir={'row'} alignItems={'center'} justifyContent={'center'} borderRadius={3}>
-                                    <Text color={'white'} alignSelf={'center'} marginLeft={2} flex={1}>Paid to</Text>
-                                    <SupplyChainsCostsSortAndAddModal
-                                        docName='PaidTo'
-                                        handleAddTextChange={handleAddPaidToTextChange}
-                                        textAreaAdd={textAreaAddExpenseName}
-                                        title='Paid To'
-                                        dataName={'paidTo'}
-                                        databaseInit={projectExtensionFirestore}
-                                        headerText="Rearrange/Add Paid To"
-                                        data={paidToData}
-                                        handleFirstModalClose={handleFirstModalClose}
-                                        handleFirstModalOpen={handleFirstModalOpen} />
-                                </View>
-                                <SelectPaidTo paidToIsError={paidToIsError} />
-                            </View>
-
-                            <TouchableHighlight
-                                onPress={handleSave}
-                                underlayColor="lightgreen"
-                                style={{
-                                    backgroundColor: '#16A34A',
-                                    borderRadius: 5,
-                                    margin: 1,
-                                    flex: 1,
-                                    width: screenWidth <= 960 ? '80%' : '40%',
-                                    alignSelf: 'center',
-                                    flexDirection: 'row',
-                                    justifyContent: 'center',
-                                    alignItems: 'center',
-                                    padding: 10,
-                                }}>
-                                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                                    <MaterialIcons name="add" color="white" size={20} />
-                                    <Text style={{ color: 'white', marginLeft: 5 }}>ADD/EDIT</Text>
-                                </View>
-                            </TouchableHighlight>
-                        </View>
-                        {screenWidth >= 1360 ? (
-
-                            <View>
-                                <View style={{ flexDirection: 'row', borderBottomWidth: 1, borderColor: '#E4E4E7', backgroundColor: '#0642F4', }}
-                                    flexDirection="row" borderBottomWidth={1} borderColor="gray.200" bgColor="#0642F4">
-                                    <Text flex={1} color={'white'} marginLeft={1} bold>Expense Name</Text>
-                                    <Text flex={1} color={'white'} marginLeft={1} bold>Amount</Text>
-                                    <Text flex={1} color={'white'} marginLeft={1} bold>Date</Text>
-                                    <Text flex={1} color={'white'} marginLeft={1} bold>Paid To</Text>
-                                    <Text flex={1} color={'white'} marginLeft={1} bold>Modify</Text>
-                                </View>
-                                {vehicleListSupplyChainsCostsData.map((item, index) => {
-                                    const expenseName = Object.keys(item)[0];
-                                    const expenseData = item[expenseName];
-                                    return (
-                                        <View style={{ flexDirection: 'row', backgroundColor: '#D4D4D4', borderBottomColor: '#E4E4E7', borderBottomWidth: 1, justifyContent: 'center', alignItems: 'center', }} key={index}
-                                            flexDirection="row" bgColor={'muted.300'} borderBottomColor="gray.200" borderBottomWidth={1}
-                                            justifyContent={'center'} alignItems={'center'}>
-                                            <Text flex={1} marginLeft={1}>{expenseData.expenseName}</Text>
-                                            <Text flex={1} marginLeft={1}>¥{expenseData.amount}</Text>
-                                            <Text flex={1} marginLeft={1}>{expenseData.date}</Text>
-                                            <Text flex={1} marginLeft={1}>{expenseData.paidName}</Text>
-                                            <View style={{ flex: 1, flexDirection: 'row', marginLeft: 1 }}
-                                                flex={1} marginLeft={1} flexDir={'row'}>
-                                                <TouchableHighlight
-                                                    onPress={() => handleEditPress(expenseData)}
-                                                    underlayColor={'#005691'}
-                                                    style={{
-                                                        flex: 1,
-                                                        margin: 1,
-                                                        borderRadius: 3,
-                                                    }}>
-                                                    <View
-                                                        style={{
-                                                            flex: 1,
-                                                            backgroundColor: '#06B6D4',
-                                                            borderRadius: 3,
-                                                            justifyContent: 'center',
-                                                            alignItems: 'center',
-                                                        }}>
-                                                        <Text style={{ color: 'white', textAlign: 'center' }}>Edit</Text>
-                                                    </View>
-                                                </TouchableHighlight>
-                                                <TouchableHighlight
-                                                    onPress={() => handleDeleteItem(expenseData.expenseName)}
-                                                    underlayColor={'#005691'}
-                                                    style={{
-                                                        flex: 1,
-                                                        margin: 1,
-                                                        borderRadius: 3,
-                                                    }}>
-                                                    <View
-                                                        style={{
-                                                            flex: 1,
-                                                            backgroundColor: '#EF4444',
-                                                            borderRadius: 3,
-                                                            justifyContent: 'center',
-                                                            alignItems: 'center',
-                                                        }}>
-                                                        <Text style={{ color: 'white', textAlign: 'center' }}>Delete</Text>
-                                                    </View>
-                                                </TouchableHighlight>
-                                                {/* <TouchableHighlight
-                          onPress={() => handleDeleteItem(expenseData.expenseName)}
-                          style={() => ({
-                            flex: 1,
-                            margin: 1,
-                            borderRadius: 3,
-                            backgroundColor: '#CD5C5C',
-                          })}>
-                          <View
-                            style={{
-                              flex: 1,
-                              borderRadius: 3,
-                              justifyContent: 'center',
-                              alignItems: 'center',
-                              backgroundColor: '#CD5C5C',
-                            }}>
-                            <Text style={{ color: 'white', textAlign: 'center' }}>Delete</Text>
-                          </View>
-                        </TouchableHighlight> */}
-                                            </View>
-                                        </View>
-                                    )
-                                })}
-
-                            </View>
-
-                        ) : (
-
-                            <View>
-                                {vehicleListSupplyChainsCostsData.map((item, index) => {
-                                    const expenseName = Object.keys(item)[0];
-                                    const expenseData = item[expenseName];
-                                    return (
-
-                                        <View style={{ flexDirection: 'column', justifyContent: 'center', flex: 1, margin: 3, marginBottom: 10, }} key={index}>
-
-                                            <View style={{ flexDirection: 'row', borderBottomWidth: 1, borderColor: '#E4E4E7', backgroundColor: '#D4D4D4' }}>
-
-                                                <View style={{ backgroundColor: '#0642F4', flex: 1, borderBottomWidth: 1, borderColor: '#E4E4E7', justifyContent: 'center', width: '30%' }}>
-                                                    <Text color={'white'} bgColor={'#0642F4'} marginLeft={1} bold>Expense Name</Text>
-                                                </View>
-
-                                                <Text flex={1} marginLeft={1}>{expenseData.expenseName}</Text>
-                                            </View>
-
-                                            <View style={{ flexDirection: 'row', borderBottomWidth: 1, borderColor: '#E4E4E7', backgroundColor: '#D4D4D4' }}>
-
-                                                <View style={{ backgroundColor: '#0642F4', flex: 1, borderBottomWidth: 1, borderColor: '#E4E4E7', justifyContent: 'center', width: '30%' }}>
-                                                    <Text color={'white'} bgColor={'#0642F4'} marginLeft={1} bold>Amount</Text>
-                                                </View>
-
-                                                <Text flex={1} marginLeft={1}>¥{expenseData.amount}</Text>
-                                            </View>
-
-                                            <View style={{ flexDirection: 'row', borderBottomWidth: 1, borderColor: '#E4E4E7', backgroundColor: '#D4D4D4' }}>
-
-                                                <View style={{ backgroundColor: '#0642F4', flex: 1, borderBottomWidth: 1, borderColor: '#E4E4E7', justifyContent: 'center', width: '30%' }}>
-                                                    <Text color={'white'} bgColor={'#0642F4'} marginLeft={1} bold>Date</Text>
-                                                </View>
-                                                <Text flex={1} marginLeft={1}>{expenseData.date}</Text>
-                                            </View>
-
-                                            <View style={{ flexDirection: 'row', borderBottomWidth: 1, borderColor: '#E4E4E7', backgroundColor: '#D4D4D4' }}>
-
-                                                <View style={{ backgroundColor: '#0642F4', flex: 1, borderBottomWidth: 1, borderColor: '#E4E4E7', justifyContent: 'center', width: '30%' }}>
-                                                    <Text color={'white'} bgColor={'#0642F4'} marginLeft={1} bold>Paid To</Text>
-                                                </View>
-                                                <Text flex={1} marginLeft={1}>{expenseData.paidName}</Text>
-                                            </View>
-
-                                            <View style={{ flexDirection: 'row', borderBottomWidth: 1, borderColor: '#E4E4E7', backgroundColor: '#D4D4D4' }}>
-                                                <View style={{ backgroundColor: '#0642F4', flex: 1, borderBottomWidth: 1, borderColor: '#E4E4E7', justifyContent: 'center', width: '30%' }}>
-                                                    <Text color={'white'} bgColor={'#0642F4'} marginLeft={1} bold>Modify</Text>
-                                                </View>
-                                                <View style={{ flex: 1, flexDirection: 'row', }}
-                                                    flex={1} marginLeft={1} flexDir={'row'}>
-
-                                                    <TouchableHighlight
-                                                        onPress={() => handleEditPress(expenseData)}
-                                                        underlayColor={'#005691'}
-                                                        style={{
-                                                            flex: 1,
-                                                            margin: 1,
-                                                            borderRadius: 3,
-                                                        }}>
-                                                        <View
-                                                            style={{
-                                                                flex: 1,
-                                                                backgroundColor: '#06B6D4',
-                                                                borderRadius: 3,
-                                                                justifyContent: 'center',
-                                                                alignItems: 'center',
-                                                            }}>
-                                                            <Text style={{ color: 'white', textAlign: 'center' }}>Edit</Text>
-                                                        </View>
-                                                    </TouchableHighlight>
-                                                    <TouchableHighlight
-                                                        onPress={() => handleDeleteItem(expenseData.expenseName)}
-                                                        underlayColor={'#005691'}
-                                                        style={{
-                                                            flex: 1,
-                                                            margin: 1,
-                                                            borderRadius: 3,
-                                                        }}>
-                                                        <View
-                                                            style={{
-                                                                flex: 1,
-                                                                backgroundColor: '#EF4444',
-                                                                borderRadius: 3,
-                                                                justifyContent: 'center',
-                                                                alignItems: 'center',
-                                                            }}>
-                                                            <Text style={{ color: 'white', textAlign: 'center' }}>Delete</Text>
-                                                        </View>
-                                                    </TouchableHighlight>
-                                                    {/* <TouchableHighlight
-                          onPress={() => handleDeleteItem(expenseData.expenseName)}
-                          style={() => ({
-                            flex: 1,
-                            margin: 1,
-                            borderRadius: 3,
-                            backgroundColor: '#CD5C5C',
-                          })}>
-                          <View
-                            style={{
-                              flex: 1,
-                              borderRadius: 3,
-                              justifyContent: 'center',
-                              alignItems: 'center',
-                              backgroundColor: '#CD5C5C',
-                            }}>
-                            <Text style={{ color: 'white', textAlign: 'center' }}>Delete</Text>
-                          </View>
-                        </TouchableHighlight> */}
-                                                </View>
-                                            </View>
-
-                                        </View>
-
-
-                                    )
-                                })}
-
-                            </View>
-
-
-                        )}
-
-                    </View>
-
-
-                </Modal.Body>
-                <View
-                    style={{
-                        flexDirection: 'row',
-                        justifyContent: 'space-between',
-                        width: '100%',
-                    }}>
-                    <TouchableOpacity
-                        onPress={handleModalSupplyChainsCostsClose}
-                        style={{
-                            backgroundColor: '#525252',
-                            borderRadius: 5,
-                            margin: 3,
-                            flex: 1,
-                            justifyContent: 'center',
-                            alignItems: 'center',
-                            padding: 8,
-                        }}>
-                        <Text style={{ color: 'white' }}>Close</Text>
-                    </TouchableOpacity>
-                    <View style={{ flex: 4 }} />
-                    <TouchableOpacity
-                        onPress={handleSaveSupplyChainsCosts}
-                        style={{
-                            backgroundColor: '#16A34A',
-                            borderRadius: 5,
-                            margin: 3,
-                            flex: 1,
-                            justifyContent: 'center',
-                            alignItems: 'center',
-                            padding: 8,
-                        }}>
-                        <Text style={{ color: 'white' }}>Save</Text>
-                    </TouchableOpacity>
-                </View>
-            </Modal.Content>
-        </Modal>
-            {/* <Modal isOpen={clearModalVisible} onClose={handleClearModalClose} useRNModal>
-          <Modal.Content bgColor={'amber.100'}>
-            <Modal.CloseButton />
-            <Modal.Header borderBottomWidth={0} bgColor={'amber.100'}>
-              <Text color={'#102A43'} bold>
-                Clear
-              </Text>
-            </Modal.Header>
-            <Modal.Body
-              justifyContent={'center'}
-              alignItems={'center'}
-              bgColor={'amber.200'}
-              borderLeftWidth={4}
-              borderLeftColor={'amber.600'}
-              margin={5}>
-              <View flex={1}>
-                <Text color={'amber.600'} bold>Warning!</Text>
-                <Text color={'amber.600'}>Are you sure you want to clear?</Text>
-              </View>
-            </Modal.Body>
-            <Modal.Footer borderTopWidth={0} bgColor={'amber.100'}>
-              <HStack space={5} flex={1}>
-                <Button
-                  onPress={handleClearModalClose}
-                  colorScheme={'warmGray'}
-                  flex={1}
-                  size={'sm'}
-                  borderRadius={5}
-                >
-                  No
-                </Button>
-                <Button
-                  onPress={() => {
-                  }}
-                  flex={1} size={'sm'} colorScheme={'amber'} borderRadius={5}>
-                  Clear
-                </Button>
-              </HStack>
-            </Modal.Footer>
-          </Modal.Content>
-        </Modal> */}
-        </>
-
-    );
-};
-
-const SelectPaidTo = ({ paidToIsError, }) => {
-
-    const dispatch = useDispatch();
-    const paidToData = useSelector((state) => state.paidToData);
-    const selectedPaidTo = useSelector((state) => state.selectedPaidTo);
-
-
-
-    return <Select
-        selectedValue={selectedPaidTo}
-        borderColor={paidToIsError ? 'error.400' : 'muted.300'}
-        flex={3}
-        onValueChange={(value) => {
-            globalSelectedPaidTo = value
-            dispatch(setSelectedPaidTo(value));
-        }}
-        accessibilityLabel="Choose Paid To"
-        placeholder="Choose Paid To"
-        _selectedItem={{
-            bg: "teal.600",
-            endIcon: <CheckIcon size="5" />
-        }}>
-        {paidToData.map((item) => (
-
-            <Select.Item key={item} label={item} value={item} />
-
-        ))}
-    </Select>
-        ;
-};
-
-const SupplyChainsCostsSortAndAddModal = ({ headerText, data, title, dataName, databaseInit, textAreaAdd, handleAddTextChange, docName, handleFirstModalOpen, handleFirstModalClose }) => {
-    const [modalSortOpen, setModalSortOpen] = useState(false);
-    const [modalAddOpen, setModalAddOpen] = useState(false);
-    const [modalAddSuccess, setModalAddSuccess] = useState(false);
-    const [modalSave, setModalSave] = useState(false);
-    const [modalSaveLoading, setModalSaveLoading] = useState(false);
-    const [modalData, setModalData] = useState(data);
-    const [modalIsLoading, setModalIsLoading] = useState(false);
-    const loginName = useSelector((state) => state.loginName);
-    nameVariable.text = loginName;
-
-    const handleDeleteItemPress = useCallback(
-        (item) => {
-            setModalData((prevData) => {
-                const updatedData = prevData.filter((value) => value !== item);
-                return updatedData;
-            });
-        },
-        []
-    );
-
-
-
-    const fetchData = useCallback(async () => {
-        const modalDocRef = doc(collection(databaseInit, docName), docName);
-        const modalDocSnap = await getDoc(modalDocRef);
-        if (modalDocSnap.exists()) {
-            // setModalData(modalDocSnap.data()?.dataName || []);
-            setModalData(modalDocSnap.data()?.[dataName] || []);
-        }
-    }, [databaseInit, modalData]);
-
-
-    const handleSave = useCallback(async () => {
-        setModalSaveLoading(true);
-
-        const response = await axios.get('https://worldtimeapi.org/api/timezone/Asia/Tokyo');
-        const { datetime } = response.data;
-        const formattedTime = moment(datetime).format('YYYY/MM/DD [at] HH:mm:ss');
-
-        try {
-            await updateDoc(doc(collection(databaseInit, docName), docName), { [dataName]: modalData });
-            setModalSaveLoading(false);
-            setModalSortOpen(true);
-            setModalSave(false);
-
-
-            const logData = {
-                message: `"${title}" updated: "${nameVariable.text}" updated "${title}"`,
-                timestamp: formattedTime,
-                colorScheme: true,
-            };
-
-            addLogToCollection(logData);
-
-        } catch (error) {
-            setModalSaveLoading(false);
-            handleModalSaveClose();
-            console.error(error);
-        }
-
-
-    }, [databaseInit, modalData, dataName, docName]);
-
-
-    const handleSortModalOpen = useCallback(() => {
-        setModalIsLoading(true);
-        fetchData();
-        setModalSortOpen(true);
-        handleFirstModalClose();
-    }, [modalSortOpen, modalIsLoading]);
-
-    const handleSortModalClose = useCallback(async () => {
-
-        setModalSortOpen(false);
-        setModalIsLoading(false);
-        handleFirstModalOpen();
-    }, [modalSortOpen, modalIsLoading]);
-    // const handleAddTextChange = () => {
-    //   const newText = textAreaAdd.current?.value?.toUpperCase();
-    //   textAreaAdd.current?.setNativeProps({ text: newText });
-    // };
-
-
-    const handleModalAddOpen = useCallback(() => {
-        setModalAddOpen(true);
-        handleSortModalClose();
-        setModalIsLoading(true);
-        handleFirstModalClose();
-
-    }, [])
-
-    const handleModalAddClose = useCallback(() => {
-        setModalAddOpen(false);
-        handleSortModalOpen();
-        textAreaAdd.current?.clear();
-    }, [modalAddOpen])
-
-    const handleModalAddSuccessClose = useCallback(() => {
-        setModalAddSuccess(false);
-        // setIsLoading(false);
-        handleSortModalOpen();
-    }, [modalAddSuccess])
-
-    const handleModalAddSuccessOpen = useCallback(() => {
-        setModalAddSuccess(true);
-        handleSortModalClose();
-        setModalAddOpen(false);
-        setModalIsLoading(true);
-        handleFirstModalClose();
-    }, [modalAddSuccess, modalAddOpen, modalIsLoading])
-
-    const handleModalSaveOpen = useCallback(() => {
-        setModalSave(true);
-        setModalSortOpen(false);
-        setModalIsLoading(true);
-    }, [modalSave, modalSortOpen, modalIsLoading])
-
-    const handleModalSaveClose = useCallback(() => {
-        setModalSave(false);
-        setModalSortOpen(true);
-    }, [modalSave, modalSortOpen]);
-
-    const handleAddSubmit = async () => {
-
-        const data = textAreaAdd.current?.value;
-        const dataArray = data.split('\n').map((item) => item.trim());
-
-        const response = await axios.get('https://worldtimeapi.org/api/timezone/Asia/Tokyo');
-        const { datetime } = response.data;
-        const formattedTime = moment(datetime).format('YYYY/MM/DD [at] HH:mm:ss');
-
-        if (data !== '') {
-
-            setModalSaveLoading(true);
-
-            try {
-                const modalCollectionRef = collection(databaseInit, docName);
-                const modalDocRef = doc(modalCollectionRef, docName);
-                await setDoc(modalDocRef, { [dataName]: arrayUnion(...dataArray) }, { merge: true });
-
-                const logData = {
-                    message: `"${title}" added: "${nameVariable.text}" added "${title}"(s).`,
-                    timestamp: formattedTime,
-                    colorScheme: true,
-                };
-                addLogToCollection(logData);
-                setModalSaveLoading(false);
-
-                handleModalAddSuccessOpen();
-
-
-
-                // console.log('Data added to Firestore');
-            } catch (error) {
-                console.error('Error adding data to Firestore:', error);
-                setModalSaveLoading(false);
-            }
-        }
-        else {
-
-        }
-
-
+    const isCloseToBottom = ({ layoutMeasurement, contentOffset, contentSize }) => {
+        return layoutMeasurement.height + contentOffset.y >= contentSize.height - 20;
     };
 
     return (
         <>
-            <View style={{ flex: 1, justifyContent: 'center', alignItems: 'flex-end', marginRight: 1 }}>
-                {!modalIsLoading ? (
-                    <TouchableOpacity onPress={handleSortModalOpen}>
-                        <MaterialCommunityIcons name="playlist-edit" size={25} color="white" />
-                    </TouchableOpacity>
-                ) : (
-                    <Spinner color="white" />
-                )}
+            <Pressable onPress={handlePaymentHistoryModalOpen}>
+                <MaterialCommunityIcons size={screenWidth < mobileViewBreakpoint ? 10 : 14} name={'history'} color={'#2C8AC7'} />
+            </Pressable>
+
+            <Modal isOpen={overbalanceHistoryVisible} onClose={handlePaymentHistoryModalClose} useRNModal>
+                <Modal.Content style={{ backgroundColor: 'white', borderRadius: 10 }}>
+                    <Modal.CloseButton />
+                    <Modal.Header style={{ backgroundColor: 'white', textAlign: 'center', fontSize: 18, fontWeight: 'bold', color: '#333' }}>
+                        Overbalance History
+                    </Modal.Header>
+                    <Modal.Body>
+                        <ScrollView
+                            style={{ flex: 1, paddingHorizontal: 15, maxHeight: 500 }}
+                            onScroll={({ nativeEvent }) => {
+                                if (isCloseToBottom(nativeEvent)) {
+                                    loadMorePayments();
+                                }
+                            }}
+                            scrollEventThrottle={400} // Adjust as needed
+                        >
+                            {
+                                Array.isArray(sortedOverbalances) && sortedOverbalances.length > 0 ?
+                                    displayedOverbalance.map((payment, index) => (
+
+                                        <View key={index} style={{
+                                            marginBottom: 15,
+                                            backgroundColor: payment.type === 'Added' ? '#BBF7D0' : (payment.type === 'Reduced' ? '#EAC7D6' : '#F8F9FF'), // Card background color
+                                            borderRadius: 10, // Rounded corners for the card
+                                            shadowColor: '#000', // Shadow color
+                                            shadowOffset: { width: 0, height: 2 },
+                                            shadowOpacity: 0.1,
+                                            shadowRadius: 2,
+                                            elevation: 3, // Elevation for Android
+                                            padding: 15, // Padding inside the card
+                                            borderBottomWidth: 1,
+                                            borderBottomColor: '#eee',
+                                        }}>
+
+                                            <Text style={{ fontSize: 14, fontWeight: 'bold', color: 'black', marginBottom: 5 }}>
+                                                <Text style={{ fontWeight: 'bold', color: '#0A78BE' }}>Date: </Text>
+                                                <Text style={{ color: '#333' }}>
+                                                    {formatDate(payment.date)}
+                                                </Text>
+                                            </Text>
+
+                                            <Text style={{ fontSize: 14, fontWeight: 'bold', color: 'black', marginBottom: 5 }}>
+                                                <Text style={{ fontWeight: 'bold', color: '#0A78BE' }}>Type: </Text>
+                                                <Text style={{ color: '#333' }} italic>{payment.type}</Text>
+                                            </Text>
+
+                                            <Text style={{ fontSize: 14, fontWeight: 'bold', color: 'black', marginBottom: 5 }}>
+                                                <Text style={{ fontWeight: 'bold', color: '#0A78BE' }}>Amount: </Text>
+                                                <Text style={{ color: payment.type === 'Added' ? '#16A34A' : (payment.type === 'Reduced' ? '#FF0000' : '#000') }}>
+                                                    ${Number(payment.amount).toLocaleString()}
+                                                </Text>
+                                            </Text>
+
+                                            <Text style={{ fontSize: 14, fontWeight: 'bold', color: 'black', marginBottom: 5 }}>
+                                                <Text style={{ fontWeight: 'bold', color: '#0A78BE' }}>Reason: </Text>
+                                                <Text style={{ color: '#333' }}>{payment.reason}</Text>
+                                            </Text>
+
+                                            <Text style={{ fontSize: 14, fontWeight: 'bold', color: 'black', marginBottom: 5 }}>
+                                                <Text style={{ fontWeight: 'bold', color: '#0A78BE' }}>Person in charge: </Text>
+                                                <Text style={{ color: '#333' }}>{payment.personInCharge}</Text>
+                                            </Text>
+
+
+                                        </View>
+                                    )) :
+                                    <Text style={{ fontWeight: 'bold', alignSelf: 'center' }} italic>No history to show</Text>
+                            }
+                            <View style={{ height: 20 }}>
+                                {loadingMore && <Spinner size='sm' color="#7B9CFF" />}
+                            </View>
+                        </ScrollView>
+                    </Modal.Body>
+                </Modal.Content>
+            </Modal>
+        </>
+    );
+}
+
+
+const PaymentHistoryModal = () => {
+    const [paymentHistoryVisible, setPaymentHistoryVisible] = useState(false);
+    const selectedCustomerData = useSelector((state) => state.selectedCustomerData);
+    const screenWidth = Dimensions.get('window').width;
+
+    const sortedPayments = selectedCustomerData.paymentsHistory
+        ? [...selectedCustomerData.paymentsHistory].sort((a, b) => {
+            const dateA = new Date(a.date.replace(' at ', ' '));
+            const dateB = new Date(b.date.replace(' at ', ' '));
+            return dateB - dateA; // Sorts in descending order
+        })
+        : [];
+
+    const [displayedPayments, setDisplayedPayments] = useState(sortedPayments.slice(0, 5));
+    const [loadingMore, setLoadingMore] = useState(false);
+
+    const loadMorePayments = () => {
+        if (loadingMore) return; // Prevent multiple loads
+
+        setLoadingMore(true);
+        const nextItems = sortedPayments.slice(
+            displayedPayments.length,
+            displayedPayments.length + 5
+        );
+
+        setTimeout(() => { // Simulate network request
+            setDisplayedPayments([...displayedPayments, ...nextItems]);
+            setLoadingMore(false);
+        }, 500); // Adjust the timeout as needed
+    };
+
+    const handlePaymentHistoryModalOpen = () => {
+        setDisplayedPayments(sortedPayments.slice(0, 5));
+        setPaymentHistoryVisible(true);
+    };
+
+    const handlePaymentHistoryModalClose = () => {
+        setPaymentHistoryVisible(false);
+    };
+
+    function formatDate(dateString) {
+        const cleanedDateString = dateString.replace(' at ', ' ');
+        const date = new Date(cleanedDateString);
+
+        if (isNaN(date.getTime())) {
+            console.error("Invalid Date:", dateString);
+            return "Invalid Date";
+        }
+
+        const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+        const year = date.getFullYear();
+        const month = months[date.getMonth()];
+        const day = date.getDate().toString().padStart(2, '0');
+
+        return `${year} ${month} ${day}`;
+    }
+
+    const isCloseToBottom = ({ layoutMeasurement, contentOffset, contentSize }) => {
+        return layoutMeasurement.height + contentOffset.y >= contentSize.height - 20;
+    };
+
+    return (
+        <>
+            <Pressable onPress={handlePaymentHistoryModalOpen}>
+                <Text style={{ fontSize: screenWidth < mobileViewBreakpoint ? 10 : 14, color: '#0A78BE', textAlign: 'center' }} underline>
+                    {`View Payments History`}
+                </Text>
+            </Pressable>
+
+            <Modal isOpen={paymentHistoryVisible} onClose={handlePaymentHistoryModalClose} useRNModal>
+                <Modal.Content style={{ backgroundColor: 'white', borderRadius: 10 }}>
+                    <Modal.CloseButton />
+                    <Modal.Header style={{ backgroundColor: 'white', textAlign: 'center', fontSize: 18, fontWeight: 'bold', color: '#333' }}>
+                        Payment History
+                    </Modal.Header>
+                    <Modal.Body>
+                        <ScrollView
+                            style={{ flex: 1, paddingHorizontal: 15, maxHeight: 500 }}
+                            onScroll={({ nativeEvent }) => {
+                                if (isCloseToBottom(nativeEvent)) {
+                                    loadMorePayments();
+                                }
+                            }}
+                            scrollEventThrottle={400} // Adjust as needed
+                        >
+                            {
+                                Array.isArray(sortedPayments) && sortedPayments.length > 0 ?
+                                    displayedPayments.map((payment, index) => (
+
+                                        <View key={index} style={{
+                                            marginBottom: 15,
+                                            backgroundColor: '#F8F9FF', // Card background color
+                                            borderRadius: 10, // Rounded corners for the card
+                                            shadowColor: '#000', // Shadow color
+                                            shadowOffset: { width: 0, height: 2 },
+                                            shadowOpacity: 0.1,
+                                            shadowRadius: 2,
+                                            elevation: 3, // Elevation for Android
+                                            padding: 15, // Padding inside the card
+                                            borderBottomWidth: 1,
+                                            borderBottomColor: '#eee',
+                                        }}>
+
+                                            <Text style={{ fontSize: 14, fontWeight: 'bold', color: 'black', marginBottom: 5 }}>
+                                                <Text style={{ fontWeight: 'bold', color: '#0A78BE' }}>Date: </Text>
+                                                <Text style={{ color: '#333' }}>
+                                                    {formatDate(payment.date)}
+                                                </Text>
+                                            </Text>
+
+                                            <Text style={{ fontSize: 14, fontWeight: 'bold', color: 'black', marginBottom: 5 }}>
+                                                <Text style={{ fontWeight: 'bold', color: '#0A78BE' }}>Value: </Text>
+                                                <Text style={{ color: Number(payment.value).toLocaleString().startsWith('-') ? '#FF0000' : '#16A34A' }}>
+                                                    ${Number(payment.value).toLocaleString()}
+                                                </Text>
+                                            </Text>
+
+                                            <Text style={{ fontSize: 14, fontWeight: 'bold', color: 'black', marginBottom: 5 }}>
+                                                <Text style={{ fontWeight: 'bold', color: '#0A78BE' }}>Vehicle Name: </Text>
+                                                <Text style={{ color: '#333' }}>{payment.vehicleName}</Text>
+                                            </Text>
+
+                                            <Text style={{ fontSize: 14, fontWeight: 'bold', color: 'black', marginBottom: 5 }}>
+                                                <Text style={{ fontWeight: 'bold', color: '#0A78BE' }}>Reference Number: </Text>
+                                                <Text style={{ color: '#333' }}>{payment.vehicleRef}</Text>
+                                            </Text>
+
+                                        </View>
+                                    )) :
+                                    <Text style={{ fontWeight: 'bold', alignSelf: 'center' }} italic>No history to show</Text>
+                            }
+                            <View style={{ height: 20 }}>
+                                {loadingMore && <Spinner size='sm' color="#7B9CFF" />}
+                            </View>
+                        </ScrollView>
+                    </Modal.Body>
+                </Modal.Content>
+            </Modal>
+        </>
+    );
+}
+
+let manageOverbalanceActiveButton;
+let manageOverbalanceAmountInput;
+let manageOverbalanceReasonInput;
+
+const ManageOverbalanceForm = ({ amountInputRef, reasonInputRef, handleAmountChange }) => {
+
+    const [activeButton, setActiveButton] = useState(null);
+
+    const handleAddPress = useCallback(() => {
+        setActiveButton('add');
+        manageOverbalanceActiveButton = 'add';
+
+
+    }, [activeButton, setActiveButton]);
+
+    const handleReducePress = useCallback(() => {
+        setActiveButton('reduce');
+        manageOverbalanceActiveButton = 'reduce';
+
+    }, [activeButton, setActiveButton]);
+
+
+    return (
+        <>
+            <View style={{
+                flexDirection: 'row',
+                justifyContent: 'space-between',
+                marginBottom: 20
+            }}>
+
+                <Pressable
+                    style={({ hovered }) => ({
+                        flex: 1,
+                        padding: 10,
+                        marginHorizontal: 5,
+                        borderRadius: 5,
+                        alignItems: 'center',
+                        borderWidth: 1,
+                        borderColor: activeButton === 'add' ? 'transparent' : '#899c89',
+                        backgroundColor: activeButton === 'add' ? 'green' : (hovered ? '#e6faeb' : 'white'),
+                    })}
+                    onPress={handleAddPress}
+                >
+                    <Text selectable={false} style={{
+                        color: activeButton === 'add' ? 'white' : '#899c89',
+                        fontWeight: 'bold'
+                    }}>(+) Add</Text>
+                </Pressable>
+
+                <Pressable
+                    style={({ hovered }) => ({
+                        flex: 1,
+                        padding: 10,
+                        marginHorizontal: 5,
+                        borderRadius: 5,
+                        borderWidth: 1,
+                        borderColor: activeButton === 'reduce' ? 'transparent' : '#9c8181',
+                        alignItems: 'center',
+                        backgroundColor: activeButton === 'reduce' ? 'red' : (hovered ? '#fae6e6' : 'white'),
+                    })}
+                    onPress={handleReducePress}
+                >
+                    <Text selectable={false} style={{
+                        color: activeButton === 'reduce' ? 'white' : '#9c8181',
+                        fontWeight: 'bold'
+                    }}>(-) Reduce</Text>
+                </Pressable>
+
             </View>
 
-            <Modal isOpen={modalSortOpen} onClose={handleSortModalClose} useRNModal>
-                <Modal.Content>
-                    <Modal.CloseButton />
-                    <Modal.Header borderBottomWidth={0}>
-                        <Text color={'#102A43'} bold>{headerText}</Text>
-                    </Modal.Header>
-                    <Modal.Body justifyContent={'center'} alignItems={'center'} flex={1}>
-                        <View style={{
-                            width: '100%',
-                            flexDirection: 'column',
-                        }}>
-                            <View style={{ alignItems: 'flex-end' }}>
-                                <TouchableHighlight onPress={handleModalAddOpen}>
-                                    <FontAwesome name="plus-circle" size={25} color="#102A43" />
-                                </TouchableHighlight>
-                            </View>
+            {(activeButton == 'add' || activeButton == 'reduce') && <>
+                <TextInput
+                    ref={amountInputRef}
+                    onChangeText={handleAmountChange}
+                    placeholderTextColor='#9B9E9F'
+                    style={{
+                        borderWidth: 1,
+                        borderColor: '#ccc',
+                        padding: 10,
+                        borderRadius: 5,
+                        marginBottom: 20,
+                        outlineStyle: 'none',
+                    }}
+                    placeholder="Amount"
+                    keyboardType="numeric"
+                />
+                <TextInput
+                    ref={reasonInputRef}
+                    onChangeText={(text) => {
+                        manageOverbalanceReasonInput = text;
+                    }}
+                    placeholderTextColor='#9B9E9F'
+                    style={{
+                        borderWidth: 1,
+                        borderColor: '#ccc',
+                        padding: 10,
+                        borderRadius: 5,
+                        marginBottom: 20,
+                        outlineStyle: 'none',
+                    }}
+                    placeholder="Reason (optional)"
+                />
+            </>}
+        </>
+    )
+}
 
+const ManageOverbalance = () => {
+
+    const [manageOverbalanceVisible, setManageOverbalanceVisible] = useState(false);
+    const [confirmIsLoading, setConfirmIsLoading] = useState(false);
+    const selectedCustomerData = useSelector((state) => state.selectedCustomerData);
+    const selectedChatData = useSelector((state) => state.selectedChatData);
+    const loginName = useSelector((state) => state.loginName);
+    const screenWidth = Dimensions.get('window').width;
+
+
+    const overbalanceRef = useRef(null);
+    const amountInputRef = useRef(null);
+    const reasonInputRef = useRef(null);
+
+
+    const handleConfirm = async () => {
+        setConfirmIsLoading(true);
+        const response = await axios.get('https://worldtimeapi.org/api/timezone/Asia/Tokyo');
+        const { datetime } = response.data;
+        const formattedTime = moment(datetime).format('YYYY/MM/DD [at] HH:mm:ss.SSS');
+        const docRefCustomer = doc(projectExtensionFirestore, 'accounts', selectedChatData.participants.customer);
+
+        if (manageOverbalanceActiveButton === 'add' && Number(manageOverbalanceAmountInput) > 0 && amountInputRef.current.value !== '') {
+            await updateDoc(docRefCustomer, {
+                overbalance: increment(Number(manageOverbalanceAmountInput)),
+                overbalanceHistory: arrayUnion({
+                    date: formattedTime,
+                    type: 'Added',
+                    amount: manageOverbalanceAmountInput,
+                    reason: manageOverbalanceReasonInput,
+                    personInCharge: loginName,
+                }),
+            });
+            console.log('Overbalance Added');
+            setConfirmIsLoading(false);
+            handleManageOverbalanceModalClose();
+        }
+
+        else if (manageOverbalanceActiveButton === 'reduce' && Number(manageOverbalanceAmountInput) > 0 && amountInputRef.current.value !== '') {
+            await updateDoc(docRefCustomer, {
+                overbalance: increment(-Number(manageOverbalanceAmountInput)), // decrement the overbalance
+                overbalanceHistory: arrayUnion({
+                    date: formattedTime,
+                    type: 'Reduced',
+                    amount: manageOverbalanceAmountInput,
+                    reason: manageOverbalanceReasonInput,
+                    personInCharge: loginName,
+                }),
+            });
+            console.log('Overbalance Reduced');
+            setConfirmIsLoading(false);
+            handleManageOverbalanceModalClose();
+
+        }
+
+        else {
+            setConfirmIsLoading(false);
+            console.log('Error Adding/Reducing overbalance');
+            return null;
+        }
+    }
+
+
+    const handleAmountChange = (value) => {
+        let numericValue = value.replace(/[^0-9]/g, '');
+
+        if (numericValue.startsWith('0') && numericValue.length > 1) {
+            numericValue = numericValue.slice(1);
+        }
+
+
+        if (amountInputRef.current) {
+            amountInputRef.current.value = Number(numericValue).toLocaleString('en-US');
+            manageOverbalanceAmountInput = Number(numericValue);
+        }
+
+        if (manageOverbalanceActiveButton === 'add') {
+            const newBalance = Math.round(Number(numericValue) + Number(selectedCustomerData.overbalance));
+            overbalanceRef.current.value = `$${newBalance.toLocaleString('en-US')}`;
+            console.log(newBalance.toLocaleString('en-US'));
+        }
+
+        if (manageOverbalanceActiveButton === 'reduce') {
+            const newBalance = Math.round(Number(selectedCustomerData.overbalance) - Number(numericValue));
+            overbalanceRef.current.value = `$${newBalance.toLocaleString('en-US')}`;
+            console.log(newBalance.toLocaleString('en-US'));
+        }
+    };
+
+
+
+
+    const handleManageOverbalanceModalOpen = () => {
+        setManageOverbalanceVisible(true);
+
+    };
+
+    const handleManageOverbalanceModalClose = () => {
+        if (confirmIsLoading == false) {
+            setManageOverbalanceVisible(false);
+            manageOverbalanceActiveButton = null;
+        }
+
+    };
+
+
+
+
+    return (
+
+        <>
+
+            <Pressable onPress={handleManageOverbalanceModalOpen}>
+                <Text selectable={false} style={{ fontSize: screenWidth < mobileViewBreakpoint ? 10 : 14, color: '#0A78BE', textAlign: 'center', }} underline>
+                    {`Manage Overbalance`}
+                </Text>
+            </Pressable>
+
+            <Modal isOpen={manageOverbalanceVisible} onClose={handleManageOverbalanceModalClose} useRNModal>
+                <Modal.Content style={{ backgroundColor: 'white', borderRadius: 10, }}>
+                    <Modal.CloseButton />
+                    <Modal.Header style={{ backgroundColor: 'white', textAlign: 'center', fontSize: 18, fontWeight: 'bold', color: '#333' }}>
+                        Manage Overbalance
+                    </Modal.Header>
+                    <Modal.Body>
+                        <ScrollView
+                            style={{ flex: 1, maxHeight: 720 }}
+                        >
                             <View style={{
                                 flex: 1,
-                                borderWidth: 1,
-                                borderColor: '#102A43',
-                                borderRadius: 5,
+                                justifyContent: 'center',
+                                alignItems: 'center',
+                                backgroundColor: 'white'
                             }}>
-                                <DraggableFlatList
-                                    style={{ alignContent: 'center', flex: 1, }}
-                                    data={modalData}
-                                    keyExtractor={(item) => item}
-                                    renderItem={({ item, drag }) => (
-                                        <View
-                                            style={{
+                                <Text style={{ fontWeight: 'bold', fontSize: screenWidth < mobileViewBreakpoint ? 12 : 18, }}>Total</Text>
+                                <TextInput
+                                    disabled={screenWidth > mobileViewBreakpoint}
+                                    ref={overbalanceRef}
+                                    editable={false}
+                                    defaultValue={`$${selectedCustomerData.overbalance ? Number(selectedCustomerData.overbalance).toLocaleString('en-US', {
+                                        minimumFractionDigits: 0,
+                                        maximumFractionDigits: 0,
+                                        useGrouping: true
+                                    }) : 0}`}
+                                    style={{ fontWeight: 'bold', fontSize: screenWidth < mobileViewBreakpoint ? 14 : 24, color: '#990000', textAlign: 'center', }} />
+
+                                <View style={{
+                                    width: '100%',
+                                    backgroundColor: 'white',
+                                    padding: 20,
+                                }}>
+
+                                    <ManageOverbalanceForm amountInputRef={amountInputRef} reasonInputRef={reasonInputRef} handleAmountChange={handleAmountChange} />
+
+                                    <View style={{
+                                        flexDirection: 'row',
+                                        justifyContent: 'space-between'
+                                    }}>
+                                        <Pressable
+                                            style={({ hovered }) => ({
                                                 flex: 1,
-                                                backgroundColor: 'rgba(16,42,67, 0.5)',
-                                                borderBottomWidth: 1,
-                                                borderBottomColor: '#D3D3D3', // You can use a specific color code here
-                                                flexDirection: 'row',
-                                                justifyContent: 'center',
+                                                padding: 5,
+                                                marginHorizontal: 5,
+                                                borderRadius: 5,
                                                 alignItems: 'center',
-                                            }}
+                                                backgroundColor: hovered ? '#616060' : 'grey',
+                                            })}
+                                            onPress={handleManageOverbalanceModalClose}
                                         >
-                                            <TouchableOpacity onPress={() => handleDeleteItemPress(item)}>
-                                                <AntDesign name="minuscircle" size={16} color="#102A43" />
-                                            </TouchableOpacity>
-                                            <Text style={{ flex: 1, textAlign: 'center', color: 'white' }}>{item}</Text>
-                                            <TouchableOpacity onPressIn={drag}>
-                                                <Entypo name="menu" size={16} color="#102A43" />
-                                            </TouchableOpacity>
-                                        </View>
-                                    )}
-                                    onDragEnd={useCallback(({ data }) => setModalData(data), [])} />
+                                            <Text selectable={false} style={{
+                                                color: 'white',
+                                                fontWeight: 'bold'
+                                            }}>Cancel</Text>
+                                        </Pressable>
+                                        <Pressable
+                                            onPress={handleConfirm}
+                                            style={({ hovered }) => ({
+                                                flex: 1,
+                                                padding: 5,
+                                                marginHorizontal: 5,
+                                                borderRadius: 5,
+                                                alignItems: 'center',
+                                                backgroundColor: hovered ? '#030380' : 'blue',
+                                            })}
+                                        >
+                                            {confirmIsLoading ?
+                                                (
+                                                    <Spinner
+                                                        animating
+                                                        size="sm"
+                                                        color={'white'}
+                                                    />
+                                                ) :
+
+                                                (<Text selectable={false} style={{
+                                                    color: 'white',
+                                                    fontWeight: 'bold'
+                                                }}>Confirm</Text>
+
+                                                )
+                                            }
+                                        </Pressable>
+                                    </View>
+                                </View>
+                            </View>
+                        </ScrollView>
+
+
+                    </Modal.Body>
+                </Modal.Content>
+            </Modal>
+        </>
+
+    )
+}
+
+const CustomerProfileModal = ({ email }) => {
+    const [customerData, setCustomerData] = useState(false);
+    const [customerModalVisible, setCustomerModalVisible] = useState(false);
+    const selectedCustomerData = useSelector((state) => state.selectedCustomerData);
+    const screenWidth = Dimensions.get('window').width;
+    const docRef = doc(projectExtensionFirestore, 'accounts', email);
+    const dispatch = useDispatch();
+
+    const handleModalOpen = () => {
+        setCustomerModalVisible(true);
+    }
+
+    const handleModalClose = () => {
+        setCustomerModalVisible(false);
+    }
+
+    const totalPaymentValue = selectedCustomerData.paymentsHistory
+        ? selectedCustomerData.paymentsHistory.reduce((sum, payment) => {
+            const value = Number(payment.value);
+            return sum + (isNaN(value) ? 0 : value);
+        }, 0)
+        : 0;
+
+    useEffect(() => {
+        if (customerModalVisible) {
+            const unsubscribe = onSnapshot(docRef, (doc) => {
+                if (doc.exists()) {
+                    const data = doc.data();
+                    setCustomerData(data ? data : {});
+                    dispatch(setSelectedCustomerData(data ? data : {}))
+                    console.log(data)
+                } else {
+                    console.log("Document not found");
+                }
+            }, (error) => {
+                console.error("Error fetching document: ", error);
+            });
+
+            // Clean up function to unsubscribe from the listener when the component unmounts
+            return () => unsubscribe();
+        }
+    }, [customerModalVisible])
+
+    return (
+        <>
+            <Pressable
+                onPress={handleModalOpen}
+                style={({ hovered }) => ({
+                    marginTop: 3,
+                    paddingVertical: 3,
+                    alignItems: 'center', // Center items vertically
+                    justifyContent: 'center',
+                    borderRadius: 5,
+                    backgroundColor: hovered ? '#0772ad' : '#0A8DD5',
+                    justifyContent: 'center',
+                })}
+            >
+                <Text style={{ color: 'white', fontWeight: 700, }}>Preview</Text>
+            </Pressable>
+
+            <Modal
+                isOpen={customerModalVisible}
+                onClose={handleModalClose}
+                size={'lg'}
+
+            >
+                <Modal.Content background={'white'}>
+
+                    <Modal.Body>
+
+                        <View
+                            style={{
+                                flex: 1,
+                                alignItems: 'center',
+                            }}>
+
+                            <View style={{
+                                borderRadius: 10,
+                                backgroundColor: '#F8F9FF',
+                                width: screenWidth < mobileViewBreakpoint ? '100%' : '90%',
+                                alignItems: 'center',
+                                paddingBottom: 15,
+
+                            }}>
+
+                                <Text style={{ fontWeight: 'bold', fontSize: screenWidth < mobileViewBreakpoint ? 24 : 26, color: '#0A78BE', }} selectable>
+                                    {`${selectedCustomerData.textFirst} ${selectedCustomerData.textLast}`}
+                                </Text>
+
+                                <Text style={{ fontSize: screenWidth < mobileViewBreakpoint ? 12 : 14, color: '#6F6F6F', width: '45%', textAlign: 'center', }} selectable>
+                                    {`${selectedCustomerData.textZip}, ${selectedCustomerData.textStreet}, ${selectedCustomerData.city}, ${selectedCustomerData.country}`}
+                                </Text>
+
+                                <View
+                                    style={{
+                                        flex: 1,
+                                        flexDirection: 'row',
+                                        paddingTop: 20,
+                                        justifyContent: 'center',
+                                        alignItems: 'center',
+                                    }}
+                                >
+
+                                    <Text style={{ fontSize: screenWidth < mobileViewBreakpoint ? 12 : 14, color: '#6F6F6F', textAlign: 'center', paddingTop: 2, }} selectable>
+                                        {`${selectedCustomerData.textPhoneNumber}`}
+                                    </Text>
+
+                                    {/* Separator */}
+
+                                    <View style={{
+                                        height: '100%', // Full height of the parent View
+                                        width: 2, // Width of the line
+                                        backgroundColor: '#DCDCDC', // Line color
+                                        marginHorizontal: 10, // Space on the sides of the line
+                                    }} />
+
+                                    <Hyperlink
+                                        linkDefault={true}
+                                        linkStyle={{ color: '#8A64F6', fontSize: screenWidth < mobileViewBreakpoint ? 12 : 14 }}
+
+                                    >
+                                        <Text style={{ textAlign: 'center' }} selectable>
+                                            {selectedCustomerData.textEmail}
+                                        </Text>
+                                    </Hyperlink>
+
+                                </View>
+
 
                             </View>
+
+                        </View>
+
+                        <View
+                            style={{
+                                width: screenWidth < mobileViewBreakpoint ? '100%' : '90%',
+                                justifyContent: 'center',
+                                marginTop: 50,
+                                flexDirection: 'row',
+                                alignSelf: 'center',
+                            }}>
+
+                            <View style={{ flex: 1, alignItems: 'center', }}>
+
+                                <Text style={{ fontWeight: 'bold', fontSize: screenWidth < mobileViewBreakpoint ? 14 : 24, color: '#009922', textAlign: 'center', }} selectable>
+                                    {`$${(totalPaymentValue).toLocaleString('en-US', {
+                                        minimumFractionDigits: 0,
+                                        maximumFractionDigits: 0,
+                                        useGrouping: true
+                                    })}`}
+                                </Text>
+
+                                <Text style={{ fontWeight: 'bold', fontSize: screenWidth < mobileViewBreakpoint ? 12 : 16, color: '#5E4343', textAlign: 'center', }}>
+                                    {`Total Payment`}
+                                </Text>
+
+                                <PaymentHistoryModal />
+
+                            </View>
+
+
+                            <View style={{ flex: 1, alignItems: 'center', }}>
+                                <Text style={{ fontWeight: 'bold', fontSize: screenWidth < mobileViewBreakpoint ? 14 : 24, color: '#990000', textAlign: 'center', }} selectable>
+                                    {`$${selectedCustomerData.overbalance ? Number(selectedCustomerData.overbalance).toLocaleString('en-US', {
+                                        minimumFractionDigits: 0,
+                                        maximumFractionDigits: 0,
+                                        useGrouping: true
+                                    }) : 0}`}
+                                </Text>
+
+                                <View style={{ flexDirection: 'row', justifyContent: 'center', alignItems: 'center', }}>
+                                    <Text style={{ fontWeight: 'bold', fontSize: screenWidth < mobileViewBreakpoint ? 12 : 16, color: '#5E4343', textAlign: 'center', marginRight: 2, }}>
+                                        {`Overbalance`}
+                                    </Text>
+                                    <OverbalanceHistoryModal />
+                                </View>
+
+
+                                <ManageOverbalance />
+
+                            </View>
+
+                            <View style={{ flex: 1, alignItems: 'center', }}>
+                                <Text style={{ fontWeight: 'bold', fontSize: screenWidth < mobileViewBreakpoint ? 14 : 24, color: '#0029A3', textAlign: 'center', }} selectable>
+                                    {`${selectedCustomerData.transactions ? (selectedCustomerData.transactions).length : 0}`}
+                                </Text>
+                                <Text style={{ fontWeight: 'bold', fontSize: screenWidth < mobileViewBreakpoint ? 12 : 16, color: '#5E4343', textAlign: 'center', }}>
+                                    {`Transactions`}
+                                </Text>
+
+                                <TransactionHistoryModal />
+
+                            </View>
+
                         </View>
 
                     </Modal.Body>
-                    <Modal.Footer borderTopWidth={0}>
-                        <View style={{ flexDirection: 'row', flex: 1 }}>
-                            <TouchableOpacity
-                                onPress={handleSortModalClose}
-                                style={{
-                                    flex: 1,
-                                    borderRadius: 5,
-                                    backgroundColor: '#525252',
-                                    margin: 5,
-                                    justifyContent: 'center',
-                                    alignItems: 'center',
-                                    padding: 8,
-                                }}
-                            >
-                                <Text style={{ color: 'white' }}>Close</Text>
-                            </TouchableOpacity>
-                            <TouchableOpacity
-                                onPress={handleModalSaveOpen}
-                                style={{
-                                    flex: 1,
-                                    borderRadius: 5,
-                                    backgroundColor: '#0891B2',
-                                    margin: 5,
-                                    justifyContent: 'center',
-                                    alignItems: 'center',
-                                    padding: 8,
-                                }}
-                            >
-                                <Text style={{ color: 'white' }}>Save</Text>
-                            </TouchableOpacity>
-                        </View>
-                    </Modal.Footer>
+
+
                 </Modal.Content>
             </Modal>
 
 
-            <Modal
-                isOpen={modalSave}
-                onClose={handleModalSaveClose}>
-                <Modal.Content >
-                    <Modal.CloseButton />
-                    <Modal.Header borderBottomWidth={0}>
-                        <Text color={'#102A43'} bold>Save Order?</Text>
-                    </Modal.Header>
-                    <Modal.Body justifyContent={'center'} alignItems={'center'} flex={1} >
-
-                        <Text>Are you sure you want to save changes?</Text>
-
-                    </Modal.Body>
-                    <Modal.Footer borderTopWidth={0} >
-                        <HStack space={5} flex={1}>
-                            <Button onPress={handleModalSaveClose} colorScheme={'muted'} flex={1} size={'sm'} borderRadius={5}>No</Button>
-                            <Button onPress={handleSave} flex={1} size={'sm'} borderRadius={5} isLoading={modalSaveLoading ? true : false}>Yes</Button>
-                        </HStack>
-                    </Modal.Footer>
-                </Modal.Content>
-            </Modal>
-
-
-            <Modal
-                isOpen={modalAddOpen}
-                onClose={handleModalAddClose}
-                initialFocusRef={textAreaAdd}>
-                <Modal.Content >
-                    <Modal.CloseButton />
-                    <Modal.Header borderBottomWidth={0}>
-                        <Text color={'#102A43'} bold>Add {title}</Text>
-                    </Modal.Header>
-                    <Modal.Body justifyContent={'center'} alignItems={'center'} flex={1} >
-
-                        <TextArea
-                            textAlign={'center'}
-                            w={'full'}
-                            ref={textAreaAdd}
-                            multiline
-                            onChangeText={handleAddTextChange}
-                            totalLines={4}
-                            placeholder="Enter your data, separated by new lines" />
-
-                    </Modal.Body>
-                    <Modal.Footer borderTopWidth={0} >
-                        <HStack space={5} flex={1}>
-                            <Button onPress={handleModalAddClose} colorScheme={'muted'} flex={1} size={'sm'} borderRadius={5}>Close</Button>
-                            <Button onPress={handleAddSubmit} isLoading={modalSaveLoading ? true : false} flex={1} size={'sm'} borderRadius={5}>Add</Button>
-                        </HStack>
-                    </Modal.Footer>
-                </Modal.Content>
-            </Modal>
-
-            {/* <SuccessModal isOpen={modalAddMakeSuccess} onClose={handleModalAddMakeSuccessClose} headerText={'Added successfully!'} bodyText={'Added successfully!'}/> */}
-            <Modal isOpen={modalAddSuccess} onClose={handleModalAddSuccessClose} useRNModal>
-                <Modal.Content bgColor={'green.100'}>
-                    <Modal.Header borderBottomWidth={0} bgColor={'green.100'}>
-                        <Text textAlign={'center'} color={'#102A43'} bold>
-                            😊😎 Success! 😎😊
-                        </Text>
-                    </Modal.Header>
-                    <Modal.Body
-                        justifyContent={'center'}
-                        alignItems={'center'}
-                        bgColor={'green.200'}
-                        borderLeftWidth={4}
-                        borderLeftColor={'green.600'}
-                        margin={5}
-                    >
-                        <Box flex={1}>
-                            <Text color={'green.600'} bold>
-                                Added successfully!
-                            </Text>
-                            <Text color={'green.600'}>
-                                Added successfully!
-                            </Text>
-                        </Box>
-                    </Modal.Body>
-                    <Modal.Footer borderTopWidth={0} bgColor={'green.100'}>
-                        <HStack space={5} flex={1}>
-                            <Button colorScheme={'success'} flex="1" onPress={handleModalAddSuccessClose} _text={{ color: 'white' }}>
-                                Ok
-                            </Button>
-                        </HStack>
-                    </Modal.Footer>
-                </Modal.Content>
-            </Modal>
 
 
         </>
 
-
-    );
-};
-
-
-
-const SCC_Modals = () => {
-
-    const supplyChainsCostsModalVisible = useSelector((state) => state.supplyChainsCostsModalVisible)
-    const supplyChainsCostsData = useSelector((state) => state.supplyChainsCostsData);
-    const expenseNameData = useSelector((state) => state.expenseNameData);
-    const paidToData = useSelector((state) => state.paidToData);
-    const currentDate = useSelector((state) => state.currentDate);
-    const vehicleListSupplyChainsCostsData = useSelector((state) => state.vehicleListSupplyChainsCostsData);
-
-    return (
-        <AllSccModals
-            supplyChainsCostsModalVisible={supplyChainsCostsModalVisible}
-            supplyChainsCostsData={supplyChainsCostsData}
-            expenseNameData={expenseNameData}
-            paidToData={paidToData}
-            currentDate={currentDate}
-            vehicleListSupplyChainsCostsData={vehicleListSupplyChainsCostsData}
-        />
-    );
+    )
 }
-
-const ModalCalendar = ({ selectedDate, setSelectedDate }) => {
-
-    const [modalCalendarVisible, setModalCalendarVisible] = useState(false);
-
-
-    const handleModalCalendarOpen = () => {
-        setModalCalendarVisible(true);
-    };
-
-    const handleModalCalendarClose = () => {
-        setModalCalendarVisible(false);
-    };
-
-
-
-    return (
-
-        <>
-            <TouchableOpacity onPress={handleModalCalendarOpen} style={{ flex: 3 }}>
-                <Input value={selectedDate} onFocus={handleModalCalendarOpen} />
-            </TouchableOpacity>
-
-            <Modal isOpen={modalCalendarVisible} onClose={handleModalCalendarClose} useRNModal>
-                <Modal.CloseButton />
-                <Modal.Content>
-                    <Box height={'full'} flex={1}>
-
-                        <Calendar
-                            onDayPress={useCallback(day => {
-                                setSelectedDate(day.dateString);
-                                // console.log(day.dateString);
-                                globalSPCSelectedDate = day.dateString;
-                                handleModalCalendarClose();
-                            }, [])}
-                            markedDates={{
-                                [selectedDate]: { selected: true, disableTouchEvent: true, selectedDotColor: '#7b9cff' }
-                            }}
-                            renderArrow={(direction) => (
-                                direction === 'left' ? <MaterialIcons name='arrow-back-ios' color='#7b9cff' /> : <MaterialIcons name='arrow-forward-ios' color='#7b9cff' />
-                            )}
-                            enableSwipeMonths={true}
-                            initialDate={selectedDate}
-                            showSixWeeks />
-
-                    </Box>
-
-                </Modal.Content>
-
-            </Modal></>
-
-    );
-
-}
-
-const SelectExpenseName = ({ expenseNameIsError }) => {
-
-    const dispatch = useDispatch();
-    const expenseNameData = useSelector((state) => state.expenseNameData);
-    const selectedExpenseName = useSelector((state) => state.selectedExpenseName);
-    const [key, setKey] = useState(nanoid());
-
-
-
-    return <Select
-        selectedValue={selectedExpenseName}
-        borderColor={expenseNameIsError ? 'error.400' : 'muted.300'}
-        flex={3}
-        onValueChange={(value) => {
-            globalSelectedExpenseName = value
-            dispatch(setSelectedExpenseName(value));
-        }}
-        accessibilityLabel="Choose Expense Name"
-        placeholder="Choose Expense Name"
-        _selectedItem={{
-            bg: "teal.600",
-            endIcon: <CheckIcon size="5" />
-        }}>
-        {expenseNameData.map((item) => (
-
-            <Select.Item key={item} label={item} value={item} />
-
-        ))}
-    </Select>
-
-
-};
-
-const VehicleEditModal = ({ handleEditModalClose }) => {
-
-    const editVehicleModalVisible = useSelector((state) => state.editVehicleModalVisible);
-    const screenWidth = Dimensions.get('window').width;
-
-    return (
-        <Modal isOpen={editVehicleModalVisible} onClose={handleEditModalClose} size={'full'}>
-            <Modal.Content bgColor={'white'} w={screenWidth <= 1100 ? '90%' : '40%'} h={'100%'}>
-                <Modal.CloseButton />
-                <Modal.Header bgColor={'#7B9CFF'} flexDir={screenWidth <= 960 ? 'column' : 'row'} alignItems={screenWidth <= 960 ? 'center' : ''}>
-                    <Text color={'white'} fontSize={20} bold>Edit Vehicle </Text><Text color={'cyan.200'} fontSize={20} bold textAlign={screenWidth <= 960 ? 'center' : ''}>{globalSelectedVehicle}</Text>
-                </Modal.Header>
-
-
-                <Modal.Body >
-                    Sit nulla est ex deserunt exercitation anim occaecat.
-                </Modal.Body>
-            </Modal.Content>
-        </Modal>
-
-
-    );
-};
-
-const EditVehicleModal = () => {
-    const dispatch = useDispatch();
-
-    const handleEditModalClose = () => {
-        dispatch(setEditVehicleModalVisible(false));
-        globalCurrentStockID = '';
-        globalSelectedVehicle = '';
-        globalSelectedVehicleReferenceNumber = '';
-        globalSelectedCarName = '';
-
-    }
-
-    return (
-        <VehicleEditModal handleEditModalClose={handleEditModalClose} />
-
-
-    );
-
-};
-
-
-
-
-
-
-
-const FobPriceHistoryModal = ({ handleFobPriceHistoryClose }) => {
-
-    const screenWidth = Dimensions.get('window').width;
-    const fobPriceHistoryModalVisible = useSelector((state) => state.fobPriceHistoryModalVisible);
-    const fobHistoryData = useSelector((state) => state.fobHistoryData);
-
-    return (
-        <Modal
-            isOpen={fobPriceHistoryModalVisible}
-            onClose={handleFobPriceHistoryClose}
-            size={'full'}
-            useRNModal
-        >
-            <Modal.Content bgColor={'white'} w={screenWidth <= 1100 ? '90%' : '40%'} h={'auto'}>
-                <Modal.CloseButton />
-                <Modal.Header bgColor={'#7B9CFF'} alignItems={screenWidth <= 960 ? 'center' : 'flex-start'}>
-                    <Text color={'white'} fontSize={20} bold>FOB Price History </Text>
-                </Modal.Header>
-                <Modal.Body>
-                    <ScrollView style={{ width: '100%' }}>
-                        {screenWidth >= 960 ? (
-                            <View style={{ alignItems: 'stretch', marginTop: 10 }}>
-                                {/* Table Header */}
-                                <View style={{
-                                    borderRadius: 3,
-                                    backgroundColor: '#0642F4',
-                                    flexDirection: 'row',
-                                    borderBottomWidth: 1,
-                                    borderBottomColor: '#0642F4',
-                                }}>
-                                    <Text style={{ flex: 1, fontSize: 16, fontWeight: 'bold', padding: 8, color: 'white' }}>Date</Text>
-                                    <Text style={{ flex: 1, fontSize: 16, fontWeight: 'bold', padding: 8, color: 'white' }}>FOB Price ¥</Text>
-                                    <Text style={{ width: '20%', fontSize: 16, fontWeight: 'bold', padding: 8, color: 'white' }}>Changer</Text>
-
-                                </View>
-
-                                {/* Table Rows */}
-                                {[...fobHistoryData]
-                                    .sort((a, b) => new Date(b.date.replace(' at ', ' ')) - new Date(a.date.replace(' at ', ' ')))
-                                    .map((data, index) => (
-                                        <View
-                                            key={index}
-                                            style={{
-                                                backgroundColor: '#BBF7D0',
-                                                flexDirection: 'row',
-                                                borderBottomWidth: 1,
-                                                borderBottomColor: '#CCCCCC',
-                                            }}
-                                        >
-                                            <Text style={{ flex: 1, fontSize: 16, padding: 8 }}>{data.date}</Text>
-                                            <Text style={{ flex: 1, fontSize: 16, padding: 8 }}>¥{Number(data.fobPrice).toLocaleString()}</Text>
-                                            <Text style={{ width: '20%', fontSize: 16, padding: 8 }}>{data.changedBy}</Text>
-                                        </View>
-                                    ))
-                                }
-                            </View>
-                        ) : (
-                            // Mobile View FOB Price History
-                            <View style={{ alignItems: 'stretch', marginTop: 10 }}>
-                                {/* Table Header */}
-                                {/* <View style={{
-                    borderRadius: 3,
-                    backgroundColor: '#0642F4',
-                    flexDirection: 'row',
-                    borderBottomWidth: 1,
-                    borderBottomColor: '#0642F4',
-                  }}>
-                    <Text style={{ flex: 1, fontSize: 16, fontWeight: 'bold', padding: 8, color: 'white' }}>Date</Text>
-                    <Text style={{ flex: 1, fontSize: 16, fontWeight: 'bold', padding: 8, color: 'white' }}>FOB Price</Text>
-                    <Text style={{ width: '20%', fontSize: 16, fontWeight: 'bold', padding: 8, color: 'white' }}>Changer</Text>
-  
-                  </View> */}
-
-                                {/* Table Rows */}
-                                {[...fobHistoryData]
-                                    .sort((a, b) => new Date(b.date.replace(' at ', ' ')) - new Date(a.date.replace(' at ', ' ')))
-                                    .map((data, index) => (
-                                        <View
-                                            key={index}
-                                            style={{
-                                                backgroundColor: '#BBF7D0',
-                                                flexDirection: 'column',
-                                                borderWidth: 1,
-                                                borderColor: '#E4E4E7',
-                                                margin: 3,
-                                            }}
-                                        >
-
-                                            <View style={{ flexDirection: 'row', borderBottomWidth: 1, borderBottomColor: '#E4E4E7', }}>
-                                                <View style={{
-                                                    backgroundColor: '#0642F4',
-                                                    borderBottomWidth: 1,
-                                                    borderBottomColor: '#0642F4',
-                                                    width: '30%',
-                                                }}>
-                                                    <Text style={{ flex: 1, fontSize: 16, fontWeight: 'bold', padding: 8, color: 'white' }}>Date</Text>
-                                                </View>
-
-                                                <Text style={{ flex: 1, fontSize: 16, padding: 8 }}>{data.date}</Text>
-                                            </View>
-
-                                            <View style={{ flexDirection: 'row', borderBottomWidth: 1, borderBottomColor: '#E4E4E7', }}>
-                                                <View style={{
-                                                    backgroundColor: '#0642F4',
-                                                    borderBottomWidth: 1,
-                                                    borderBottomColor: '#0642F4',
-                                                    width: '30%',
-                                                }}>
-                                                    <Text style={{ flex: 1, fontSize: 16, fontWeight: 'bold', padding: 8, color: 'white' }}>FOB Price ¥</Text>
-                                                </View><Text style={{ flex: 1, fontSize: 16, padding: 8 }}>¥{Number(data.fobPrice).toLocaleString()}</Text>
-                                            </View>
-
-                                            <View style={{ flexDirection: 'row', borderBottomWidth: 1, borderBottomColor: '#E4E4E7', }}>
-                                                <View style={{
-                                                    backgroundColor: '#0642F4',
-                                                    borderBottomWidth: 1,
-                                                    borderBottomColor: '#0642F4',
-                                                    width: '30%',
-                                                }}>
-                                                    <Text style={{ flex: 1, fontSize: 16, fontWeight: 'bold', padding: 8, color: 'white' }}>Changer</Text>
-                                                </View>
-                                                <Text style={{ flex: 1, fontSize: 16, padding: 8 }}>{data.changedBy}</Text>
-                                            </View>
-                                        </View>
-                                    ))
-                                }
-                            </View>
-                        )}
-
-                    </ScrollView>
-
-
-
-
-                </Modal.Body>
-            </Modal.Content>
-        </Modal>
-
-
-
-    );
-}
-
-const FobPriceHistory = () => {
-    const dispatch = useDispatch();
-
-
-    const handleFobPriceHistoryClose = () => {
-
-        dispatch(setFobPriceHistoryModalVisible(false));
-        globalFobPriceHistoryData = [];
-        globalCurrentStockID = '';
-        globalSelectedVehicle = '';
-        globalSelectedVehicleReferenceNumber = '';
-
-    }
-
-    return (
-
-        <FobPriceHistoryModal handleFobPriceHistoryClose={handleFobPriceHistoryClose} />
-
-    );
-}
-
-
-
-
 
 const CustomerListTable = () => {
     const screenWidth = Dimensions.get('window').width;
@@ -1697,21 +1207,10 @@ const CustomerListTable = () => {
     const [currentPage, setCurrentPage] = useState(1);
     // const [data, setData] = useState([]);
     const [pageSize, setPageSize] = useState(10);
-    const [searchQuery, setSearchQuery] = useState('');
     const searchInputRef = useRef(null);
-
-
-    const [stockIDs, setStockIDs] = useState([]);
-    const [imageCounts, setImageCounts] = useState([]);
-
-    const [pageIndex, setPageIndex] = useState(0);
-
-    const [itemsPerPage, setItemsPerPage] = useState(10);
-    const [pageClicked, setPageClicked] = useState('');
     const [lastVisible, setLastVisible] = useState(null);
     const [firstVisible, setFirstVisible] = useState(null);
     const [searchText, setSearchText] = useState('');
-    const [fobPrices, setFobPrices] = useState({});
     // Memoize the filtered data using useMemo
     const [sortField, setSortField] = useState('textEmail'); // null when sorting is off
     const [isSortActive, setIsSortActive] = useState(false);
@@ -2053,23 +1552,7 @@ const CustomerListTable = () => {
     };
 
 
-
-
     // Function to handle input changes for each item
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
     const handleSearchEnter = () => {
@@ -2140,6 +1623,9 @@ const CustomerListTable = () => {
                             <View style={{ flex: 1, padding: 2 }}>
                                 <Text style={{ color: 'white', }} bold>Country</Text>
                             </View>
+                            <View style={{ flex: 1, padding: 2, alignItems: 'center', }}>
+                                <Text style={{ color: 'white', }} bold>Operate</Text>
+                            </View>
                         </View>
                         {customerListData.map((item) => (
                             <View
@@ -2169,9 +1655,13 @@ const CustomerListTable = () => {
                                 <View style={{ flex: 1 }}>
                                     <Text selectable style={{ width: '90%', marginLeft: 3, }}>{item.city}</Text>
                                 </View>
-                                <View style={{ flex: 1 }}>
+                                <View style={{ flex: 1, }}>
                                     <Text selectable style={{ width: '90%', marginLeft: 3, }}>{item.country}</Text>
                                 </View>
+                                <View style={{ flex: 1, }}>
+                                    <CustomerProfileModal email={item.textEmail} />
+                                </View>
+
 
                             </View>
                         ))}
@@ -2182,13 +1672,13 @@ const CustomerListTable = () => {
                         }}>
 
                             <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-                                <TouchableOpacity
+                                <Pressable
                                     style={{ display: currentPage <= 1 ? 'none' : 'flex' }}
                                     onPress={handlePreviousPage}>
                                     <View style={{ backgroundColor: 'rgba(6, 66, 244, 0.6)', borderRadius: 5, padding: 4, margin: 10 }}>
                                         <MaterialIcons name='navigate-before' size={40} color={'white'} />
                                     </View>
-                                </TouchableOpacity>
+                                </Pressable>
                             </View>
 
 
@@ -2197,12 +1687,12 @@ const CustomerListTable = () => {
                             </View>
 
                             <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', }} >
-                                <TouchableOpacity
+                                <Pressable
                                     onPress={handleNextPage}>
                                     <View style={{ backgroundColor: 'rgba(6,66,244, 0.6)', borderRadius: 5, padding: 4, margin: 10 }}>
                                         <MaterialIcons name='navigate-next' size={40} color={'white'} />
                                     </View>
-                                </TouchableOpacity>
+                                </Pressable>
                             </View>
                         </View>
 
@@ -2273,13 +1763,13 @@ const CustomerListTable = () => {
                         }}>
 
                             <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-                                <TouchableOpacity
+                                <Pressable
                                     style={{ display: currentPage <= 1 ? 'none' : 'flex' }}
                                     onPress={handlePreviousPage}>
                                     <View style={{ backgroundColor: 'rgba(6, 66, 244, 0.6)', borderRadius: 5, padding: 4, margin: 10 }}>
                                         <MaterialIcons name='navigate-before' size={40} color={'white'} />
                                     </View>
-                                </TouchableOpacity>
+                                </Pressable>
                             </View>
 
 
@@ -2288,12 +1778,12 @@ const CustomerListTable = () => {
                             </View>
 
                             <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', }} >
-                                <TouchableOpacity
+                                <Pressable
                                     onPress={handleNextPage}>
                                     <View style={{ backgroundColor: 'rgba(6,66,244, 0.6)', borderRadius: 5, padding: 4, margin: 10 }}>
                                         <MaterialIcons name='navigate-next' size={40} color={'white'} />
                                     </View>
-                                </TouchableOpacity>
+                                </Pressable>
                             </View>
 
                         </View>
@@ -2319,24 +1809,13 @@ const CustomerListTable = () => {
 
 export default function CustomerList() {
     const [email, setEmail] = useState('');
-    const [isMobileView, setIsMobileView] = useState(false);
-    const [isDrawerOpen, setIsDrawerOpen] = useState(false);
     // const navigation = useNavigation();
     const navigate = useNavigate();
-
-
-    const [typeOfAccount, setTypeOfAccount] = useState('');
-
 
     const loginName = useSelector((state) => state.loginName);
     const loginAccountType = useSelector((state) => state.loginAccountType);
 
     const [name, setName] = useState(loginName);
-    const [time, setTime] = useState('');
-
-    const [selectedImages, setSelectedImages] = useState([]);
-
-    const [widthState, setWidthState] = useState(Dimensions.get('window').width);
 
     const dispatch = useDispatch();
 
@@ -2358,12 +1837,6 @@ export default function CustomerList() {
             Dimensions.removeEventListener('change', updateWidth);
         };
     }, []);
-
-
-
-    // useEffect(() => {
-    // }, [typeOfAccount]);
-
 
 
 
@@ -2537,8 +2010,6 @@ export default function CustomerList() {
 
 
 
-
-
     return (
 
         <NativeBaseProvider>
@@ -2585,29 +2056,14 @@ export default function CustomerList() {
                     {/* Content */}
                     <View style={{ flex: 1, flexDirection: 'row' }} flex={[1]} flexDirection="row">
 
-
-                        {/* Main Content */}
-                        {/* <Box flex={1} flexGrow={1} minHeight={0}> */}
-                        {/* Main Content Content */}
-
-                        {/* <Box px="3" bgColor="#A6BCFE" height="full" > */}
-
                         <View style={{ flex: 1, backgroundColor: "#A6BCFE", height: '100%' }}>
                             <ScrollView style={{ flex: 1, }} keyboardShouldPersistTaps='always'>
                                 <View style={{ flex: 1, }}>
                                     <CustomerListTable />
                                 </View>
                             </ScrollView>
-                            <SCC_Modals />
-                            <EditVehicleModal />
-                            <FobPriceHistory />
-                            {/* <SuccessModal /> */}
+
                         </View>
-
-
-                        {/* </Box> */}
-
-                        {/* </Box> */}
                     </View>
 
                 </View>
